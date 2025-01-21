@@ -1,0 +1,42 @@
+{
+  "name": "arkrog_frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@heroui/react": "^2.6.14",
+    "@react-router/node": "^7.1.3",
+    "@react-router/serve": "^7.1.3",
+    "framer-motion": "^12.0.0",
+    "isbot": "^5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.1.3",
+    "styled-components": "^6.1.14",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@react-router/dev": "^7.1.3",
+    "@types/node": "^20",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
+    "@types/react-router": "^5.1.20",
+    "@types/styled-components": "^5.1.34",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.18.0",
+    "postcss": "^8.4.49",
+    "prettier": "^3.4.2",
+    "react-devtools": "^6.0.1",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0",
+    "vite": "^5.4.11",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

@@ -4,4 +4,42 @@
 
 html,
 body {
+    font-size: 16px;
+    color: white;
+}
+
+.bg-dark {
+   background-color: #303030 !important;
+}
+
+.bg-mid-gray {
+    background-color: #444444 !important;
+}
+
+.text-mid-gray {
+    color: #9A9A9A !important;
+}
+
+.text-active {
+    color: #18D1FF;
+}
+
+@layer components {
+    /* 自定义滚动条样式 */
+    ::-webkit-scrollbar {
+        width: 8px; /* 滚动条宽度 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #676767; /* 滚动条颜色 */
+        border-radius: 9999px; /* 圆角效果 */
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #414141; /* 滚动条轨道背景 */
+    }
+
+    /* 对于 Firefox */
+    scrollbar-width: thin; /* 细滚动条 */
+    scrollbar-color: #676767 #414141; /* 滚动条颜色 和 滚动条轨道背景颜色 */
 }

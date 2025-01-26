@@ -1,18 +1,25 @@
 import {
-  Avatar,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  Select,
+  SelectItem,
 } from "@heroui/react";
-import { Link } from "@heroui/link";
 import { Input } from "@heroui/input";
+import React, { useState } from "react";
+import { useUserStore } from "~/stores/store";
+import LoginModal from "~/modules/LoginModal/LoginModal";
+import { styled } from "styled-components";
 
-export const SearchIcon = ({
+interface SearchIconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number;
+  strokeWidth?: number;
+  width?: number;
+  height?: number;
+}
+
+export const SearchIcon: React.FC<SearchIconProps> = ({
   size = 24,
   strokeWidth = 1.5,
   width,
@@ -48,28 +55,74 @@ export const SearchIcon = ({
   );
 };
 
-export default function () {
+const PartialBorderRightDiv = styled.div`
+  position: relative;
+  padding-right: 25%; /* 根据需要调整内边距 */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 75%;
+    border-right: 2px solid #18d1ff; /* 根据需要调整边框粗细和颜色 */
+  }
+`;
+
+export default function TopNavbar() {
+  const [searchOption, setSearchOption] = useState("全站");
+  const [searchValue, setSearchValue] = useState("");
+
+  const username = useUserStore((state) => state.username);
+
   return (
-    <Navbar isBordered>
-      <NavbarContent justify="start">
-        <NavbarBrand className="mr-4">
-          <p className="hidden sm:block font-bold text-inherit">黑蓑影卫</p>
+    <Navbar
+      isBordered
+      maxWidth="2xl"
+      className="text-mid-gray h-20"
+      style={{ background: "#181818" }}
+    >
+      <NavbarContent>
+        <NavbarBrand className="text-2xl font-bold text-white">
+          Logo
         </NavbarBrand>
-        <NavbarContent className="hidden sm:flex gap-3">
-          <Input
+      </NavbarContent>
+      <NavbarContent justify="end">
+        <NavbarItem className="w-96 flex me-6">
+          <Select
+            name="select"
+            className="w-28"
             classNames={{
-              base: "max-w-full sm:max-w-[30rem] h-10",
+              trigger: "bg-mid-gray rounded-none",
+              value: "text-mid-gray",
+              popoverContent: "bg-mid-gray text-mid-gray rounded-none",
+              listbox: "rounded-none",
+            }}
+            aria-label="select"
+            selectedKeys={[searchOption]}
+            onChange={(evt) => setSearchOption(evt.target.value)}
+          >
+            {["全站", "部分"].map((opt) => (
+              <SelectItem key={opt}>{opt}</SelectItem>
+            ))}
+          </Select>
+          <Input
+            className="rounded-none"
+            classNames={{
+              base: "max-w-full sm:max-w-[30rem]",
               mainWrapper: "h-full",
-              input: "text-small",
+              input: "text-small text-mid-gray hover:bg-transparent",
               inputWrapper:
-                "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
+                "h-full font-normal text-default-500 bg-mid-gray data-[hover=true]:bg-mid-gray group-data-[focus=true]:bg-mid-gray rounded-none",
             }}
             placeholder="Type to search..."
-            size="sm"
-            startContent={<SearchIcon size={18} />}
+            endContent={<SearchIcon size={18} />}
             type="search"
+            value={searchValue}
+            onValueChange={setSearchValue}
           />
-        </NavbarContent>
+        </NavbarItem>
+        <NavbarItem>{username || <LoginModal />}</NavbarItem>
       </NavbarContent>
     </Navbar>
   );

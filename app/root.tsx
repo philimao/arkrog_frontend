@@ -34,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {isDev && <script src="http://localhost:8097"></script>}
-        <title></title>
+        <title>黑蓑影卫肉鸽站</title>
         <Meta />
         <Links />
       </head>
@@ -82,4 +82,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       )}
     </main>
   );
+}
+
+export function HydrateFallback() {
+  return <div />;
 }

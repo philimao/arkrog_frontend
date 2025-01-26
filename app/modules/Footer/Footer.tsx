@@ -1,0 +1,34 @@
+import { styled } from "styled-components";
+import { Link } from "react-router";
+
+const StyledFooterContainer = styled.footer`
+  box-shadow: 0 -5px 10px 0 #18d1ff80;
+  height: 6rem;
+  background: #4e4e4e;
+  margin-top: 10rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const links = [
+  { text: "联系我们", to: "#" },
+  { text: "赞助我们", to: "#" },
+  { text: "友情链接", to: "#" },
+];
+
+export function Footer() {
+  return (
+    <StyledFooterContainer>
+      {links.map((link) => (
+        <Link
+          to={link.to}
+          key={link.text}
+          className="font-bold text-lg me-24 last-of-type:me-0 hover:text-ak-blue"
+        >
+          {link.text}
+        </Link>
+      ))}
+    </StyledFooterContainer>
+  );
+}

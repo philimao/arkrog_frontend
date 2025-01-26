@@ -7,6 +7,13 @@ export default {
   ],
   theme: {
     extend: {
+      backgroundColor: {
+        "page-nav-hover": "#D9D9D9",
+        "ak-blue": "#18D1FF",
+      },
+      colors: {
+        "ak-blue": "#18D1FF",
+      },
       fontFamily: {
         sans: [
           '"Inter"',

@@ -8,9 +8,7 @@ import {
 } from "@heroui/react";
 import { Input } from "@heroui/input";
 import React, { useState } from "react";
-import { useUserStore } from "~/stores/store";
-import LoginModal from "~/modules/LoginModal/LoginModal";
-import { styled } from "styled-components";
+import UserOrLogin from "~/modules/TopNav/UserOrLogin";
 
 interface SearchIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
@@ -55,25 +53,9 @@ export const SearchIcon: React.FC<SearchIconProps> = ({
   );
 };
 
-const PartialBorderRightDiv = styled.div`
-  position: relative;
-  padding-right: 25%; /* 根据需要调整内边距 */
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 75%;
-    border-right: 2px solid #18d1ff; /* 根据需要调整边框粗细和颜色 */
-  }
-`;
-
 export default function TopNavbar() {
   const [searchOption, setSearchOption] = useState("全站");
   const [searchValue, setSearchValue] = useState("");
-
-  const username = useUserStore((state) => state.username);
 
   return (
     <Navbar
@@ -122,7 +104,9 @@ export default function TopNavbar() {
             onValueChange={setSearchValue}
           />
         </NavbarItem>
-        <NavbarItem>{username || <LoginModal />}</NavbarItem>
+        <NavbarItem>
+          <UserOrLogin />
+        </NavbarItem>
       </NavbarContent>
     </Navbar>
   );

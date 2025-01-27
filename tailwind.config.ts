@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import { heroui } from "@heroui/react";
+
 export default {
   content: [
     "./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}",
@@ -10,6 +11,10 @@ export default {
       backgroundColor: {
         "page-nav-hover": "#D9D9D9",
         "ak-blue": "#18D1FF",
+        "ak-deep-blue": "#0691CD",
+        "light-gray": "#D9D9D9",
+        "dark-gray": "#242424",
+        "black-gray": "#181818",
       },
       colors: {
         "ak-blue": "#18D1FF",

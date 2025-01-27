@@ -14,7 +14,7 @@ export const pages = [
 ];
 
 export default [
-  layout("routes/BasicLayout.tsx", [
+  layout("routes/RootLayout.tsx", [
     index("routes/IndexLayout.tsx"),
     route("/relic-free", "routes/RelicFreeLayout.tsx", [
       index("modules/RelicFree/StageSelector.tsx"),

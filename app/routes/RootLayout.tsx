@@ -1,12 +1,14 @@
 import MyNavbar from "~/modules/TopNav/TopNavbar";
 import { Outlet } from "react-router";
 import PageNavbar from "~/modules/PageNav/PageNavbar";
-import LoginModal from "~/modules/LoginModal/LoginModal";
 import { ToastContainer } from "react-toastify";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled, ThemeProvider } from "styled-components";
 import theme from "~/styles/theme";
 import { Footer } from "~/modules/Footer/Footer";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import { useUserInfoStore } from "~/stores/userInfoStore";
+import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -18,8 +20,15 @@ const StyledBackground = styled.div`
   background-repeat: no-repeat, repeat-y;
 `;
 
-export default function BasicLayout() {
+export default function RootLayout() {
   const [currentTheme, setCurrentTheme] = useState("dark");
+  const { fetchGameData, fetchGameDataExt } = useGameDataStore();
+  const { fetchUserInfo } = useUserInfoStore();
+
+  useEffect(() => {
+    Promise.all([fetchUserInfo(), fetchGameData().then(fetchGameDataExt)]);
+  }, []);
+
   return (
     <ThemeProvider theme={theme[currentTheme as keyof typeof theme]}>
       <StyledBackground>
@@ -29,10 +38,13 @@ export default function BasicLayout() {
         <Footer />
         <ToastContainer
           autoClose={3000}
-          position="top-right"
+          position="bottom-right"
+          theme="dark"
+          closeOnClick
           stacked
           hideProgressBar
         />
+        <SVGDefinitions />
       </StyledBackground>
     </ThemeProvider>
   );

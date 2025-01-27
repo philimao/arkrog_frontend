@@ -2,14 +2,15 @@ async function _get<T>(url: string): Promise<T | undefined> {
   return fetch(`${import.meta.env.VITE_API_BASE_URL}` + url, {
     credentials: "include",
   }).then(
-    (response: Response) => {
+    async (response: Response) => {
       if (response.ok) {
         return response
           .clone()
           .json()
           .catch(() => response.text());
       } else {
-        throw new Error(response.statusText);
+        const text = await response.text();
+        throw new Error(text);
       }
     },
     (err: Error) => {
@@ -26,14 +27,15 @@ async function _post<T>(url: string, data: object): Promise<T | undefined> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   }).then(
-    (response: Response) => {
+    async (response: Response) => {
       if (response.ok) {
         return response
           .clone()
           .json()
           .catch(() => response.text());
       } else {
-        throw new Error(response.statusText);
+        const text = await response.text();
+        throw new Error(text);
       }
     },
     (err: Error) => {

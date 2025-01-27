@@ -23,5 +23,6 @@ export default [
     // layout("routes/BlogLayout.tsx", [route("/blog", "")]),
     // layout("routes/ToolLayout.tsx", [route("/tool", "")]),
     // layout("routes/TournamentLayout.tsx", [route("/tournament", "")]),
+    route("*", "modules/standalone/NotFoundPage.tsx"),
   ]),
 ] satisfies RouteConfig;

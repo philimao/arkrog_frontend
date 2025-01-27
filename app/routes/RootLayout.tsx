@@ -12,12 +12,15 @@ import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
-  background-image: url("/bg/01.png"), url("/bg/02.png");
+  overflow: hidden;
+  background-image: url("/images/bg/01.png"), url("/images/bg/02.png");
   background-size:
     100% auto,
     100% auto;
   background-position: top, top;
   background-repeat: no-repeat, repeat-y;
+  display: flex;
+  flex-direction: column;
 `;
 
 export default function RootLayout() {
@@ -26,7 +29,7 @@ export default function RootLayout() {
   const { fetchUserInfo } = useUserInfoStore();
 
   useEffect(() => {
-    Promise.all([fetchUserInfo(), fetchGameData().then(fetchGameDataExt)]);
+    Promise.all([fetchUserInfo(), fetchGameData()]);
   }, []);
 
   return (

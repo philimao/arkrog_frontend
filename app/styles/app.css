@@ -4,24 +4,10 @@
 
 html,
 body {
+    background: #181818;
     font-size: 16px;
     color: white;
-}
-
-.bg-dark {
-   background-color: #303030 !important;
-}
-
-.bg-mid-gray {
-    background-color: #444444 !important;
-}
-
-.text-mid-gray {
-    color: #9A9A9A !important;
-}
-
-.text-active {
-    color: #18D1FF;
+    min-height: 100vh;
 }
 
 @layer components {
@@ -42,4 +28,17 @@ body {
     /* 对于 Firefox */
     scrollbar-width: thin; /* 细滚动条 */
     scrollbar-color: #676767 #414141; /* 滚动条颜色 和 滚动条轨道背景颜色 */
+}
+
+@layer base {
+    @font-face {
+        font-family: 'Novecento';
+        font-style: normal;
+        font-weight: 400;
+        src: url(/public/fonts/Novecento.woff2) format('woff2');
+    }
+}
+
+.font-novecento {
+    font-family: 'Novecento', sans-serif;
 }

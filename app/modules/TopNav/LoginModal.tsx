@@ -7,6 +7,7 @@ import {
   ModalHeader,
   Input,
   Form,
+  Tooltip,
 } from "@heroui/react";
 import React, { type FormEvent } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
@@ -142,12 +143,14 @@ export default function LoginModal({
                     inputWrapper: "bg-black-gray h-12",
                   }}
                 />
-                <span
-                  className="text-light-gray text-xs self-end -translate-y-1.5"
-                  role="button"
-                >
-                  忘记密码？
-                </span>
+                <Tooltip content="尚未完工，敬请期待">
+                  <span
+                    className="text-light-gray text-xs self-end -translate-y-1.5"
+                    role="button"
+                  >
+                    忘记密码
+                  </span>
+                </Tooltip>
                 <Button
                   type="submit"
                   className="w-full bg-ak-deep-blue font-medium text-base"

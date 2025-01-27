@@ -9,7 +9,7 @@ export const StyledModalContent = styled.div`
     content: "";
     left: 0;
     top: 0;
-    background-image: url("/bg/02.png");
+    background-image: url("/images/bg/02.png");
     background-repeat: repeat-y;
     background-size: auto 16.67%;
     background-position: 25% 0;

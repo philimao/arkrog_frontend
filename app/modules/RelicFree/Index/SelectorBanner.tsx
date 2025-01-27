@@ -51,6 +51,7 @@ const StyledTopicNavContainer = styled.div`
   transform: translateX(-50%);
   height: 100%;
   width: 100vw;
+  z-index: 10;
 `;
 
 const StyledTopicNavInner = styled.div`
@@ -82,6 +83,7 @@ export default function SelectorBanner({
           <StyledTopicNav>
             {Object.values(topics).map((topic) => (
               <div
+                key={topic.id}
                 className={
                   "ps-8 pe-16 py-1 font-bold text-sm " +
                   `${currentTopic.id === topic.id ? "bg-ak-blue text-black" : "bg-black text-white"} `

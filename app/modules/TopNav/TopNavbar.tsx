@@ -61,8 +61,7 @@ export default function TopNavbar() {
     <Navbar
       isBordered
       maxWidth="2xl"
-      className="text-mid-gray h-20"
-      style={{ background: "#181818" }}
+      className="bg-black-gray text-mid-gray h-20"
     >
       <NavbarContent>
         <NavbarBrand className="text-2xl font-bold text-white">

@@ -6,7 +6,7 @@ import IndexBlog from "~/modules/Index/IndexBlog/IndexBlog";
 
 export default function IndexLayout() {
   return (
-    <div className="container px-48 mx-auto">
+    <div className="container md:px-10 lg:px-16 xl:px-20 mx-auto">
       <Banner />
       <MyToolbox />
       <IndexRelicFree />

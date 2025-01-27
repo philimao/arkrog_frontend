@@ -1,5 +1,5 @@
 import { Tooltip } from "@heroui/react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import React, { type Dispatch } from "react";
 import { styled } from "styled-components";
 import type { StageData, StageOfRogue } from "~/types/gameData";
@@ -30,7 +30,7 @@ const StyledCardTitleText = styled.div<{ type: string }>`
   color: ${(props) =>
     props.type === "normal"
       ? props.theme.akBlue
-      : props.type === "challenge"
+      : props.type === "elite"
         ? props.theme.akRed
         : props.theme.akPurple};
 `;
@@ -74,17 +74,22 @@ export default function SelectorDetail({
   setZoneFilterId: Dispatch<any>;
   stageOfRogue: StageOfRogue;
 }) {
+  // console.log(stageOfRogue);
+  const navigate = useNavigate();
   const numOfMinorBoss = {
     ro1: 5,
     ro2: 3,
     ro3: 3,
     ro4: 3,
   };
+  // 定义每层的名称，以及筛选器
   const navOfZone = [
     {
       id: "boss",
       name: "险路恶敌",
       filter: (stage: StageData, array: string[]) => {
+        const excludeIds = ["ro4_b_9"];
+        if (excludeIds.includes(stage.id)) return false;
         const args = stage.id.split("_");
         // eg: ro4_b_5_d
         if (args[1] !== "b") return false;
@@ -145,6 +150,7 @@ export default function SelectorDetail({
         </Tooltip>
       </div>
       <div className="flex">
+        {/* 新增全部筛选器，不参与下方每层的关卡渲染 */}
         {[{ id: "all", name: "全部" }, ...navOfZone].map((zone) => (
           <div
             className={
@@ -169,44 +175,60 @@ export default function SelectorDetail({
         </div>
       </div>
       <div>
+        {/* 根据楼层筛选器，渲染每层的关卡 */}
         {navOfZone
           .filter((zone) => zoneFilterId === "all" || zoneFilterId === zone.id)
           .map((zone) => {
             const renderedStageIds: string[] = [];
+            const renderStages = Object.values(stageOfRogue).filter((stage) =>
+              zone.filter(stage, renderedStageIds),
+            );
+            const len = renderStages.length;
+            const ghostStages = renderStages
+              .slice(0, 4 - (len % 4))
+              .map((stage: StageData) => ({ ...stage, id: "ghost" }));
+            if (ghostStages.length % 4) {
+              renderStages.push(...ghostStages);
+            }
+            // console.log(zone.name, renderStages);
             return (
               <div className="flex mb-16" key={zone.id}>
                 <div className="w-1/6 pe-8">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
                 <div className="w-5/6 flex flex-wrap justify-between ps-8">
-                  {Object.values(stageOfRogue)
-                    .filter((stage) => zone.filter(stage, renderedStageIds))
-                    .map((stage) => {
-                      return (
-                        <StyledStageCard role="button">
-                          <div className="h-6 bg-black-gray flex">
-                            <div className="w-1/2 flex justify-center">
-                              <StyledCardTitleText type="normal">
-                                普通
-                              </StyledCardTitleText>
-                              <StyledCardTitleNum>5</StyledCardTitleNum>
-                            </div>
-                            <div className="w-1/2 flex justify-center">
-                              <StyledCardTitleText
-                                type={stage.isBoss ? "boat" : "challenge"}
-                              >
-                                {stage.isBoss ? "带船" : "紧急"}
-                              </StyledCardTitleText>
-                              <StyledCardTitleNum>6</StyledCardTitleNum>
-                            </div>
+                  {renderStages.map((stage, i) => {
+                    if (stage.id === "ghost")
+                      return <StyledStageCard className="" key={"ghost" + i} />;
+                    return (
+                      <StyledStageCard
+                        role="button"
+                        key={stage.id}
+                        onClick={() => navigate(stage.id)}
+                      >
+                        <div className="h-6 bg-black-gray flex">
+                          <div className="w-1/2 flex justify-center">
+                            <StyledCardTitleText type="normal">
+                              普通
+                            </StyledCardTitleText>
+                            <StyledCardTitleNum>5</StyledCardTitleNum>
                           </div>
-                          <StyledCardBody>
-                            <StyledDifficulty>N18</StyledDifficulty>
-                            <StyledStageName>{stage.name}</StyledStageName>
-                          </StyledCardBody>
-                        </StyledStageCard>
-                      );
-                    })}
+                          <div className="w-1/2 flex justify-center">
+                            <StyledCardTitleText
+                              type={stage.isBoss ? "boat" : "elite"}
+                            >
+                              {stage.isBoss ? "带船" : "紧急"}
+                            </StyledCardTitleText>
+                            <StyledCardTitleNum>6</StyledCardTitleNum>
+                          </div>
+                        </div>
+                        <StyledCardBody>
+                          <StyledDifficulty>N18</StyledDifficulty>
+                          <StyledStageName>{stage.name}</StyledStageName>
+                        </StyledCardBody>
+                      </StyledStageCard>
+                    );
+                  })}
                 </div>
               </div>
             );

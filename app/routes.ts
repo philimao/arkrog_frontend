@@ -17,12 +17,12 @@ export default [
   layout("routes/RootLayout.tsx", [
     index("routes/IndexLayout.tsx"),
     route("/relic-free", "routes/RelicFreeLayout.tsx", [
-      index("modules/RelicFree/StageSelector.tsx"),
-      route(":stage-id", "modules/RelicFree/StagePage.tsx"),
+      index("modules/RelicFree/Index/StageSelector.tsx"),
+      route(":stageId", "modules/RelicFree/Stage/StagePage.tsx"),
     ]),
     // layout("routes/BlogLayout.tsx", [route("/blog", "")]),
     // layout("routes/ToolLayout.tsx", [route("/tool", "")]),
     // layout("routes/TournamentLayout.tsx", [route("/tournament", "")]),
-    route("*", "modules/standalone/NotFoundPage.tsx"),
+    // route("*", "modules/standalone/NotFoundPage.tsx"),
   ]),
 ] satisfies RouteConfig;

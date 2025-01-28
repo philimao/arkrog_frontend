@@ -1,3 +1,5 @@
+import type { BasicObject } from "~/types/core";
+
 export type RogueKey =
   | "rogue_1"
   | "rogue_2"
@@ -13,9 +15,13 @@ export interface GameData {
   topics: Topics;
   stages: Stages;
   zones: Zones;
-  traps: object;
-  relics: object;
-  items: object;
+  traps: BasicObject;
+  relics: BasicObject;
+  items: BasicObject;
+  character_basic?: CharsBasic;
+  character_table?: BasicObject;
+  skill_table?: BasicObject;
+  uniequipDict?: BasicObject;
 }
 
 // 肉鸽主题
@@ -75,4 +81,49 @@ export interface StageData {
   isBoss: 0 | 1;
   isElite: 0 | 1;
   [key: string]: any;
+}
+
+// 干员信息
+export interface UniequipsBasic {
+  [key: string]: UniequipBasicData;
+}
+
+export interface UniequipBasicData {
+  uniEquipId: string;
+  uniEquipName: string;
+  uniEquipDesc: string;
+  typeIcon: string;
+  typeName1: string;
+  typeName2: string;
+  equipShiningColor: string;
+  unlockEvolvePhase: string;
+  charEquipOrder: number;
+}
+
+export interface SkillBasicData {
+  skillOrder: number;
+  skillId: string;
+  name: string;
+  description: string;
+}
+
+export interface SkillsBasic {
+  [key: string]: SkillBasicData;
+}
+
+export interface CharsBasic {
+  [key: string]: CharBasicData;
+}
+
+export interface CharBasicData {
+  charId: string;
+  name: string;
+  description: string;
+  displayNumber: string;
+  appellation: string;
+  rarity: string;
+  profession: string;
+  subProfessionId: string;
+  skills: SkillsBasic;
+  uniequip: UniequipsBasic;
 }

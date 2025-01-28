@@ -1,4 +1,6 @@
 import { toast } from "react-toastify";
+import type { CharBasicData, CharsBasic } from "~/types/gameData";
+import type { TeamMemberData } from "~/types/recordType";
 
 async function URLValidation(url: string) {
   if (url === "#") return url;
@@ -105,4 +107,35 @@ function avToBv(av: number) {
   return bv.join("");
 }
 
-export { URLValidation };
+function charStrToData(
+  charStr: string,
+  character_basic: CharsBasic,
+): TeamMemberData {
+  let charId = "",
+    name = "",
+    skillStr = "",
+    skillId = "",
+    charNameStr = charStr.trim(),
+    charData;
+  const skillStrMatch = charNameStr.match(/(?<!-)\d$/);
+  if (skillStrMatch) {
+    // 不是小车
+    skillStr = skillStrMatch[0];
+    charNameStr = charNameStr.slice(0, charNameStr.length - 1);
+  }
+  charData = Object.values(character_basic).find(
+    (charData: CharBasicData) =>
+      charData.name.toUpperCase() === charNameStr.toUpperCase(),
+  );
+  if (charData) {
+    name = charData.name;
+    charId = charData.charId;
+    skillId =
+      Object.values(charData.skills).find(
+        (skill) => skillStr === skill.skillOrder.toString(),
+      )?.skillId || "error";
+  }
+  return { charId, name, skillId, skillStr, charData };
+}
+
+export { URLValidation, charStrToData };

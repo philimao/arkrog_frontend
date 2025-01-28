@@ -88,7 +88,11 @@ export default function StageDetail({
       <h1 className="font-bold mb-2 flex items-end">
         <span className="text-[2.5rem] leading-10 me-2">{stageData.name}</span>
         <span className="text-2xl">{stageData.code}</span>
-        <SubmitForm stageId={stageData.id} setRecords={setRecords} />
+        <SubmitForm
+          stageId={stageData.id}
+          setRecords={setRecords}
+          gameData={gameData}
+        />
       </h1>
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
       <div className="grid gap-4 grid-cols-2 mb-8">

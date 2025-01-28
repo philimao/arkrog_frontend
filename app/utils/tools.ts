@@ -85,4 +85,17 @@ async function hashPassword(password: string): Promise<string> {
   }
 }
 
-export { _get, _post, generateID, hashPassword };
+function findDuplicates(array: any[]) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const item of array) {
+    if (seen.has(item)) {
+      duplicates.add(item);
+    } else {
+      seen.add(item);
+    }
+  }
+  return Array.from(duplicates);
+}
+
+export { _get, _post, generateID, hashPassword, findDuplicates };

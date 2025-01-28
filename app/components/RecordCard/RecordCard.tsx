@@ -3,6 +3,7 @@ import type { RecordType } from "~/types/recordType";
 import { Button } from "@heroui/react";
 import { _post } from "~/utils/tools";
 import type { Dispatch, SetStateAction } from "react";
+import { useGameDataStore } from "~/stores/gameDataStore";
 
 export default function RecordCard({
   record,
@@ -11,6 +12,8 @@ export default function RecordCard({
   record?: RecordType;
   setRecords?: Dispatch<SetStateAction<RecordType[]>>;
 }) {
+  const { gameData } = useGameDataStore();
+
   async function handleDeleteRecord() {
     if (!record) return;
     if (!window.confirm("是否确定删除")) return;
@@ -30,10 +33,30 @@ export default function RecordCard({
   }
   return (
     <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 border bg-mid-gray">
-      <div>队伍组成：{record.team.join(" + ")}</div>
+      <div>
+        队伍组成：
+        {record.team
+          .map((memberData) => memberData.name + memberData.skillStr)
+          .join(" + ")}
+      </div>
+      <div>
+        模组选择：
+        {record.team
+          .map((memberData) => {
+            // console.log(memberData);
+            // console.log(memberData.uniequipId);
+            return (
+              memberData.uniequipId &&
+              gameData?.uniequipDict?.[memberData.uniequipId]?.uniEquipName
+            );
+          })
+          .filter((i) => i)
+          .join(" + ")}
+      </div>
       <div>关卡类型：{StageTypes.find((t) => t.key === record.type)?.text}</div>
       <div>关卡难度：{record.level}</div>
       <div>备注信息：{record.note}</div>
+      <div>提交者：{record.submitter}</div>
       <div>
         提交日期：{new Date(record.date_created).toLocaleString("zh-CN")}
       </div>

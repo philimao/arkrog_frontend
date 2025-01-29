@@ -1,4 +1,5 @@
 import {
+  Divider,
   Navbar,
   NavbarBrand,
   NavbarContent,
@@ -87,6 +88,7 @@ export default function TopNavbar() {
               <SelectItem key={opt}>{opt}</SelectItem>
             ))}
           </Select>
+          <Divider orientation="vertical" />
           <Input
             className="rounded-none"
             classNames={{

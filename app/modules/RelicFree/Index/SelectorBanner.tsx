@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import type { TopicData, Topics } from "~/types/gameData";
-import type { Dispatch } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 const StyledBannerContainer = styled.div`
   margin-bottom: 2rem;
@@ -25,7 +25,7 @@ const StyledDecorationText = styled.div`
   font-family: "Novecento", sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
-  border-bottom: ${(props) => props.theme.akBlue} 0.5rem solid;
+  border-bottom: var(--ak-blue) 0.5rem solid;
   transform: translateY(-0.3rem);
 `;
 
@@ -74,7 +74,7 @@ export default function SelectorBanner({
 }: {
   topics: Topics;
   currentTopic: TopicData;
-  setCurrentTopic: Dispatch<any>;
+  setCurrentTopic: Dispatch<SetStateAction<TopicData>>;
 }) {
   return (
     <StyledBannerContainer>

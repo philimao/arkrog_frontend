@@ -58,7 +58,9 @@ export const useUserInfoStore = create<UserInfoStore>((set) => ({
     }
   },
   updateUserInfo: (info: UserInfo) => {
-    set({ userInfo: info });
+    set((state) => ({
+      userInfo: { ...state.userInfo, ...info },
+    }));
   },
   fetchUserInfo: async () => {
     const info: UserInfo | undefined = await _get("/user/id");

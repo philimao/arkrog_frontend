@@ -1,9 +1,12 @@
 import type { CharBasicData } from "~/types/gameData";
+import type { BasicObject } from "~/types/core";
 
 export interface RecordType {
   _id: string;
   url: string;
   raider: string;
+  raiderImage: string;
+  raiderLink: string;
   type: string;
   team: TeamMemberData[];
   note: string;
@@ -11,6 +14,7 @@ export interface RecordType {
   submitter: string;
   date_created: number;
   date_modified?: number;
+  date_published: number;
 }
 
 export interface TeamMemberData {

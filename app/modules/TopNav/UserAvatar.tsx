@@ -76,7 +76,7 @@ export default function UserAvatar() {
 
   function onAction(key: Key) {
     if (key === "home") {
-      navigate("/home");
+      navigate("/home/message");
     } else if (key === "logout") {
       logout().then(() => navigate("/"));
     }
@@ -85,13 +85,24 @@ export default function UserAvatar() {
   return (
     <Dropdown className="w-20">
       <DropdownTrigger>
-        <Avatar
-          isBordered
-          radius="lg"
-          showFallback
-          name={userInfo?.username}
-          role="button"
-        />
+        {userInfo?.face ? (
+          <img
+            src={userInfo.face}
+            alt="face"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            className="w-10 h-10"
+            style={{ borderRadius: "50%" }}
+          />
+        ) : (
+          <Avatar
+            isBordered
+            radius="lg"
+            showFallback
+            name={userInfo?.username}
+            role="button"
+          />
+        )}
       </DropdownTrigger>
       <DropdownMenu
         aria-label="Dropdown menu with description"

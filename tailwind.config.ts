@@ -2,15 +2,15 @@ import type { Config } from "tailwindcss";
 import { heroui } from "@heroui/react";
 
 const colorExt = {
-  "ak-blue": "#18D1FF",
-  "ak-deep-blue": "#0691CD",
-  "light-mid-gray": "#9A9A9A",
-  "light-gray": "#D9D9D9",
-  "mid-gray": "#444444",
-  "dark-gray": "#242424",
-  "black-gray": "#181818",
-  "ak-purple": "#D533EB",
-  "ak-red": "#EB3333",
+  "ak-blue": "var(--ak-blue)",
+  "ak-deep-blue": "var(--ak-deep-blue)",
+  "light-mid-gray": "var(--light-mid-gray)",
+  "light-gray": "var(--light-gray)",
+  "mid-gray": "var(--mid-gray)",
+  "dark-gray": "var(--dark-gray)",
+  "black-gray": "var(--black-gray)",
+  "ak-purple": "var(--ak-purple)",
+  "ak-red": "var(--ak-red)",
 };
 
 export default {

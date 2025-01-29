@@ -1,6 +1,7 @@
 import React, {
   type Dispatch,
   type FormEvent,
+  type SetStateAction,
   useCallback,
   useEffect,
   useMemo,
@@ -31,6 +32,7 @@ import { toast } from "react-toastify";
 import { StageLevels, StageTypes } from "~/types/constant";
 import type { CharsBasic, GameData } from "~/types/gameData";
 import { Radio, RadioGroup } from "@heroui/radio";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 
 const MyInput = (props: InputProps) => (
   <Input radius="none" labelPlacement="outside" {...props}></Input>
@@ -62,9 +64,10 @@ export default function SubmitForm({
   gameData,
 }: {
   stageId: string;
-  setRecords: Dispatch<any>;
+  setRecords: Dispatch<SetStateAction<RecordType[]>>;
   gameData: GameData;
 }) {
+  const { userInfo } = useUserInfoStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [team, setTeam] = useState("维什戴尔3+逻各斯3");
   const [memberDataArray, setMemberDataArray] = useState<TeamMemberData[]>([]);
@@ -194,6 +197,7 @@ export default function SubmitForm({
     }
   }
 
+  if (!userInfo?.level || userInfo?.level < 3) return null;
   return (
     <>
       <MyButton onPress={onOpen}>提交记录</MyButton>
@@ -276,11 +280,13 @@ export default function SubmitForm({
               <MySelect
                 name="type"
                 label="作战类型"
-                defaultSelectedKeys={[StageTypes[0].key]}
+                defaultSelectedKeys={[Object.values(StageTypes)[0]]}
                 required
               >
-                {StageTypes.map((type) => (
-                  <SelectItem key={type.key}>{type.text}</SelectItem>
+                {Object.keys(StageTypes).map((typeKey) => (
+                  <SelectItem key={typeKey}>
+                    {StageTypes[typeKey] + "作战"}
+                  </SelectItem>
                 ))}
               </MySelect>
               <MySelect

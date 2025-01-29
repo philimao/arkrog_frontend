@@ -4,11 +4,19 @@ import type {
   StageData,
   TopicData,
 } from "~/types/gameData";
-import React, { type Dispatch, useMemo } from "react";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { styled } from "styled-components";
 import { Skeleton } from "@heroui/react";
 import { useNavigate } from "react-router";
 import SubmitForm from "~/modules/RecordForm/SubmitForm";
+import type { RecordType } from "~/types/recordType";
 
 // @ts-ignore
 const StyledDescriptionBlock = styled.div.attrs((props) => ({
@@ -16,7 +24,7 @@ const StyledDescriptionBlock = styled.div.attrs((props) => ({
   "data-type": props.type,
 }))`
   padding: 1.5rem;
-  background: ${(props) => props.theme.blackGray};
+  background: var(--black-gray);
   white-space: pre-wrap;
   position: relative;
   &::after {
@@ -31,7 +39,7 @@ const StyledDescriptionBlock = styled.div.attrs((props) => ({
     font-size: 0.8rem;
     background: ${(props) =>
       // @ts-ignore
-      props.type === "紧急" ? props.theme.akRed : props.theme.akPurple};
+      props.type === "紧急" ? "var(--ak-red)" : "var(--ak-purple)"};
   }
 `;
 
@@ -48,7 +56,7 @@ const StyledBackButton = styled.button`
   right: 0;
   top: 2rem;
   padding: 0.5rem 2rem;
-  background: ${(props) => props.theme.blackGray};
+  background: var(--black-gray);
 `;
 
 export default function StageDetail({
@@ -60,8 +68,19 @@ export default function StageDetail({
   topicData: TopicData;
   stageData: StageData;
   gameData: GameData;
-  setRecords: Dispatch<any>;
+  setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
+  const mapRef = useRef<HTMLImageElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      mapRef.current.onload = () => {
+        setMapLoaded(true);
+      };
+    }
+  }, [mapRef]);
+
   const breadcrumb = useMemo(() => {
     // const [ro, type] = stageData.id.split("_");
     // console.log(topicData);
@@ -104,15 +123,22 @@ export default function StageDetail({
       </div>
       <div className="grid gap-4 grid-cols-2 mb-8">
         <div>
-          <span className="text-lg  font-bold mb-2">地图</span>
-          <Skeleton>
-            <div className="bg-mid-gray h-[15rem]">这里是一张地图</div>
+          <span className="text-lg font-bold mb-2">地图</span>
+          <Skeleton className="w-full aspect-video" isLoaded={mapLoaded}>
+            <img
+              ref={mapRef}
+              className="w-full"
+              src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
+              alt="map"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
           </Skeleton>
         </div>
         <div>
           <span className="text-lg font-bold mb-2">敌方情报</span>
-          <Skeleton>
-            <div className="bg-mid-gray h-[15rem]">还没做好</div>
+          <Skeleton className="w-full" style={{ aspectRatio: "16/9" }}>
+            <div className="bg-mid-gray" />
           </Skeleton>
         </div>
       </div>

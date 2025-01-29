@@ -1,6 +1,6 @@
 import { Tooltip } from "@heroui/react";
 import { Link, useNavigate } from "react-router";
-import React, { type Dispatch } from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import { styled } from "styled-components";
 import type { StageData, StageOfRogue } from "~/types/gameData";
 
@@ -29,10 +29,10 @@ const StyledCardTitleText = styled.div<{ type: string }>`
   user-select: none;
   color: ${(props) =>
     props.type === "normal"
-      ? props.theme.akBlue
+      ? "var(--ak-blue)"
       : props.type === "elite"
-        ? props.theme.akRed
-        : props.theme.akPurple};
+        ? "var(--ak-red)"
+        : "var(--ak-purple)"};
 `;
 const StyledCardTitleNum = styled.div`
   font-size: 2rem;
@@ -71,7 +71,7 @@ export default function SelectorDetail({
   stageOfRogue,
 }: {
   zoneFilterId: string;
-  setZoneFilterId: Dispatch<any>;
+  setZoneFilterId: Dispatch<SetStateAction<string>>;
   stageOfRogue: StageOfRogue;
 }) {
   // console.log(stageOfRogue);

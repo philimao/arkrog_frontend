@@ -17,19 +17,18 @@ import { _post } from "~/utils/tools";
 
 export default function ReportModal({ id }: { id: string }) {
   const { activeRecord } = useRecordStore();
-  const { gameData } = useGameDataStore();
+  const { stages } = useGameDataStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [stageName, setStageName] = useState("");
   const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
-    if (!activeRecord || !gameData) return;
+    if (!activeRecord || !stages) return;
     // ro4_b_4
     const topicId = "rogue_" + activeRecord.stageId.split("_")[0].slice(-1);
-    const stageName =
-      gameData.stages[topicId as RogueKey]?.[activeRecord.stageId]?.name;
+    const stageName = stages[topicId as RogueKey]?.[activeRecord.stageId]?.name;
     if (stageName) setStageName(stageName);
-  }, [activeRecord, gameData]);
+  }, [activeRecord, stages]);
 
   async function handleSubmit() {
     if (!feedback) {

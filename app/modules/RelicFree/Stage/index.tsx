@@ -17,11 +17,11 @@ import RecordDisplay from "~/modules/RecordDisplay";
 
 export default function StagePage() {
   const { stageId } = useParams();
-  const { gameData } = useGameDataStore();
+  const { stages, topics } = useGameDataStore();
   const stageDataMounted = useRef(false);
   // 关卡信息
   const stageData: StageData | null = useMemo(() => {
-    if (!gameData) return null;
+    if (!stages) return null;
     if (!stageId) {
       stageDataMounted.current = true;
       return null;
@@ -32,21 +32,19 @@ export default function StagePage() {
       stageDataMounted.current = true;
       return null;
     }
-    const { stages } = gameData;
     const rogueKey: RogueKey = ("rogue_" + ro.slice(-1)) as RogueKey;
     const stageOfRogue: StageOfRogue = stages[rogueKey];
     const _stageData: StageData = stageOfRogue[stageId];
     stageDataMounted.current = true;
     if (_stageData) return _stageData;
     else return null;
-  }, [gameData, stageId]);
+  }, [stages, stageId]);
   const topicData: TopicData | null = useMemo(() => {
-    if (!stageData) return null;
+    if (!stageData || !topics) return null;
     const [ro] = stageData.id.split("_");
     const rogueKey: RogueKey = ("rogue_" + ro.slice(-1)) as RogueKey;
-    const { topics } = gameData as GameData;
     return topics[rogueKey];
-  }, [gameData, stageData]);
+  }, [topics, stageData]);
 
   const [records, setRecords] = useState<RecordType[]>([]);
   const [recordsLoaded, setRecordsLoaded] = useState(false);
@@ -71,7 +69,6 @@ export default function StagePage() {
     <div>
       <StageDetail
         topicData={topicData as TopicData}
-        gameData={gameData as GameData}
         stageData={stageData}
         setRecords={setRecords}
       />

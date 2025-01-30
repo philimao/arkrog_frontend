@@ -50,7 +50,7 @@ export default function CharAvatar({
   isBust: boolean;
   className?: string;
 }) {
-  const { gameData } = useGameDataStore();
+  const { uniequipDict } = useGameDataStore();
   const bgSrc = `/images/card/noinfo${isBust ? "-bust" : ""}.png`;
   const bustSrc = memberData
     ? `${import.meta.env.VITE_API_BASE_URL}/images/bust/${memberData?.charId.split("_").slice(-1)[0]}_e1.png`
@@ -60,8 +60,8 @@ export default function CharAvatar({
     : "#";
   const uniequipName =
     memberData &&
-    gameData?.uniequipDict &&
-    gameData.uniequipDict[memberData?.uniequipId || ""]?.typeIcon.toUpperCase();
+    uniequipDict &&
+    uniequipDict[memberData?.uniequipId || ""]?.typeIcon.toUpperCase();
   const uniequipSrc = uniequipName
     ? `${import.meta.env.VITE_API_BASE_URL}/images/uniequip/${uniequipName}_color.png`
     : "/images/card/no-uniequip.png";

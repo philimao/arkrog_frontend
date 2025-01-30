@@ -1,9 +1,4 @@
-import type {
-  GameData,
-  RogueKey,
-  StageData,
-  TopicData,
-} from "~/types/gameData";
+import type { RogueKey, StageData, TopicData } from "~/types/gameData";
 import React, {
   type Dispatch,
   type SetStateAction,
@@ -17,6 +12,7 @@ import { Skeleton } from "@heroui/react";
 import { useNavigate } from "react-router";
 import SubmitForm from "~/modules/RecordForm/SubmitForm";
 import type { RecordType } from "~/types/recordType";
+import { useGameDataStore } from "~/stores/gameDataStore";
 
 // @ts-ignore
 const StyledDescriptionBlock = styled.div.attrs((props) => ({
@@ -62,14 +58,13 @@ const StyledBackButton = styled.button`
 export default function StageDetail({
   topicData,
   stageData,
-  gameData,
   setRecords,
 }: {
   topicData: TopicData;
   stageData: StageData;
-  gameData: GameData;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
+  const { stages } = useGameDataStore();
   const mapRef = useRef<HTMLImageElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -88,12 +83,12 @@ export default function StageDetail({
   }, [topicData]);
 
   const eliteStageData: StageData | null = useMemo(() => {
-    if (!stageData.id.match(/ro\d_n/)) return null;
+    if (!stages || !stageData.id.match(/ro\d_n/)) return null;
     const eliteId = stageData.id.replace("n", "e");
     const [ro] = stageData.id.split("_");
     const rogueKey: RogueKey = ("rogue_" + ro.slice(-1)) as RogueKey;
-    return gameData.stages[rogueKey][eliteId];
-  }, [gameData, stageData]);
+    return stages[rogueKey][eliteId];
+  }, [stages, stageData]);
 
   const navigate = useNavigate();
 
@@ -107,11 +102,7 @@ export default function StageDetail({
       <h1 className="font-bold mb-2 flex items-end">
         <span className="text-[2.5rem] leading-10 me-2">{stageData.name}</span>
         <span className="text-2xl">{stageData.code}</span>
-        <SubmitForm
-          stageId={stageData.id}
-          setRecords={setRecords}
-          gameData={gameData}
-        />
+        <SubmitForm stageId={stageData.id} setRecords={setRecords} />
       </h1>
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
       <div className="grid gap-4 grid-cols-2 mb-8">

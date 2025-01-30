@@ -118,7 +118,7 @@ export default function RecordCard({
 }) {
   const { userInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
-  const { gameData } = useGameDataStore();
+  const { stages } = useGameDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
 
   async function handleDeleteRecord() {
@@ -134,10 +134,10 @@ export default function RecordCard({
   }
 
   useEffect(() => {
-    if (isStagePage || !gameData || !record) return;
+    if (isStagePage || !stages || !record) return;
     // ro4_b_4
     const topicId = "rogue_" + record.stageId.split("_")[0].slice(-1);
-    const stageData = gameData.stages[topicId as RogueKey]?.[record.stageId];
+    const stageData = stages[topicId as RogueKey]?.[record.stageId];
     if (stageData) setStageData(stageData);
   }, [isStagePage]);
 

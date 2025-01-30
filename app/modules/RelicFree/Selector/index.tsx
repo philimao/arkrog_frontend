@@ -1,30 +1,26 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState } from "react";
 import {
-  type GameData,
   type RogueKey,
   type StageOfRogue,
   type Stages,
   type TopicData,
   type Topics,
-  type Zones,
 } from "~/types/gameData";
 import Loading from "~/components/Loading";
 import SelectorBanner from "~/modules/RelicFree/Selector/SelectorBanner";
 import SelectorDetail from "~/modules/RelicFree/Selector/SelectorDetail";
 
 export default function StageSelectorWrapper() {
-  const { gameData } = useGameDataStore();
-  if (!gameData) {
+  const { topics, stages } = useGameDataStore();
+  if (!topics || !stages) {
     return <Loading />;
   } else {
-    return <StageSelector gameData={gameData} />;
+    return <StageSelector topics={topics} stages={stages} />;
   }
 }
 
-function StageSelector({ gameData }: { gameData: GameData }) {
-  const { topics, stages }: { topics: Topics; zones: Zones; stages: Stages } =
-    gameData;
+function StageSelector({ topics, stages }: { topics: Topics; stages: Stages }) {
   const [currentTopic, setCurrentTopic] = useState<TopicData>(
     Object.values(topics).slice(-1)[0],
   );

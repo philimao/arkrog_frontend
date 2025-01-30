@@ -30,9 +30,9 @@ import { _post, findDuplicates } from "~/utils/tools";
 import type { RecordType, TeamMemberData } from "~/types/recordType";
 import { toast } from "react-toastify";
 import { StageLevels, StageTypes } from "~/types/constant";
-import type { CharsBasic, GameData } from "~/types/gameData";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import { useGameDataStore } from "~/stores/gameDataStore";
 
 const MyInput = (props: InputProps) => (
   <Input radius="none" labelPlacement="outside" {...props}></Input>
@@ -61,12 +61,11 @@ const MyButton = (props: ButtonProps) => (
 export default function SubmitForm({
   stageId,
   setRecords,
-  gameData,
 }: {
   stageId: string;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
-  gameData: GameData;
 }) {
+  const { character_basic } = useGameDataStore();
   const { userInfo } = useUserInfoStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [team, setTeam] = useState("维什戴尔3+逻各斯3");
@@ -77,9 +76,10 @@ export default function SubmitForm({
   const teamRe = /[+、]/;
 
   useEffect(() => {
+    if (!character_basic) return;
     const charStrArray = team.split(/[+、]/);
     const memberDataArray = charStrArray.map((charStr) =>
-      _charStrToData(charStr, gameData.character_basic as CharsBasic),
+      _charStrToData(charStr, character_basic),
     );
     setMemberDataArray((prev) => {
       memberDataArray.map((memberData) => {
@@ -98,7 +98,7 @@ export default function SubmitForm({
       });
       return memberDataArray;
     });
-  }, [team, gameData]);
+  }, [team, character_basic]);
 
   const uniequipOptions = useMemo(
     () =>

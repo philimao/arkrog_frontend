@@ -14,6 +14,7 @@ export type RogueKey =
 export interface GameData {
   topics: Topics;
   stages: Stages;
+  enemies: Enemies;
   zones: Zones;
   traps: BasicObject;
   relics: BasicObject;
@@ -148,6 +149,6 @@ export interface EnemyData {
   skills?: string[];
 }
 
-export interface EnemyOfStage {
+export interface Enemies {
   [key: string]: EnemyData[];
 }

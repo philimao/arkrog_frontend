@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import { styled } from "styled-components";
-import { Skeleton } from "@heroui/react";
 import { useNavigate } from "react-router";
 import SubmitForm from "~/modules/RecordForm/SubmitForm";
 import type { RecordType } from "~/types/recordType";
@@ -64,9 +63,11 @@ export default function StageDetail({
   stageData: StageData;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { stages } = useGameDataStore();
+  const { stages, enemies } = useGameDataStore();
   const mapRef = useRef<HTMLImageElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  const enemyOfStage = enemies?.[stageData.id] || [];
 
   useEffect(() => {
     if (mapRef.current) {
@@ -115,22 +116,43 @@ export default function StageDetail({
       <div className="grid gap-4 grid-cols-2 mb-8">
         <div>
           <span className="text-lg font-bold mb-2">地图</span>
-          <Skeleton className="w-full aspect-video" isLoaded={mapLoaded}>
-            <img
-              ref={mapRef}
-              className="w-full"
-              src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
-              alt="map"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-            />
-          </Skeleton>
+          <img
+            ref={mapRef}
+            className="w-full"
+            src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
+            alt="map"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+          />
         </div>
-        <div>
+        <div className="">
           <span className="text-lg font-bold mb-2">敌方情报</span>
-          <Skeleton className="w-full" style={{ aspectRatio: "16/9" }}>
-            <div className="bg-mid-gray" />
-          </Skeleton>
+          <div className="w-full aspect-video bg-mid-gray p-2">
+            <div className="h-full pt-4 overflow-scroll flex flex-wrap justify-evenly gap-4">
+              {[...enemyOfStage, ...Array(5).fill(0)].map((enemyData) => {
+                return (
+                  <div className="w-1/6" key={enemyData.name}>
+                    {enemyData ? (
+                      <>
+                        <img
+                          className="w-full"
+                          src={
+                            enemyData.profile
+                              .replace("thumb/", "")
+                              .split("/50px")[0]
+                          }
+                          alt="profile"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                        />
+                        <div className="text-center">{enemyData.name}</div>
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -31,7 +31,6 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>(
           _get<Partial<GameData>>("/gamedata/bundle"),
           _get<Partial<GameData>>("/gamedata/character-basic"),
         ]);
-        console.log(dataArray);
         if (dataArray.every((i) => i)) {
           dataArray.forEach((data) => {
             set((state) => ({

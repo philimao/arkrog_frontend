@@ -49,6 +49,9 @@ export default {
           "2xl": "6rem",
         },
       },
+      aspectRatio: {
+        banner: "96/35",
+      },
     },
   },
   darkMode: "class",

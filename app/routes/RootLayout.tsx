@@ -10,6 +10,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 import GlobalModals from "~/routes/GlobalModals";
+import { useAppDataStore } from "~/stores/appDataStore";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -28,9 +29,10 @@ export default function RootLayout() {
   const [currentTheme, setCurrentTheme] = useState("dark");
   const { fetchGameData, fetchGameDataExt } = useGameDataStore();
   const { fetchUserInfo } = useUserInfoStore();
+  const { fetchAppData } = useAppDataStore();
 
   useEffect(() => {
-    Promise.all([fetchUserInfo(), fetchGameData()]);
+    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData()]);
   }, []);
 
   return (

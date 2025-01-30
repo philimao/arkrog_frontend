@@ -5,7 +5,7 @@ import {
   Textarea,
   useDisclosure,
 } from "@heroui/react";
-import React, { act, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModalTemplate from "~/components/Modal";
 import { useRecordStore } from "~/stores/recordStore";
 import { useGameDataStore } from "~/stores/gameDataStore";
@@ -38,13 +38,20 @@ export default function ReportModal({ id }: { id: string }) {
     if (!activeRecord) {
       return toast.warning("未正确加载卡片信息");
     }
-    console.log(activeRecord);
-    console.log(feedback);
+    // console.log({
+    //   recordId: activeRecord?._id,
+    //   message: feedback,
+    // });
     try {
       await _post("/user/feedback", {
         stageId: activeRecord?.stageId,
-        feedback,
+        message: feedback,
       });
+      setFeedback("");
+      toast.warning(
+        "我们已收到您的反馈，将会尽快进行处理。反馈回执请在个人中心中查看",
+      );
+      onClose();
     } catch (err) {
       toast.warning((err as Error).message);
     }

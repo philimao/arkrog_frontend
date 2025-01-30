@@ -2,8 +2,12 @@ import { StageTypes } from "~/types/constant";
 import type { RecordType } from "~/types/recordType";
 import { Divider } from "@heroui/react";
 import { _post } from "~/utils/tools";
-import type { Dispatch, SetStateAction } from "react";
-import { useGameDataStore } from "~/stores/gameDataStore";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { styled } from "styled-components";
 import RecordTypeLabel from "~/components/RecordCard/RecordTypeLabel";
 import CharAvatar from "~/components/RecordCard/CharAvatar";
@@ -11,6 +15,8 @@ import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useRecordStore } from "~/stores/recordStore";
 import { openModal } from "~/utils/dom";
+import type { RogueKey, StageData } from "~/types/gameData";
+import { useGameDataStore } from "~/stores/gameDataStore";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -50,8 +56,8 @@ const StyledDotLayer = styled(StyledBasic)`
   background-repeat: repeat-x;
 `;
 
-const StyledChar = styled(StyledBasic)`
-  background-image: url("/images/char/wsde-1.png");
+const StyledChar = styled(StyledBasic)<{ url: string }>`
+  background-image: url(${(props) => props.url});
   background-size: auto 300%;
   background-position: 100% 80%;
 `;
@@ -110,9 +116,10 @@ export default function RecordCard({
   record?: RecordType;
   setRecords?: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { gameData } = useGameDataStore();
   const { userInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
+  const { gameData } = useGameDataStore();
+  const [stageData, setStageData] = useState<StageData | undefined>();
 
   async function handleDeleteRecord() {
     if (!record) return;
@@ -126,6 +133,14 @@ export default function RecordCard({
     });
   }
 
+  useEffect(() => {
+    if (isStagePage || !gameData || !record) return;
+    // ro4_b_4
+    const topicId = "rogue_" + record.stageId.split("_")[0].slice(-1);
+    const stageData = gameData.stages[topicId as RogueKey]?.[record.stageId];
+    if (stageData) setStageData(stageData);
+  }, [isStagePage]);
+
   if (!record) {
     return (
       <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-mid-gray"></div>
@@ -133,7 +148,15 @@ export default function RecordCard({
   }
   return (
     <div className="mb-4">
-      {!isStagePage && record.type !== "normal" && (
+      {stageData && (
+        <div className="mb-2 flex">
+          <div className="bg-black-gray px-4 text-lg font-bold">
+            <span>{`${record.team.length}人-${StageTypes[record.type]}-`}</span>
+            <span className="text-ak-blue">{stageData.name}</span>
+          </div>
+        </div>
+      )}
+      {isStagePage && record.type !== "normal" && (
         <div>
           <span>{StageTypes[record.type]}</span>
           <span
@@ -150,7 +173,9 @@ export default function RecordCard({
         <StyledDotLayer />
         <StyledLeftTopDecoration />
         <StyledLogo />
-        <StyledChar />
+        <StyledChar
+          url={`${import.meta.env.VITE_API_BASE_URL}/images/char/wsde-1.png`}
+        />
         <StyledCornerMark>
           <span>{record.level.replace("N", "")}</span>
         </StyledCornerMark>
@@ -162,28 +187,32 @@ export default function RecordCard({
             <RecordTypeLabel type={record.type} />
           </div>
           <Divider className="mb-4 bg-white w-1/3" style={{ height: "1px" }} />
-          <a
-            href={record.raiderLink}
-            className="mb-2 flex"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src={record.raiderImage}
-              alt="raiderImage"
-              className="w-10 h-10 rounded me-2"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-            />
-            <div className="flex flex-wrap content-center">
-              <div>
-                <div>{record.raider}</div>
-                <div className="text-ak-blue">
-                  {new Date(record.date_published).toLocaleDateString("zh-CN")}
+          <div className="flex">
+            <a
+              href={record.raiderLink}
+              className="mb-2 flex"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={record.raiderImage}
+                alt="raiderImage"
+                className="w-10 h-10 rounded me-2"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
+              <div className="flex flex-wrap content-center">
+                <div>
+                  <div>{record.raider}</div>
+                  <div className="text-ak-blue">
+                    {new Date(record.date_published).toLocaleDateString(
+                      "zh-CN",
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
+            </a>
+          </div>
           <div className="font-light">{record.note}</div>
         </StyledLeftInfo>
         <StyledRightTeam>
@@ -193,6 +222,7 @@ export default function RecordCard({
               .map((_, i) => {
                 return (
                   <CharAvatar
+                    key={i}
                     memberData={record.team[bustOrderMapping(i)]}
                     className="w-[14.2%] p-1"
                     isBust={false}
@@ -220,7 +250,6 @@ export default function RecordCard({
                   if (!userInfo?.level) {
                     return openModal("login");
                   }
-                  console.log("ere");
                   setActiveRecord(record);
                   openModal("report-modal");
                 }}

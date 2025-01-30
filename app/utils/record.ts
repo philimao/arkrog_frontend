@@ -115,15 +115,14 @@ function charStrToData(
     name = "",
     skillStr = "",
     skillId = "",
-    charNameStr = charStr.trim(),
-    charData;
+    charNameStr = charStr.trim();
   const skillStrMatch = charNameStr.match(/(?<!-)\d$/);
   if (skillStrMatch) {
     // 不是小车
     skillStr = skillStrMatch[0];
     charNameStr = charNameStr.slice(0, charNameStr.length - 1);
   }
-  charData = Object.values(character_basic).find(
+  const charData = Object.values(character_basic).find(
     (charData: CharBasicData) =>
       charData.name.toUpperCase() === charNameStr.toUpperCase(),
   );

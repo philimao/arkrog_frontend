@@ -98,7 +98,7 @@ export default function SelectorBanner({
         </StyledTopicNavInner>
       </StyledTopicNavContainer>
       <img
-        src={`/images/topic_banner/${currentTopic.id}.png`}
+        src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.png`}
         alt="topic_banner"
         className="w-full h-auto z-0"
       />

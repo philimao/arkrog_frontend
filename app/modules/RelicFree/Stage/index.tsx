@@ -76,7 +76,11 @@ export default function StagePage() {
         setRecords={setRecords}
       />
       <div className="font-bold text-lg">记录收录</div>
-      <RecordDisplay records={records} setRecords={setRecords} />
+      <RecordDisplay
+        records={records}
+        setRecords={setRecords}
+        isStagePage={true}
+      />
     </div>
   );
 }

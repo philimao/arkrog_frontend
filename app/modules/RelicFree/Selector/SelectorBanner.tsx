@@ -97,11 +97,13 @@ export default function SelectorBanner({
           </StyledTopicNav>
         </StyledTopicNavInner>
       </StyledTopicNavContainer>
-      <img
-        src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.png`}
-        alt="topic_banner"
-        className="w-full h-auto z-0"
-      />
+      <div className="w-full bg-dark-gray" style={{ aspectRatio: 729 / 155 }}>
+        <img
+          src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.png`}
+          alt="topic_banner"
+          className="w-full h-auto z-0"
+        />
+      </div>
       <StyledBannerForeground>
         <LeftMask />
         <div className="font-bold text-[3.5rem]">{currentTopic.name}</div>

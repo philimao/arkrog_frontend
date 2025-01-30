@@ -157,15 +157,18 @@ export default function RecordCard({
         </div>
       )}
       {isStagePage && record.type !== "normal" && (
-        <div>
-          <span>{StageTypes[record.type]}</span>
-          <span
-            className={
-              record.type === "challenge" ? "text-ak-red" : "text-ak-purple"
-            }
-          >
-            {record.team.length}
-          </span>
+        <div className="my-3 font-bold">
+          <div className="bg-dark-gray inline-block px-4 pe-12 relative">
+            <span className="text-lg me-4">{StageTypes[record.type]}</span>
+            <span
+              className={
+                "text-[2.5rem] absolute left-16 top-1/2 -translate-y-1/2 " +
+                (record.type === "challenge" ? "text-ak-red" : "text-ak-purple")
+              }
+            >
+              {record.team.length}
+            </span>
+          </div>
         </div>
       )}
       <StyledCardContainer>

@@ -1,8 +1,8 @@
 import React from "react";
-import MyToolbox from "~/modules/Index/Toolbox/MyToolbox";
-import IndexRelicFree from "~/modules/Index/IndexRelicFree/IndexRelicFree";
-import Banner from "~/modules/Index/Banner/Banner";
-import IndexBlog from "~/modules/Index/IndexBlog/IndexBlog";
+import MyToolbox from "~/modules/IndexPage/Toolbox/MyToolbox";
+import IndexRelicFree from "~/modules/IndexPage/IndexRelicFree";
+import Banner from "~/modules/IndexPage/Banner";
+import IndexBlog from "~/modules/IndexPage/IndexBlog";
 
 export default function IndexLayout() {
   return (

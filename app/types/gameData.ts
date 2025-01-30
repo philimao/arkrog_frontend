@@ -127,3 +127,27 @@ export interface CharBasicData {
   skills: SkillsBasic;
   uniequip: UniequipsBasic;
 }
+
+// 敌人
+export interface EnemyData {
+  profile: string;
+  name: string;
+  num: number;
+  status: string;
+  level: number;
+  hp: number;
+  atk: number;
+  def: number;
+  adf: number;
+  int: number;
+  wt: number;
+  mov: number;
+  rng: number;
+  hpr: number;
+  talent?: string;
+  skills?: string[];
+}
+
+export interface EnemyOfStage {
+  [key: string]: EnemyData[];
+}

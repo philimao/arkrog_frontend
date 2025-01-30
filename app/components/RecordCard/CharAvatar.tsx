@@ -55,9 +55,9 @@ export default function CharAvatar({
   const bustSrc = memberData
     ? `${import.meta.env.VITE_API_BASE_URL}/images/bust/${memberData?.charId.split("_").slice(-1)[0]}_e1.png`
     : "#";
-  const skillSrc = memberData
+  const skillSrc = memberData?.skillId
     ? `${import.meta.env.VITE_API_BASE_URL}/images/skill/skill_icon_${memberData?.skillId}.png`
-    : "#";
+    : "/images/card/no-uniequip.png";
   const uniequipName =
     memberData &&
     uniequipDict &&

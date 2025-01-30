@@ -129,10 +129,12 @@ function charStrToData(
   if (charData) {
     name = charData.name;
     charId = charData.charId;
-    skillId =
-      Object.values(charData.skills).find(
-        (skill) => skillStr === skill.skillOrder.toString(),
-      )?.skillId || "error";
+    if (Object.values(charData.skills).length > 0) {
+      skillId =
+        Object.values(charData.skills).find(
+          (skill) => skillStr === skill.skillOrder.toString(),
+        )?.skillId || "error";
+    }
   }
   return { charId, name, skillId, skillStr, charData };
 }

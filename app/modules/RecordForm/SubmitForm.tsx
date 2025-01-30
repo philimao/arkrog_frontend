@@ -280,7 +280,7 @@ export default function SubmitForm({
               <MySelect
                 name="type"
                 label="作战类型"
-                defaultSelectedKeys={[Object.values(StageTypes)[0]]}
+                defaultSelectedKeys={[Object.keys(StageTypes)[0]]}
                 required
               >
                 {Object.keys(StageTypes).map((typeKey) => (

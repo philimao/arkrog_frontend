@@ -9,6 +9,8 @@ import RecordTypeLabel from "~/components/RecordCard/RecordTypeLabel";
 import CharAvatar from "~/components/RecordCard/CharAvatar";
 import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import { useRecordStore } from "~/stores/recordStore";
+import { openModal } from "~/utils/dom";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -110,6 +112,7 @@ export default function RecordCard({
 }) {
   const { gameData } = useGameDataStore();
   const { userInfo } = useUserInfoStore();
+  const { setActiveRecord } = useRecordStore();
 
   async function handleDeleteRecord() {
     if (!record) return;
@@ -203,13 +206,26 @@ export default function RecordCard({
                 name="star"
                 className="hover:text-yellow-300"
                 role="button"
+                onClick={() => {
+                  if (!userInfo?.level) {
+                    return openModal("login");
+                  }
+                }}
               />
               <SVGIcon
                 name="report"
                 className="hover:text-yellow-300"
                 role="button"
+                onClick={() => {
+                  if (!userInfo?.level) {
+                    return openModal("login");
+                  }
+                  console.log("ere");
+                  setActiveRecord(record);
+                  openModal("report-modal");
+                }}
               />
-              {userInfo && (
+              {userInfo?.level !== undefined && userInfo?.level > 2 && (
                 <SVGIcon
                   name="delete"
                   className="hover:text-yellow-300"

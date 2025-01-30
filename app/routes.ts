@@ -25,11 +25,11 @@ export default [
   layout("routes/RootLayout.tsx", [
     index("routes/IndexLayout.tsx"),
     route("/relic-free", "routes/RelicFreeLayout.tsx", [
-      index("modules/RelicFree/Index/StageSelector.tsx"),
-      route(":stageId", "modules/RelicFree/Stage/StagePage.tsx"),
+      index("modules/RelicFree/Selector/index.tsx"),
+      route(":stageId", "modules/RelicFree/Stage/index.tsx"),
     ]),
     route("/home", "routes/HomeLayout.tsx", [
-      // index("modules/Home/Message/Index.tsx"),
+      // index("modules/Home/Message/Selector.tsx"),
       route("message", "modules/Home/Message/index.tsx"),
       route("link-bilibili", "modules/Home/Link/index.tsx"),
       route("*", "modules/Standalone/NotFoundPage.tsx"),

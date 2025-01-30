@@ -10,8 +10,8 @@ import {
   type Zones,
 } from "~/types/gameData";
 import Loading from "~/components/Loading";
-import SelectorBanner from "~/modules/RelicFree/Index/SelectorBanner";
-import SelectorDetail from "~/modules/RelicFree/Index/SelectorDetail";
+import SelectorBanner from "~/modules/RelicFree/Selector/SelectorBanner";
+import SelectorDetail from "~/modules/RelicFree/Selector/SelectorDetail";
 
 export default function StageSelectorWrapper() {
   const { gameData } = useGameDataStore();

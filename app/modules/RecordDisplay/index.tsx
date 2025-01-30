@@ -11,7 +11,6 @@ export default function RecordDisplay({
 }) {
   return (
     <div>
-      <div className="font-bold text-lg">记录收录</div>
       {records.map((record) => (
         <RecordCard record={record} setRecords={setRecords} key={record._id} />
       ))}

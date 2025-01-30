@@ -13,7 +13,7 @@ import type {
   TopicData,
 } from "~/types/gameData";
 import StageDetail from "~/modules/RelicFree/Stage/StageDetail";
-import RecordDisplay from "~/modules/RelicFree/Stage/RecordDisplay";
+import RecordDisplay from "~/modules/RecordDisplay";
 
 export default function StagePage() {
   const { stageId } = useParams();
@@ -75,6 +75,7 @@ export default function StagePage() {
         stageData={stageData}
         setRecords={setRecords}
       />
+      <div className="font-bold text-lg">记录收录</div>
       <RecordDisplay records={records} setRecords={setRecords} />
     </div>
   );

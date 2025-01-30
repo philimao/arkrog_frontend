@@ -7,6 +7,7 @@ export interface RecordType {
   raider: string;
   raiderImage: string;
   raiderLink: string;
+  stageId: string;
   type: string;
   team: TeamMemberData[];
   note: string;

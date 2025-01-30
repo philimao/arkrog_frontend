@@ -1,6 +1,5 @@
 import {
   Button,
-  useDisclosure,
   Modal,
   ModalBody,
   ModalContent,
@@ -17,7 +16,10 @@ import { StyledModalContent } from "~/modules/TopNav/styled";
 
 interface LoginModalProps {
   id?: string;
-  [key: string]: any;
+  isLoginOpen: boolean;
+  onLoginOpen: () => void;
+  onLoginClose: () => void;
+  onRegisterOpen: () => void;
 }
 
 export default function LoginModal({
@@ -36,8 +38,9 @@ export default function LoginModal({
     const data = Object.fromEntries(
       new FormData(evt.currentTarget as HTMLFormElement),
     );
-    (await login(data.username as string, data.password as string)) &&
+    if (await login(data.username as string, data.password as string)) {
       onClose();
+    }
   }
 
   function switchToRegister() {

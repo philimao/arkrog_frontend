@@ -15,13 +15,12 @@ import { StyledModalContent } from "~/modules/TopNav/styled";
 
 interface RegisterModalProps {
   id?: string;
-  [key: string]: any;
+  isRegisterOpen: boolean;
+  onRegisterClose: () => void;
+  onLoginOpen: () => void;
 }
 
-export default function RegisterModal({
-  id = "register",
-  ...props
-}: RegisterModalProps) {
+export default function RegisterModal({ ...props }: RegisterModalProps) {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
@@ -49,8 +48,9 @@ export default function RegisterModal({
     const data = Object.fromEntries(
       new FormData(evt.currentTarget as HTMLFormElement),
     );
-    (await register(data.email as string, data.password as string)) &&
+    if (await register(data.email as string, data.password as string)) {
       onClose();
+    }
   }
 
   function switchToLogin() {

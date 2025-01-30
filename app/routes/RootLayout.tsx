@@ -9,6 +9,7 @@ import { Footer } from "~/modules/Footer/Footer";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
+import GlobalModals from "~/routes/GlobalModals";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -48,6 +49,7 @@ export default function RootLayout() {
           hideProgressBar
         />
         <SVGDefinitions />
+        <GlobalModals />
       </StyledBackground>
     </ThemeProvider>
   );

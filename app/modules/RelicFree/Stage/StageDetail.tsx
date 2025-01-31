@@ -128,7 +128,7 @@ export default function StageDetail({
         <div className="">
           <span className="text-lg font-bold mb-2">敌方情报</span>
           <div className="w-full aspect-video bg-mid-gray p-2">
-            <div className="h-full pt-4 overflow-y-scroll flex flex-wrap justify-evenly gap-4">
+            <div className="h-full pt-4 overflow-y-auto flex flex-wrap justify-evenly gap-4">
               {[...enemyOfStage, ...Array(5).fill(0)].map((enemyData, i) => {
                 return (
                   <div className="w-1/6" key={i}>

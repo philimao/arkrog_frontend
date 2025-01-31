@@ -13,4 +13,11 @@ export const SeedTypes: BasicObject = {
   other: "其他",
 };
 
+export const SeedTypeColors: BasicObject = {
+  good: "ak-red",
+  bad: "ak-purple",
+  tool: "ak-blue",
+  other: "ak-pink",
+};
+
 export const StageLevels = ["N15", "N18"];

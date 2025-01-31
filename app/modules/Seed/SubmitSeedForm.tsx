@@ -13,7 +13,13 @@ import {
   type TextAreaProps,
   useDisclosure,
 } from "@heroui/react";
-import React, { type FormEvent, useState } from "react";
+import React, {
+  type Dispatch,
+  type FormEvent,
+  type SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { openModal } from "~/utils/dom";
 import { toast } from "react-toastify";
 import { useUserInfoStore } from "~/stores/userInfoStore";
@@ -21,7 +27,9 @@ import { SeedTypes } from "~/types/constant";
 import ModalTemplate from "~/components/Modal";
 import { ModalFooter } from "@heroui/modal";
 import type { RecordType } from "~/types/recordType";
-import { _post } from "~/utils/tools";
+import { _post, mergeArray } from "~/utils/tools";
+import type { SeedType } from "~/types/seedType";
+import { URLValidation } from "~/utils/record";
 
 const MyInput = (props: InputProps) => (
   <Input radius="none" labelPlacement="outside" {...props}></Input>
@@ -53,14 +61,24 @@ const presetLabels = [
   "金酒之杯",
   "老蒲扇",
   "探灵伯爵",
+  "天灾年代",
+  "贵重商店",
+  "无相遇",
+  "少构想",
   "戈读不语",
+  "奇观年代",
+  "锁路线失与得",
+  "无藏",
 ];
 
-export default function SubmitSeedForm() {
+export default function SubmitSeedForm({
+  setReload,
+}: {
+  setReload: Dispatch<SetStateAction<boolean>>;
+}) {
   const { onOpen, onClose, isOpen } = useDisclosure();
   const { userInfo } = useUserInfoStore();
   const [label, setLabel] = useState("");
-  const [reload, setReload] = useState<boolean>(false);
 
   async function handleSubmit(evt: FormEvent<HTMLFormElement>) {
     evt.preventDefault();
@@ -69,10 +87,26 @@ export default function SubmitSeedForm() {
         Object.fromEntries(new FormData(evt.currentTarget as HTMLFormElement)),
       ),
     );
-    console.log(data);
+    for (const key in data) {
+      data[key] = data[key].trim();
+    }
+
+    // 链接验证
+    if (data.url) {
+      const validatedURL = await URLValidation(data.url as string);
+      if (validatedURL) {
+        data.url = validatedURL;
+      } else {
+        return;
+      }
+    }
+
+    data.labels = data.label.split(" ").filter((i: string) => i);
+    delete data.label;
     try {
-      await _post<RecordType[]>("/record/submit", data);
+      await _post<RecordType[]>("/seed/submit", data);
       setReload((prev) => !prev);
+      onClose();
     } catch (err) {
       toast.error((err as Error).message);
     }
@@ -127,7 +161,7 @@ export default function SubmitSeedForm() {
             <MyInput
               name="title"
               label="种子标题"
-              placeholder="一层罗德门松鼠245连打爽种"
+              placeholder="一层相遇+罗德之门，贵重商店；首发天灾年代"
               required
             />
             <MyInput
@@ -166,7 +200,8 @@ export default function SubmitSeedForm() {
             <MyTextarea
               name="note"
               label="使用方式"
-              placeholder="描述请尽量详细，例：一层刷新冰川期，走下，二层……"
+              minRows={10}
+              placeholder={`描述请尽量详细，参考格式\n使用开局：\n达成结局：\n详细操作：\n`}
               required
             />
             <MyInput

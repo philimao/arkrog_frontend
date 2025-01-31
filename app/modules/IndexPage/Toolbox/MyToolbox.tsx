@@ -3,9 +3,14 @@ import { Skeleton } from "@heroui/react";
 import { openModal } from "~/utils/dom";
 
 const tools = [
-  { name: "收录原则", to: "#", img: "", targetModal: "inclusion-principle" },
-  { name: "干员记录", to: "#", img: "" },
-  { name: "趣味百科", to: "#", img: "" },
+  {
+    name: "收录原则",
+    to: "#",
+    img: "/images/icons/收录原则.png",
+    targetModal: "inclusion-principle",
+  },
+  { name: "干员记录", to: "#", img: "/images/icons/干员记录.png" },
+  { name: "趣味百科", to: "#", img: "/images/icons/趣味百科.png" },
   {
     name: "短脖兔杯",
     to: "https://www.bilibili.com/opus/974653453867417601",
@@ -19,7 +24,7 @@ const tools = [
   {
     name: "集生百态",
     to: "https://www.bilibili.com/opus/1024075694097825808",
-    img: "",
+    img: "/images/icons/集生百态.png",
   },
 ];
 

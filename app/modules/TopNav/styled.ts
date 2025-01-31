@@ -4,6 +4,7 @@ export const StyledModalContent = styled.div`
   background: black;
   padding: 1.5rem 1rem;
   z-index: 1;
+  min-height: 15rem;
   &::before {
     position: absolute;
     content: "";

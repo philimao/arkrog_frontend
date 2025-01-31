@@ -6,7 +6,7 @@ import {
 } from "@react-router/dev/routes";
 
 export const pages = [
-  { pathname: "/", title: "集出万全", subtitle: "首页" },
+  { pathname: "/", title: "集语成舟", subtitle: "首页" },
   { pathname: "/relic-free", title: "穷集一生", subtitle: "无藏收录" },
   { pathname: "/seed", title: "百种交集", subtitle: "种子分享" },
   { pathname: "/blog", title: "集思广益", subtitle: "攻略博客" },

@@ -6,4 +6,11 @@ export const StageTypes: BasicObject = {
   boat: "带船",
 };
 
+export const SeedTypes: BasicObject = {
+  good: "胡种",
+  bad: "毒种",
+  tool: "工具种",
+  other: "其他",
+};
+
 export const StageLevels = ["N15", "N18"];

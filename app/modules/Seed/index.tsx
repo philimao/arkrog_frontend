@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router";
 import { SubNavbar } from "~/components/SubNavbar";
 import { useState } from "react";
+import SubmitSeedForm from "~/modules/Seed/SubmitSeedForm";
 
 const navs = [
   { title: "全部" },
@@ -14,18 +15,9 @@ const navs = [
 ];
 
 export default function SeedIndex() {
-  const { userInfo } = useUserInfoStore();
   const [title, setTitle] = useState<string>(navs[0].title);
 
-  async function handleSubmitSeed() {
-    if (!userInfo) {
-      return openModal("login");
-    } else if (userInfo.level < 2) {
-      return toast.warning(
-        "投稿功能需链接B站信息后使用！请点击右上角前往个人中心绑定身份",
-      );
-    }
-  }
+  async function handleSubmitSeed() {}
 
   return (
     <div>
@@ -33,9 +25,7 @@ export default function SeedIndex() {
         <span className="text-ak-blue me-auto">
           本版块截止至2025年2月14日16:00
         </span>
-        <button className="text-lg bg-ak-blue font-bold text-black px-6 py-2">
-          投稿种子
-        </button>
+        <SubmitSeedForm />
       </div>
       <div className="mb-4 px-6 py-4 bg-semi-black">
         投稿须知：

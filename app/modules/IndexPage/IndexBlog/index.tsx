@@ -25,15 +25,7 @@ export default function IndexBlog() {
           })}
         </div>
       </div>
-      <div className="flex flex-wrap gap-4">
-        {Array(4)
-          .fill(0)
-          .map((_, i) => (
-            <div key={i} className="w-[calc(50%-0.5rem)]">
-              <BlogPreview />
-            </div>
-          ))}
-      </div>
+      <BlogPreview />
     </div>
   );
 }

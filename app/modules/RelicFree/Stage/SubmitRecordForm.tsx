@@ -57,7 +57,7 @@ const MyButton = (props: ButtonProps) => (
   </Button>
 );
 
-export default function SubmitForm({
+export default function SubmitRecordForm({
   stageId,
   setRecords,
 }: {

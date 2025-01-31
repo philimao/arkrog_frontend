@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import RecordCard from "~/components/RecordCard/RecordCard";
 import { useAppDataStore } from "~/stores/appDataStore";
 import type { RecordType } from "~/types/recordType";
@@ -8,26 +14,32 @@ import { toast } from "react-toastify";
 const types = ["推荐", "最新"];
 
 export default function IndexRelicFree() {
-  const { recommendRecordIds } = useAppDataStore();
+  const { recommendRecordIds, latestRecordIds } = useAppDataStore();
   const [type, setType] = useState<string>(types[0]);
-  const [records, setRecords] = useState<RecordType[]>([]);
+  const [recommend, setRecommend] = useState<RecordType[]>([]);
+  const [latest, setLatest] = useState<RecordType[]>([]);
+  const records = useMemo(() => {
+    return type === "推荐" ? recommend : latest;
+  }, [type, recommend, latest]);
 
   useEffect(() => {
-    if (!recommendRecordIds) return;
-    async function load() {
+    if (!recommendRecordIds || !latestRecordIds) return;
+    async function load(
+      ids: string[],
+      func: Dispatch<SetStateAction<RecordType[]>>,
+    ) {
       try {
-        const records = await _post<RecordType[]>("/record/ids", {
-          ids: recommendRecordIds,
-        });
-        if (records) {
-          setRecords(records);
-        }
+        const records = await _post<RecordType[]>("/record/ids", { ids });
+        if (records) func(records);
       } catch (err) {
         toast.warning((err as Error).message);
       }
     }
-    load();
-  }, [recommendRecordIds]);
+    Promise.all([
+      load(recommendRecordIds, setRecommend),
+      load(latestRecordIds, setLatest),
+    ]);
+  }, [recommendRecordIds, latestRecordIds]);
 
   return (
     <div className="mb-10">

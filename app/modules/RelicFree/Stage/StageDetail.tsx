@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { styled } from "styled-components";
 import { useNavigate } from "react-router";
-import SubmitForm from "~/modules/RecordForm/SubmitForm";
+import SubmitRecordForm from "~/modules/RelicFree/Stage/SubmitRecordForm";
 import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
 
@@ -103,7 +103,7 @@ export default function StageDetail({
       <h1 className="font-bold mb-2 flex items-end">
         <span className="text-[2.5rem] leading-10 me-2">{stageData.name}</span>
         <span className="text-2xl">{stageData.code}</span>
-        <SubmitForm stageId={stageData.id} setRecords={setRecords} />
+        <SubmitRecordForm stageId={stageData.id} setRecords={setRecords} />
       </h1>
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
       <div className="grid gap-4 grid-cols-2 mb-8">

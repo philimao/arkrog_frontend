@@ -3,10 +3,11 @@ export interface SeedType {
   code: string;
   raider: string;
   raiderImage: string;
-  raiderLink: string;
   type: string;
+  title: string;
   labels: string[];
   note: string;
+  url: string;
   date_created: number;
   date_modified?: number;
 }

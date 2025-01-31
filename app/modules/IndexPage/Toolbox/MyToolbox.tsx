@@ -1,7 +1,9 @@
 import { Link } from "react-router";
 import { Skeleton } from "@heroui/react";
+import { openModal } from "~/utils/dom";
 
 const tools = [
+  { name: "收录原则", to: "#", img: "", targetModal: "inclusion-principle" },
   { name: "干员记录", to: "#", img: "" },
   { name: "趣味百科", to: "#", img: "" },
   {
@@ -31,6 +33,15 @@ export default function MyToolbox() {
           to={tool.to}
           key={tool.name}
           className="me-8 last-of-type:me-0 text-white hover:text-ak-blue"
+          onClick={(evt) => {
+            if (tool.targetModal) {
+              evt.preventDefault();
+              console.log(tool.targetModal);
+              openModal(tool.targetModal);
+            } else if (tool.to === "#") {
+              evt.preventDefault();
+            }
+          }}
         >
           <div className="w-16 aspect-square mb-1 text-white flex flex-column justify-center">
             {tool.img ? (

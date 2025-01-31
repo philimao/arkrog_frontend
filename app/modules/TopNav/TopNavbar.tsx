@@ -67,7 +67,9 @@ export default function TopNavbar() {
     >
       <NavbarContent>
         <NavbarBrand className="text-2xl font-bold text-white">
-          <Link to="/">Logo</Link>
+          <Link to="/">
+            <img src="/images/logo/logo-text.png" alt="logo" className="h-16" />
+          </Link>
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent justify="end">

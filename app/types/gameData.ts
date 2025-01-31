@@ -96,6 +96,8 @@ export interface StagePreviewData {
   boatNum?: number;
   boatLevel?: string;
   description?: string;
+  boatDesc?: string;
+  breadcrumb?: string;
 }
 
 // 干员信息

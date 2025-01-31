@@ -125,9 +125,9 @@ export default function SubmitRecordForm({
     [memberDataArray],
   );
 
-  // useEffect(() => {
-  //   console.log("有效干员", memberDataArray);
-  // }, [memberDataArray]);
+  useEffect(() => {
+    console.log("有效干员", memberDataArray);
+  }, [memberDataArray]);
 
   // useEffect(() => {
   //   console.log("模组选项", uniequipOptions);

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 import SubmitRecordForm from "~/modules/RelicFree/Stage/SubmitRecordForm";
 import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
+import { useAppDataStore } from "~/stores/appDataStore";
 
 // @ts-ignore
 const StyledDescriptionBlock = styled.div.attrs((props) => ({
@@ -63,6 +64,7 @@ export default function StageDetail({
   stageData: StageData;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
+  const { stagePreview } = useAppDataStore();
   const { stages, enemies } = useGameDataStore();
   const mapRef = useRef<HTMLImageElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -77,11 +79,7 @@ export default function StageDetail({
     }
   }, [mapRef]);
 
-  const breadcrumb = useMemo(() => {
-    // const [ro, type] = stageData.id.split("_");
-    // console.log(topicData);
-    return `${topicData.name} // 第？层 // 等待手工录入`;
-  }, [topicData]);
+  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id].breadcrumb}`;
 
   const eliteStageData: StageData | null = useMemo(() => {
     if (!stages || !stageData.id.match(/ro\d_n/)) return null;
@@ -107,10 +105,28 @@ export default function StageDetail({
       </h1>
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
       <div className="grid gap-4 grid-cols-2 mb-8">
-        <StyledDescriptionBlock>{stageData.description}</StyledDescriptionBlock>
+        <StyledDescriptionBlock>
+          {stageData.description
+            .replace(/\\n/g, "\n")
+            .replace(/。/g, "。\n")
+            .replace(/<@.*?>/, "")
+            .replace(/<\/>/g, "")}
+        </StyledDescriptionBlock>
         {/* @ts-ignore */}
-        <StyledDescriptionBlock type={eliteStageData ? "紧急" : "带船"}>
-          {eliteStageData ? eliteStageData.eliteDesc : "带船信息需手动录入"}
+        <StyledDescriptionBlock
+          type={
+            eliteStageData
+              ? "紧急"
+              : stagePreview?.[stageData.id].boatDesc
+                ? "带船"
+                : ""
+          }
+        >
+          {eliteStageData
+            ? eliteStageData.eliteDesc
+            : stagePreview?.[stageData.id].boatDesc
+              ? stagePreview?.[stageData.id].boatDesc
+              : ""}
         </StyledDescriptionBlock>
       </div>
       <div className="grid gap-4 grid-cols-2 mb-8">

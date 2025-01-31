@@ -35,21 +35,22 @@ const StyledBasic = styled.div`
   background-repeat: no-repeat;
   width: 100%;
   height: 100%;
-  left: 0;
   top: 0;
 `;
 
-const StyledLeftTopDecoration = styled(StyledBasic)`
-  background-image: url("/images/card/rogue_4_deco.png");
+const StyledLeftTopDecoration = styled(StyledBasic)<{ ro: string }>`
+  background-image: url(${(props) =>
+    "/images/card/" + props.ro + "_deco_l.png"});
 `;
 
-const StyledRightBottomDecoration = styled(StyledBasic)`
-  background-image: url("/images/card/rogue_4_deco.png");
-  transform: rotate(180deg);
+const StyledRightBottomDecoration = styled(StyledBasic)<{ ro: string }>`
+  left: 50%;
+  background-image: url(${(props) =>
+    "/images/card/" + props.ro + "_deco_r.png"});
 `;
 
-const StyledLogo = styled(StyledBasic)`
-  background-image: url(/images/card/rogue_4_logo.png);
+const StyledLogo = styled(StyledBasic)<{ ro: string }>`
+  background-image: url(${(props) => "/images/card/" + props.ro + "_logo.png"});
   background-size: auto 40%;
 `;
 
@@ -60,8 +61,8 @@ const StyledDotLayer = styled(StyledBasic)`
 
 const StyledChar = styled(StyledBasic)<{ url: string }>`
   background-image: url(${(props) => props.url});
-  background-size: auto 300%;
-  background-position: 100% 80%;
+  background-size: 85% auto;
+  background-position: 50% 100%;
 `;
 
 const StyledLeftInfo = styled(StyledBasic)`
@@ -109,6 +110,14 @@ const bustOrderMapping = (i: number) => {
   return 2 * (i - 7);
 };
 
+const chars = [
+  "char_250_phatom",
+  "char_400_weedy",
+  "char_4146_nymp",
+  "char_4133_logos",
+  "char_1035_wisdel",
+];
+
 export default function RecordCard({
   isStagePage,
   record,
@@ -122,6 +131,8 @@ export default function RecordCard({
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
+
+  const ro = "rogue_" + record?.stageId.split("_")[0].slice(-1);
 
   async function handleDeleteRecord() {
     if (!record) return;
@@ -163,6 +174,18 @@ export default function RecordCard({
       <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-mid-gray"></div>
     );
   }
+
+  const charId =
+    chars.find((charId) =>
+      record.team.find((memberData) => charId === memberData.charId),
+    ) || "char_1035_wisdel";
+  console.log(
+    chars.find((charId) =>
+      record.team.find((memberData) => charId === memberData.charId),
+    ),
+  );
+  const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
+
   return (
     <div className="mb-4">
       {stageData && (
@@ -189,13 +212,11 @@ export default function RecordCard({
         </div>
       )}
       <StyledCardContainer>
-        <StyledRightBottomDecoration />
+        <StyledRightBottomDecoration ro={ro} />
         <StyledDotLayer />
-        <StyledLeftTopDecoration />
-        <StyledLogo />
-        <StyledChar
-          url={`${import.meta.env.VITE_API_BASE_URL}/images/char/wsde-1.png`}
-        />
+        <StyledLeftTopDecoration ro={ro} />
+        <StyledLogo ro={ro} />
+        <StyledChar url={bgChar} />
         <StyledCornerMark>
           <span>{record.level.replace("N", "")}</span>
         </StyledCornerMark>

@@ -2,7 +2,6 @@ import React, {
   type Dispatch,
   type FormEvent,
   type SetStateAction,
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -68,19 +67,17 @@ export default function SubmitForm({
   const { character_basic } = useGameDataStore();
   const { userInfo } = useUserInfoStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
-  const [team, setTeam] = useState("维什戴尔3+逻各斯3");
+  const [team, setTeam] = useState("");
   const [memberDataArray, setMemberDataArray] = useState<TeamMemberData[]>([]);
-
-  const _charStrToData = useCallback(charStrToData, []);
 
   const teamRe = /[+、]/;
 
   useEffect(() => {
     if (!character_basic) return;
     const charStrArray = team.split(/[+、]/);
-    const memberDataArray = charStrArray.map((charStr) =>
-      _charStrToData(charStr, character_basic),
-    );
+    const memberDataArray = charStrArray
+      .map((charStr) => charStrToData(charStr, character_basic))
+      .filter((i) => i.charData);
     setMemberDataArray((prev) => {
       memberDataArray.map((memberData) => {
         const { charId, charData } = memberData;
@@ -123,13 +120,18 @@ export default function SubmitForm({
               },
             ),
           };
-        }),
+        })
+        .filter((i) => i),
     [memberDataArray],
   );
 
-  useEffect(() => {
-    console.log("有效干员", memberDataArray);
-  }, [memberDataArray]);
+  // useEffect(() => {
+  //   console.log("有效干员", memberDataArray);
+  // }, [memberDataArray]);
+
+  // useEffect(() => {
+  //   console.log("模组选项", uniequipOptions);
+  // }, [uniequipOptions]);
 
   async function handleSubmit(evt: FormEvent<HTMLFormElement>) {
     evt.preventDefault();
@@ -234,49 +236,48 @@ export default function SubmitForm({
                 placeholder="使用加号（+）或顿号（、）分隔，例：维什戴尔3+逻各斯3"
                 required
               />
-              <div className="">
-                {uniequipOptions.length > 0 && (
+              {uniequipOptions.length > 0 && (
+                <div className="">
                   <div className="mb-2 text-sm">模组选择</div>
-                )}
-                <div className="flex flex-wrap gap-6">
-                  {uniequipOptions.map((item) => (
-                    <RadioGroup
-                      key={item.charData?.charId}
-                      size="sm"
-                      className="text-xs whitespace-nowrap"
-                      name={"ignore_" + item.charData?.charId}
-                      defaultValue={item.defaultChecked}
-                      onValueChange={(id) => {
-                        setMemberDataArray((prev) => {
-                          const updated = [...prev];
-                          const index = updated.findIndex(
-                            (memberData) =>
-                              memberData.charId === item.charData?.charId,
+                  <div className="flex flex-wrap gap-6">
+                    {uniequipOptions.map((item) => (
+                      <RadioGroup
+                        key={item.charData?.charId}
+                        size="sm"
+                        className="text-xs whitespace-nowrap"
+                        name={"ignore_" + item.charData?.charId}
+                        defaultValue={item.defaultChecked}
+                        onValueChange={(id) => {
+                          setMemberDataArray((prev) => {
+                            const updated = [...prev];
+                            const index = updated.findIndex(
+                              (memberData) =>
+                                memberData.charId === item.charData?.charId,
+                            );
+                            if (index > -1) {
+                              updated[index].uniequipId = id;
+                            }
+                            return updated;
+                          });
+                        }}
+                      >
+                        {item.options.map((option) => {
+                          const { uniEquipId, uniEquipName, typeIcon } = option;
+                          return (
+                            <Radio
+                              description={uniEquipName}
+                              value={uniEquipId}
+                              key={uniEquipId}
+                            >
+                              {typeIcon.toUpperCase()}
+                            </Radio>
                           );
-                          if (index > -1) {
-                            updated[index].uniequipId = id;
-                          }
-                          return updated;
-                        });
-                      }}
-                    >
-                      {item.options.map((option) => {
-                        const { uniEquipId, uniEquipName, typeIcon } = option;
-                        return (
-                          <Radio
-                            description={uniEquipName}
-                            value={uniEquipId}
-                            key={uniEquipId}
-                          >
-                            {typeIcon.toUpperCase()}
-                          </Radio>
-                        );
-                      })}
-                    </RadioGroup>
-                  ))}
+                        })}
+                      </RadioGroup>
+                    ))}
+                  </div>
                 </div>
-              </div>
-
+              )}
               <MySelect
                 name="type"
                 label="作战类型"

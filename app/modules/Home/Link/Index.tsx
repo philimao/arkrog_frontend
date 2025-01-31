@@ -47,7 +47,7 @@ export default function LinkBilibili() {
   }
 
   return (
-    <div>
+    <div className="relative">
       <div className="text-3xl font-bold mb-8">账户链接</div>
       <div className="mb-4">
         点击下方右侧

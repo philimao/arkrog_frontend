@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import type { TopicData, Topics } from "~/types/gameData";
-import type { Dispatch, SetStateAction } from "react";
+import { useSearchParams } from "react-router";
 
 const StyledBannerContainer = styled.div`
   margin-bottom: 2rem;
@@ -70,12 +70,11 @@ const StyledTopicNav = styled.div`
 export default function SelectorBanner({
   topics,
   currentTopic,
-  setCurrentTopic,
 }: {
   topics: Topics;
   currentTopic: TopicData;
-  setCurrentTopic: Dispatch<SetStateAction<TopicData>>;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
   return (
     <StyledBannerContainer>
       <StyledTopicNavContainer>
@@ -89,7 +88,12 @@ export default function SelectorBanner({
                   `${currentTopic.id === topic.id ? "bg-ak-blue text-black" : "bg-black text-white"} `
                 }
                 role="button"
-                onClick={() => setCurrentTopic(topic)}
+                onClick={() => {
+                  searchParams.set("topicId", topic.id);
+                  setSearchParams(searchParams, {
+                    preventScrollReset: true,
+                  });
+                }}
               >
                 {topic.name}
               </div>

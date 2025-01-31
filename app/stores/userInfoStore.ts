@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { toast } from "react-toastify";
 
 type UserInfoStore = {
-  userInfo: UserInfo | null;
+  userInfo?: UserInfo;
   loaded: boolean;
   login: (username: string, password: string) => Promise<boolean | undefined>;
   logout: () => Promise<void>;
@@ -14,7 +14,7 @@ type UserInfoStore = {
 };
 
 export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
-  userInfo: null,
+  userInfo: undefined,
   loaded: false,
   login: async (username, password) => {
     try {

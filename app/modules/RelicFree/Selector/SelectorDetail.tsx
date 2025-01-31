@@ -1,6 +1,6 @@
 import { Tooltip } from "@heroui/react";
-import { Link, useNavigate } from "react-router";
-import React, { type Dispatch, type SetStateAction } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import React from "react";
 import { styled } from "styled-components";
 import type { StageData, StageOfRogue } from "~/types/gameData";
 
@@ -67,14 +67,13 @@ const StyledStageName = styled.div`
 
 export default function SelectorDetail({
   zoneFilterId,
-  setZoneFilterId,
   stageOfRogue,
 }: {
   zoneFilterId: string;
-  setZoneFilterId: Dispatch<SetStateAction<string>>;
   stageOfRogue: StageOfRogue;
 }) {
   // console.log(stageOfRogue);
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const numOfMinorBoss = {
     ro1: 5,
@@ -159,7 +158,12 @@ export default function SelectorDetail({
             }
             key={zone.id}
             role="button"
-            onClick={() => setZoneFilterId(zone.id)}
+            onClick={() => {
+              searchParams.set("zoneId", zone.id);
+              setSearchParams(searchParams, {
+                preventScrollReset: true,
+              });
+            }}
           >
             {zone.name}
           </div>

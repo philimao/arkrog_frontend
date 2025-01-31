@@ -5,15 +5,17 @@ import { toast } from "react-toastify";
 
 type UserInfoStore = {
   userInfo: UserInfo | null;
+  loaded: boolean;
   login: (username: string, password: string) => Promise<boolean | undefined>;
   logout: () => Promise<void>;
   register: (email: string, password: string) => Promise<boolean | undefined>;
-  updateUserInfo: (info: UserInfo) => void;
+  updateUserInfo: (info: Partial<UserInfo>) => void;
   fetchUserInfo: () => Promise<void>;
 };
 
-export const useUserInfoStore = create<UserInfoStore>((set) => ({
+export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
   userInfo: null,
+  loaded: false,
   login: async (username, password) => {
     try {
       const info: UserInfo | undefined = await _post("/user/login", {
@@ -57,9 +59,9 @@ export const useUserInfoStore = create<UserInfoStore>((set) => ({
       toast.error((err as Error).message);
     }
   },
-  updateUserInfo: (info: UserInfo) => {
+  updateUserInfo: (info: Partial<UserInfo>) => {
     set((state) => ({
-      userInfo: { ...state.userInfo, ...info },
+      userInfo: { ...state.userInfo!, ...info },
     }));
   },
   fetchUserInfo: async () => {
@@ -69,5 +71,7 @@ export const useUserInfoStore = create<UserInfoStore>((set) => ({
     } else {
       set({ userInfo: defaultUserInfo });
     }
+    set({ loaded: true });
+    // console.log(get());
   },
 }));

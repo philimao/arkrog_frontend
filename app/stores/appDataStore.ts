@@ -17,7 +17,7 @@ export const useAppDataStore = create<AppDataStore & AppDataAction>(
     fetchAppData: async () => {
       const bundle = await _get<AppDataStore>("/app/bundle");
       set({ ...bundle });
-      console.log(get());
+      // console.log(get());
     },
   }),
 );

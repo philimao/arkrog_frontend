@@ -1,5 +1,4 @@
 import type { CharBasicData } from "~/types/gameData";
-import type { BasicObject } from "~/types/core";
 
 export interface RecordType {
   _id: string;

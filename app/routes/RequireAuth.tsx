@@ -15,7 +15,8 @@ export default function RequireAuth({
 }: {
   children: React.ReactNode;
 }) {
-  const { userInfo } = useUserInfoStore();
+  const { userInfo, loaded } = useUserInfoStore();
+  if (!loaded) return null;
   if (!userInfo?.username) return <RedirectComp />;
   else return <>{children}</>;
 }

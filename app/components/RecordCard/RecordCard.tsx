@@ -17,6 +17,8 @@ import { useRecordStore } from "~/stores/recordStore";
 import { openModal } from "~/utils/dom";
 import type { RogueKey, StageData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
+import { toast } from "react-toastify";
+import type { FavoriteItem } from "~/types/userInfo";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -116,7 +118,7 @@ export default function RecordCard({
   record?: RecordType;
   setRecords?: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { userInfo } = useUserInfoStore();
+  const { userInfo, updateUserInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
@@ -131,6 +133,21 @@ export default function RecordCard({
       updated.splice(index, 1);
       return updated;
     });
+  }
+
+  const starred =
+    record?._id && userInfo?.favorite.find((item) => item._id === record._id);
+  async function handleStarRecord() {
+    if (!record?._id) return;
+    try {
+      const favorite = await _post<FavoriteItem[]>("/user/favorite", {
+        operate: starred ? "remove" : "add",
+        item: { _id: record._id, type: "record" },
+      });
+      updateUserInfo({ favorite });
+    } catch (error) {
+      toast.warning((error as Error).message);
+    }
   }
 
   useEffect(() => {
@@ -237,12 +254,15 @@ export default function RecordCard({
             <div className="flex justify-evenly w-24 bg-default-50 content-center flex-wrap">
               <SVGIcon
                 name="star"
-                className="hover:text-yellow-300"
+                className={
+                  starred ? "text-yellow-300" : "hover:text-yellow-300"
+                }
                 role="button"
                 onClick={() => {
                   if (!userInfo?.level) {
                     return openModal("login");
                   }
+                  handleStarRecord();
                 }}
               />
               <SVGIcon

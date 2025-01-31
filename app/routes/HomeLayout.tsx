@@ -9,6 +9,7 @@ const StyledHomeNavContainer = styled.div`
   left: 50%;
   top: 0;
   transform: translateX(-48%);
+  z-index: 0;
 `;
 
 const StyledHomeNav = styled.div<{ active: string }>`

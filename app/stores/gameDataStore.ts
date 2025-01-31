@@ -48,7 +48,7 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>(
           }
         });
         set({ uniequipDict: uniequipDict, loading: false });
-        console.log(get());
+        // console.log(get());
       } catch (err) {
         console.error(err);
         toast.error("游戏数据加载失败\n" + (err as Error).message);

@@ -39,7 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {isDev && <script src="http://localhost:8097"></script>}
-        <title>黑蓑影卫肉鸽站</title>
+        <title>影语集 - 集成战略攻略分享</title>
         <Meta />
         <Links />
       </head>
@@ -70,7 +70,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
+    message = error.status === 404 ? "404" : message;
     details =
       error.status === 404
         ? "The requested page could not be found."

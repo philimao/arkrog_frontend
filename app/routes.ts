@@ -31,6 +31,7 @@ export default [
     route("/home", "routes/HomeLayout.tsx", [
       // index("modules/Home/Message/Selector.tsx"),
       route("message", "modules/Home/Message/index.tsx"),
+      route("favorite", "modules/Home/Favorite/index.tsx"),
       route("link-bilibili", "modules/Home/Link/index.tsx"),
       route("*", "modules/Standalone/NotFoundPage.tsx"),
     ]),

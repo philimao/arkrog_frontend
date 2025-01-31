@@ -85,7 +85,7 @@ async function hashPassword(password: string): Promise<string> {
   }
 }
 
-function findDuplicates(array: any[]) {
+function findDuplicates<T>(array: T[]) {
   const seen = new Set();
   const duplicates = new Set();
   for (const item of array) {
@@ -98,4 +98,15 @@ function findDuplicates(array: any[]) {
   return Array.from(duplicates);
 }
 
-export { _get, _post, generateID, hashPassword, findDuplicates };
+function mergeArray<T>(target: T[], source: T[]): T[] {
+  const merged = [...target];
+  if (source.length > merged.length) {
+    merged.length = source.length;
+  }
+  source.forEach((item, index) => {
+    merged[index] = item;
+  });
+  return merged;
+}
+
+export { _get, _post, generateID, hashPassword, findDuplicates, mergeArray };

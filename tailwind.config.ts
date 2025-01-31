@@ -11,6 +11,7 @@ const colorExt = {
   "black-gray": "var(--black-gray)",
   "ak-purple": "var(--ak-purple)",
   "ak-red": "var(--ak-red)",
+  "semi-black": "var(--semi-black)",
 };
 
 export default {
@@ -51,6 +52,9 @@ export default {
       },
       aspectRatio: {
         banner: "96/35",
+      },
+      lineHeight: {
+        "12": "3rem",
       },
     },
   },

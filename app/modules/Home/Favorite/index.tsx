@@ -1,6 +1,6 @@
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useEffect, useState } from "react";
-import { SubNavForHome } from "~/modules/Home/SubNavForHome";
+import { SubNavbar } from "~/components/SubNavbar";
 import type { RecordType } from "~/types/recordType";
 import type { SeedType } from "~/types/seedType";
 import RecordDisplay from "~/modules/RecordDisplay";
@@ -69,7 +69,7 @@ export default function FavoritePage() {
 
   return (
     <div className="z-10 relative">
-      <SubNavForHome
+      <SubNavbar
         navs={navs}
         title={title}
         setTitle={(newTitle) => {

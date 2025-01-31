@@ -233,7 +233,7 @@ export default function RecordCard({
               </div>
             </a>
           </div>
-          <div className="font-light">{record.note}</div>
+          <div className="font-light whitespace-pre-wrap">{record.note}</div>
         </StyledLeftInfo>
         <StyledRightTeam>
           <div className="flex flex-wrap">

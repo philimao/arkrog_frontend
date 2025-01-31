@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import React from "react";
 import { styled } from "styled-components";
 import type { StageData, StageOfRogue } from "~/types/gameData";
+import { useAppDataStore } from "~/stores/appDataStore";
 
 const StyledZoneName = styled.div`
   height: 5rem;
@@ -75,6 +76,8 @@ export default function SelectorDetail({
   // console.log(stageOfRogue);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { stagePreview } = useAppDataStore();
+
   const numOfMinorBoss = {
     ro1: 5,
     ro2: 3,
@@ -204,6 +207,16 @@ export default function SelectorDetail({
                   {renderStages.map((stage, i) => {
                     if (stage.id === "ghost")
                       return <StyledStageCard className="" key={"ghost" + i} />;
+                    const stagePreviewData = stagePreview?.[stage.id];
+                    const maxLevel = ["??", "N18", "N15"].reduce((a, b) =>
+                      [
+                        stagePreviewData?.normalLevel,
+                        stagePreviewData?.eliteLevel,
+                        stagePreviewData?.boatLevel,
+                      ].includes(b)
+                        ? b
+                        : a,
+                    );
                     return (
                       <StyledStageCard
                         role="button"
@@ -212,22 +225,38 @@ export default function SelectorDetail({
                       >
                         <div className="h-6 bg-black-gray flex">
                           <div className="w-1/2 flex justify-center">
-                            <StyledCardTitleText type="normal">
-                              普通
-                            </StyledCardTitleText>
-                            <StyledCardTitleNum>5</StyledCardTitleNum>
+                            {stagePreviewData?.normalNum && (
+                              <>
+                                <StyledCardTitleText type="normal">
+                                  普通
+                                </StyledCardTitleText>
+                                <StyledCardTitleNum>
+                                  {stagePreviewData.normalNum}
+                                </StyledCardTitleNum>
+                              </>
+                            )}
                           </div>
                           <div className="w-1/2 flex justify-center">
-                            <StyledCardTitleText
-                              type={stage.isBoss ? "boat" : "elite"}
-                            >
-                              {stage.isBoss ? "带船" : "紧急"}
-                            </StyledCardTitleText>
-                            <StyledCardTitleNum>6</StyledCardTitleNum>
+                            {(stagePreviewData?.eliteNum ||
+                              stagePreviewData?.boatNum) && (
+                              <>
+                                <StyledCardTitleText
+                                  type={
+                                    stagePreviewData.eliteNum ? "elite" : "boss"
+                                  }
+                                >
+                                  {stagePreviewData.eliteNum ? "紧急" : "带船"}
+                                </StyledCardTitleText>
+                                <StyledCardTitleNum>
+                                  {stagePreviewData.eliteNum ||
+                                    stagePreviewData.boatNum}
+                                </StyledCardTitleNum>
+                              </>
+                            )}
                           </div>
                         </div>
                         <StyledCardBody>
-                          <StyledDifficulty>N18</StyledDifficulty>
+                          <StyledDifficulty>{maxLevel}</StyledDifficulty>
                           <StyledStageName>{stage.name}</StyledStageName>
                         </StyledCardBody>
                       </StyledStageCard>

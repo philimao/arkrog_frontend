@@ -33,7 +33,8 @@ export default [
       route("message", "modules/Home/Message/index.tsx"),
       route("favorite", "modules/Home/Favorite/index.tsx"),
       route("link-bilibili", "modules/Home/Link/index.tsx"),
-      route("*", "modules/Standalone/NotFoundPage.tsx"),
     ]),
+    route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
+    route("*", "modules/Standalone/NotFoundPage.tsx"),
   ]),
 ] satisfies RouteConfig;

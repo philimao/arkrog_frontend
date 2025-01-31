@@ -84,6 +84,20 @@ export interface StageData {
   [key: string]: any;
 }
 
+export interface StagePreview {
+  [key: string]: StagePreviewData;
+}
+
+export interface StagePreviewData {
+  normalNum?: number;
+  normalLevel?: string;
+  eliteNum?: number;
+  eliteLevel?: string;
+  boatNum?: number;
+  boatLevel?: string;
+  description?: string;
+}
+
 // 干员信息
 export interface UniequipsBasic {
   [key: string]: UniequipBasicData;

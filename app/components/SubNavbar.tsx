@@ -10,19 +10,18 @@ interface SubNavForHomeProps {
   setTitle: Dispatch<React.SetStateAction<string>>;
 }
 
-export function SubNavForHome({ navs, title, setTitle }: SubNavForHomeProps) {
+export function SubNavbar({ navs, title, setTitle }: SubNavForHomeProps) {
   return (
     <div className="w-full flex mb-4">
       {navs.map((item) => {
         const className =
-          "text-center h-10 leading-10 font-bold" +
-          (item.title === title ? " bg-ak-blue text-black" : " bg-black");
+          "text-center h-12 leading-12 font-bold text-lg" +
+          (item.title === title ? " bg-ak-blue text-black" : " bg-semi-black");
         return (
           <div
             key={item.title}
             className={className}
             onClick={() => {
-              console.log(item.title);
               setTitle(item.title);
             }}
             style={{ width: 100 / navs.length + "%" }}

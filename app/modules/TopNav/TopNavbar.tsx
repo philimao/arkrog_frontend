@@ -10,6 +10,7 @@ import {
 import { Input } from "@heroui/input";
 import React, { useState } from "react";
 import UserOrLogin from "~/modules/TopNav/UserOrLogin";
+import { Link } from "react-router";
 
 interface SearchIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
@@ -66,7 +67,7 @@ export default function TopNavbar() {
     >
       <NavbarContent>
         <NavbarBrand className="text-2xl font-bold text-white">
-          Logo
+          <Link to="/">Logo</Link>
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent justify="end">

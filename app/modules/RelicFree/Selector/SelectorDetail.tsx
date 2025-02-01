@@ -20,7 +20,16 @@ const StyledZoneName = styled.div`
 
 const StyledStageCard = styled.div`
   height: 5rem;
-  width: 21%;
+  width: 45%;
+  @media (min-width: 640px) {
+    width: 32%;
+  }
+  @media (min-width: 1024px) {
+    width: 26%;
+  }
+  @media (min-width: 1280px) {
+    width: 21%;
+  }
   margin-bottom: 2rem;
   filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.25));
 `;
@@ -61,7 +70,6 @@ const StyledDifficulty = styled.div`
 
 const StyledStageName = styled.div`
   font-size: 1.25rem;
-  padding-left: 1.5rem;
   line-height: 3.5rem;
   user-select: none;
 `;
@@ -173,7 +181,7 @@ export default function SelectorDetail({
         ))}
       </div>
       <div className="mb-4">
-        <div className="w-1/6 px-4 py-4 text-xs text-wrap">
+        <div className="w-1/3 sm:w-1/4 lg:w-1/6 px-4 py-4 text-xs text-wrap">
           注：前3层不做无藏收录，特定干员开局攻略见
           <Link to="/blog" className="text-ak-blue">
             攻略博客
@@ -200,10 +208,10 @@ export default function SelectorDetail({
             // console.log(zone.name, renderStages);
             return (
               <div className="flex mb-16" key={zone.id}>
-                <div className="w-1/6 pe-8">
+                <div className="w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
-                <div className="w-5/6 flex flex-wrap justify-between ps-8">
+                <div className="w-3/4 lg:w-4/5 xl:w-5/6 flex flex-wrap justify-between ps-2 sm:ps-3 lg:ps-6 xl:ps-8">
                   {renderStages.map((stage, i) => {
                     if (stage.id === "ghost")
                       return <StyledStageCard className="" key={"ghost" + i} />;
@@ -257,7 +265,9 @@ export default function SelectorDetail({
                         </div>
                         <StyledCardBody>
                           <StyledDifficulty>{maxLevel}</StyledDifficulty>
-                          <StyledStageName>{stage.name}</StyledStageName>
+                          <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">
+                            {stage.name}
+                          </StyledStageName>
                         </StyledCardBody>
                       </StyledStageCard>
                     );

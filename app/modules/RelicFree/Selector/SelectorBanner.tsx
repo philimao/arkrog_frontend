@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import type { TopicData, Topics } from "~/types/gameData";
 import { useSearchParams } from "react-router";
+import React from "react";
 
 const StyledBannerContainer = styled.div`
   margin-bottom: 2rem;
@@ -76,9 +77,10 @@ export default function SelectorBanner({
   currentTopic: TopicData;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  return (
-    <StyledBannerContainer>
-      <StyledTopicNavContainer>
+
+  function Nav({ ...props }: React.ComponentPropsWithoutRef<"div">) {
+    return (
+      <StyledTopicNavContainer {...props}>
         <StyledTopicNavInner>
           <StyledTopicNav>
             {Object.values(topics).map((topic) => (
@@ -102,25 +104,39 @@ export default function SelectorBanner({
           </StyledTopicNav>
         </StyledTopicNavInner>
       </StyledTopicNavContainer>
-      <div className="w-full bg-dark-gray" style={{ aspectRatio: 729 / 155 }}>
-        <img
-          src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.png`}
-          alt="topic_banner"
-          className="w-full h-auto z-0"
-        />
+    );
+  }
+
+  return (
+    <>
+      <StyledBannerContainer>
+        <Nav className="hidden md:flex" />
+        <div
+          className="h-64 w-full bg-dark-gray"
+          style={{ aspectRatio: 729 / 155 }}
+        >
+          <img
+            src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.png`}
+            alt="topic_banner"
+            className="h-full z-0 object-cover"
+          />
+        </div>
+        <StyledBannerForeground>
+          <LeftMask />
+          <div className="text-[3.5rem] font-han-sans font-bold">
+            {currentTopic.name}
+          </div>
+          <div className="flex-grow">
+            <StyledDecorationText>{currentTopic.name_en}</StyledDecorationText>
+          </div>
+          <div className="whitespace-pre-wrap text-light-mid-gray text-sm leading-6">
+            {currentTopic.lineText}
+          </div>
+        </StyledBannerForeground>
+      </StyledBannerContainer>
+      <div className="relative h-40 mb-4 md:h-0 md:mb-0">
+        <Nav className="flex md:hidden" />
       </div>
-      <StyledBannerForeground>
-        <LeftMask />
-        <div className="text-[3.5rem] font-han-sans font-bold">
-          {currentTopic.name}
-        </div>
-        <div className="flex-grow">
-          <StyledDecorationText>{currentTopic.name_en}</StyledDecorationText>
-        </div>
-        <div className="whitespace-pre-wrap text-light-mid-gray text-sm leading-6">
-          {currentTopic.lineText}
-        </div>
-      </StyledBannerForeground>
-    </StyledBannerContainer>
+    </>
   );
 }

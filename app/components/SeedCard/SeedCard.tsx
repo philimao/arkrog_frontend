@@ -63,7 +63,7 @@ export default function SeedCard({
           />
         </div>
       </div>
-      <div className="min-h-40 max-h-[10rem] overflow-y-auto my-2 flex-grow">
+      <div className="min-h-40 max-h-[12rem] overflow-y-auto my-2 flex-grow">
         <div className="whitespace-pre-wrap">{seed.note}</div>
       </div>
       <div className="flex-grow" />

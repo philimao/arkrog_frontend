@@ -65,7 +65,7 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
         placement="top-center"
         radius="none"
         classNames={{
-          base: "w-[24rem]",
+          base: "my-auto w-[24rem]",
           backdrop: "backdrop-blur-sm",
           closeButton: "top-6 end-6 bg-black-gray",
         }}

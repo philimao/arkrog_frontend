@@ -64,7 +64,7 @@ export default function SeedIndex() {
         投稿时请尽量按照现有种子格式，进行规范描述，包括开局选择、结局达成、道中关键路线选择等等
       </div>
       <SubNavbar navs={navs} title={title} setTitle={setTitle} />
-      <div className="mt-4 grid grid-cols-2 gap-6">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {seeds.map((seed: SeedType) => (
           <SeedCard seed={seed} setSeeds={setSeeds} key={seed._id} />
         ))}

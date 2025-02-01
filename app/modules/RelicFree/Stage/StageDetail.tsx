@@ -104,7 +104,7 @@ export default function StageDetail({
         <SubmitRecordForm stageId={stageData.id} setRecords={setRecords} />
       </h1>
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
-      <div className="grid gap-4 grid-cols-2 mb-8">
+      <div className="grid gap-4 grid-col-1 md:grid-cols-2 mb-8">
         <StyledDescriptionBlock>
           {stageData.description
             .replace(/\\n/g, "\n")
@@ -129,7 +129,7 @@ export default function StageDetail({
               : ""}
         </StyledDescriptionBlock>
       </div>
-      <div className="grid gap-4 grid-cols-2 mb-8">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>
           <span className="text-xl font-bold mb-2">地图</span>
           <img

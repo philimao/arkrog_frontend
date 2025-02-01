@@ -209,6 +209,11 @@ export default function SubmitRecordForm({
         radius="none"
         backdrop="blur"
         size="3xl"
+        classNames={{
+          base: "my-auto",
+          backdrop: "backdrop-blur-sm",
+          closeButton: "top-6 end-6 bg-black-gray",
+        }}
       >
         <ModalContent>
           <ModalHeader>提交记录</ModalHeader>

@@ -30,7 +30,7 @@ const tools = [
 
 export default function MyToolbox() {
   return (
-    <div className="mb-10 flex justify-center">
+    <div className="mb-10 mx-2 flex justify-start sm:justify-center overflow-x-auto hide-scroll">
       {tools.map((tool) => (
         <Link
           target="_blank"

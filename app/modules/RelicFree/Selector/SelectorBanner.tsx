@@ -23,6 +23,7 @@ const StyledDecorationText = styled.div`
   display: inline-block;
   padding-bottom: 0.25rem;
   font-family: "Novecento", sans-serif;
+  letter-spacing: 1px;
   font-size: 1.25rem;
   font-weight: 700;
   border-bottom: var(--ak-blue) 0.5rem solid;
@@ -84,7 +85,7 @@ export default function SelectorBanner({
               <div
                 key={topic.id}
                 className={
-                  "ps-8 pe-16 py-1 font-bold text-sm " +
+                  "ps-8 pe-16 py-1 text-sm font-han-sans font-bold " +
                   `${currentTopic.id === topic.id ? "bg-ak-blue text-black" : "bg-black text-white"} `
                 }
                 role="button"
@@ -110,7 +111,9 @@ export default function SelectorBanner({
       </div>
       <StyledBannerForeground>
         <LeftMask />
-        <div className="font-bold text-[3.5rem]">{currentTopic.name}</div>
+        <div className="text-[3.5rem] font-han-sans font-bold">
+          {currentTopic.name}
+        </div>
         <div className="flex-grow">
           <StyledDecorationText>{currentTopic.name_en}</StyledDecorationText>
         </div>

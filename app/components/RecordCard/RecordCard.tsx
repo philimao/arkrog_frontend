@@ -22,7 +22,16 @@ import type { FavoriteItem } from "~/types/userInfo";
 
 const StyledCardContainer = styled.div`
   width: 100%;
-  height: 24rem;
+  height: 12rem;
+  @media (min-width: 640px) {
+    height: 15rem;
+  }
+  @media (min-width: 1024px) {
+    height: 20rem;
+  }
+  @media (min-width: 1280px) {
+    height: 24rem;
+  }
   position: relative;
   overflow: hidden;
   background: #4e4e4e;
@@ -61,8 +70,8 @@ const StyledDotLayer = styled(StyledBasic)`
 
 const StyledChar = styled(StyledBasic)<{ url: string }>`
   background-image: url(${(props) => props.url});
-  background-size: 85% auto;
-  background-position: 50% 100%;
+  background-size: contain;
+  background-position: 30% 100%;
 `;
 
 const StyledLeftInfo = styled(StyledBasic)`
@@ -70,14 +79,23 @@ const StyledLeftInfo = styled(StyledBasic)`
   flex-direction: column;
   justify-content: end;
   z-index: 1;
-  padding: 0 0 2rem 2rem;
+  height: 100%;
+  padding: 0 0 0.5rem 0.5rem;
+  @media (min-width: 640px) {
+    padding: 0 0 1rem 1rem;
+  }
+  @media (min-width: 1024px) {
+    padding: 0 0 1.5rem 1.5rem;
+  }
+  @media (min-width: 1280px) {
+    padding: 0 0 2rem 2rem;
+  }
 `;
 
 const StyledRightTeam = styled(StyledBasic)`
-  width: 50%;
+  width: 60%;
   height: unset;
   left: unset;
-  right: 2rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
@@ -85,8 +103,6 @@ const StyledRightTeam = styled(StyledBasic)`
 
 const StyledCornerMark = styled.div`
   position: absolute;
-  height: 4rem;
-  width: 4rem;
   right: 0;
   top: 0;
   background: linear-gradient(
@@ -96,10 +112,8 @@ const StyledCornerMark = styled.div`
   );
   & > span {
     position: absolute;
-    right: 0.5rem;
     top: 0;
     font-family: "Novecento", sans-serif;
-    font-size: 1.8rem;
   }
 `;
 
@@ -111,6 +125,7 @@ const bustOrderMapping = (i: number) => {
 };
 
 const chars = [
+  "char_476_blkngt",
   "char_250_phatom",
   "char_400_weedy",
   "char_4146_nymp",
@@ -147,7 +162,7 @@ export default function RecordCard({
   }
 
   const starred =
-    record?._id && userInfo?.favorite.find((item) => item._id === record._id);
+    record?._id && userInfo?.favorite?.find((item) => item._id === record._id);
   async function handleStarRecord() {
     if (!record?._id) return;
     try {
@@ -179,31 +194,30 @@ export default function RecordCard({
     chars.find((charId) =>
       record.team.find((memberData) => charId === memberData.charId),
     ) || "char_1035_wisdel";
-  console.log(
-    chars.find((charId) =>
-      record.team.find((memberData) => charId === memberData.charId),
-    ),
-  );
   const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
 
   return (
     <div className="mb-4">
       {stageData && (
         <div className="mb-2 flex">
-          <div className="bg-black-gray px-4 text-lg font-bold">
+          <div className="bg-black-gray px-4 text-lg font-bold font-han-sans">
             <span>{`${record.team.length}人-${StageTypes[record.type]}-`}</span>
             <span className="text-ak-blue">{stageData.name}</span>
           </div>
         </div>
       )}
-      {isStagePage && record.type !== "normal" && (
+      {isStagePage && (
         <div className="my-3 font-bold">
           <div className="bg-dark-gray inline-block px-4 pe-12 relative">
             <span className="text-lg me-4">{StageTypes[record.type]}</span>
             <span
               className={
                 "text-[2.5rem] absolute left-16 top-1/2 -translate-y-1/2 " +
-                (record.type === "challenge" ? "text-ak-red" : "text-ak-purple")
+                (record.type === "normal"
+                  ? "text-ak-blue"
+                  : record.type === "challenge"
+                    ? "text-ak-red"
+                    : "text-ak-purple")
               }
             >
               {record.team.length}
@@ -217,18 +231,20 @@ export default function RecordCard({
         <StyledLeftTopDecoration ro={ro} />
         <StyledLogo ro={ro} />
         <StyledChar url={bgChar} />
-        <StyledCornerMark>
-          <span>{record.level.replace("N", "")}</span>
+        <StyledCornerMark className="size-10 sm:size-14 lg:size-16">
+          <span className="right-1 sm:right-2 text-lg sm:text-xl lg:text-2xl xl:text-3xl">
+            {record.level.replace("N", "")}
+          </span>
         </StyledCornerMark>
         <StyledLeftInfo>
-          <div className="">
-            <span className="text-[7rem] me-4">
+          <div className="font-han-serif">
+            <span className="text-[2rem] sm:text-[3rem] lg:text-[5rem] xl:text-[7rem] me-4">
               {record.team.length + "人"}
             </span>
             <RecordTypeLabel type={record.type} />
           </div>
           <Divider className="mb-4 bg-white w-1/3" style={{ height: "1px" }} />
-          <div className="flex">
+          <div className="flex items-center text-[8px] sm:text-[12px] lg:text-[16px]">
             <a
               href={record.raiderLink}
               className="mb-2 flex"
@@ -238,7 +254,8 @@ export default function RecordCard({
               <img
                 src={record.raiderImage}
                 alt="raiderImage"
-                className="w-10 h-10 rounded me-2"
+                style={{ borderRadius: "50%" }}
+                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 me-2"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
@@ -254,9 +271,11 @@ export default function RecordCard({
               </div>
             </a>
           </div>
-          <div className="font-light whitespace-pre-wrap">{record.note}</div>
+          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px]">
+            {record.note}
+          </div>
         </StyledLeftInfo>
-        <StyledRightTeam>
+        <StyledRightTeam className="right-2 sm:right-4 lg:right-6 xl:right-8">
           <div className="flex flex-wrap">
             {Array(14)
               .fill(0)
@@ -271,8 +290,8 @@ export default function RecordCard({
                 );
               })}
           </div>
-          <div className="flex justify-end h-8 mt-2">
-            <div className="flex justify-evenly w-24 bg-default-50 content-center flex-wrap">
+          <div className="flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
+            <div className="flex justify-evenly w-12 sm:w-16 lg:w-20 xl:w-24 bg-default-50 content-center flex-wrap">
               <SVGIcon
                 name="star"
                 className={
@@ -307,8 +326,13 @@ export default function RecordCard({
                 />
               )}
             </div>
-            <div className="w-28 bg-ak-deep-blue flex justify-center content-center flex-wrap">
-              <a href={record.url} target="_blank" rel="noopener noreferrer">
+            <div className="w-[3.5rem] sm:w-[5rem] lg:w-[6rem] xl:w-[7rem] bg-ak-deep-blue flex justify-center content-center flex-wrap">
+              <a
+                href={record.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-han-serif text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px]"
+              >
                 跳转原址
               </a>
             </div>

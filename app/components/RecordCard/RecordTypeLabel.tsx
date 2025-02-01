@@ -22,7 +22,10 @@ export default function RecordTypeLabel({
 
   return (
     <StyledTypeLabel
-      className={"px-4 py-2 " + (className ?? "")}
+      className={
+        "px-1 sm:px-2 lg:px-3 xl:px-4 py-2 text-xs sm:text-sm lg:text-lg " +
+        (className ?? "")
+      }
       color={type === "elite" ? "--ak-red" : "--ak-purple"}
     >
       {StageTypes[type]}

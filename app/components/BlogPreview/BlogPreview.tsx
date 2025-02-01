@@ -4,7 +4,7 @@ export default function BlogPreview() {
   const { recommendArticles } = useAppDataStore();
   if (!recommendArticles) return null;
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {recommendArticles.map((article) => (
         <div key={article.url} className="p-2 bg-semi-black">
           <div className="w-full aspect-video p-2">

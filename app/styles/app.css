@@ -51,8 +51,40 @@ body {
         font-weight: 400;
         src: url(/public/fonts/Novecento.woff2) format('woff2');
     }
+
+    @font-face {
+        font-family: 'HanSans';
+        font-style: normal;
+        font-weight: 600;
+        src: url(/public/fonts/SourceHanSansCN-Bold.subset.otf) format('otf');
+    }
+
+    @font-face {
+        font-family: 'HanSerif';
+        font-style: normal;
+        font-weight: 600;
+        src: url(/public/fonts/SourceHanSerifCN-Bold.subset.otf) format('otf');
+    }
 }
 
 .font-novecento {
     font-family: 'Novecento', sans-serif;
+    font-weight: 400;
+}
+
+.font-han-sans {
+    font-family: 'HanSans', sans-serif;
+}
+
+.font-han-serif {
+    font-family: 'HanSerif', sans-serif;
+}
+
+.hide-scroll {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scroll::-webkit-scrollbar {
+    display: none;
 }

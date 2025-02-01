@@ -55,63 +55,78 @@ export const SearchIcon: React.FC<SearchIconProps> = ({
   );
 };
 
-export default function TopNavbar() {
+function SearchComp({ ...props }: React.ComponentPropsWithoutRef<"div">) {
   const [searchOption, setSearchOption] = useState("全站");
   const [searchValue, setSearchValue] = useState("");
 
   return (
-    <Navbar
-      isBordered
-      maxWidth="2xl"
-      className="bg-black-gray text-mid-gray h-20"
-    >
-      <NavbarContent>
-        <NavbarBrand className="text-2xl font-bold text-white">
-          <Link to="/">
-            <img src="/images/logo/logo-text.png" alt="logo" className="h-16" />
-          </Link>
-        </NavbarBrand>
-      </NavbarContent>
-      <NavbarContent justify="end">
-        <NavbarItem className="w-96 flex me-6">
-          <Select
-            name="select"
-            className="w-28"
-            classNames={{
-              trigger: "bg-mid-gray rounded-none",
-              value: "text-mid-gray",
-              popoverContent: "bg-mid-gray text-mid-gray rounded-none",
-              listbox: "rounded-none",
-            }}
-            aria-label="select"
-            selectedKeys={[searchOption]}
-            onChange={(evt) => setSearchOption(evt.target.value)}
-          >
-            {["全站", "部分"].map((opt) => (
-              <SelectItem key={opt}>{opt}</SelectItem>
-            ))}
-          </Select>
-          <Divider orientation="vertical" />
-          <Input
-            className="rounded-none"
-            classNames={{
-              base: "max-w-full sm:max-w-[30rem]",
-              mainWrapper: "h-full",
-              input: "text-small text-mid-gray hover:bg-transparent",
-              inputWrapper:
-                "h-full font-normal text-default-500 bg-mid-gray data-[hover=true]:bg-mid-gray group-data-[focus=true]:bg-mid-gray rounded-none",
-            }}
-            placeholder="Type to search..."
-            endContent={<SearchIcon size={18} />}
-            type="search"
-            value={searchValue}
-            onValueChange={setSearchValue}
-          />
-        </NavbarItem>
-        <NavbarItem>
-          <UserOrLogin />
-        </NavbarItem>
-      </NavbarContent>
-    </Navbar>
+    <div className="w-96 me-6" {...props}>
+      <Select
+        name="select"
+        className="w-28"
+        classNames={{
+          trigger: "bg-mid-gray rounded-none",
+          value: "text-mid-gray",
+          popoverContent: "bg-mid-gray text-mid-gray rounded-none",
+          listbox: "rounded-none",
+        }}
+        aria-label="select"
+        selectedKeys={[searchOption]}
+        onChange={(evt) => setSearchOption(evt.target.value)}
+      >
+        {["全站", "部分"].map((opt) => (
+          <SelectItem key={opt}>{opt}</SelectItem>
+        ))}
+      </Select>
+      <Divider orientation="vertical" />
+      <Input
+        className="rounded-none"
+        classNames={{
+          base: "max-w-full sm:max-w-[30rem]",
+          mainWrapper: "h-full",
+          input: "text-small text-mid-gray hover:bg-transparent",
+          inputWrapper:
+            "h-full font-normal text-default-500 bg-mid-gray data-[hover=true]:bg-mid-gray group-data-[focus=true]:bg-mid-gray rounded-none",
+        }}
+        placeholder="Type to search..."
+        endContent={<SearchIcon size={18} />}
+        type="search"
+        value={searchValue}
+        onValueChange={setSearchValue}
+      />
+    </div>
+  );
+}
+
+export default function TopNavbar() {
+  return (
+    <>
+      <Navbar
+        isBordered
+        maxWidth="2xl"
+        className="bg-black-gray text-mid-gray h-20 font-han-sans"
+      >
+        <NavbarContent>
+          <NavbarBrand className="text-2xl font-bold text-white">
+            <Link to="/">
+              <img
+                src="/images/logo/logo-text.png"
+                alt="logo"
+                className="h-16"
+              />
+            </Link>
+          </NavbarBrand>
+        </NavbarContent>
+        <NavbarContent justify="end">
+          <NavbarItem>
+            <SearchComp className="hidden sm:flex" />
+          </NavbarItem>
+          <NavbarItem>
+            <UserOrLogin />
+          </NavbarItem>
+        </NavbarContent>
+      </Navbar>
+      <SearchComp className="flex sm:hidden px-2 pt-3" />
+    </>
   );
 }

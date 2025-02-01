@@ -72,7 +72,7 @@ export default function StagePage() {
         stageData={stageData}
         setRecords={setRecords}
       />
-      <div className="font-bold text-lg">记录收录</div>
+      <div className="font-bold text-xl">记录收录</div>
       <RecordDisplay
         records={records}
         setRecords={setRecords}

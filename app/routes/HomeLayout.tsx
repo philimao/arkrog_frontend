@@ -12,12 +12,12 @@ const StyledHomeNavContainer = styled.div`
   z-index: 0;
 `;
 
-const StyledHomeNav = styled.div<{ active: string }>`
+const StyledHomeNav = styled.div<{ active: boolean }>`
   margin-bottom: 0.5rem;
   padding: 0.25rem 1rem;
   background: ${(props) =>
-    props.active === "true" ? "var(--ak-blue)" : "black"};
-  color: ${(props) => (props.active === "true" ? "black" : "white")};
+    props.active ? "var(--ak-blue)" : "black"};
+  color: ${(props) => (props.active ? "black" : "white")};
   z-index: -1;
 `;
 
@@ -36,7 +36,7 @@ export default function HomeLayout() {
                   className="block w-[15rem]"
                   key={page.title}
                 >
-                  <StyledHomeNav key={page.pathname} active={active.toString()}>
+                  <StyledHomeNav key={page.pathname} active>
                     {page.title}
                   </StyledHomeNav>
                 </Link>

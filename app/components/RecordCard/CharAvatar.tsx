@@ -70,8 +70,7 @@ export default function CharAvatar({
   return (
     <div
       className={
-        "relative first-of-type:opacity-0 first-of-type:mb-2 " +
-        (className ?? "")
+        `relative first-of-type:opacity-0 first-of-type:mb-2 ${className}`
       }
     >
       <div className="bg-dark-gray p-1 relative">

@@ -43,8 +43,13 @@ export default function LoginModal({
     }
   }
 
-  function switchToRegister() {
+  function handleClose() {
+    setIsVisible(false); // Reset isVisible to false when step away from LoginModal
     onLoginClose();
+  }
+
+  function switchToRegister() {
+    handleClose();
     onRegisterOpen();
   }
 
@@ -60,7 +65,7 @@ export default function LoginModal({
       </Button>
       <Modal
         isOpen={isLoginOpen as boolean}
-        onClose={onLoginClose}
+        onClose={handleClose}
         placement="top-center"
         radius="none"
         classNames={{
@@ -99,7 +104,7 @@ export default function LoginModal({
               <Form
                 className="w-full flex flex-col gap-4"
                 validationBehavior="native"
-                onSubmit={(evt) => handleSubmit(evt, onLoginClose)}
+                onSubmit={(evt) => handleSubmit(evt, handleClose)}
               >
                 <Input
                   name="username"

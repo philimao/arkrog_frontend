@@ -9,7 +9,7 @@ export default function InclusionPrincipleModal({ id }: { id: string }) {
   const { inclusionPrinciple } = useAppDataStore();
 
   return (
-    <ModalTemplate triggerId={id} size="xl">
+    <ModalTemplate triggerId={id} size="3xl">
       {inclusionPrinciple ? (
         <>
           <ModalHeader>收录原则</ModalHeader>

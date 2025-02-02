@@ -6,6 +6,7 @@ import type { SeedType } from "~/types/seedType";
 import RecordDisplay from "~/modules/RecordDisplay";
 import { _post, mergeArray } from "~/utils/tools";
 import { Pagination } from "@heroui/react";
+import SeedCard from "~/components/SeedCard/SeedCard";
 
 const navs = [
   { title: "记录收藏", filter: () => {} },
@@ -56,6 +57,20 @@ export default function FavoritePage() {
           });
         });
       }
+    } else {
+      const isCurrentPageLoaded = seeds.some(
+        (_, index) => index >= start && index < end,
+      );
+      if (!isCurrentPageLoaded) {
+        _post<SeedType[]>("/seed/ids", {
+          page,
+          ids: seedIds.slice(page * pageSize, (page + 3) * pageSize), // 预加载4页内容
+        }).then((newSeeds) => {
+          setSeeds((prev) => {
+            return mergeArray<SeedType>(prev, newSeeds || []);
+          });
+        });
+      }
     }
   }, [
     userInfo?.favorite,
@@ -83,14 +98,23 @@ export default function FavoritePage() {
       <div>
         {title === "记录收藏" ? (
           <RecordDisplay records={records} setRecords={setRecords} cols={2} />
-        ) : null}
+        ) : (
+          <div>
+            {seeds.map((seed) => {
+              return <SeedCard seed={seed} />;
+            })}
+          </div>
+        )}
       </div>
-      <Pagination
-        color="secondary"
-        page={page}
-        total={title === "record" ? maxRecordPages : maxSeedPages}
-        onChange={setPage}
-      />
+      {(title === "record" && maxRecordPages > 1) ||
+        (title === "seed" && maxSeedPages > 1 && (
+          <Pagination
+            color="secondary"
+            page={page}
+            total={title === "record" ? maxRecordPages : maxSeedPages}
+            onChange={setPage}
+          />
+        ))}
     </div>
   );
 }

@@ -91,7 +91,7 @@ export default function UserAvatar() {
             alt="face"
             referrerPolicy="no-referrer"
             crossOrigin="anonymous"
-            className="w-10 h-10"
+            className="w-10 h-10 flex-shrink-0"
             style={{ borderRadius: "50%" }}
           />
         ) : (

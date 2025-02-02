@@ -6,6 +6,7 @@ import { _post, mergeArray } from "~/utils/tools";
 import type { SeedType } from "~/types/seedType";
 import SeedCard from "~/components/SeedCard/SeedCard";
 import { Pagination } from "@heroui/react";
+import { SeedTypes } from "~/types/constant";
 
 const navs = [
   { title: "全部" },
@@ -65,9 +66,11 @@ export default function SeedIndex() {
       </div>
       <SubNavbar navs={navs} title={title} setTitle={setTitle} />
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {seeds.map((seed: SeedType) => (
-          <SeedCard seed={seed} setSeeds={setSeeds} key={seed._id} />
-        ))}
+        {seeds
+          .filter((s) => title === "全部" || title === SeedTypes[s.type])
+          .map((seed: SeedType) => (
+            <SeedCard seed={seed} setSeeds={setSeeds} key={seed._id} />
+          ))}
       </div>
       {maxPage > 1 && (
         <div className="flex justify-center mt-4">

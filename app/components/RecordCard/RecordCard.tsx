@@ -19,12 +19,13 @@ import type { RogueKey, StageData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
+import ModalTemplate from "~/components/Modal";
 
 const StyledCardContainer = styled.div`
   width: 100%;
-  height: 12rem;
+  height: 9rem;
   @media (min-width: 640px) {
-    height: 15rem;
+    height: 12rem;
   }
   @media (min-width: 1024px) {
     height: 20rem;
@@ -53,9 +54,11 @@ const StyledLeftTopDecoration = styled(StyledBasic)<{ ro: string }>`
 `;
 
 const StyledRightBottomDecoration = styled(StyledBasic)<{ ro: string }>`
-  left: 50%;
+  left: initial;
+  right: 0;
   background-image: url(${(props) =>
     "/images/card/" + props.ro + "_deco_r.png"});
+  background-position: right;
 `;
 
 const StyledLogo = styled(StyledBasic)<{ ro: string }>`
@@ -146,6 +149,7 @@ export default function RecordCard({
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
+  const [showNote, setShowNote] = useState<boolean>(false);
 
   const ro = "rogue_" + record?.stageId.split("_")[0].slice(-1);
 
@@ -271,7 +275,7 @@ export default function RecordCard({
               </div>
             </a>
           </div>
-          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px]">
+          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px] hidden sm:block">
             {record.note}
           </div>
         </StyledLeftInfo>
@@ -290,7 +294,7 @@ export default function RecordCard({
                 );
               })}
           </div>
-          <div className="flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
+          <div className="hidden sm:flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
             <div className="flex justify-evenly w-12 sm:w-16 lg:w-20 xl:w-24 bg-default-50 content-center flex-wrap">
               <SVGIcon
                 name="star"
@@ -339,6 +343,72 @@ export default function RecordCard({
           </div>
         </StyledRightTeam>
       </StyledCardContainer>
+      {showNote && (
+        <div className="mt-2 whitespace-pre-wrap p-2 bg-semi-black text-sm">
+          {record.note}
+        </div>
+      )}
+      <div className="flex sm:hidden mt-2 bg-semi-black py-2">
+        <div className="w-1/3 flex items-center justify-center text-sm">
+          <button
+            onClick={() => {
+              setShowNote((prev) => !prev);
+            }}
+          >
+            {showNote ? "关闭备注" : "查看备注"}
+          </button>
+        </div>
+        <ModalTemplate triggerId={record._id}>
+          <div className="p-4">{record.note}</div>
+        </ModalTemplate>
+        <div className="w-1/3 flex items-center justify-evenly">
+          <SVGIcon
+            name="star"
+            className={
+              starred
+                ? "text-yellow-300 w-4 h-4"
+                : "hover:text-yellow-300 w-4 h-4"
+            }
+            role="button"
+            onClick={() => {
+              if (!userInfo?.level) {
+                return openModal("login");
+              }
+              handleStarRecord();
+            }}
+          />
+          <SVGIcon
+            name="report"
+            className="hover:text-yellow-300 w-4 h-4"
+            role="button"
+            onClick={() => {
+              if (!userInfo?.level) {
+                return openModal("login");
+              }
+              setActiveRecord(record);
+              openModal("report-modal");
+            }}
+          />
+          {userInfo?.level !== undefined && userInfo?.level > 2 && (
+            <SVGIcon
+              name="delete"
+              className="hover:text-yellow-300 w-4 h-4"
+              role="button"
+              onClick={handleDeleteRecord}
+            />
+          )}
+        </div>
+        <div className="w-1/3 flex items-center justify-center">
+          <a
+            href={record.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-han-serif text-sm"
+          >
+            <button>跳转原址</button>
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

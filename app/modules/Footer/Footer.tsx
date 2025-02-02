@@ -1,5 +1,6 @@
 import { styled } from "styled-components";
 import { Link } from "react-router";
+import { openModal } from "~/utils/dom";
 
 const StyledFooterContainer = styled.footer`
   margin-top: auto;
@@ -16,8 +17,8 @@ const StyledFooterInner = styled.div`
 `;
 
 const links = [
-  { text: "联系我们", to: "#" },
-  { text: "赞助我们", to: "#" },
+  { text: "联系我们", to: "#", targetModal: "contact-us" },
+  { text: "赞助我们", to: "/sponsor" },
   { text: "友情链接", to: "#" },
 ];
 
@@ -30,6 +31,14 @@ export function Footer() {
             to={link.to}
             key={link.text}
             className="font-bold text-lg me-24 last-of-type:me-0 hover:text-ak-blue"
+            onClick={(evt) => {
+              if (link.targetModal) {
+                evt.preventDefault();
+                openModal(link.targetModal);
+              } else if (link.to === "#") {
+                evt.preventDefault();
+              }
+            }}
           >
             {link.text}
           </Link>

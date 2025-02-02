@@ -17,7 +17,7 @@ export const pages = [
 export const homePages = [
   { pathname: "/message", title: "消息中心" },
   { pathname: "/favorite", title: "我的收藏" },
-  { pathname: "/my-record", title: "个人记录" },
+  // { pathname: "/my-record", title: "个人记录" },
   { pathname: "/link-bilibili", title: "账户链接" },
 ];
 
@@ -35,6 +35,7 @@ export default [
       route("link-bilibili", "modules/Home/Link/index.tsx"),
     ]),
     route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
+    route("/sponsor", "modules/Standalone/Sponsorship.tsx"),
     route("*", "modules/Standalone/NotFoundPage.tsx"),
   ]),
 ] satisfies RouteConfig;

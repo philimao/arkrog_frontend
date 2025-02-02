@@ -12,6 +12,7 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
+import { toast } from "react-toastify";
 
 interface RegisterModalProps {
   id?: string;
@@ -48,6 +49,12 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
     const data = Object.fromEntries(
       new FormData(evt.currentTarget as HTMLFormElement),
     );
+
+    if (confirmPassword !== password) {
+      return toast.warning("两次输入的密码不一致！");
+    }
+    delete data.confirmPassword;
+
     if (await register(data.email as string, data.password as string)) {
       onClose();
     }
@@ -182,7 +189,7 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
                         )}
                       </button>
                     }
-                    name="password"
+                    name="confirmPassword"
                     placeholder="确认密码"
                     autoComplete="password"
                     type={isVisible2 ? "text" : "password"}

@@ -3,17 +3,20 @@ import { SeedTypeColors, SeedTypes } from "~/types/constant";
 import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { toast } from "react-toastify";
 import { _post } from "~/utils/tools";
-import type { Dispatch, SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import type { FavoriteItem } from "~/types/userInfo";
+import { openModal } from "~/utils/dom";
 
 export default function SeedCard({
   seed,
   setSeeds,
 }: {
   seed: SeedType;
-  setSeeds: Dispatch<SetStateAction<SeedType[]>>;
+  setSeeds?: Dispatch<SetStateAction<SeedType[]>>;
 }) {
-  const { userInfo } = useUserInfoStore();
+  const { userInfo, updateUserInfo } = useUserInfoStore();
+  const [expand, setExpand] = useState(false);
 
   async function handleDeleteSeed() {
     if (window.confirm("是否确定删除该种子？")) {
@@ -26,6 +29,23 @@ export default function SeedCard({
       });
     }
   }
+
+  async function handleStarSeed() {
+    if (!seed?._id) return;
+    try {
+      const favorite = await _post<FavoriteItem[]>("/user/favorite", {
+        operate: starred ? "remove" : "add",
+        item: { _id: seed._id, type: "seed" },
+      });
+      updateUserInfo({ favorite });
+    } catch (error) {
+      toast.warning((error as Error).message);
+    }
+  }
+
+  const starred =
+    seed?._id && userInfo?.favorite?.find((item) => item._id === seed._id);
+
   return (
     <div className="bg-semi-black px-6 pt-6 pb-4 flex flex-col">
       <div className="flex">
@@ -46,6 +66,21 @@ export default function SeedCard({
               role="button"
             />
           )}
+          {expand ? (
+            <SVGIcon
+              name="min"
+              className="w-6 h-6 hover:text-ak-blue"
+              role="button"
+              onClick={() => setExpand(false)}
+            />
+          ) : (
+            <SVGIcon
+              name="max"
+              className="w-6 h-6 hover:text-ak-blue"
+              role="button"
+              onClick={() => setExpand(true)}
+            />
+          )}
           <SVGIcon
             name="copy"
             className="w-6 h-6 hover:text-ak-blue"
@@ -60,10 +95,21 @@ export default function SeedCard({
             name="star-hollow"
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
+            onClick={() => {
+              if (!userInfo?.level) {
+                return openModal("login");
+              }
+              handleStarSeed();
+            }}
           />
         </div>
       </div>
-      <div className="min-h-40 max-h-[12rem] overflow-y-auto my-2 flex-grow">
+      <div
+        className={
+          "min-h-40 max-h-[12rem] overflow-y-auto my-2 flex-grow" +
+          (expand ? " max-h-fit" : "")
+        }
+      >
         <div className="whitespace-pre-wrap">{seed.note}</div>
       </div>
       <div className="flex-grow" />
@@ -98,7 +144,7 @@ export default function SeedCard({
             <a href={seed.url} target="_blank" rel="noopener noreferrer">
               <SVGIcon
                 name="bilibili"
-                className="w-6 h-6 hover:text-ak-blue"
+                className="w-6 h-6 hover:text-ak-blue me-1"
                 style={{ color: "#FB7299" }}
                 role="button"
               />

@@ -79,7 +79,7 @@ export default function StageDetail({
     }
   }, [mapRef]);
 
-  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id].breadcrumb}`;
+  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb}`;
 
   const eliteStageData: StageData | null = useMemo(() => {
     if (!stages || !stageData.id.match(/ro\d_n/)) return null;
@@ -117,15 +117,15 @@ export default function StageDetail({
           type={
             eliteStageData
               ? "紧急"
-              : stagePreview?.[stageData.id].boatDesc
+              : stagePreview?.[stageData.id]?.boatDesc
                 ? "带船"
                 : ""
           }
         >
           {eliteStageData
             ? eliteStageData.eliteDesc
-            : stagePreview?.[stageData.id].boatDesc
-              ? stagePreview?.[stageData.id].boatDesc
+            : stagePreview?.[stageData.id]?.boatDesc
+              ? stagePreview?.[stageData.id]?.boatDesc
               : ""}
         </StyledDescriptionBlock>
       </div>

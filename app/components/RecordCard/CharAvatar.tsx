@@ -62,9 +62,10 @@ export default function CharAvatar({
     memberData &&
     uniequipDict &&
     uniequipDict[memberData?.uniequipId || ""]?.typeIcon.toUpperCase();
-  const uniequipSrc = uniequipName
-    ? `${import.meta.env.VITE_API_BASE_URL}/images/uniequip/${uniequipName}_color.png`
-    : "/images/card/no-uniequip.png";
+  const uniequipSrc =
+    uniequipName && uniequipName !== "ORIGINAL"
+      ? `${import.meta.env.VITE_API_BASE_URL}/images/uniequip/${uniequipName}_color.png`
+      : "/images/card/no-uniequip.png";
 
   return (
     <div

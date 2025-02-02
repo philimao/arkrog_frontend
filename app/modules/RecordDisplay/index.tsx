@@ -13,7 +13,7 @@ export default function RecordDisplay({
   isStagePage?: boolean;
   cols?: 1 | 2;
 }) {
-  const className = cols === 1 ? "" : "grid grid-cols-2 gap-4";
+  const className = cols === 1 ? "" : "grid grid-cols-1 xl:grid-cols-2 gap-4";
   return (
     <div className={className}>
       {records.map((record) => (

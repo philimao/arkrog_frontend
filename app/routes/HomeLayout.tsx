@@ -7,8 +7,8 @@ const StyledHomeNavContainer = styled.div`
   position: absolute;
   width: 100vw;
   left: 50%;
-  top: 0;
-  transform: translateX(-48%);
+  transform: translateX(-50%);
+  padding-left: 0.5rem;
   z-index: 0;
 `;
 
@@ -25,24 +25,28 @@ export default function HomeLayout() {
   const location = useLocation();
   return (
     <RequireAuth>
-      <div className="container relative">
-        <StyledHomeNavContainer>
-          {homePages.map((page) => {
-            const active = location.pathname.endsWith(page.pathname);
-            return (
-              <Link
-                to={"/home" + page.pathname}
-                className="block w-[15rem]"
-                key={page.title}
-              >
-                <StyledHomeNav key={page.pathname} active={active.toString()}>
-                  {page.title}
-                </StyledHomeNav>
-              </Link>
-            );
-          })}
-        </StyledHomeNavContainer>
-        <Outlet />
+      <div className="container block lg:flex relative">
+        <div className="min-w-60 min-h-36">
+          <StyledHomeNavContainer>
+            {homePages.map((page) => {
+              const active = location.pathname.endsWith(page.pathname);
+              return (
+                <Link
+                  to={"/home" + page.pathname}
+                  className="block w-[15rem]"
+                  key={page.title}
+                >
+                  <StyledHomeNav key={page.pathname} active={active.toString()}>
+                    {page.title}
+                  </StyledHomeNav>
+                </Link>
+              );
+            })}
+          </StyledHomeNavContainer>
+        </div>
+        <div className="flex-grow">
+          <Outlet />
+        </div>
       </div>
     </RequireAuth>
   );

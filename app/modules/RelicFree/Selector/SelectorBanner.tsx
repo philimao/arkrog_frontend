@@ -9,7 +9,16 @@ const StyledBannerContainer = styled.div`
 `;
 
 const StyledBannerForeground = styled.div`
-  padding: 1.5rem 0 2rem 2.5rem;
+  padding: 0.5rem 0 0.5rem 1rem;
+  @media (min-width: 640px) {
+    padding: 1rem 0 1rem 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding: 1.25rem 0 1.25rem 2rem;
+  }
+  @media (min-width: 1280px) {
+    padding: 1.5rem 0 2rem 2.5rem;
+  }
   position: absolute;
   left: 0;
   top: 0;
@@ -36,12 +45,13 @@ const LeftMask = styled.div`
   left: 0;
   top: 0;
   height: 100%;
-  width: 30%;
+  width: 100%;
   background: linear-gradient(
-    270deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.75) 50%,
-    #000 75%
+    90deg,
+    #000 0%,
+    rgba(0, 0, 0, 0.75) 10%,
+    rgba(0, 0, 0, 0) 30%,
+    transparent
   );
   z-index: -1;
 `;
@@ -123,7 +133,7 @@ export default function SelectorBanner({
         </div>
         <StyledBannerForeground>
           <LeftMask />
-          <div className="text-[3.5rem] font-han-sans font-bold">
+          <div className="text-[2rem] sm:text-[2.5ren] lg:text-[3rem] xl:text-[3.5rem] font-han-sans font-bold">
             {currentTopic.name}
           </div>
           <div className="flex-grow">

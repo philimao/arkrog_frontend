@@ -30,6 +30,7 @@ export default function RootLayout() {
   const { fetchGameData, fetchGameDataExt } = useGameDataStore();
   const { fetchUserInfo } = useUserInfoStore();
   const { fetchAppData } = useAppDataStore();
+  const desktop = window.matchMedia("(min-width: 640px)").matches;
 
   useEffect(() => {
     Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData()]);
@@ -44,11 +45,12 @@ export default function RootLayout() {
         <Footer />
         <ToastContainer
           autoClose={3000}
-          position="bottom-right"
+          position={desktop ? "bottom-right" : "top-right"}
           theme="dark"
           closeOnClick
           stacked
           hideProgressBar
+          style={desktop ? {} : { width: "100vw" }}
         />
         <SVGDefinitions />
         <GlobalModals />

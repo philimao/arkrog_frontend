@@ -12,7 +12,7 @@ export const StyledModalContent = styled.div`
     top: 0;
     background-image: url("/images/bg/02.png");
     background-repeat: repeat-y;
-    background-size: auto 16.67%;
+    background-size: 100% auto;
     background-position: 25% 0;
     height: 100%;
     width: 100%;

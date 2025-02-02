@@ -9,7 +9,7 @@ const StyledPageNavbar = styled.div`
   align-items: center;
   height: 6rem;
   font-size: 1.5rem;
-  overflow-y: auto;
+  overflow-y: hidden;
   border-color: rgba(255, 255, 255, 0.2);
 `;
 

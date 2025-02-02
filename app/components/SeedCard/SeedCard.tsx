@@ -58,7 +58,7 @@ export default function SeedCard({
           </span>
         </div>
         <div className="flex gap-2">
-          {userInfo?.level && userInfo?.level > 2 && (
+          {!!userInfo?.level && userInfo?.level > 2 && (
             <SVGIcon
               name="delete"
               onClick={handleDeleteSeed}
@@ -136,7 +136,7 @@ export default function SeedCard({
           />
           <span>{seed.raider}</span>
         </div>
-        <div className="text-sm">
+        <div className="text-sm max-sm:w-16">
           {new Date(seed.date_created).toLocaleString("zh-CN")}
         </div>
         <div className="flex gap-2">

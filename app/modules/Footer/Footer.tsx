@@ -14,6 +14,7 @@ const StyledFooterInner = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 4rem;
 `;
 
 const links = [
@@ -30,7 +31,7 @@ export function Footer() {
           <Link
             to={link.to}
             key={link.text}
-            className="font-bold text-lg me-24 last-of-type:me-0 hover:text-ak-blue"
+            className="font-bold text-lg hover:text-ak-blue"
             onClick={(evt) => {
               if (link.targetModal) {
                 evt.preventDefault();

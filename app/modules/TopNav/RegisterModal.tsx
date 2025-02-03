@@ -60,8 +60,13 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
     }
   }
 
-  function switchToLogin() {
+  function handleClose() {
+    setIsVisible(false); // Reset isVisible to false when step away from RegisterModal
     onRegisterClose();
+  }
+
+  function switchToLogin() {
+    handleClose();
     onLoginOpen();
   }
 
@@ -82,7 +87,7 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
             <SVGIcon name="modal-close" width="0.7rem" height="0.7rem" />
           </button>
         }
-        onClose={onRegisterClose}
+        onClose={handleClose}
       >
         <ModalContent>
           {(onClose) => (

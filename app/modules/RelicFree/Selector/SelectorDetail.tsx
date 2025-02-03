@@ -7,7 +7,9 @@ import { useAppDataStore } from "~/stores/appDataStore";
 
 const StyledZoneName = styled.div`
   height: 5rem;
-  line-height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid #d9d9d9;
   background: #3d3d3d;
   text-align: center;
@@ -20,22 +22,13 @@ const StyledZoneName = styled.div`
 
 const StyledStageCard = styled.div`
   height: 5rem;
-  width: 45%;
-  @media (min-width: 640px) {
-    width: 32%;
-  }
-  @media (min-width: 1024px) {
-    width: 26%;
-  }
-  @media (min-width: 1280px) {
-    width: 21%;
-  }
   margin-bottom: 2rem;
   filter: drop-shadow(4px 4px 5px rgba(0, 0, 0, 0.25));
 `;
 
 const StyledCardTitleText = styled.div<{ type: string }>`
   margin-right: 0.5rem;
+  min-width: 2rem;
   user-select: none;
   color: ${(props) =>
     props.type === "normal"
@@ -198,20 +191,12 @@ export default function SelectorDetail({
             const renderStages = Object.values(stageOfRogue).filter((stage) =>
               zone.filter(stage, renderedStageIds),
             );
-            const len = renderStages.length;
-            const ghostStages = renderStages
-              .slice(0, 4 - (len % 4))
-              .map((stage: StageData) => ({ ...stage, id: "ghost" }));
-            if (ghostStages.length % 4) {
-              renderStages.push(...ghostStages);
-            }
-            // console.log(zone.name, renderStages);
             return (
               <div className="flex mb-16" key={zone.id}>
                 <div className="w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
-                <div className="w-3/4 lg:w-4/5 xl:w-5/6 flex flex-wrap justify-between ps-2 sm:ps-3 lg:ps-6 xl:ps-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 grow">
                   {renderStages.map((stage, i) => {
                     if (stage.id === "ghost")
                       return <StyledStageCard className="" key={"ghost" + i} />;

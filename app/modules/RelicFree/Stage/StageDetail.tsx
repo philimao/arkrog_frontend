@@ -14,30 +14,20 @@ import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useAppDataStore } from "~/stores/appDataStore";
 
-// @ts-ignore
-const StyledDescriptionBlock = styled.div.attrs((props) => ({
-  // @ts-ignore
-  "data-type": props.type,
-}))`
+const StyledDescriptionBlock = styled.div`
   padding: 1.5rem;
   background: var(--black-gray);
   white-space: pre-wrap;
-  position: relative;
-  &::after {
-    display: ${(props) =>
-      // @ts-ignore
-      props.type ? "block" : "none"};
-    content: attr(data-type);
-    position: absolute;
-    right: 1rem;
-    top: 1rem;
-    padding: 0.25rem 1rem;
-    font-size: 0.8rem;
-    background: ${(props) =>
-      // @ts-ignore
-      props.type === "紧急" ? "var(--ak-red)" : "var(--ak-purple)"};
-  }
 `;
+
+const StyledDescriptionTag = styled.div<{ tag: string }>`
+  float: right;
+  padding: 0.25rem 1rem;
+  margin-left: 0.25rem;
+  font-size: 0.8rem;
+  background: ${(props) =>
+    props.tag === "紧急" ? "var(--ak-red)" : "var(--ak-purple)"};
+`
 
 const StyledBackButtonContainer = styled.div`
   position: absolute;
@@ -79,7 +69,7 @@ export default function StageDetail({
     }
   }, [mapRef]);
 
-  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb}`;
+  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ''}`;
 
   const eliteStageData: StageData | null = useMemo(() => {
     if (!stages || !stageData.id.match(/ro\d_n/)) return null;
@@ -90,6 +80,24 @@ export default function StageDetail({
   }, [stages, stageData]);
 
   const navigate = useNavigate();
+
+  const shouldShowAdditionalDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
+  const renderAdditionalDesc = () => {
+    const tag = eliteStageData
+      ? "紧急"
+      : stagePreview?.[stageData.id]?.boatDesc
+        ? "带船"
+        : ""
+    return <>
+      <StyledDescriptionTag tag={tag}>
+        {tag}
+      </StyledDescriptionTag>
+      {eliteStageData
+        ? eliteStageData.eliteDesc
+        : stagePreview?.[stageData.id]?.boatDesc ?? ""
+      }
+    </>
+  }
 
   return (
     <div className="mb-10 relative">
@@ -112,22 +120,9 @@ export default function StageDetail({
             .replace(/<@.*?>/, "")
             .replace(/<\/>/g, "")}
         </StyledDescriptionBlock>
-        {/* @ts-ignore */}
-        <StyledDescriptionBlock
-          type={
-            eliteStageData
-              ? "紧急"
-              : stagePreview?.[stageData.id]?.boatDesc
-                ? "带船"
-                : ""
-          }
-        >
-          {eliteStageData
-            ? eliteStageData.eliteDesc
-            : stagePreview?.[stageData.id]?.boatDesc
-              ? stagePreview?.[stageData.id]?.boatDesc
-              : ""}
-        </StyledDescriptionBlock>
+        {<StyledDescriptionBlock>
+          {shouldShowAdditionalDesc && renderAdditionalDesc()}
+        </StyledDescriptionBlock>}
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>

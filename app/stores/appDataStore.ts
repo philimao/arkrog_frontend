@@ -10,6 +10,7 @@ type AppDataStore = {
   latestRecordIds?: string[];
   inclusionPrinciple?: string;
   recommendArticles?: ArticleType[];
+  charImages?: string[];
 };
 
 type AppDataAction = {
@@ -24,6 +25,7 @@ export const useAppDataStore = create<AppDataStore & AppDataAction>(
     latestRecordIds: undefined,
     inclusionPrinciple: undefined,
     recommendArticles: undefined,
+    charImages: undefined,
     fetchAppData: async () => {
       const bundle = await _get<AppDataStore>("/app/bundle");
       set({ ...bundle });

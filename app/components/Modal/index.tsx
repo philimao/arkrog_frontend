@@ -50,7 +50,7 @@ export default function ModalTemplate({
         placement="top-center"
         radius="none"
         classNames={{
-          base: "my-20 overflow-y-auto",
+          base: "my-20 overflow-y-auto hide-scroll",
           backdrop: "backdrop-blur-sm",
           closeButton: "top-6 end-6 bg-black-gray",
         }}

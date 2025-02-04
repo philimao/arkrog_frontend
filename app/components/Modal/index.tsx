@@ -50,7 +50,7 @@ export default function ModalTemplate({
         placement="top-center"
         radius="none"
         classNames={{
-          base: "my-20",
+          base: "my-20 overflow-y-auto",
           backdrop: "backdrop-blur-sm",
           closeButton: "top-6 end-6 bg-black-gray",
         }}
@@ -61,6 +61,7 @@ export default function ModalTemplate({
           </button>
         }
         {...props}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <StyledModalContent>{children}</StyledModalContent>

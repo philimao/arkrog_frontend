@@ -36,7 +36,7 @@ export default function HomeLayout() {
                   className="block w-[15rem]"
                   key={page.title}
                 >
-                  <StyledHomeNav key={page.pathname} active>
+                  <StyledHomeNav key={page.pathname} active={active}>
                     {page.title}
                   </StyledHomeNav>
                 </Link>

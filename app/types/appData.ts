@@ -6,3 +6,8 @@ export interface ArticleType {
   raider: string;
   raiderImage: string;
 }
+
+export interface BannerType {
+  src: string;
+  target: string;
+}

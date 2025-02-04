@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { _get } from "~/utils/tools";
 import type { StagePreview } from "~/types/gameData";
-import type { ArticleType } from "~/types/appData";
+import type { ArticleType, BannerType } from "~/types/appData";
 
 type AppDataStore = {
-  banners?: string[];
+  banners?: BannerType[];
   stagePreview?: StagePreview;
   recommendRecordIds?: string[];
   latestRecordIds?: string[];

@@ -1,15 +1,16 @@
 import { create } from "zustand";
 import { _get } from "~/utils/tools";
 import type { StagePreview } from "~/types/gameData";
-import type { ArticleType } from "~/types/appData";
+import type { ArticleType, BannerType } from "~/types/appData";
 
 type AppDataStore = {
-  banners?: string[];
+  banners?: BannerType[];
   stagePreview?: StagePreview;
   recommendRecordIds?: string[];
   latestRecordIds?: string[];
   inclusionPrinciple?: string;
   recommendArticles?: ArticleType[];
+  charImages?: string[];
 };
 
 type AppDataAction = {
@@ -24,6 +25,7 @@ export const useAppDataStore = create<AppDataStore & AppDataAction>(
     latestRecordIds: undefined,
     inclusionPrinciple: undefined,
     recommendArticles: undefined,
+    charImages: undefined,
     fetchAppData: async () => {
       const bundle = await _get<AppDataStore>("/app/bundle");
       set({ ...bundle });

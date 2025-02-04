@@ -1,7 +1,7 @@
 import { StageTypes } from "~/types/constant";
 import type { RecordType } from "~/types/recordType";
 import { Divider } from "@heroui/react";
-import { _post } from "~/utils/tools";
+import { _post, findDuplicates } from "~/utils/tools";
 import React, {
   type Dispatch,
   type SetStateAction,
@@ -20,6 +20,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
 import ModalTemplate from "~/components/Modal";
+import { useAppDataStore } from "~/stores/appDataStore";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -127,15 +128,6 @@ const bustOrderMapping = (i: number) => {
   return 2 * (i - 7);
 };
 
-const chars = [
-  "char_476_blkngt",
-  "char_250_phatom",
-  "char_400_weedy",
-  "char_4146_nymp",
-  "char_4133_logos",
-  "char_1035_wisdel",
-];
-
 export default function RecordCard({
   isStagePage,
   record,
@@ -148,6 +140,7 @@ export default function RecordCard({
   const { userInfo, updateUserInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
+  const { charImages } = useAppDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
   const [showNote, setShowNote] = useState<boolean>(false);
 
@@ -194,10 +187,13 @@ export default function RecordCard({
     );
   }
 
-  const charId =
-    chars.find((charId) =>
-      record.team.find((memberData) => charId === memberData.charId),
-    ) || "char_1035_wisdel";
+  const availableBg = findDuplicates([
+    ...record.team.map((memberData) => memberData.charId),
+    ...(charImages || []),
+  ]);
+  const charId = availableBg.length
+    ? availableBg[Math.floor(availableBg.length * Math.random())]
+    : "char_1035_wisdel";
   const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
 
   return (

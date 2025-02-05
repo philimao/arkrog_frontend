@@ -84,7 +84,7 @@ export default function UserAvatar() {
 
   return (
     <Dropdown className="w-20">
-      <DropdownTrigger>
+      <DropdownTrigger className="cursor-pointer">
         {userInfo?.face ? (
           <img
             src={userInfo.face}

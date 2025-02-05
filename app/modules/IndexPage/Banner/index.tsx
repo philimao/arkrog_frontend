@@ -54,7 +54,7 @@ export default function Banner() {
             }
           }}
           className={
-            banners[activeIndex].target ? "cursor-auto" : "cursor-default"
+            banners[activeIndex].target ? "cursor-pointer" : "cursor-default"
           }
           target="_blank"
           rel="noopener noreferrer"

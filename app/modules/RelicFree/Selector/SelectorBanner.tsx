@@ -47,10 +47,10 @@ const LeftMask = styled.div`
   height: 100%;
   width: 100%;
   background: linear-gradient(
-    90deg,
+    45deg,
     #000 0%,
     rgba(0, 0, 0, 0.75) 10%,
-    rgba(0, 0, 0, 0) 30%,
+    rgba(0, 0, 0, 0) 90%,
     transparent
   );
   z-index: -1;

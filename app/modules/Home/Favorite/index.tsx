@@ -10,7 +10,7 @@ import SeedCard from "~/components/SeedCard/SeedCard";
 
 const navs = [
   { title: "记录收藏", filter: () => {} },
-  { title: "种子收藏", filter: () => {} },
+  // { title: "种子收藏", filter: () => {} },
 ];
 const pageSize = 20;
 
@@ -106,15 +106,15 @@ export default function FavoritePage() {
           </div>
         )}
       </div>
-      {(title === "record" && maxRecordPages > 1) ||
-        (title === "seed" && maxSeedPages > 1 && (
-          <Pagination
-            color="secondary"
-            page={page}
-            total={title === "record" ? maxRecordPages : maxSeedPages}
-            onChange={setPage}
-          />
-        ))}
+      {((title === "record" && maxRecordPages > 1) ||
+        (title === "seed" && maxSeedPages > 1)) && (
+        <Pagination
+          color="secondary"
+          page={page}
+          total={title === "record" ? maxRecordPages : maxSeedPages}
+          onChange={setPage}
+        />
+      )}
     </div>
   );
 }

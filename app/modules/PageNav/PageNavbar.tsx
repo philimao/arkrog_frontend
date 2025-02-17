@@ -2,7 +2,6 @@ import { styled } from "styled-components";
 import "app/styles/nav.css";
 import { Link, useLocation } from "react-router";
 import { pages } from "~/routes";
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 
 const StyledPageNavbar = styled.div`
   display: flex;

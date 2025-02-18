@@ -10,7 +10,9 @@ const colorExt = {
   "dark-gray": "var(--dark-gray)",
   "black-gray": "var(--black-gray)",
   "ak-purple": "var(--ak-purple)",
+  "ak-dark-purple": "var(--ak-dark-purple)",
   "ak-red": "var(--ak-red)",
+  "ak-dark-red": "var(--ak-dark-red)",
   "ak-pink": "var(--ak-pink)",
   "semi-black": "var(--semi-black)",
 };

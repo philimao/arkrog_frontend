@@ -112,7 +112,7 @@ const StyledCornerMark = styled.div`
   background: linear-gradient(
     45deg,
     rgba(255, 255, 255, 0) 50%,
-    var(--ak-red) 50%
+    var(--ak-dark-red) 50%
   );
   & > span {
     position: absolute;

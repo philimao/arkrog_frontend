@@ -7,11 +7,13 @@
     --ak-deep-blue: #0691CD;
     --light-mid-gray: #9A9A9A;
     --light-gray: #D9D9D9;
-    --mid-gray: #444444;
+    --mid-gray: #4E4E4E;
     --dark-gray: #242424;
     --black-gray: #181818;
     --ak-purple: #D533EB;
+    --ak-dark-purple: #B116BF;
     --ak-red: #EB3333;
+    --ak-dark-red: #C21619;
     --ak-pink: #FB7299;
     --semi-black: rgba(0, 0, 0, 0.5);
 }

@@ -9,10 +9,10 @@ import {
 } from "@heroui/react";
 import React, { type FormEvent } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
 import { toast } from "react-toastify";
+import { EyeClosedIcon, EyeOpenIcon, ModalCloseIcon } from "~/components/Icons";
 
 interface RegisterModalProps {
   id?: string;
@@ -84,7 +84,7 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <SVGIcon name="modal-close" width="0.7rem" height="0.7rem" />
+            <ModalCloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
         onClose={handleClose}
@@ -140,15 +140,13 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
                         onClick={() => setIsVisible(!isVisible)}
                       >
                         {isVisible ? (
-                          <SVGIcon
-                            name="eye-open"
+                          <EyeOpenIcon
                             width="1.5rem"
                             height="1.5rem"
                             className="pointer-events-none"
                           />
                         ) : (
-                          <SVGIcon
-                            name="eye-closed"
+                          <EyeClosedIcon
                             width="1.5rem"
                             height="1.5rem"
                             className="pointer-events-none"
@@ -178,15 +176,13 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
                         onClick={() => setIsVisible2(!isVisible2)}
                       >
                         {isVisible2 ? (
-                          <SVGIcon
-                            name="eye-open"
+                          <EyeOpenIcon
                             width="1.5rem"
                             height="1.5rem"
                             className="pointer-events-none"
                           />
                         ) : (
-                          <SVGIcon
-                            name="eye-closed"
+                          <EyeClosedIcon
                             width="1.5rem"
                             height="1.5rem"
                             className="pointer-events-none"

@@ -10,7 +10,7 @@ const StyledZoneName = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--light-gray);
   background: #3d3d3d;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -48,7 +48,7 @@ const StyledCardBody = styled.div`
   position: relative;
   overflow: hidden;
   height: 3.5rem;
-  background: #242424;
+  background: var(--dark-gray);
 `;
 
 const StyledDifficulty = styled.div`

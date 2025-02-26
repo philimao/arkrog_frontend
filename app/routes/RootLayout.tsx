@@ -8,7 +8,6 @@ import theme from "~/styles/theme";
 import { Footer } from "~/modules/Footer/Footer";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 import GlobalModals from "~/routes/GlobalModals";
 import { useAppDataStore } from "~/stores/appDataStore";
 
@@ -52,7 +51,6 @@ export default function RootLayout() {
           hideProgressBar
           style={desktop ? {} : { width: "100vw" }}
         />
-        <SVGDefinitions />
         <GlobalModals />
       </StyledBackground>
     </ThemeProvider>

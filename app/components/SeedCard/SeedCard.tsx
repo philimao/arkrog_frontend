@@ -1,12 +1,12 @@
 import type { SeedType } from "~/types/seedType";
 import { SeedTypeColors, SeedTypes } from "~/types/constant";
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { toast } from "react-toastify";
 import { _post } from "~/utils/tools";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import type { FavoriteItem } from "~/types/userInfo";
 import { openModal } from "~/utils/dom";
+import { MaxIcon, MinIcon, BilibiliIcon, DeleteIcon, StarHollowIcon, CopyIcon, CommentIcon, ThumbUpIcon } from "../Icons";
 
 export default function SeedCard({
   seed,
@@ -59,30 +59,26 @@ export default function SeedCard({
         </div>
         <div className="flex gap-2">
           {!!userInfo?.level && userInfo?.level > 2 && (
-            <SVGIcon
-              name="delete"
+            <DeleteIcon
               onClick={handleDeleteSeed}
               className="w-6 h-6 text-transparent hover:text-ak-blue"
               role="button"
             />
           )}
           {expand ? (
-            <SVGIcon
-              name="min"
+            <MinIcon
               className="w-6 h-6 hover:text-ak-blue"
               role="button"
               onClick={() => setExpand(false)}
             />
           ) : (
-            <SVGIcon
-              name="max"
+            <MaxIcon
               className="w-6 h-6 hover:text-ak-blue"
               role="button"
               onClick={() => setExpand(true)}
             />
           )}
-          <SVGIcon
-            name="copy"
+          <CopyIcon
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
             onClick={() =>
@@ -91,8 +87,7 @@ export default function SeedCard({
                 .then(() => toast.info("已拷贝至剪贴板"))
             }
           />
-          <SVGIcon
-            name="star-hollow"
+          <StarHollowIcon
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
             onClick={() => {
@@ -142,26 +137,22 @@ export default function SeedCard({
         <div className="flex gap-2">
           {seed.url && (
             <a href={seed.url} target="_blank" rel="noopener noreferrer">
-              <SVGIcon
-                name="bilibili"
+              <BilibiliIcon
                 className="w-6 h-6 hover:text-ak-blue me-1"
                 style={{ color: "#FB7299" }}
                 role="button"
               />
             </a>
           )}
-          <SVGIcon
-            name="comment"
+          <CommentIcon
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
           />
-          <SVGIcon
-            name="thumb-up"
+          <ThumbUpIcon
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
           />
-          <SVGIcon
-            name="thumb-up"
+          <ThumbUpIcon
             className="w-6 h-6 rotate-180"
             role="button"
           />

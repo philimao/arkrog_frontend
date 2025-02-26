@@ -1,4 +1,3 @@
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import {
   Modal,
   ModalContent,
@@ -7,6 +6,7 @@ import {
 } from "@heroui/react";
 import React from "react";
 import { StyledModalContent } from "~/modules/TopNav/styled";
+import { ModalCloseIcon } from "../Icons";
 
 interface ModalControl {
   isOpen?: boolean;
@@ -57,7 +57,7 @@ export default function ModalTemplate({
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <SVGIcon name="modal-close" width="0.7rem" height="0.7rem" />
+            <ModalCloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
         {...props}

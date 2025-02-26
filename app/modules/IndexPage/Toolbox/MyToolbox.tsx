@@ -57,8 +57,7 @@ export default function MyToolbox() {
               />
             ) : (
               <Skeleton
-                className="w-full h-full"
-                style={{ background: "#4E4E4E" }}
+                className="w-full h-full bg-mid-gray"
               />
             )}
           </div>

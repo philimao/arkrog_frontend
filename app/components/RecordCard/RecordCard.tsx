@@ -11,7 +11,6 @@ import React, {
 import { styled } from "styled-components";
 import RecordTypeLabel from "~/components/RecordCard/RecordTypeLabel";
 import CharAvatar from "~/components/RecordCard/CharAvatar";
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useRecordStore } from "~/stores/recordStore";
 import { openModal } from "~/utils/dom";
@@ -21,6 +20,7 @@ import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
 import ModalTemplate from "~/components/Modal";
 import { useAppDataStore } from "~/stores/appDataStore";
+import { DeleteIcon, ReportIcon, StarIcon } from "../Icons";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -36,7 +36,7 @@ const StyledCardContainer = styled.div`
   }
   position: relative;
   overflow: hidden;
-  background: #4e4e4e;
+  background: var(--mid-gray);
   box-shadow: 4px 4px 6px 0 rgba(0, 0, 0, 0.25);
 `;
 
@@ -292,8 +292,7 @@ export default function RecordCard({
           </div>
           <div className="hidden sm:flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
             <div className="flex justify-evenly w-12 sm:w-16 lg:w-20 xl:w-24 bg-default-50 content-center flex-wrap">
-              <SVGIcon
-                name="star"
+              <StarIcon
                 className={
                   starred ? "text-yellow-300" : "hover:text-yellow-300"
                 }
@@ -305,8 +304,7 @@ export default function RecordCard({
                   handleStarRecord();
                 }}
               />
-              <SVGIcon
-                name="report"
+              <ReportIcon
                 className="hover:text-yellow-300"
                 role="button"
                 onClick={() => {
@@ -318,8 +316,7 @@ export default function RecordCard({
                 }}
               />
               {userInfo?.level !== undefined && userInfo?.level > 2 && (
-                <SVGIcon
-                  name="delete"
+                <DeleteIcon
                   className="hover:text-yellow-300"
                   role="button"
                   onClick={handleDeleteRecord}
@@ -358,8 +355,7 @@ export default function RecordCard({
           <div className="p-4">{record.note}</div>
         </ModalTemplate>
         <div className="w-1/3 flex items-center justify-evenly">
-          <SVGIcon
-            name="star"
+          <StarIcon
             className={
               starred
                 ? "text-yellow-300 w-4 h-4"
@@ -373,8 +369,7 @@ export default function RecordCard({
               handleStarRecord();
             }}
           />
-          <SVGIcon
-            name="report"
+          <ReportIcon
             className="hover:text-yellow-300 w-4 h-4"
             role="button"
             onClick={() => {
@@ -386,8 +381,7 @@ export default function RecordCard({
             }}
           />
           {userInfo?.level !== undefined && userInfo?.level > 2 && (
-            <SVGIcon
-              name="delete"
+            <DeleteIcon
               className="hover:text-yellow-300 w-4 h-4"
               role="button"
               onClick={handleDeleteRecord}

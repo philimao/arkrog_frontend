@@ -10,9 +10,9 @@ import {
 } from "@heroui/react";
 import React, { type FormEvent } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { SVGIcon } from "~/components/SVGIcon/SVGIcon";
 import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
+import { EyeClosedIcon, EyeOpenIcon, ModalCloseIcon } from "~/components/Icons";
 
 interface LoginModalProps {
   id?: string;
@@ -76,7 +76,7 @@ export default function LoginModal({
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <SVGIcon name="modal-close" width="0.7rem" height="0.7rem" />
+            <ModalCloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
       >
@@ -125,15 +125,13 @@ export default function LoginModal({
                       onClick={() => setIsVisible(!isVisible)}
                     >
                       {isVisible ? (
-                        <SVGIcon
-                          name="eye-open"
+                        <EyeOpenIcon
                           width="1.5rem"
                           height="1.5rem"
                           className="pointer-events-none"
                         />
                       ) : (
-                        <SVGIcon
-                          name="eye-closed"
+                        <EyeClosedIcon
                           width="1.5rem"
                           height="1.5rem"
                           className="pointer-events-none"

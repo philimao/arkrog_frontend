@@ -10,7 +10,7 @@ const StyledFooterInner = styled.div`
   margin-top: 10rem;
   box-shadow: 0 -5px 10px 0 #18d1ff80;
   height: 6rem;
-  background: #4e4e4e;
+  background: var(--mid-gray);
   display: flex;
   justify-content: center;
   align-items: center;

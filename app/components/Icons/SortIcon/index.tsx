@@ -4,7 +4,7 @@ import { Svg, type SvgProps } from '../Svg';
 type Order = 'asc' | 'desc';
 
 interface SortProps extends SvgProps {
-  /** Defines the direction of the arrow. */
+  /** Defines the order of sorting. */
   order?: Order;
 }
 

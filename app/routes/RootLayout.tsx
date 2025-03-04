@@ -10,6 +10,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import GlobalModals from "~/routes/GlobalModals";
 import { useAppDataStore } from "~/stores/appDataStore";
+import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -29,10 +30,11 @@ export default function RootLayout() {
   const { fetchGameData, fetchGameDataExt } = useGameDataStore();
   const { fetchUserInfo } = useUserInfoStore();
   const { fetchAppData } = useAppDataStore();
+  const { fetchTournamentsData } = useTournamentDataStore();
   const desktop = window.matchMedia("(min-width: 640px)").matches;
 
   useEffect(() => {
-    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData()]);
+    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData(), fetchTournamentsData()]);
   }, []);
 
   return (

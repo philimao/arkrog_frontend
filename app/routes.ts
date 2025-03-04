@@ -34,6 +34,10 @@ export default [
       route("favorite", "modules/Home/Favorite/index.tsx"),
       route("link-bilibili", "modules/Home/Link/index.tsx"),
     ]),
+    route("/tournament", "routes/TournamentLayout.tsx", [
+      index("modules/Tournament/index.tsx"),
+      route(":tournamentId", "modules/Tournament/TournamentDetail/index.tsx"),
+    ]),
     // route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
     route("/sponsor", "modules/Standalone/Sponsorship.tsx"),
     route("*", "modules/Standalone/NotFoundPage.tsx"),

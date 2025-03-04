@@ -16,6 +16,7 @@
     --ak-dark-red: #C21619;
     --ak-pink: #FB7299;
     --semi-black: rgba(0, 0, 0, 0.5);
+    --black-gray-70: rgba(24, 24, 24, 0.7);
 }
 
 html,
@@ -51,26 +52,38 @@ body {
         font-family: 'Novecento';
         font-style: normal;
         font-weight: 400;
-        src: url(/public/fonts/Novecento.woff2) format('woff2');
+        src: url(/fonts/Novecento.woff2) format('woff2');
+    }
+
+    @font-face {
+        font-family: 'NovecentoWide';
+        font-style: normal;
+        font-weight: 400;
+        src: url(/fonts/NovecentoWide.ttf) format('truetype');
     }
 
     @font-face {
         font-family: 'HanSans';
         font-style: normal;
         font-weight: 600;
-        src: url(/public/fonts/SourceHanSansCN-Bold.subset.otf) format('otf');
+        src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format('otf');
     }
 
     @font-face {
         font-family: 'HanSerif';
         font-style: normal;
         font-weight: 600;
-        src: url(/public/fonts/SourceHanSerifCN-Bold.subset.otf) format('otf');
+        src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format('otf');
     }
 }
 
 .font-novecento {
     font-family: 'Novecento', sans-serif;
+    font-weight: 400;
+}
+
+.font-novecento-wide {
+    font-family: 'NovecentoWide', sans-serif;
     font-weight: 400;
 }
 

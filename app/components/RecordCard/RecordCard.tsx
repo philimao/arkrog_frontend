@@ -215,7 +215,7 @@ export default function RecordCard({
                 "text-[2.5rem] absolute left-16 top-1/2 -translate-y-1/2 " +
                 (record.type === "normal"
                   ? "text-ak-blue"
-                  : record.type === "challenge"
+                  : record.type === "elite"
                     ? "text-ak-red"
                     : "text-ak-purple")
               }

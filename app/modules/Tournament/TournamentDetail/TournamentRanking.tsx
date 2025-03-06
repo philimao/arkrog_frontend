@@ -72,7 +72,7 @@ export default function TournamentRanking({
               {/* TODO: add sorting order for date */}
               <td>日程</td>
               <td>分队</td>
-              <td>结局</td>
+              <td className="hidden md:table-cell">结局</td>
               <td>分数</td>
             </tr>
           </thead>
@@ -85,8 +85,17 @@ export default function TournamentRanking({
                 <td>{player?.name}</td>
                 {showSession && <td>{entry[1].session}</td>}
                 <td>{entry[1].schedule}</td>
-                <td>{entry[1].starterSquad}</td>
-                <td>{entry[1].ending}</td>
+                <td>
+                  <span className="hidden md:block">{entry[1].starterSquad}</span>
+                  <span className="block md:hidden">
+                    <img
+                      src={`/images/squad/${entry[1].starterSquad}.png`}
+                      alt="squad"
+                      className="h-10 aspect-square object-contain"
+                    />
+                  </span>
+                </td>
+                <td className="hidden md:table-cell">{entry[1].ending}</td>
                 <td>{entry[1].point}</td>
               </tr>
             })}

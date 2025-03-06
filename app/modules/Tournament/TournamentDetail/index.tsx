@@ -195,15 +195,21 @@ export default function TournamentDetail() {
               <div className="text-ak-blue font-bold text-xl">{rankMap[index+1]}</div>
               <StyledFinalResultRank>NO.{index+1}</StyledFinalResultRank>
             </div>
-            <div className="flex">
+            <div className="flex flex-col lg:flex-row gap-4">
               {/* TODO: replace with player's avatar */}
-              <StyledFinalResultAvatar className="pt-1 pr-1">
-                <div className="w-20 h-20 aspect-square bg-light-gray" />
+              <StyledFinalResultAvatar className="min-w-20 pt-1 pr-1">
+                <div className="aspect-square bg-light-gray" />
               </StyledFinalResultAvatar>
-              <div className="flex flex-col ml-4">
-                <div className="text-white text-3xl">{player.name}</div>
-                <div className="text-ak-blue text-xl pt-2">{player.games[player.games.length - 1].point}</div>
-                {/* TODO: add squad icon */}
+              <div className="flex justify-between w-full">
+                <div className="flex flex-col">
+                  <div className="text-white text-3xl">{player.name}</div>
+                  <div className="text-ak-blue text-xl pt-2">{player.games[player.games.length - 1].point}</div>
+                </div>
+                <img
+                  src={`/images/squad/${player.games[player.games.length - 1].starterSquad}.png`}
+                  alt="squad"
+                  className="h-14 aspect-square object-contain self-end opacity-30"
+                />
               </div>
             </div>
             <div className="bg-black-gray text-center p-2">

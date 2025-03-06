@@ -103,6 +103,7 @@ export default function SelectorBanner({
                 role="button"
                 onClick={() => {
                   searchParams.set("topicId", topic.id);
+                  if (topic.id !== currentTopic.id) searchParams.delete("zoneId");
                   setSearchParams(searchParams, {
                     preventScrollReset: true,
                   });

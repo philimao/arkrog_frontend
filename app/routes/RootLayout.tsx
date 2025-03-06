@@ -11,6 +11,7 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import GlobalModals from "~/routes/GlobalModals";
 import { useAppDataStore } from "~/stores/appDataStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
+import ScrollToTop from "~/modules/Standalone/ScrollToTop";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -54,6 +55,7 @@ export default function RootLayout() {
           style={desktop ? {} : { width: "100vw" }}
         />
         <GlobalModals />
+        <ScrollToTop />
       </StyledBackground>
     </ThemeProvider>
   );

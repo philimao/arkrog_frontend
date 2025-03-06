@@ -195,7 +195,7 @@ export default function TournamentDetail() {
               <div className="text-ak-blue font-bold text-xl">{rankMap[index+1]}</div>
               <StyledFinalResultRank>NO.{index+1}</StyledFinalResultRank>
             </div>
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-row sm:flex-col lg:flex-row gap-4">
               {/* TODO: replace with player's avatar */}
               <StyledFinalResultAvatar className="min-w-20 pt-1 pr-1">
                 <div className="aspect-square bg-light-gray" />

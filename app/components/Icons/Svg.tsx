@@ -3,6 +3,7 @@ import React from 'react';
 export interface SvgProps extends React.SVGAttributes<HTMLOrSVGElement> {
   className?: string;
   viewBox?: string;
+  label?: string;
 }
 
 export interface FilledProps extends SvgProps {
@@ -23,11 +24,11 @@ export const Svg: React.FC<SvgProps> = ({
     <svg
       xmlns={xmlns}
       className={className}
-      {...props}
       style={style}
       viewBox={viewBox}
       width={width}
       height={height}
+      {...props}
     >
       <g fill={props.fill || 'currentColor'}>
         {children}

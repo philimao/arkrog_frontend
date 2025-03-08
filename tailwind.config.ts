@@ -15,6 +15,7 @@ const colorExt = {
   "ak-dark-red": "var(--ak-dark-red)",
   "ak-pink": "var(--ak-pink)",
   "semi-black": "var(--semi-black)",
+  "black-gray-70": "var(--black-gray-70)"
 };
 
 export default {

@@ -9,7 +9,7 @@ import { openModal } from "~/utils/dom";
 import TournamentProgress from "./TournamentProgress";
 import TournamentSchedule from "./TournamentSchedule";
 import TournamentRanking from "./TournamentRanking";
-import { ArrowRightIcon, BilibiliIcon } from "~/components/Icons";
+import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 
@@ -113,9 +113,7 @@ export default function TournamentDetail() {
   const [isLoading, setIsLoading] = useState(false);
   const tournamentData =
     tournamentsData &&
-    tournamentsData.find(
-      (tournament) => tournament.tournamentId === tournamentId,
-    );
+    tournamentsData.find((tournament) => tournament.id === tournamentId);
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -151,25 +149,11 @@ export default function TournamentDetail() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
             <div className="text-4xl lg:text-6xl font-bold">
               {tournamentData.name}
-              {(tournamentData.seasons.length > 1 ||
-                tournamentData.season !== 1) &&
-                `#${tournamentData.season}`}
             </div>
             <div className="flex items-center gap-6">
               {tournamentData.ongoing && (
                 <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
               )}
-              <a
-                href={tournamentData.playBack}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <BilibiliIcon
-                  className="w-6 h-6 hover:text-ak-blue me-1"
-                  style={{ color: "#FB7299" }}
-                  role="button"
-                />
-              </a>
             </div>
           </div>
           <div className="text-ak-blue">

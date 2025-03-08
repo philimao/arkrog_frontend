@@ -72,18 +72,14 @@ function RougeSelector({
               key={index}
               className={`p-4 ${index === activeIndex ? "flex" : "hidden"}`}
               role="button"
-              onClick={() => navigate(tournament.tournamentId)}
+              onClick={() => navigate(tournament.id)}
             >
               {/* TODO: replace with images from backend */}
               <div className="w-full max-w-40">
                 <div className="w-full aspect-square bg-light-gray rounded-xl" />
               </div>
               <div className="flex flex-col pl-4 gap-1">
-                <div className="text-3xl font-bold">
-                  {tournament.name}
-                  {(tournament.seasons.length > 1 || tournament.season !== 1) &&
-                    `#${tournament.season}`}
-                </div>
+                <div className="text-3xl font-bold">{tournament.name}</div>
                 {
                   <div className="text-xl text-light-mid-gray">
                     {`${new Date(tournament.stages[0].startTime).toLocaleDateString("zh-CN")}
@@ -137,16 +133,13 @@ function RougeSelector({
             <div className="w-full border-b-ak-blue border-b-1 my-4 opacity-50" />
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4 grow">
               {tournamentsByEdition.get(edition)?.map((tournament) => (
-                <div
-                  className="flex flex-col items-center"
-                  key={tournament.tournamentId}
-                >
+                <div className="flex flex-col items-center" key={tournament.id}>
                   {/* TODO: replace with images from backend */}
                   <div
                     role="button"
                     className="w-full aspect-square bg-light-gray mb-2 rounded-xl relative"
                     onClick={() => {
-                      navigate(tournament.tournamentId);
+                      navigate(tournament.id);
                     }}
                   >
                     {ongoingTournaments.includes(tournament) && (
@@ -155,12 +148,7 @@ function RougeSelector({
                       </div>
                     )}
                   </div>
-                  <div className="text-white text-xl">
-                    {tournament.name}
-                    {(tournament.seasons.length > 1 ||
-                      tournament.season !== 1) &&
-                      `#${tournament.season}`}
-                  </div>
+                  <div className="text-white text-xl">{tournament.name}</div>
                 </div>
               ))}
             </div>

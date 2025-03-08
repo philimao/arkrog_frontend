@@ -1,14 +1,12 @@
 export interface TournamentData {
-  id: string; // initials of name
-  name: string; // without season
-  season: number;
-  seasons: number[]; // sibling seasons
-  tournamentId: string; // id_season
-  tournamentName: string; // name#season
+  id: string; // generated random string
+  name: string; // full name
+  seasons: string[]; // sibling seasons
   avatar: string;
-  playBack: string;
   rogue: string;
   edition: string;
+  type: "individual" | "team";
+  startTime: number;
   level: string;
   labels: string[];
   rule: string;
@@ -18,6 +16,7 @@ export interface TournamentData {
   room: string;
   ongoing?: boolean;
   stages: TournamentStage[];
+  teams?: TournamentTeam[];
   players?: TournamentPlayer[];
 }
 
@@ -27,11 +26,29 @@ export interface TournamentStage {
   endTime: number;
 }
 
+export interface TournamentTeam {
+  name: string;
+  id?: string;
+  avatar: string;
+  finalRank?: number;
+  note?: string;
+  members: string[];
+  leader: string;
+  keyMember: string;
+  stages: TournamentTeamStage[];
+}
+
+export interface TournamentTeamStage {
+  name: string;
+  point?: number;
+  rank?: number;
+}
+
 export type TournamentPlayer = {
   mid: string;
   name: string;
   face: string;
-  teamId?: string;
+  teamName?: string;
   finalRank?: number;
   note?: string;
   games: TournamentGame[];
@@ -45,12 +62,14 @@ export type TournamentGame = {
   point?: number;
   ending?: string;
   note?: string;
+  strategy?: string;
   type: "rank" | "1on1";
   result?: "win" | "lose";
-  rival?: string;
+  rivalMid?: string;
   starterSquad?: string;
   starterOp?: string[];
   level?: string;
   duration?: string;
   rank?: number;
+  playback?: string;
 };

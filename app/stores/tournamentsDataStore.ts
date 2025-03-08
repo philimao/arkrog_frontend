@@ -25,11 +25,6 @@ export const useTournamentDataStore = create<
       d.ongoing = d.stages.some(
         (s) => new Date(s.startTime) <= now && now <= new Date(s.endTime),
       );
-      d.tournamentId = d.id + "_" + d.season;
-      d.tournamentName = d.name + "#" + d.season;
-      d.seasons = data
-        .filter((datum) => d.id === datum.id)
-        .map((d) => d.season);
     });
 
     if (data) {
@@ -41,16 +36,13 @@ export const useTournamentDataStore = create<
   },
   fetchTournamentPlayer: async (tournamentId: string) => {
     const tournament = get().tournamentsData?.find(
-      (t) => t.tournamentId === tournamentId,
+      (t) => t.id === tournamentId,
     );
     if (!tournament) return;
     try {
       tournament.players = await _post<TournamentPlayer[]>(
         "/tournament/players",
-        {
-          id: tournament.id,
-          season: tournament.season,
-        },
+        { id: tournament.id },
       );
     } catch (err) {
       toast.error((err as Error).message);
@@ -60,9 +52,7 @@ export const useTournamentDataStore = create<
     set((state) => ({
       ...state,
       tournamentsData: state.tournamentsData?.map((t) =>
-        t.tournamentId === tournamentId
-          ? { ...t, players: tournament.players }
-          : t,
+        t.id === tournamentId ? { ...t, players: tournament.players } : t,
       ),
     }));
   },

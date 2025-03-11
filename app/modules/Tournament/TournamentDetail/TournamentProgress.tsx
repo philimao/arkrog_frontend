@@ -68,44 +68,50 @@ export default function TournamentProgress({
     return (
       <>
         {sortedSchedule.map((entry, index) => (
-          <td
+          <div
             key={index}
-            className="flex justify-between items-center text-white px-8 py-6"
+            className="grid grid-cols-4 sm:grid-cols-5 auto-cols-max divide-x divide-mid-gray"
           >
-            {renderPlayer(entry[0])}
-            <div className="text-center">
+            <div className="hidden md:flex h-full p-4">
+              {renderPlayer(entry[0])}
+            </div>
+            <div className="flex md:hidden justify-center items-center h-full p-4">
+              {renderPlayer(entry[0], true)}
+            </div>
+            <div className="hidden md:flex justify-center items-center h-full p-4">
+              {entry[1].starterSquad}
+            </div>
+            <div className="flex justify-center items-center h-full p-4 md:hidden">
+              <img
+                src={`/images/squad/${entry[1].starterSquad}.png`}
+                alt="squad"
+                className="h-10 aspect-square object-contain"
+              />
+            </div>
+            <div className="hidden sm:flex justify-center items-center h-full p-4">{entry[1].ending}</div>
+            <div className="flex justify-center items-center h-full text-ak-blue text-xl">{entry[1].point}</div>
+            <div className="flex justify-center items-center h-full">
               {new Date(entry[1].date).toLocaleTimeString("zh-CN").slice(0, -3)}
             </div>
-          </td>
+          </div>
         ))}
       </>
     );
   };
 
-  const renderSchedule = () => {
+  const renderSchedule = (session?: string, index?: number) => {
     return (
-      <>
-        {sessions.size ? (
-          Array.from(sessions).map((session, index) => (
-            <tr
-              key={index}
-              className="sm:table-cell bg-black-gray-70 align-top"
-            >
-              <td
-                key={index}
-                className="flex justify-center border-mid-gray border-b-1 bg-black-gray text-light-gray py-4"
-              >
-                {session}
-              </td>
-              {renderScheduleUnit(session)}
-            </tr>
-          ))
-        ) : (
-          <tr className="sm:table-cell bg-black-gray-70 align-top">
-            {renderScheduleUnit()}
-          </tr>
-        )}
-      </>
+      <div
+        key={index}
+        className="w-full flex flex-col bg-black-gray-70 align-top divide-y divide-mid-gray"
+      >
+        <div
+          className="flex justify-center bg-black-gray text-light-gray py-4"
+        >
+          {currentStage.name}{session}
+        </div>
+        {renderScheduleUnit(session)}
+      </div>
     );
   };
 
@@ -154,11 +160,13 @@ export default function TournamentProgress({
           />
         )}
       </div>
-      <table className="w-full border-collapse table-fixed">
-        <tbody className="max-sm:divide-y sm:divide-x divide-mid-gray">
-          {renderSchedule()}
-        </tbody>
-      </table>
+      <div className="w-full flex flex-col divide-y divide-mid-gray">
+        {sessions.size ? (
+          Array.from(sessions).map((session, index) => renderSchedule(session, index))
+        ) : (
+          renderSchedule()
+        )}
+      </div>
     </>
   );
 }

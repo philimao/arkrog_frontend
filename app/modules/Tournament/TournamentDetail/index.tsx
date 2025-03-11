@@ -196,7 +196,7 @@ export default function TournamentDetail() {
               />
             </div>
             <div
-              className={`text-white whitespace-nowrap text-xs ${column && "text-sm text-center"}`}
+              className={`text-white ${column ? "text-sm text-center" : ""}`}
             >
               {player.name}
             </div>
@@ -326,7 +326,7 @@ export default function TournamentDetail() {
 
       <div className="my-16">
         <SectionContainer
-          title="参赛选手&赛程"
+          title="赛程信息"
           content={
             <TournamentSchedule
               tournamentData={tournamentData}

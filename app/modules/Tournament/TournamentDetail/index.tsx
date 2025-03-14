@@ -6,9 +6,9 @@ import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { styled } from "styled-components";
 import { useNavigate } from "react-router";
 import { openModal } from "~/utils/dom";
-import TournamentProgress from "./TournamentProgress";
-import TournamentSchedule from "./TournamentSchedule";
+import TournamentInfo from "./TournamentInfo";
 import TournamentRanking from "./TournamentRanking";
+import TournamentFinalResult from "./TournamentFinalResult";
 import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Markdown from "react-markdown";
@@ -41,50 +41,33 @@ export const StyledStageTitleNum = styled.div`
   transform: translateY(-1.25rem);
 `;
 
-const StyledFinalResultAvatar = styled.div`
-  background: linear-gradient(
-    to top right,
-    transparent 0%,
-    transparent 80%,
-    var(--ak-blue) 80%,
-    var(--ak-blue) 100%
-  );
-`;
-
-const StyledFinalResultRank = styled.div`
-  position: absolute;
-  right: 0;
-  top: -1rem;
-  font-size: 3rem;
-  font-weight: 700;
-  font-family: "NovecentoWide", sans-serif;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--mid-gray);
-  user-select: none;
-`;
-
-function SectionContainer({
+export function SectionContainer({
   title,
   content,
   showArrowButton,
-  buttonOnClick,
+  arrowButtonOnClick,
+  navItems,
 }: {
   title: string;
   content: React.ReactNode;
   showArrowButton?: boolean;
-  buttonOnClick?: () => void;
+  arrowButtonOnClick?: () => void;
+  navItems?: React.ReactNode;
 }) {
   return (
     <div>
-      <div className="flex items-center gap-4">
-        <div className="text-2xl font-bold">{title}</div>
-        {showArrowButton && (
-          <ArrowRightIcon
-            className="w-4 h-4 text-light-gray"
-            role="button"
-            onClick={buttonOnClick}
-          />
-        )}
+      <div className="flex justify-between items-end">
+        <div className="flex items-center gap-4">
+          <div className="text-2xl font-bold">{title}</div>
+          {showArrowButton && (
+            <ArrowRightIcon
+              className="w-4 h-4 text-light-gray"
+              role="button"
+              onClick={arrowButtonOnClick}
+            />
+          )}
+        </div>
+        {navItems}
       </div>
       <StyledDivider />
       <div className="whitespace-pre-line text-light-gray">{content}</div>
@@ -206,67 +189,6 @@ export default function TournamentDetail() {
     );
   };
 
-  const renderFinalResults = () => {
-    const rankMap: { [key: number]: string } = {
-      1: "冠军",
-      2: "亚军",
-      3: "季军",
-    };
-    const topThree = tournamentData.players
-      ?.filter(
-        (player) =>
-          player.finalRank && 0 < player.finalRank && player.finalRank <= 3,
-      )
-      .sort((a, b) =>
-        a.finalRank && b.finalRank ? a.finalRank - b.finalRank : 0,
-      );
-
-    if (!topThree?.length) return <>暂无比赛结果</>;
-
-    return (
-      <div className="grid sm:grid-cols-3 gap-8">
-        {topThree?.map((player, index) => (
-          <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
-            <div className="flex justify-between relative">
-              <div className="text-ak-blue font-bold text-xl">
-                {rankMap[index + 1]}
-              </div>
-              <StyledFinalResultRank>NO.{index + 1}</StyledFinalResultRank>
-            </div>
-            <div className="flex flex-row sm:flex-col lg:flex-row gap-4">
-              <StyledFinalResultAvatar className="min-w-20 pt-1 pr-1">
-                <div className="aspect-square bg-light-gray">
-                  <img
-                    src={player.face}
-                    alt="avatar"
-                    referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
-                  />
-                </div>
-              </StyledFinalResultAvatar>
-              <div className="flex justify-between w-full">
-                <div className="flex flex-col">
-                  <div className="text-white text-3xl">{player.name}</div>
-                  <div className="text-ak-blue text-xl pt-2">
-                    {player.games[player.games.length - 1].point}
-                  </div>
-                </div>
-                <img
-                  src={`/images/squad/${player.games[player.games.length - 1].starterSquad}.png`}
-                  alt="squad"
-                  className="h-14 aspect-square object-contain self-end opacity-30"
-                />
-              </div>
-            </div>
-            <div className="bg-black-gray text-center p-2">
-              {player.games[player.games.length - 1].ending}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="relative">
       <StyledBackButtonContainer>
@@ -280,7 +202,7 @@ export default function TournamentDetail() {
           title="比赛规则"
           content={tournamentData.rule}
           showArrowButton
-          buttonOnClick={() => openModal("tournament-rules")}
+          arrowButtonOnClick={() => openModal("tournament-rules")}
         />
       </div>
 
@@ -296,52 +218,24 @@ export default function TournamentDetail() {
         <SectionContainer
           title="比赛时间"
           content={
-            <>
-              {tournamentData.stages.map((stage, index) => (
-                <div key={index} className="flex gap-2">
-                  <div>{stage.name}</div>
-                  <div>{`${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日 - ${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
-                </div>
-              ))}
-            </>
+            tournamentData.stages.map((stage, index) => (
+              <div key={index} className="flex gap-2">
+                <div>{stage.name}</div>
+                <div>{`${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日 - ${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
+              </div>
+            ))
           }
         />
       </div>
 
-      <div className="my-16">
-        {tournamentData.ongoing ? (
-          <SectionContainer
-            title="比赛进程"
-            content={
-              <TournamentProgress
-                tournamentData={tournamentData}
-                renderPlayer={renderPlayer}
-              />
-            }
-          />
-        ) : (
-          <SectionContainer title="比赛结果" content={renderFinalResults()} />
-        )}
-      </div>
+      <TournamentFinalResult tournamentData={tournamentData} />
 
-      <div className="my-16">
-        <SectionContainer
-          title="赛程信息"
-          content={
-            <TournamentSchedule
-              tournamentData={tournamentData}
-              renderPlayer={renderPlayer}
-            />
-          }
-        />
-      </div>
+      <TournamentInfo
+        tournamentData={tournamentData}
+        renderPlayer={renderPlayer}
+      />
 
-      <div>
-        <SectionContainer
-          title="排名情况"
-          content={<TournamentRanking tournamentData={tournamentData} />}
-        />
-      </div>
+      <TournamentRanking tournamentData={tournamentData} />
     </div>
   );
 }

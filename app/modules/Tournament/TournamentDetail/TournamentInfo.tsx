@@ -1,8 +1,10 @@
 import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
-import { generateDateArray, StyledDivider, StyledStageTitleNum } from ".";
-import React from "react";
+import { generateDateArray, SectionContainer, StyledDivider, StyledStageTitleNum } from ".";
+import React, { useState } from "react";
+import { StarIcon } from "~/components/Icons";
+import TournamentProgress from "./TournamentProgress";
 
-export default function TournamentSchedule({
+export function TournamentSchedule({
   tournamentData,
   renderPlayer,
 }: {
@@ -99,4 +101,102 @@ export default function TournamentSchedule({
       </div>
     );
   });
+}
+
+export function TournamentTeamInfo({
+  tournamentData,
+  renderPlayer,
+}: {
+  tournamentData: TournamentData;
+  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
+}) {
+  return (
+    <table className="w-full border-collapse table-auto divide-y divide-mid-gray">
+      <thead className="bg-black-gray">
+        <tr className="divide-x divide-mid-gray">
+          <td className="p-4 text-center">队徽</td>
+          <td className="p-4 text-center">队名</td>
+          <td className="p-4 text-center">队员</td>
+        </tr>
+      </thead>
+      <tbody className="bg-black-gray-70 border-collapse divide-y divide-mid-gray">
+        {tournamentData.teams?.map((team, index) => (
+          <tr key={index} className="divide-x divide-mid-gray">
+            <td>
+              <div className="flex items-center justify-center">
+                <img
+                  src={team.avatar}
+                  alt="team avatar"
+                  className="h-10 aspect-square object-contain"
+                />
+              </div>
+            </td>
+            <td>
+              <div className="p-4 flex flex-col">
+                <p className="text-white text-xl">{team.name}</p>
+                <p className="text-xs">{team.id}</p>
+              </div>
+            </td>
+            <td>
+              <div className="p-4 flex gap-12 justify-center flex-wrap">
+                {team.members.map((member) =>
+                  <div className="relative">
+                    {team.keyMember === member && <StarIcon className="text-ak-blue absolute -left-6 top-6" width="1rem" />}
+                    {renderPlayer(member, true)}
+                  </div>
+                )}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+export default function TournamentInfoWrapper({
+  tournamentData,
+  renderPlayer,
+}: {
+  tournamentData: TournamentData;
+  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
+}) {
+  const [navItem, setNavItem] = useState(0);
+
+  return (
+    <div className="my-16">
+      <SectionContainer
+        title="赛程信息"
+        content={
+          navItem === 0
+          ? tournamentData.type === 'team'
+            ? <TournamentTeamInfo
+                tournamentData={tournamentData}
+                renderPlayer={renderPlayer}
+              />
+            : <TournamentSchedule
+                tournamentData={tournamentData}
+                renderPlayer={renderPlayer}
+              />
+          : <TournamentProgress
+              tournamentData={tournamentData}
+              renderPlayer={renderPlayer}
+            />
+        }
+        navItems={
+          <div className="flex gap-4">
+            {([tournamentData.type === 'team' ? '参赛队伍' : '参赛选手', '比赛进程'] as const).map((item, index) => (
+              <button
+                key={item}
+                className={`${navItem === index ? 'text-ak-blue' : 'text-light-gray'}`}
+                onClick={() => setNavItem(index)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        }
+      />
+    </div>
+  )
 }

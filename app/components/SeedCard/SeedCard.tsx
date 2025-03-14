@@ -101,13 +101,13 @@ export default function SeedCard({
       </div>
       <div
         className={
-          "min-h-40 max-h-[12rem] overflow-y-auto my-2 flex-grow" +
+          "min-h-40 max-h-[12rem] overflow-y-auto my-2 grow" +
           (expand ? " max-h-fit" : "")
         }
       >
         <div className="whitespace-pre-wrap">{seed.note}</div>
       </div>
-      <div className="flex-grow" />
+      <div className="grow" />
       <div className="flex flex-wrap gap-2 mt-2 mb-4">
         {seed.labels.map((label) => (
           <span

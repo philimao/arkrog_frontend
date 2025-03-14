@@ -1,0 +1,108 @@
+import type { TournamentData } from "~/types/tournamentsData";
+import { styled } from "styled-components";
+import { SectionContainer } from ".";
+
+const StyledFinalResultAvatar = styled.div`
+  background: linear-gradient(
+    to top right,
+    transparent 0%,
+    transparent 80%,
+    var(--ak-blue) 80%,
+    var(--ak-blue) 100%
+  );
+`;
+
+const StyledFinalResultRank = styled.div`
+  position: absolute;
+  right: 0;
+  top: -1rem;
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: "NovecentoWide", sans-serif;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--mid-gray);
+  user-select: none;
+`;
+
+const rankMap: { [key: number]: string } = {
+  1: "冠军",
+  2: "亚军",
+  3: "季军",
+};
+
+export function TournamentFinalResult({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
+  const topThree = tournamentData.players
+    ?.filter(
+      (player) =>
+        player.finalRank && 0 < player.finalRank && player.finalRank <= 3,
+    )
+    .sort((a, b) =>
+      a.finalRank && b.finalRank ? a.finalRank - b.finalRank : 0,
+    );
+
+  if (!topThree?.length) return <>暂无比赛结果</>;
+
+  return (
+    <div className="grid sm:grid-cols-3 gap-8">
+      {topThree?.map((player, index) => (
+        <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
+          <div className="flex justify-between relative">
+            <div className="text-ak-blue font-bold text-xl">
+              {rankMap[index + 1]}
+            </div>
+            <StyledFinalResultRank>NO.{index + 1}</StyledFinalResultRank>
+          </div>
+          <div className="relative flex flex-row sm:flex-col lg:flex-row gap-4">
+            <StyledFinalResultAvatar className="shrink-0 w-20 h-20 sm:min-w-40 sm:min-h-40 aspect-square pt-1 pr-1">
+              <img
+                src={player.face}
+                alt="avatar"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
+            </StyledFinalResultAvatar>
+            <div className="flex flex-col">
+              <div className="text-white text-3xl">{player.name}</div>
+              <div className="text-ak-blue text-xl pt-2">
+                {player.games[player.games.length - 1].point}
+              </div>
+            </div>
+            <img
+              src={`/images/squad/${player.games[player.games.length - 1].starterSquad}.png`}
+              alt="squad"
+              className="absolute bottom-0 right-0 h-14 aspect-square object-contain self-end opacity-30"
+            />
+          </div>
+          <div className="bg-black-gray text-center p-2">
+            {player.games[player.games.length - 1].ending}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function TournamentFinalResultWrapper({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
+  if (new Date().getTime() < tournamentData.stages[tournamentData.stages.length - 1].endTime) return null;
+
+  return (
+    <div className="my-16">
+      <SectionContainer
+        title="比赛结果"
+        content={
+          <TournamentFinalResult
+            tournamentData={tournamentData}
+          />
+        }
+      />
+    </div>
+  )
+}

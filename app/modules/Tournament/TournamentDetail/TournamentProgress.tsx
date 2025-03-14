@@ -72,10 +72,10 @@ export default function TournamentProgress({
             key={index}
             className="grid grid-cols-4 sm:grid-cols-5 auto-cols-max divide-x divide-mid-gray"
           >
-            <div className="hidden md:flex h-full p-4">
+            <div className="hidden lg:flex h-full p-4">
               {renderPlayer(entry[0])}
             </div>
-            <div className="flex md:hidden justify-center items-center h-full p-4">
+            <div className="flex lg:hidden justify-center items-center h-full p-4">
               {renderPlayer(entry[0], true)}
             </div>
             <div className="hidden md:flex justify-center items-center h-full p-4">

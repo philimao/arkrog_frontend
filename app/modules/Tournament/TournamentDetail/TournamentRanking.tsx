@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
-import { StyledDivider, StyledStageTitleNum } from ".";
+import { SectionContainer, StyledDivider, StyledStageTitleNum } from ".";
 import { SortIcon } from "~/components/Icons";
 
-export type SortByType = "ranking" | "date";
+type SortByType = "ranking" | "date";
 
-export default function TournamentRanking({
+export function TournamentRanking({
   tournamentData,
 }: {
   tournamentData: TournamentData;
@@ -110,7 +110,6 @@ export default function TournamentRanking({
         <table className="w-full border-collapse table-auto">
           <thead className="bg-black-gray">
             <tr>
-              {/* TODO: add sorting order for ranking */}
               <td className="p-4 flex items-center w-max">
                 排名
                 <SortIcon
@@ -128,7 +127,6 @@ export default function TournamentRanking({
               <td>选手ID</td>
               {/* TODO: add filter for session */}
               {showSession && <td>场地</td>}
-              {/* TODO: add sorting order for date */}
               <td className="flex items-center w-max">
                 日程
                 <SortIcon
@@ -192,4 +190,19 @@ export default function TournamentRanking({
       </div>
     );
   });
+}
+
+export default function TournamentRankingWrapper({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
+  return (
+    <div>
+      <SectionContainer
+        title="排名情况"
+        content={<TournamentRanking tournamentData={tournamentData} />}
+      />
+    </div>
+  )
 }

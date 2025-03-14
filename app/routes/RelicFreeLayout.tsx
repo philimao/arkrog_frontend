@@ -3,7 +3,7 @@ import { Outlet } from "react-router";
 
 export default function RelicFreeLayout() {
   return (
-    <div className="container flex-grow">
+    <div className="container grow">
       <Outlet />
     </div>
   );

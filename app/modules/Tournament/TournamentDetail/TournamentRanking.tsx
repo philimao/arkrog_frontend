@@ -27,12 +27,12 @@ export function TournamentRanking({
     setSortBy((prev) => prev.map((value, i) => (i === index ? type : value)));
     setRankingAscending((prev) =>
       prev.map((value, i) =>
-        type === "ranking" ? (i === index ? !value : value) : false,
+        i === index ? type === "ranking" ? !value : false : value
       ),
     );
     setDateAscending((prev) =>
       prev.map((value, i) =>
-        type === "date" ? (i === index ? !value : value) : false,
+        i === index ? type === "date" ? !value : false : value
       ),
     );
   };

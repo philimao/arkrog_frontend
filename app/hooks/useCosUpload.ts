@@ -3,8 +3,9 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { cos } from "~/utils/storage";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { _get, hashString } from "~/utils/tools";
+import { hashString } from "~/utils/tools";
 import COS from "cos-js-sdk-v5";
+import { useStorageStore } from "~/stores/storageStore";
 
 export type FileWithPreview = {
   file: File;
@@ -29,10 +30,9 @@ const defaultProgress = {
   percent: 0,
 };
 
-export const useFileUpload = () => {
+export const useCosUpload = () => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
-  const [Bucket, setBucket] = useState<string>("");
-  const [Region, setRegion] = useState<string>("");
+  const { getBucket } = useStorageStore();
   const { userInfo } = useUserInfoStore();
 
   const [taskMap, setTaskMap] = useState<TaskMapType>({});
@@ -61,7 +61,7 @@ export const useFileUpload = () => {
       allowedFiles.map(async (file) => ({
         file, // 保存原始文件对象
         filename:
-          (await hashString(file.name, 8)) +
+          (await hashString(file.name, 8)).toUpperCase() +
           "." +
           file.name.split(".").slice(-1)[0],
         preview: URL.createObjectURL(file), // 生成预览 URL
@@ -81,24 +81,6 @@ export const useFileUpload = () => {
   // 清空所有文件
   const clearFiles = () => {
     setFiles([]);
-  };
-
-  const getBucket = async () => {
-    try {
-      if (!Bucket) {
-        const data = await _get<{ Bucket: string; Region: string }>(
-          "/storage/bucket",
-        );
-        if (!data) return;
-        setRegion(data.Region);
-        setBucket(data.Bucket);
-        return data;
-      } else {
-        return { Bucket, Region };
-      }
-    } catch (err) {
-      toast.error(`${(err as Error).name}: ${(err as Error).message}`);
-    }
   };
 
   const generateCosDateKey = function () {

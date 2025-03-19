@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from "react";
 import { styled } from "styled-components";
-import { useFileUpload } from "~/hooks/useFileUpload";
+import { useCosUpload } from "~/hooks/useCosUpload";
 import { Button, Progress } from "@heroui/react";
 import { Badge } from "@heroui/badge";
 
@@ -69,7 +69,7 @@ export default function UploadBox() {
     cancelTask,
     pauseTask,
     restartTask,
-  } = useFileUpload();
+  } = useCosUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 处理文件选择

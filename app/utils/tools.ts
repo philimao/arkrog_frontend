@@ -68,21 +68,20 @@ function generateID(len: number = 32): string {
 /**
  * 哈希加密
  * @param password
+ * @param [len]
  * @returns {Promise<string>}
  */
-async function hashPassword(password: string): Promise<string> {
-  try {
-    // 将密码转换为ArrayBuffer
-    const passwordBuffer = new TextEncoder().encode(password);
-    // 使用SHA-256哈希函数计算密码的哈希值
-    const hashBuffer = await crypto.subtle.digest("SHA-256", passwordBuffer);
-    // 将哈希值转换为十六进制字符串
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  } catch (err) {
-    console.error(err);
-    return "";
-  }
+async function hashString(password: string, len: number = 16): Promise<string> {
+  // 将密码转换为ArrayBuffer
+  const passwordBuffer = new TextEncoder().encode(password);
+  // 使用SHA-256哈希函数计算密码的哈希值
+  const hashBuffer = await crypto.subtle.digest("SHA-256", passwordBuffer);
+  // 将哈希值转换为十六进制字符串
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, len);
 }
 
 function findDuplicates<T>(array: T[]) {
@@ -109,4 +108,4 @@ function mergeArray<T>(target: T[], source: T[]): T[] {
   return merged;
 }
 
-export { _get, _post, generateID, hashPassword, findDuplicates, mergeArray };
+export { _get, _post, generateID, hashString, findDuplicates, mergeArray };

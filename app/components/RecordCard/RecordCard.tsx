@@ -49,21 +49,22 @@ const StyledBasic = styled.div`
   top: 0;
 `;
 
-const StyledLeftTopDecoration = styled(StyledBasic)<{ ro: string }>`
+const StyledLeftTopDecoration = styled(StyledBasic)<{ $ro: string }>`
   background-image: url(${(props) =>
-    "/images/card/" + props.ro + "_deco_l.png"});
+    "/images/card/" + props.$ro + "_deco_l.png"});
 `;
 
-const StyledRightBottomDecoration = styled(StyledBasic)<{ ro: string }>`
+const StyledRightBottomDecoration = styled(StyledBasic)<{ $ro: string }>`
   left: initial;
   right: 0;
   background-image: url(${(props) =>
-    "/images/card/" + props.ro + "_deco_r.png"});
+    "/images/card/" + props.$ro + "_deco_r.png"});
   background-position: right;
 `;
 
-const StyledLogo = styled(StyledBasic)<{ ro: string }>`
-  background-image: url(${(props) => "/images/card/" + props.ro + "_logo.png"});
+const StyledLogo = styled(StyledBasic)<{ $ro: string }>`
+  background-image: url(${(props) =>
+    "/images/card/" + props.$ro + "_logo.png"});
   background-size: auto 40%;
 `;
 
@@ -72,8 +73,8 @@ const StyledDotLayer = styled(StyledBasic)`
   background-repeat: repeat-x;
 `;
 
-const StyledChar = styled(StyledBasic)<{ url: string }>`
-  background-image: url(${(props) => props.url});
+const StyledChar = styled(StyledBasic)<{ $url: string }>`
+  background-image: url(${(props) => props.$url});
   background-size: contain;
   background-position: 30% 100%;
 `;
@@ -226,11 +227,11 @@ export default function RecordCard({
         </div>
       )}
       <StyledCardContainer>
-        <StyledRightBottomDecoration ro={ro} />
+        <StyledRightBottomDecoration $ro={ro} />
         <StyledDotLayer />
-        <StyledLeftTopDecoration ro={ro} />
-        <StyledLogo ro={ro} />
-        <StyledChar url={bgChar} />
+        <StyledLeftTopDecoration $ro={ro} />
+        <StyledLogo $ro={ro} />
+        <StyledChar $url={bgChar} />
         <StyledCornerMark className="size-10 sm:size-14 lg:size-16">
           <span className="right-1 sm:right-2 text-lg sm:text-xl lg:text-2xl xl:text-3xl">
             {record.level.replace("N", "")}

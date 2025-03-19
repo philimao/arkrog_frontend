@@ -1,4 +1,4 @@
-import { _get, _post, hashPassword } from "~/utils/tools";
+import { _get, _post, hashString } from "~/utils/tools";
 import { defaultUserInfo, type UserInfo } from "~/types/userInfo";
 import { create } from "zustand";
 import { toast } from "react-toastify";
@@ -20,7 +20,7 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
     try {
       const info: UserInfo | undefined = await _post("/user/login", {
         username,
-        hash: await hashPassword(password),
+        hash: await hashString(password),
       });
       if (info) {
         set({ userInfo: info });
@@ -46,7 +46,7 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
     try {
       const info: UserInfo | undefined = await _post("/user/register", {
         email,
-        hash: await hashPassword(password),
+        hash: await hashString(password),
       });
       if (info) {
         set({ userInfo: info });

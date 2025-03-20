@@ -3,7 +3,6 @@ import {
   Links,
   Meta,
   Outlet,
-  redirect,
   Scripts,
   ScrollRestoration,
   useHref,
@@ -11,7 +10,8 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import stylesheet from "./styles/app.css?url";
+import app from "./styles/app.css?url";
+import variable from "./styles/variable.css?url";
 import React from "react";
 import { HeroUIProvider } from "@heroui/react";
 
@@ -27,8 +27,10 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
   // Preload CSS
-  { rel: "preload", href: stylesheet, as: "style" },
-  { rel: "stylesheet", href: stylesheet },
+  { rel: "preload", href: app, as: "style" },
+  { rel: "stylesheet", href: app },
+  { rel: "preload", href: variable, as: "style" },
+  { rel: "stylesheet", href: variable },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

@@ -16,7 +16,7 @@ interface ModalControl {
 }
 
 interface ModalTemplateProps {
-  trigger?: React.ReactNode;
+  trigger?: (onOpen: () => void) => React.ReactNode;
   triggerId?: string;
   children: React.ReactNode;
   modalControl?: ModalControl;
@@ -42,7 +42,9 @@ export default function ModalTemplate({
 
   return (
     <>
-      {trigger ?? <button className="hidden" id={triggerId} onClick={onOpen} />}
+      {trigger?.(onOpen) ?? (
+        <button className="hidden" id={triggerId} onClick={onOpen} />
+      )}
       <Modal
         isOpen={isOpen}
         onClose={onClose}

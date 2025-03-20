@@ -13,12 +13,26 @@ export type FileWithPreview = {
   preview: string;
 };
 
-interface TaskMapType {
-  [name: string]: {
-    taskId: string;
-    location: string;
-    status: "uploading" | "paused" | "cancelled" | "finished" | "failed";
-  };
+interface TaskMapItem {
+  taskId: string;
+  location: string;
+  status: "uploading" | "paused" | "cancelled" | "finished" | "failed";
+}
+
+type TaskMapType = Record<string, TaskMapItem>;
+
+export interface UseCosUploadReturn {
+  files: FileWithPreview[];
+  addFiles: (newFiles: File[]) => Promise<void>;
+  removeFile: (file: FileWithPreview) => void;
+  clearFiles: () => void;
+  uploadFiles: (Prefix?: string) => Promise<void>;
+  isUploading: boolean;
+  taskMap: TaskMapType;
+  progress: COS.ProgressInfo;
+  cancelTask: (filename: string) => void;
+  pauseTask: (filename: string) => void;
+  restartTask: (filename: string) => void;
 }
 
 const extWhiteList = ["jpg", "jpeg", "png", "gif"];
@@ -30,7 +44,7 @@ const defaultProgress = {
   percent: 0,
 };
 
-export const useCosUpload = () => {
+export const useCosUpload = (): UseCosUploadReturn => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const { getBucket } = useStorageStore();
   const { userInfo } = useUserInfoStore();
@@ -48,13 +62,16 @@ export const useCosUpload = () => {
   // 添加文件
   const addFiles = async (newFiles: File[]) => {
     const allowedFiles = newFiles.filter((file) => {
-      return file.type.startsWith("image/") && isFileExtensionAllowed(file);
+      return (
+        file.type.startsWith("image/") &&
+        isFileExtensionAllowed(file) &&
+        !files.find((f) => f.file.name === file.name) // 避免重复添加
+      );
     });
 
     if (allowedFiles.length === 0) {
-      return toast.warning(
-        "请选择至少一个有效的图片文件（jpg, jpeg, png, gif）",
-      );
+      toast.warning("请选择至少一个有效的图片文件（jpg, jpeg, png, gif）");
+      return;
     }
 
     const newFilesWithPreview = await Promise.all(
@@ -80,7 +97,9 @@ export const useCosUpload = () => {
 
   // 清空所有文件
   const clearFiles = () => {
+    setTaskMap({});
     setFiles([]);
+    setProgress(defaultProgress);
   };
 
   const generateCosDateKey = function () {
@@ -128,8 +147,11 @@ export const useCosUpload = () => {
     });
   };
 
-  // 上传文件到服务器
-  const uploadFiles = async () => {
+  /**
+   * 上传文件到服务器
+   * @param [Prefix] 目录前缀
+   */
+  const uploadFiles = async (Prefix?: string) => {
     try {
       const info = await getBucket();
       if (!info) return;
@@ -150,8 +172,6 @@ export const useCosUpload = () => {
       cos.on("list-update", updateFunc);
 
       setIsUploading(true);
-      setTaskMap({}); // 清空任务列表
-      setProgress(defaultProgress);
       await cos.uploadFiles({
         files: files.map((fileWithPreview) => {
           const file = fileWithPreview.file;
@@ -159,7 +179,7 @@ export const useCosUpload = () => {
           return {
             Bucket: Bucket,
             Region: Region,
-            Key: Key,
+            Key: Prefix || "" + Key,
             Body: file,
             ContentLength: file.size,
             ContentType: file.type,
@@ -178,8 +198,6 @@ export const useCosUpload = () => {
             Headers: {
               "x-cos-meta-username": userInfo?.username,
               "x-cos-meta-filename": file.name,
-              "content-type": file.type,
-              "content-size": file.size,
             },
           };
         }),

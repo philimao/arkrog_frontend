@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function SVGDefinitions() {
   return (
     <svg className="hidden">
@@ -204,6 +206,41 @@ export default function SVGDefinitions() {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
+      </svg>
+      <svg
+        id="folder"
+        xmlns="http://www.w3.org/2000/svg"
+        version="1.1"
+        viewBox="0 0 30 30"
+      >
+        <g id="SVGRepo_bgCarrier" strokeWidth="0" />
+        <g
+          id="SVGRepo_tracerCarrier"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <g id="SVGRepo_iconCarrier">
+          <path
+            className="st4"
+            d="M24,26H6c-2.2,0-4-1.8-4-4v-9c0-2.2,1.8-4,4-4h18c2.2,0,4,1.8,4,4v9C28,24.2,26.2,26,24,26z"
+            fill="#6C3DB7"
+          />
+          <path
+            className="st5"
+            d="M13.1,4H6C3.8,4,2,5.8,2,8v14c0,2.2,1.8,4,4,4h18c0.5,0,0.9-0.1,1.3-0.2L13.1,4z"
+            fill="#8A8AFF"
+          />
+        </g>
+      </svg>
+      <svg
+        id="back"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 288.312 288.312"
+      >
+        <g>
+          <path d="M127.353,3.555c-4.704-4.74-12.319-4.74-17.011,0L15.314,99.653 c-4.74,4.788-4.547,12.884,0.313,17.48l94.715,95.785c4.704,4.74,12.319,4.74,17.011,0c4.704-4.74,4.704-12.427,0-17.167 l-74.444-75.274h199.474v155.804c0,6.641,5.39,12.03,12.03,12.03c6.641,0,12.03-5.39,12.03-12.03V108.231 c0-6.641-5.39-12.03-12.03-12.03H52.704l74.648-75.49C132.056,15.982,132.056,8.295,127.353,3.555z"></path>
+        </g>
       </svg>
     </svg>
   );

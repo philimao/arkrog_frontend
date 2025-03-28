@@ -4,7 +4,7 @@ import { useStorageStore } from "~/stores/storageStore";
 import { toast } from "react-toastify";
 import COS, { type CosObject } from "cos-js-sdk-v5";
 
-type CosObjectWithUrl = CosObject & {
+export type CosObjectWithUrl = CosObject & {
   url: string;
 };
 
@@ -18,11 +18,13 @@ export const useCosList = () => {
   /**
    * 查询目录内元素
    * @param [Prefix] 目录前缀
+   * @return {CosObjectWithUrl[]}
    */
-  const listBucket = async (Prefix?: string) => {
+  const listBucket = async (Prefix?: string): Promise<CosObjectWithUrl[]> => {
+    if (objects.length !== 0) return objects;
     try {
       const info = await getBucket();
-      if (!info) return;
+      if (!info) return [];
       const { Bucket, Region, Host } = info;
       const data: COS.GetBucketResult = await cos.getBucket({
         Bucket,
@@ -40,11 +42,13 @@ export const useCosList = () => {
       );
       // console.log(contents);
       setObjects(contents);
+      return contents;
     } catch (err) {
       console.log(err);
       toast.error(
-        `查询失败！${(err as Error).name}: ${(err as Error).message}`,
+        `查询文件列表失败！\n${(err as Error).name}: ${(err as Error).message}`,
       );
+      return [];
     }
   };
 

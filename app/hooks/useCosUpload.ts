@@ -236,7 +236,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
     } catch (err) {
       console.log(err);
       toast.error(
-        `上传失败！${(err as Error).name}: ${(err as Error).message}`,
+        `上传失败！\n${(err as Error).name}: ${(err as Error).message}`,
       );
     }
   };

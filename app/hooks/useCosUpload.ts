@@ -1,16 +1,19 @@
 // useFileUpload.ts
-import { useState } from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { cos } from "~/utils/storage";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { hashString } from "~/utils/tools";
 import COS from "cos-js-sdk-v5";
 import { useStorageStore } from "~/stores/storageStore";
+import { hashString } from "~/utils/tools";
 
 export type FileWithPreview = {
-  file: File;
-  filename: string;
-  preview: string;
+  id: string; // hash
+  filename: string; // w/o ext
+  ext: string; // ext only
+  prefix: string;
+  preview: string; // base64
+  file: File; // original file
 };
 
 interface TaskMapItem {
@@ -23,6 +26,7 @@ type TaskMapType = Record<string, TaskMapItem>;
 
 export interface UseCosUploadReturn {
   files: FileWithPreview[];
+  setFiles: React.Dispatch<React.SetStateAction<FileWithPreview[]>>;
   addFiles: (newFiles: File[]) => Promise<void>;
   removeFile: (file: FileWithPreview) => void;
   clearFiles: () => void;
@@ -76,12 +80,12 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
     const newFilesWithPreview = await Promise.all(
       allowedFiles.map(async (file) => ({
-        file, // 保存原始文件对象
-        filename:
-          (await hashString(file.name, 8)).toUpperCase() +
-          "." +
-          file.name.split(".").slice(-1)[0],
+        id: await hashString(file.name),
+        filename: file.name.split(".")[0],
+        ext: file.name.split(".")[1],
+        prefix: "",
         preview: URL.createObjectURL(file), // 生成预览 URL
+        file,
       })),
     );
 
@@ -108,39 +112,39 @@ export const useCosUpload = (): UseCosUploadReturn => {
     return `${date.getFullYear()}${m < 10 ? `0${m}` : m}${date.getDate()}`;
   };
 
-  const cancelTask = (filename: string) => {
+  const cancelTask = (id: string) => {
     setTaskMap((prev) => {
       const updated = { ...prev };
-      const task = updated[filename];
+      const task = updated[id];
       cos.cancelTask(task.taskId);
-      updated[filename] = {
-        ...updated[filename],
+      updated[id] = {
+        ...updated[id],
         status: "cancelled",
       };
       return updated;
     });
   };
 
-  const pauseTask = (filename: string) => {
+  const pauseTask = (id: string) => {
     setTaskMap((prev) => {
       const updated = { ...prev };
-      const task = updated[filename];
+      const task = updated[id];
       cos.pauseTask(task.taskId);
-      updated[filename] = {
-        ...updated[filename],
+      updated[id] = {
+        ...updated[id],
         status: "paused",
       };
       return updated;
     });
   };
 
-  const restartTask = (filename: string) => {
+  const restartTask = (id: string) => {
     setTaskMap((prev) => {
       const updated = { ...prev };
-      const task = updated[filename];
+      const task = updated[id];
       cos.restartTask(task.taskId);
-      updated[filename] = {
-        ...updated[filename],
+      updated[id] = {
+        ...updated[id],
         status: "uploading",
       };
       return updated;
@@ -149,9 +153,8 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
   /**
    * 上传文件到服务器
-   * @param [Prefix] 目录前缀
    */
-  const uploadFiles = async (Prefix?: string) => {
+  const uploadFiles = async () => {
     try {
       const info = await getBucket();
       if (!info) return;
@@ -175,11 +178,17 @@ export const useCosUpload = (): UseCosUploadReturn => {
       await cos.uploadFiles({
         files: files.map((fileWithPreview) => {
           const file = fileWithPreview.file;
-          const Key = generateCosDateKey() + "_" + fileWithPreview.filename;
+          const Key =
+            fileWithPreview.prefix +
+            generateCosDateKey() +
+            "_" +
+            fileWithPreview.filename +
+            "." +
+            fileWithPreview.ext;
           return {
             Bucket: Bucket,
             Region: Region,
-            Key: Prefix || "" + Key,
+            Key: Key,
             Body: file,
             ContentLength: file.size,
             ContentType: file.type,
@@ -187,7 +196,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
               setTaskMap((prev) => {
                 const updated = { ...prev };
                 // 使用hash后的文件名作为key
-                updated[fileWithPreview.filename] = {
+                updated[fileWithPreview.id] = {
                   taskId,
                   location: "",
                   status: "uploading",
@@ -196,8 +205,10 @@ export const useCosUpload = (): UseCosUploadReturn => {
               });
             },
             Headers: {
-              "x-cos-meta-username": userInfo?.username,
-              "x-cos-meta-filename": file.name,
+              "x-cos-meta-username": encodeURIComponent(
+                userInfo?.username || "",
+              ),
+              "x-cos-meta-filename": encodeURIComponent(file.name),
             },
           };
         }),
@@ -206,12 +217,15 @@ export const useCosUpload = (): UseCosUploadReturn => {
           setProgress(info);
         },
         onFileFinish: function (err, data, options) {
-          // 从filename还原cos key
-          const filename = options.Key.slice(9);
+          // 从cos key还原filename
+          const filename = options.Key.split("_").slice(1).join("_");
+          const id =
+            files.find((f) => f.filename + "." + f.ext === filename)?.id || "";
+          if (!id) throw new Error("Invalid file id");
           setTaskMap((prev) => {
             const updated = { ...prev };
-            updated[filename] = {
-              ...updated[filename],
+            updated[id] = {
+              ...updated[id],
               location: data?.Location || "",
               status: err ? "failed" : "finished",
             };
@@ -229,6 +243,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
   return {
     files,
+    setFiles,
     addFiles,
     removeFile,
     clearFiles,

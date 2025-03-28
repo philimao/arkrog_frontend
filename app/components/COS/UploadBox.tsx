@@ -5,9 +5,10 @@ import {
   useCosUpload,
   type UseCosUploadReturn,
 } from "~/hooks/useCosUpload";
-import { Button, Progress } from "@heroui/react";
+import { Button, Progress, Select, SelectItem } from "@heroui/react";
 import { Badge } from "@heroui/badge";
 import { toast } from "react-toastify";
+import { useParams } from "react-router";
 
 const StyledUploadBoxContainer = styled.div``;
 
@@ -59,6 +60,24 @@ const StyledThumbnailWrapper = styled.td`
   & > img {
     object-fit: contain;
   }
+`;
+
+const StyledFilename = styled.td`
+  width: 50%;
+  & > div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    input,
+    span {
+      flex-grow: 1;
+      padding: 0.25rem 1rem;
+    }
+  }
+`;
+
+const StyledSelectPrefix = styled.td`
+  padding: 0 1rem;
 `;
 
 const StyledFileControlButton = styled.button``;
@@ -232,10 +251,31 @@ function FileEntry({
   file: FileWithPreview;
   cosUpload: UseCosUploadReturn;
 }) {
-  const { removeFile, taskMap, cancelTask, pauseTask, restartTask } = cosUpload;
+  // 修改文件名
+  const [editing, setEditing] = useState(false);
+  const [filename, setFilename] = useState(file.filename);
+  // 选择传输目录
+  const { tournamentId } = useParams();
+  const options = [
+    { prefix: tournamentId + "/avatar/", label: "赛事头像" },
+    { prefix: tournamentId + "/rule/", label: "赛事规则" },
+    { prefix: tournamentId + "/team/", label: "队伍头像" },
+    { prefix: tournamentId + "/other/", label: "其他内容" },
+  ];
+  const [prefix, setPrefix] = useState<string>(options[0].prefix);
+  useEffect(() => {
+    setFiles((files) => {
+      const updated = [...files];
+      const i = updated.findIndex((f) => f.id === file.id);
+      updated[i].prefix = prefix;
+      return updated;
+    });
+  }, [prefix]);
 
-  const filename = file.filename;
-  const task = taskMap[filename];
+  const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
+    cosUpload;
+
+  const task = taskMap[file.id];
   const Icon = ({ id }: { id: string }) => (
     <svg
       width="1.5rem"
@@ -250,7 +290,7 @@ function FileEntry({
       <Icon id="close" />
     </StyledFileControlButton>
   ) : task.status === "uploading" ? (
-    <StyledFileControlButton onClick={() => pauseTask(filename)}>
+    <StyledFileControlButton onClick={() => pauseTask(file.id)}>
       <Icon id="pause" />
     </StyledFileControlButton>
   ) : task.status === "cancelled" ? (
@@ -270,22 +310,81 @@ function FileEntry({
   ) : (
     <>
       <StyledFileControlButton
-        onClick={() => restartTask(filename)}
+        onClick={() => restartTask(file.id)}
         className="me-2"
       >
         <Icon id="resume" />
       </StyledFileControlButton>
-      <StyledFileControlButton onClick={() => cancelTask(filename)}>
+      <StyledFileControlButton onClick={() => cancelTask(file.id)}>
         <Icon id="close" />
       </StyledFileControlButton>
     </>
   );
   return (
-    <StyledUploadFileTableRow key={file.file.name}>
+    <StyledUploadFileTableRow key={file.id}>
       <StyledThumbnailWrapper>
-        <img src={file.preview} alt={file.file.name} />
+        <img src={file.preview} alt={file.filename} />
       </StyledThumbnailWrapper>
-      <td className="text">{file.file.name}</td>
+      <StyledFilename>
+        {editing ? (
+          <div className="text">
+            <input
+              type="text"
+              value={filename}
+              onChange={(evt) => setFilename(evt.target.value)}
+            />
+            <svg
+              width="1rem"
+              height="1rem"
+              style={{ stroke: "white" }}
+              onClick={() => {
+                setFiles((files) => {
+                  const i = files.findIndex((f) => f.id === file.id);
+                  files[i].filename = filename;
+                  return files;
+                });
+                setEditing(false);
+              }}
+            >
+              <use href="#save" />
+            </svg>
+          </div>
+        ) : (
+          <div className="text">
+            <span>{file.filename + "." + file.ext}</span>
+            <svg
+              width="1rem"
+              height="1rem"
+              style={{ fill: "white", stroke: "none" }}
+              onClick={() => setEditing(true)}
+            >
+              <use href="#pencil" />
+            </svg>
+          </div>
+        )}
+      </StyledFilename>
+      <StyledSelectPrefix>
+        <Select
+          radius="none"
+          aria-label="select prefix"
+          labelPlacement="outside-left"
+          selectedKeys={[prefix]}
+          onChange={(evt) => setPrefix(evt.target.value)}
+          disallowEmptySelection={true}
+          classNames={{
+            trigger: "bg-[#00000033] rounded-none",
+            value: "",
+            popoverContent: "bg-mid-gray rounded-none",
+            listbox: "rounded-none",
+          }}
+        >
+          {options.map((option) => (
+            <SelectItem key={option.prefix} value={option.prefix}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </Select>
+      </StyledSelectPrefix>
       <td className="h-100 text-center">
         <Badge
           color="danger"
@@ -349,7 +448,7 @@ const SVG = () => (
       </g>
     </symbol>
     <svg id="close" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
       <g
         id="SVGRepo_tracerCarrier"
         strokeLinecap="round"
@@ -369,6 +468,52 @@ const SVG = () => (
       <g id="SVGRepo_iconCarrier">
         <path d="M0 0H10V4H4V10H0V0Z"></path>
         <path d="M16 6H6V16H16V6Z"></path>
+      </g>
+    </symbol>
+    <symbol
+      id="pencil"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
+      <g strokeLinecap="round" strokeLinejoin="round"></g>
+      <g id="SVGRepo_iconCarrier">
+        <path
+          d="M21.2799 6.40005L11.7399 15.94C10.7899 16.89 7.96987 17.33 7.33987 16.7C6.70987 16.07 7.13987 13.25 8.08987 12.3L17.6399 2.75002C17.8754 2.49308 18.1605 2.28654 18.4781 2.14284C18.7956 1.99914 19.139 1.92124 19.4875 1.9139C19.8359 1.90657 20.1823 1.96991 20.5056 2.10012C20.8289 2.23033 21.1225 2.42473 21.3686 2.67153C21.6147 2.91833 21.8083 3.21243 21.9376 3.53609C22.0669 3.85976 22.1294 4.20626 22.1211 4.55471C22.1128 4.90316 22.0339 5.24635 21.8894 5.5635C21.7448 5.88065 21.5375 6.16524 21.2799 6.40005V6.40005Z"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          stroke="#fff"
+        ></path>
+        <path
+          d="M11 4H6C4.93913 4 3.92178 4.42142 3.17163 5.17157C2.42149 5.92172 2 6.93913 2 8V18C2 19.0609 2.42149 20.0783 3.17163 20.8284C3.92178 21.5786 4.93913 22 6 22H17C19.21 22 20 20.2 20 18V13"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          stroke="#fff"
+        ></path>
+      </g>
+    </symbol>
+    <symbol
+      id="save"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+      <g
+        id="SVGRepo_tracerCarrier"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></g>
+      <g id="SVGRepo_iconCarrier">
+        <path
+          d="M15 20V15H9V20M18 20H6C4.89543 20 4 19.1046 4 18V6C4 4.89543 4.89543 4 6 4H14.1716C14.702 4 15.2107 4.21071 15.5858 4.58579L19.4142 8.41421C19.7893 8.78929 20 9.29799 20 9.82843V18C20 19.1046 19.1046 20 18 20Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        ></path>
       </g>
     </symbol>
   </svg>

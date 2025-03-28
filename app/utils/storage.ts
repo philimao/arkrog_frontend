@@ -25,7 +25,7 @@ const cos = new COS({
         });
       })
       .catch((err) => {
-        toast.error("获取临时密钥失败" + err.message);
+        toast.error("获取临时密钥失败\n" + err.message);
       });
   },
 });

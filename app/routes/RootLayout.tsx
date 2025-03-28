@@ -11,6 +11,7 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 import GlobalModals from "~/routes/GlobalModals";
 import { useAppDataStore } from "~/stores/appDataStore";
+import UploadCenter from "~/components/COS/UploadCenter";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -54,6 +55,7 @@ export default function RootLayout() {
         />
         <SVGDefinitions />
         <GlobalModals />
+        <UploadCenter />
       </StyledBackground>
     </ThemeProvider>
   );

@@ -86,6 +86,10 @@ export default function ListObject({
 }: {
   objects: CosObjectWithUrl[];
 }) {
+  useEffect(() => {
+    console.log("debug", objects);
+  }, [objects]);
+
   // 文件夹展示 / 时间倒序展示
   const [byFolder, setByFolder] = useState(false);
 

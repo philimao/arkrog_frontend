@@ -17,11 +17,15 @@ export const useCosList = () => {
 
   /**
    * 查询目录内元素
+   * @param [force] 是否强制更新
    * @param [Prefix] 目录前缀
    * @return {CosObjectWithUrl[]}
    */
-  const listBucket = async (Prefix?: string): Promise<CosObjectWithUrl[]> => {
-    if (objects.length !== 0) return objects;
+  const listBucket = async (
+    force?: boolean,
+    Prefix?: string,
+  ): Promise<CosObjectWithUrl[]> => {
+    if (objects.length !== 0 && !force) return objects;
     try {
       const info = await getBucket();
       if (!info) return [];
@@ -40,7 +44,6 @@ export const useCosList = () => {
           new Date(b.LastModified).getTime() -
           new Date(a.LastModified).getTime(),
       );
-      // console.log(contents);
       setObjects(contents);
       return contents;
     } catch (err) {

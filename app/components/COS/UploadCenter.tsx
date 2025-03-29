@@ -45,7 +45,7 @@ export default function UploadCenter() {
               </StyledTab>
             </div>
             <div className={activeTab === "upload-box" ? "block" : "hidden"}>
-              <UploadBox />
+              <UploadBox listBucket={listBucket} />
             </div>
             <div className={activeTab === "list-object" ? "block" : "hidden"}>
               <ListObject objects={objects} />

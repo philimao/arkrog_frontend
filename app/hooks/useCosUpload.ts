@@ -218,7 +218,8 @@ export const useCosUpload = (): UseCosUploadReturn => {
         },
         onFileFinish: function (err, data, options) {
           // 从cos key还原filename
-          const filename = options.Key.split("_").slice(1).join("_");
+          const filenameWithDate = options.Key.split("/").slice(-1)[0];
+          const filename = filenameWithDate.split("_").slice(1).join("_");
           const id =
             files.find((f) => f.filename + "." + f.ext === filename)?.id || "";
           if (!id) throw new Error("Invalid file id");

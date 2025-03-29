@@ -9,6 +9,8 @@ import { Button, Progress, Select, SelectItem } from "@heroui/react";
 import { Badge } from "@heroui/badge";
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
+import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
+import { type CosObjectWithUrl } from "~/hooks/useCosList";
 
 const StyledUploadBoxContainer = styled.div`
   min-height: 41.5rem;
@@ -21,7 +23,7 @@ const StyledUploadBoxWrapper = styled.div`
 
 const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
   width: 100%;
-  height: ${(props) => (props.$hasFile ? "16rem" : "39.5rem")};
+  height: ${(props) => (props.$hasFile ? "10rem" : "39.5rem")};
   margin-bottom: 1rem;
   cursor: pointer;
   display: flex;
@@ -84,7 +86,11 @@ const StyledSelectPrefix = styled.td`
 
 const StyledFileControlButton = styled.button``;
 
-export default function UploadBox() {
+export default function UploadBox({
+  listBucket,
+}: {
+  listBucket: (force?: boolean, Prefix?: string) => Promise<CosObjectWithUrl[]>;
+}) {
   const cosUpload = useCosUpload();
   const {
     files,
@@ -161,6 +167,20 @@ export default function UploadBox() {
     }
   };
 
+  // 获取赛事名称
+  const { tournamentId } = useParams();
+  const { tournamentsData } = useTournamentDataStore();
+  const tournamentData =
+    tournamentsData &&
+    tournamentsData.find((tournament) => tournament.id === tournamentId);
+
+  if (!tournamentData)
+    return (
+      <StyledUploadBoxContainer>
+        未检测到待上传的赛事名称
+      </StyledUploadBoxContainer>
+    );
+
   return (
     <StyledUploadBoxContainer>
       <StyledUploadBoxWrapper>
@@ -204,7 +224,15 @@ export default function UploadBox() {
       <StyledUploadFileTable>
         <tbody>
           {files.map((file) => (
-            <FileEntry file={file} cosUpload={cosUpload} key={file.filename} />
+            <FileEntry
+              file={file}
+              folder={
+                "tournament/" +
+                tournamentData.name.replace(/[!@#$%^&*()+\s]+/g, "_") // 特殊字符处理
+              }
+              cosUpload={cosUpload}
+              key={file.filename}
+            />
           ))}
         </tbody>
       </StyledUploadFileTable>
@@ -228,7 +256,7 @@ export default function UploadBox() {
         <div className="text-end">
           {Object.values(taskMap).length === 0 && (
             <Button
-              onPress={() => uploadFiles()}
+              onPress={() => uploadFiles().then(() => listBucket(true))}
               className="bg-ak-blue text-black rounded-none font-bold me-2"
             >
               上传文件
@@ -249,21 +277,22 @@ export default function UploadBox() {
 
 function FileEntry({
   file,
+  folder,
   cosUpload,
 }: {
   file: FileWithPreview;
+  folder: string;
   cosUpload: UseCosUploadReturn;
 }) {
   // 修改文件名
   const [editing, setEditing] = useState(false);
   const [filename, setFilename] = useState(file.filename);
   // 选择传输目录
-  const { tournamentId } = useParams();
   const options = [
-    { prefix: "tournament/" + tournamentId + "/avatar/", label: "赛事头像" },
-    { prefix: "tournament/" + tournamentId + "/rule/", label: "赛事规则" },
-    { prefix: "tournament/" + tournamentId + "/team/", label: "队伍头像" },
-    { prefix: "tournament/" + tournamentId + "/other/", label: "其他内容" },
+    { prefix: folder + "/avatar/", label: "赛事头像" },
+    { prefix: folder + "/rule/", label: "赛事规则" },
+    { prefix: folder + "/team/", label: "队伍头像" },
+    { prefix: folder + "/other/", label: "其他内容" },
   ];
   const [prefix, setPrefix] = useState<string>(options[0].prefix);
 

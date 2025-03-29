@@ -67,7 +67,7 @@ export default function Sponsorship() {
           </Tabs>
         </div>
         <div className="p-2 h-full w-full">
-          <div className="bg-semi-black p-2 flex-grow rounded-2xl">
+          <div className="bg-semi-black p-2 grow rounded-2xl">
             <Form
               className="flex flex-col gap-2 px-4 mb-4"
               onSubmit={handleSubmit}

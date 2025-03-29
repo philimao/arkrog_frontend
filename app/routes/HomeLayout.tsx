@@ -44,7 +44,7 @@ export default function HomeLayout() {
             })}
           </StyledHomeNavContainer>
         </div>
-        <div className="flex-grow">
+        <div className="grow">
           <Outlet />
         </div>
       </div>

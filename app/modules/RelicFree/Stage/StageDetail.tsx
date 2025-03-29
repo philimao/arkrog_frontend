@@ -26,7 +26,7 @@ const StyledDescriptionTag = styled.div<{ tag: string }>`
   margin-left: 0.25rem;
   font-size: 0.8rem;
   background: ${(props) =>
-    props.tag === "紧急" ? "var(--ak-red)" : "var(--ak-purple)"};
+    props.tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)"};
 `
 
 const StyledBackButtonContainer = styled.div`

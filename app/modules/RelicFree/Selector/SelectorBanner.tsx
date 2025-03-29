@@ -103,6 +103,7 @@ export default function SelectorBanner({
                 role="button"
                 onClick={() => {
                   searchParams.set("topicId", topic.id);
+                  if (topic.id !== currentTopic.id) searchParams.delete("zoneId");
                   setSearchParams(searchParams, {
                     preventScrollReset: true,
                   });
@@ -136,7 +137,7 @@ export default function SelectorBanner({
           <div className="text-[2rem] sm:text-[2.5ren] lg:text-[3rem] xl:text-[3.5rem] font-han-sans font-bold">
             {currentTopic.name}
           </div>
-          <div className="flex-grow">
+          <div className="grow">
             <StyledDecorationText>{currentTopic.name_en}</StyledDecorationText>
           </div>
           <div className="whitespace-pre-wrap text-light-mid-gray text-sm leading-6">

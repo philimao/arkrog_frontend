@@ -8,9 +8,10 @@ import theme from "~/styles/theme";
 import { Footer } from "~/modules/Footer/Footer";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import SVGDefinitions from "~/components/SVGIcon/SVGDefinitions";
 import GlobalModals from "~/routes/GlobalModals";
 import { useAppDataStore } from "~/stores/appDataStore";
+import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
+import ScrollToTop from "~/modules/Standalone/ScrollToTop";
 import UploadCenter from "~/components/COS/UploadCenter";
 
 const StyledBackground = styled.div`
@@ -31,10 +32,11 @@ export default function RootLayout() {
   const { fetchGameData, fetchGameDataExt } = useGameDataStore();
   const { fetchUserInfo } = useUserInfoStore();
   const { fetchAppData } = useAppDataStore();
+  const { fetchTournamentsData } = useTournamentDataStore();
   const desktop = window.matchMedia("(min-width: 640px)").matches;
 
   useEffect(() => {
-    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData()]);
+    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData(), fetchTournamentsData()]);
   }, []);
 
   return (
@@ -53,8 +55,8 @@ export default function RootLayout() {
           hideProgressBar
           style={desktop ? {} : { width: "100vw" }}
         />
-        <SVGDefinitions />
         <GlobalModals />
+        <ScrollToTop />
         <UploadCenter />
       </StyledBackground>
     </ThemeProvider>

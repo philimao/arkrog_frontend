@@ -10,6 +10,7 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Loading from "~/components/Loading";
+import { BackIcon, FolderIcon } from "~/components/Icons";
 
 const StyledListObjectWrapper = styled.div``;
 
@@ -153,20 +154,18 @@ export default function ListObject({
     <StyledListObjectWrapper>
       <StyledNav>
         <StyledBreadcrumbWrapper className={byFolder ? "flex" : "hidden"}>
-          <svg
+          <BackIcon
             style={{
               width: "1rem",
               height: "1rem",
-              fill: "var(--ak-blue)",
+              color: "var(--ak-blue)",
               margin: "0 1rem 0 0.5rem",
               cursor: "pointer",
             }}
             onClick={() =>
               setLocation((prev) => prev.slice(0, prev.length - 1))
             }
-          >
-            <use href="#back" />
-          </svg>
+          />
           <span>当前路径：</span>
           <StyledBreadcrumb>
             <StyledBreadcrumbItem>
@@ -259,9 +258,9 @@ export default function ListObject({
                             alt="thumbnail"
                           />
                         ) : (
-                          <svg>
-                            <use href="#folder" />
-                          </svg>
+                          <FolderIcon
+                            style={{ width: "100%", height: "100%" }}
+                          />
                         )}
                       </StyledThumbnailWrapper>
                       <td className="text" style={{ width: "50%" }}>

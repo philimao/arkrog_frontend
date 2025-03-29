@@ -35,6 +35,14 @@ const StyledBackButton = styled.button`
   background: var(--black-gray);
 `;
 
+const StyledEditButton = styled.button`
+  position: absolute;
+  right: 0;
+  top: 6.5rem;
+  padding: 0.5rem 2rem;
+  background: var(--black-gray);
+`;
+
 export const StyledStageTitleNum = styled.div`
   font-size: 3rem;
   font-family: "Novecento", sans-serif;
@@ -194,6 +202,9 @@ export default function TournamentDetail() {
       <StyledBackButtonContainer>
         <div className="relative">
           <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
+          <StyledEditButton onClick={() => navigate("edit")}>
+            编辑
+          </StyledEditButton>
         </div>
       </StyledBackButtonContainer>
       {renderHeader()}
@@ -217,14 +228,12 @@ export default function TournamentDetail() {
         />
         <SectionContainer
           title="比赛时间"
-          content={
-            tournamentData.stages.map((stage, index) => (
-              <div key={index} className="flex gap-2">
-                <div>{stage.name}</div>
-                <div>{`${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日 - ${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
-              </div>
-            ))
-          }
+          content={tournamentData.stages.map((stage, index) => (
+            <div key={index} className="flex gap-2">
+              <div>{stage.name}</div>
+              <div>{`${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日 - ${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
+            </div>
+          ))}
         />
       </div>
 

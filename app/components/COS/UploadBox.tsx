@@ -260,12 +260,16 @@ function FileEntry({
   // 选择传输目录
   const { tournamentId } = useParams();
   const options = [
-    { prefix: tournamentId + "/avatar/", label: "赛事头像" },
-    { prefix: tournamentId + "/rule/", label: "赛事规则" },
-    { prefix: tournamentId + "/team/", label: "队伍头像" },
-    { prefix: tournamentId + "/other/", label: "其他内容" },
+    { prefix: "tournament/" + tournamentId + "/avatar/", label: "赛事头像" },
+    { prefix: "tournament/" + tournamentId + "/rule/", label: "赛事规则" },
+    { prefix: "tournament/" + tournamentId + "/team/", label: "队伍头像" },
+    { prefix: "tournament/" + tournamentId + "/other/", label: "其他内容" },
   ];
   const [prefix, setPrefix] = useState<string>(options[0].prefix);
+
+  const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
+    cosUpload;
+
   useEffect(() => {
     setFiles((files) => {
       const updated = [...files];
@@ -273,10 +277,7 @@ function FileEntry({
       updated[i].prefix = prefix;
       return updated;
     });
-  }, [prefix]);
-
-  const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
-    cosUpload;
+  }, [file.id, prefix, setFiles]);
 
   const task = taskMap[file.id];
   const Icon = ({ id }: { id: string }) => (

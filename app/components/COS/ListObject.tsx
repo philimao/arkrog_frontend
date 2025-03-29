@@ -9,6 +9,7 @@ import {
 } from "@heroui/react";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import Loading from "~/components/Loading";
 
 const StyledListObjectWrapper = styled.div``;
 
@@ -231,74 +232,82 @@ export default function ListObject({
         </StyledDisplaySwitch>
       </StyledNav>
       <div className="min-h-[38.75rem] flex flex-col">
-        <StyledObjectTable>
-          <tbody>
-            {filteredPaths
-              .slice(pageSize * (currentPage - 1), pageSize * currentPage)
-              .map((flatPath) => {
-                const content = flatPath.content;
-                return (
-                  <StyledObject
-                    key={flatPath.name}
-                    className={!content ? "cursor-pointer" : ""}
-                    onDoubleClick={() =>
-                      !content &&
-                      setLocation((prev) => {
-                        const updated = [...prev];
-                        updated.push(flatPath.name);
-                        return updated;
-                      })
-                    }
-                  >
-                    <StyledThumbnailWrapper>
-                      {content ? (
-                        <img src={content.url + "/thumbnail"} alt="thumbnail" />
-                      ) : (
-                        <svg>
-                          <use href="#folder" />
-                        </svg>
-                      )}
-                    </StyledThumbnailWrapper>
-                    <td className="text" style={{ width: "50%" }}>
-                      {flatPath.name}
-                    </td>
-                    <td className="text">
-                      {content
-                        ? Math.round(parseInt(content.Size) / 10485.76) / 100 +
-                          "MB"
-                        : ""}
-                    </td>
-                    <td className="text">
-                      {content
-                        ? new Date(content.LastModified).toLocaleDateString(
-                            "zh-CN",
-                          )
-                        : ""}
-                    </td>
-                    <td className="text-center">
-                      {content && (
-                        <button
-                          onClick={() =>
-                            navigator.clipboard
-                              .writeText(content?.url)
-                              .then(() => toast.info("复制成功！"))
-                          }
-                        >
-                          <svg
-                            width="1.5rem"
-                            height="1.5rem"
-                            style={{ fill: "white", stroke: "none" }}
-                          >
-                            <use href="#copy" />
+        {objects.length > 0 ? (
+          <StyledObjectTable>
+            <tbody>
+              {filteredPaths
+                .slice(pageSize * (currentPage - 1), pageSize * currentPage)
+                .map((flatPath) => {
+                  const content = flatPath.content;
+                  return (
+                    <StyledObject
+                      key={flatPath.name}
+                      className={!content ? "cursor-pointer" : ""}
+                      onClick={() =>
+                        !content &&
+                        setLocation((prev) => {
+                          const updated = [...prev];
+                          updated.push(flatPath.name);
+                          return updated;
+                        })
+                      }
+                    >
+                      <StyledThumbnailWrapper>
+                        {content ? (
+                          <img
+                            src={content.url + "/thumbnail"}
+                            alt="thumbnail"
+                          />
+                        ) : (
+                          <svg>
+                            <use href="#folder" />
                           </svg>
-                        </button>
-                      )}
-                    </td>
-                  </StyledObject>
-                );
-              })}
-          </tbody>
-        </StyledObjectTable>
+                        )}
+                      </StyledThumbnailWrapper>
+                      <td className="text" style={{ width: "50%" }}>
+                        {flatPath.name}
+                      </td>
+                      <td className="text">
+                        {content
+                          ? Math.round(parseInt(content.Size) / 10485.76) /
+                              100 +
+                            "MB"
+                          : ""}
+                      </td>
+                      <td className="text">
+                        {content
+                          ? new Date(content.LastModified).toLocaleDateString(
+                              "zh-CN",
+                            )
+                          : ""}
+                      </td>
+                      <td className="text-center">
+                        {content && (
+                          <button
+                            onClick={() =>
+                              navigator.clipboard
+                                .writeText(content?.url)
+                                .then(() => toast.info("复制成功！"))
+                            }
+                          >
+                            <svg
+                              width="1.5rem"
+                              height="1.5rem"
+                              style={{ fill: "white", stroke: "none" }}
+                            >
+                              <use href="#copy" />
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                    </StyledObject>
+                  );
+                })}
+            </tbody>
+          </StyledObjectTable>
+        ) : (
+          <Loading />
+        )}
         {filteredPaths.length > pageSize && (
           <div className="flex justify-center items-end flex-grow">
             <Pagination

@@ -37,7 +37,8 @@ export default function UploadCenter() {
               <StyledTab
                 className={activeTab === "list-object" ? "active" : ""}
                 onClick={() => {
-                  listBucket().then(() => setActiveTab("list-object"));
+                  setActiveTab("list-object");
+                  listBucket();
                 }}
               >
                 查看

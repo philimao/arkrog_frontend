@@ -10,16 +10,18 @@ import { Badge } from "@heroui/badge";
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
 
-const StyledUploadBoxContainer = styled.div``;
+const StyledUploadBoxContainer = styled.div`
+  min-height: 41.5rem;
+`;
 
 const StyledUploadBoxWrapper = styled.div`
   display: flex;
   justify-content: center;
 `;
 
-const StyledUploadBox = styled.div<{ $isDragging: boolean }>`
-  width: 24rem;
-  height: 16rem;
+const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
+  width: 100%;
+  height: ${(props) => (props.$hasFile ? "16rem" : "39.5rem")};
   margin-bottom: 1rem;
   cursor: pointer;
   display: flex;
@@ -167,6 +169,7 @@ export default function UploadBox() {
           onDrop={handleDrop}
           onClick={handleClick}
           $isDragging={isDraggingOverViewport}
+          $hasFile={files.length > 0}
         >
           <span className="text-center">
             <div className="flex justify-center">

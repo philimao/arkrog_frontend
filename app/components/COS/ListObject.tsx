@@ -1,4 +1,7 @@
-import { type CosObjectWithUrl } from "~/hooks/useCosList";
+import {
+  type CosObjectWithUrl,
+  type UseCosListReturn,
+} from "~/hooks/useCosList";
 import { styled } from "styled-components";
 import {
   Listbox,
@@ -10,7 +13,7 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Loading from "~/components/Loading";
-import { BackIcon, FolderIcon } from "~/components/Icons";
+import { BackIcon, DeleteIcon, FolderIcon } from "~/components/Icons";
 
 const StyledListObjectWrapper = styled.div``;
 
@@ -82,13 +85,11 @@ interface FlatPath {
 }
 
 export default function ListObject({
-  objects,
+  useCosListHook,
 }: {
-  objects: CosObjectWithUrl[];
+  useCosListHook: UseCosListReturn;
 }) {
-  useEffect(() => {
-    console.log("debug", objects);
-  }, [objects]);
+  const { objects, deleteBucketObject } = useCosListHook;
 
   // 文件夹展示 / 时间倒序展示
   const [byFolder, setByFolder] = useState(false);
@@ -286,21 +287,32 @@ export default function ListObject({
                       </td>
                       <td className="text-center">
                         {content && (
-                          <button
-                            onClick={() =>
-                              navigator.clipboard
-                                .writeText(content?.url)
-                                .then(() => toast.info("复制成功！"))
-                            }
-                          >
-                            <svg
-                              width="1.5rem"
-                              height="1.5rem"
-                              style={{ fill: "white", stroke: "none" }}
+                          <>
+                            <button
+                              onClick={() =>
+                                navigator.clipboard
+                                  .writeText(content?.url)
+                                  .then(() => toast.info("复制成功！"))
+                              }
                             >
-                              <use href="#copy" />
-                            </svg>
-                          </button>
+                              <svg
+                                width="1.5rem"
+                                height="1.5rem"
+                                style={{ fill: "white", stroke: "none" }}
+                              >
+                                <use href="#copy" />
+                              </svg>
+                            </button>
+                            <button>
+                              <DeleteIcon
+                                className="hover:text-ak-blue"
+                                role="button"
+                                onClick={() =>
+                                  deleteBucketObject([content?.Key])
+                                }
+                              />
+                            </button>
+                          </>
                         )}
                       </td>
                     </StyledObject>

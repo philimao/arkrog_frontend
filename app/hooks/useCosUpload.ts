@@ -48,6 +48,9 @@ const defaultProgress = {
   percent: 0,
 };
 
+/**
+ * 负责COS上行内容的处理
+ */
 export const useCosUpload = (): UseCosUploadReturn => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const { getBucket } = useStorageStore();

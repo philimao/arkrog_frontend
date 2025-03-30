@@ -10,7 +10,7 @@ import { Badge } from "@heroui/badge";
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
-import { type CosObjectWithUrl } from "~/hooks/useCosList";
+import { type UseCosListReturn } from "~/hooks/useCosList";
 
 const StyledUploadBoxContainer = styled.div`
   min-height: 41.5rem;
@@ -87,11 +87,11 @@ const StyledSelectPrefix = styled.td`
 const StyledFileControlButton = styled.button``;
 
 export default function UploadBox({
-  listBucket,
+  useCosListHook,
 }: {
-  listBucket: (force?: boolean, Prefix?: string) => Promise<CosObjectWithUrl[]>;
+  useCosListHook: UseCosListReturn;
 }) {
-  const cosUpload = useCosUpload();
+  const useCosUploadHook = useCosUpload();
   const {
     files,
     addFiles,
@@ -100,7 +100,8 @@ export default function UploadBox({
     isUploading,
     progress,
     taskMap,
-  } = cosUpload;
+  } = useCosUploadHook;
+  const { listBucket } = useCosListHook;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 新增状态：是否正在拖拽进入视口
@@ -230,7 +231,7 @@ export default function UploadBox({
                 "tournament/" +
                 tournamentData.name.replace(/[!@#$%^&*()+\s]+/g, "_") // 特殊字符处理
               }
-              cosUpload={cosUpload}
+              useCosUploadHook={useCosUploadHook}
               key={file.filename}
             />
           ))}
@@ -278,11 +279,11 @@ export default function UploadBox({
 function FileEntry({
   file,
   folder,
-  cosUpload,
+  useCosUploadHook,
 }: {
   file: FileWithPreview;
   folder: string;
-  cosUpload: UseCosUploadReturn;
+  useCosUploadHook: UseCosUploadReturn;
 }) {
   // 修改文件名
   const [editing, setEditing] = useState(false);
@@ -297,7 +298,7 @@ function FileEntry({
   const [prefix, setPrefix] = useState<string>(options[0].prefix);
 
   const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
-    cosUpload;
+    useCosUploadHook;
 
   useEffect(() => {
     setFiles((files) => {

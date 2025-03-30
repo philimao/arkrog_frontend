@@ -20,7 +20,8 @@ const StyledTab = styled.button`
 export default function UploadCenter() {
   const [activeTab, setActiveTab] = React.useState<string>("upload-box");
   const { onOpen, isOpen, onClose } = useDisclosure();
-  const { objects, listBucket } = useCosList();
+  const useCosListHook = useCosList();
+
   return (
     <div className="upload-center-wrapper">
       <button id="upload-center" className="hidden" onClick={onOpen} />
@@ -38,17 +39,17 @@ export default function UploadCenter() {
                 className={activeTab === "list-object" ? "active" : ""}
                 onClick={() => {
                   setActiveTab("list-object");
-                  listBucket();
+                  useCosListHook.listBucket();
                 }}
               >
                 查看
               </StyledTab>
             </div>
             <div className={activeTab === "upload-box" ? "block" : "hidden"}>
-              <UploadBox listBucket={listBucket} />
+              <UploadBox useCosListHook={useCosListHook} />
             </div>
             <div className={activeTab === "list-object" ? "block" : "hidden"}>
-              <ListObject objects={objects} />
+              <ListObject useCosListHook={useCosListHook} />
             </div>
           </StyledModalContent>
         </ModalContent>

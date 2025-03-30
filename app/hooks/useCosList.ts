@@ -8,15 +8,21 @@ export type CosObjectWithUrl = CosObject & {
   url: string;
 };
 
+export interface UseCosListReturn {
+  objects: CosObjectWithUrl[];
+  listBucket: (force?: boolean, Prefix?: string) => Promise<CosObjectWithUrl[]>;
+  deleteBucketObject: (Keys: COS.Key[]) => Promise<void>;
+}
+
 /**
- * 根据指定目录，获取目录内元素，当元素>1000时需翻页，暂未实现
+ * 负责COS下行内容的处理
  */
-export const useCosList = () => {
+export const useCosList = (): UseCosListReturn => {
   const [objects, setObjects] = useState<CosObjectWithUrl[]>([]);
   const { getBucket } = useStorageStore();
 
   /**
-   * 查询目录内元素
+   * 根据指定目录，获取目录内元素，当元素>1000时需翻页，暂未实现
    * @param [force] 是否强制更新
    * @param [Prefix] 目录前缀
    * @return {CosObjectWithUrl[]}
@@ -55,8 +61,35 @@ export const useCosList = () => {
     }
   };
 
+  const deleteBucketObject = async (Keys: COS.Key[]) => {
+    try {
+      const info = await getBucket();
+      if (!info) return;
+      const { Bucket, Region } = info;
+      const data: COS.DeleteMultipleObjectResult =
+        await cos.deleteMultipleObject({
+          Bucket,
+          Region,
+          Objects: Keys.map((Key) => ({ Key })),
+          Quiet: true,
+        });
+      if (data.Error.length > 0) {
+        toast.warning(
+          `成功删除${data.Deleted.length}个文件，未成功删除${data.Error.length}个文件`,
+        );
+      } else {
+        toast.info("成功删除！");
+      }
+      await listBucket(true);
+    } catch (err) {
+      console.log(err);
+      toast.error(`删除文件失败！`);
+    }
+  };
+
   return {
     objects,
     listBucket,
+    deleteBucketObject,
   };
 };

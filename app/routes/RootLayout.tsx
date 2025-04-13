@@ -13,6 +13,7 @@ import { useAppDataStore } from "~/stores/appDataStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import ScrollToTop from "~/modules/Standalone/ScrollToTop";
 import UploadCenter from "~/components/COS/UploadCenter";
+import Loading from "~/components/Loading";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -34,30 +35,42 @@ export default function RootLayout() {
   const { fetchAppData } = useAppDataStore();
   const { fetchTournamentsData } = useTournamentDataStore();
   const desktop = window.matchMedia("(min-width: 640px)").matches;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([fetchAppData(), fetchUserInfo(), fetchGameData(), fetchTournamentsData()]);
-  }, []);
+    Promise.all([
+      fetchAppData(),
+      fetchUserInfo(),
+      fetchGameData(),
+      fetchTournamentsData(),
+    ]).then(() => setLoading(false));
+  }, [fetchAppData, fetchGameData, fetchTournamentsData, fetchUserInfo]);
 
   return (
     <ThemeProvider theme={theme[currentTheme as keyof typeof theme]}>
       <StyledBackground>
-        <MyNavbar />
-        <PageNavbar />
-        <Outlet />
-        <Footer />
-        <ToastContainer
-          autoClose={3000}
-          position={desktop ? "bottom-right" : "top-right"}
-          theme="dark"
-          closeOnClick
-          stacked
-          hideProgressBar
-          style={desktop ? {} : { width: "100vw" }}
-        />
-        <GlobalModals />
-        <ScrollToTop />
-        <UploadCenter />
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            <MyNavbar />
+            <PageNavbar />
+            <Outlet />
+            <Footer />
+            <ToastContainer
+              autoClose={3000}
+              position={desktop ? "bottom-right" : "top-right"}
+              theme="dark"
+              closeOnClick
+              stacked
+              hideProgressBar
+              style={desktop ? {} : { width: "100vw" }}
+            />
+            <GlobalModals />
+            <ScrollToTop />
+            <UploadCenter />
+          </>
+        )}
       </StyledBackground>
     </ThemeProvider>
   );

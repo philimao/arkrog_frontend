@@ -34,7 +34,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const isDev = import.meta.env.MODE === "development";
+  // const isDev = import.meta.env.MODE === "development";
   return (
     <html lang="en">
       <head>
@@ -43,7 +43,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
-        {isDev && <script src="http://localhost:8097"></script>}
+        {/*{isDev && <script src="http://localhost:8097"></script>}*/}
         <title>影语集 - 集成战略攻略分享</title>
         <Meta />
         <Links />

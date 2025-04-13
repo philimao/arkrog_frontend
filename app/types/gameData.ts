@@ -12,23 +12,19 @@ export type RogueKey =
 
 // 游戏数据
 export interface GameData {
-  topics: Topics;
-  stages: Stages;
-  enemies: Enemies;
-  zones: Zones;
+  topics: Record<RogueKey, TopicData>;
+  stages: Record<RogueKey, StageOfRogue>;
+  enemies: Record<string, EnemyData[]>;
+  zones: Record<RogueKey, ZoneOfRogue>;
   traps: BasicObject;
-  relics: BasicObject;
-  items: BasicObject;
-  character_basic?: CharsBasic;
-  character_table?: BasicObject;
-  skill_table?: BasicObject;
-  uniequipDict?: BasicObject;
+  relics: Record<RogueKey, Record<string, RelicData>>;
+  items: Record<RogueKey, Record<string, ItemData>>;
+  character_basic?: Record<CharId, CharBasicData>;
+  character_table?: Record<CharId, CharData>;
+  skill_table?: Record<string, SkillData>;
+  uniequip_table?: Record<string, UniequipData>;
+  uniequipDict?: Record<string, object>;
 }
-
-// 肉鸽主题
-export type Topics = {
-  [key in RogueKey]: TopicData;
-};
 
 // 肉鸽主题数据
 export interface TopicData {
@@ -39,15 +35,8 @@ export interface TopicData {
   startTime: number;
 }
 
-// 所有肉鸽所有层
-export type Zones = {
-  [key in RogueKey]: ZoneOfRogue;
-};
-
 // 特定肉鸽所有层
-export type ZoneOfRogue = {
-  [key: string]: ZoneData;
-};
+export type ZoneOfRogue = Record<string, ZoneData>;
 
 // 特定层
 export interface ZoneData {
@@ -58,18 +47,11 @@ export interface ZoneData {
   displayTime: string | null;
   buffDescription: string | null; // 树洞buff
   endingDescription: string;
-  [key: string]: any;
+  [key: string]: string | object | number | null;
 }
 
-// 所有肉鸽所有关卡
-export type Stages = {
-  [key in RogueKey]: StageOfRogue;
-};
-
 // 特定肉鸽所有关卡
-export type StageOfRogue = {
-  [key: string]: StageData;
-};
+export type StageOfRogue = Record<string, StageData>;
 
 // 特定关卡信息
 export interface StageData {
@@ -81,13 +63,12 @@ export interface StageData {
   difficulty: string;
   isBoss: 0 | 1;
   isElite: 0 | 1;
-  [key: string]: any;
+  [key: string]: string | object | number;
 }
 
-export interface StagePreview {
-  [key: string]: StagePreviewData;
-}
+export type StagePreview = Record<string, StagePreviewData>;
 
+// 关卡预览
 export interface StagePreviewData {
   normalNum?: number;
   normalLevel?: string;
@@ -100,11 +81,9 @@ export interface StagePreviewData {
   breadcrumb?: string;
 }
 
-// 干员信息
-export interface UniequipsBasic {
-  [key: string]: UniequipBasicData;
-}
+export type UniequipsBasic = Record<string, UniequipBasicData>;
 
+// 基础模组信息
 export interface UniequipBasicData {
   uniEquipId: string;
   uniEquipName: string;
@@ -117,6 +96,26 @@ export interface UniequipBasicData {
   charEquipOrder: number;
 }
 
+export interface UniequipData {
+  phases: {
+    equipLevel: number;
+    parts: {
+      resKey: string;
+      target: string;
+      isToken: boolean;
+      addOrOverrideTalentDataBundle: {
+        candidates: CharTalentData[] | null;
+      };
+      overrideTraitDataBundle: {
+        candidates: CharTraitData[] | null;
+      };
+    }[];
+    attributeBlackboard: BlackboardData[];
+    tokenAttributeBlackboard: Record<string, BlackboardData[]>;
+  }[];
+}
+
+// 基础技能信息
 export interface SkillBasicData {
   skillOrder: number;
   skillId: string;
@@ -124,25 +123,188 @@ export interface SkillBasicData {
   description: string;
 }
 
-export interface SkillsBasic {
-  [key: string]: SkillBasicData;
+export interface SkillData {
+  skillId: string;
+  levels: {
+    name: string;
+    rangeId: string | null;
+    description: string;
+    skillType: "MANUAL";
+    durationType: "AMMO";
+    spData: {
+      spType: "INCREASE_WITH_TIME";
+      levelUpCost: null;
+      maxChargeTime: number;
+      spCost: number;
+      initSp: number;
+      increment: number;
+    };
+    duration: number;
+    blackboard: BlackboardData[];
+  }[];
 }
 
-export interface CharsBasic {
-  [key: string]: CharBasicData;
-}
+type CharId = `char_${number}_${string}`;
 
+type SkillId = `skchr_${string}`;
+
+export type SkillsBasic = Record<SkillId, SkillBasicData>;
+
+export type Profession =
+  | "VANGUARD"
+  | "SNIPER"
+  | "CASTER"
+  | "MEDIC"
+  | "GUARD"
+  | "DEFENDER"
+  | "SPECIALIST"
+  | "SUPPORTER";
+
+// 干员基础信息
 export interface CharBasicData {
-  charId: string;
+  charId: CharId;
   name: string;
   description: string;
   displayNumber: string;
   appellation: string;
-  rarity: string;
-  profession: string;
+  rarity: `TIER_${number}`;
+  profession: Profession;
   subProfessionId: string;
   skills: SkillsBasic;
   uniequip: UniequipsBasic;
+}
+
+export interface BlackboardData {
+  key: string;
+  value: number;
+  valueStr: string | null;
+}
+
+// 阶段面板数据
+export interface CharAttribute {
+  maxHp: number;
+  atk: number;
+  def: number;
+  magicResistance: number;
+  cost: number;
+  blockCnt: number;
+  moveSpeed: number;
+  attackSpeed: number;
+  baseAttackTime: number;
+  respawnTime: number;
+  hpRecoveryPerSec: number;
+  spRecoveryPerSec: number;
+  maxDeployCount: number;
+  maxDeckStackCnt: number;
+  tauntLevel: number;
+  massLevel: number;
+  baseForceLevel: number;
+  stunImmune: boolean;
+  silenceImmune: boolean;
+  sleepImmune: boolean;
+  frozenImmune: boolean;
+  levitateImmune: boolean;
+  disarmedCombatImmune: boolean;
+  fearedImmune: boolean;
+}
+
+export type CharAttributeExt = CharAttribute & {
+  damage_scale: number;
+};
+
+export interface AttributeKeyFrame {
+  level: number;
+  data: CharAttribute;
+}
+
+// 精英化阶段
+export interface CharPhase {
+  rangeId: string;
+  maxLevel: number;
+  attributesKeyFrames: AttributeKeyFrame[];
+  evolveCost: null;
+}
+
+// 天赋
+export interface CharTalent {
+  candidates: CharTalentData[];
+}
+
+export interface CharTalentData {
+  unlockCondition: { phase: `Phase_${number}`; level: 1 | 2 };
+  requiredPotentialRank: number;
+  name: string;
+  description: string;
+  blackboard: BlackboardData[];
+}
+
+// 特性
+export interface CharTraitData {
+  additionalDescription: string;
+  unlockCondition: {
+    phase: string;
+    level: number;
+  };
+  requiredPotentialRank: number;
+  blackboard: BlackboardData[];
+  overrideDescription: string | null;
+  rangeId: null;
+}
+
+export interface AttributeModifier {
+  attributeType: string;
+  formulaItem: "ADDITION";
+  value: number;
+  loadFromBlackboard: boolean;
+}
+
+export interface CharPotential {
+  type: "BUFF" | "CUSTOM";
+  description: string;
+  buff: {
+    attributes: {
+      attributeModifiers: AttributeModifier[];
+    };
+  } | null;
+  equivalentCost: null;
+}
+
+// 干员详细信息
+export interface CharData {
+  name: string;
+  description: string;
+  displayNumber: string;
+  appellation: string;
+  position: "MELEE" | "RANGED";
+  rarity: `TIER_${number}`;
+  profession: Profession;
+  subProfessionId: string;
+  favorKeyFrames: AttributeKeyFrame[];
+  phases: CharPhase[];
+  talents: CharTalent[];
+  potentialRanks: CharPotential[];
+}
+
+/**
+ * 藏品信息
+ */
+export interface ItemData {
+  id: `rogue_${number}_${string}`;
+  name: string;
+  description: string | null;
+  usage: string;
+  type: string;
+  subType: string;
+  rarity: string;
+  value: number;
+}
+
+export interface RelicData {
+  id: `rogue_${number}_${string}`;
+  buffs: {
+    key: string;
+    blackboard: BlackboardData[];
+  }[];
 }
 
 // 敌人
@@ -163,8 +325,4 @@ export interface EnemyData {
   hpr: number;
   talent?: string;
   skills?: string[];
-}
-
-export interface Enemies {
-  [key: string]: EnemyData[];
 }

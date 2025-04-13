@@ -1,3 +1,5 @@
+import MD5 from "crypto-js/md5.js";
+
 async function _get<T>(url: string): Promise<T> {
   return fetch(`${import.meta.env.VITE_API_BASE_URL}` + url, {
     credentials: "include",
@@ -106,6 +108,13 @@ function mergeArray<T>(target: T[], source: T[]): T[] {
     merged[index] = item;
   });
   return merged;
+}
+
+export const imageHost = "https://media.prts.wiki/";
+
+export function getPath(filename: string): string {
+  const md5 = MD5(filename).toString();
+  return md5.slice(0, 1) + "/" + md5.slice(0, 2) + "/" + filename;
 }
 
 export { _get, _post, generateID, hashString, findDuplicates, mergeArray };

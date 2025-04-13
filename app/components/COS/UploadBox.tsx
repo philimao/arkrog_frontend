@@ -413,9 +413,7 @@ function FileEntry({
           }}
         >
           {options.map((option) => (
-            <SelectItem key={option.prefix} value={option.prefix}>
-              {option.label}
-            </SelectItem>
+            <SelectItem key={option.prefix}>{option.label}</SelectItem>
           ))}
         </Select>
       </StyledSelectPrefix>

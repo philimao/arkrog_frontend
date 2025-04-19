@@ -67,7 +67,7 @@ export default function RelicSelector() {
   const difficulties = useMemo(() => {
     let array;
     if (rogueKey === "rogue_1") array = ["王冠", "乌萨斯弯刀"];
-    else if (rogueKey === "rogue_4")
+    else if (rogueKey === "rogue_4" || rogueKey === "rogue_2") // 水月有N18了
       array = Array(19)
         .fill(0)
         .map((_, i) => "N" + i);
@@ -137,6 +137,29 @@ export default function RelicSelector() {
   const [selectedRelicIds, setSelectedRelicIds] = useState<string[]>([]);
   const [result, setResult] = useState<Record<string, number>>({});
 
+  // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
+  const selectRelicsByIds = (ids: string[]) => {
+    setSelectedRelicIds((prev) => {
+      const updated = [...new Set([...prev, ...ids])]; // 合并并去重
+      return updated;
+    });
+  };  
+    
+  const [inputRelicIds, setInputRelicIds] = useState<string>("");
+  // 处理输入框中的藏品 ID
+  const handleSelectFromInput = () => {
+    try {
+      const ids = JSON.parse(inputRelicIds);
+      if (Array.isArray(ids)) {
+        selectRelicsByIds(ids);
+      } else {
+        alert("请输入有效的 JSON 数组格式！");
+      }
+    } catch (error) {
+      alert("输入格式错误，请输入有效的 JSON 数组！");
+    }
+  };
+
   // 应用藏品效果
   useEffect(() => {
     const result: Record<string, number> = {};
@@ -153,7 +176,23 @@ export default function RelicSelector() {
   }, [relics, rogueKey, selectedRelicIds]);
 
   return (
-    <div>
+      <div>
+       <div className="mb-4">
+        <textarea
+          className="w-full p-2 border rounded"
+          rows={3}
+          placeholder='请输入藏品 ID 数组，例如：["rogue_4_relic_legacy_82","rogue_4_relic_legacy_81"]'
+          value={inputRelicIds}
+          onChange={(e) => setInputRelicIds(e.target.value)}
+        />
+        <Button
+          className="mt-2"
+          color="primary"
+          onPress={handleSelectFromInput}
+        >
+          根据输入选中藏品
+        </Button>
+      </div>    
       <div
         className="grid"
         style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}

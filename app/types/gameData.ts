@@ -279,6 +279,7 @@ export interface CharData {
   rarity: `TIER_${number}`;
   profession: Profession;
   subProfessionId: string;
+  displayTokenDict: object | null;
   favorKeyFrames: AttributeKeyFrame[];
   phases: CharPhase[];
   talents: CharTalent[];
@@ -299,12 +300,16 @@ export interface ItemData {
   value: number;
 }
 
+export interface RelicBuff {
+  key: string;
+  blackboard: BlackboardData[];
+}
+
+export type RelicDataExt = ItemData & RelicData;
+
 export interface RelicData {
   id: `rogue_${number}_${string}`;
-  buffs: {
-    key: string;
-    blackboard: BlackboardData[];
-  }[];
+  buffs: RelicBuff[];
 }
 
 // 敌人

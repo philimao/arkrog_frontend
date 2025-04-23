@@ -1,5 +1,11 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useEffect, useMemo, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type {
   CharAttribute,
   CharAttributeExt,
@@ -16,7 +22,13 @@ const StyledOperatorAvatar = styled(OperatorAvatar)`
   height: 10rem;
 `;
 
-export default function OperatorSelector() {
+export default function OperatorSelector({
+  charData,
+  setCharData,
+}: {
+  charData?: CharData;
+  setCharData: Dispatch<SetStateAction<CharData | undefined>>;
+}) {
   const { character_basic, character_table, skill_table, uniequip_table } =
     useGameDataStore();
 
@@ -52,7 +64,6 @@ export default function OperatorSelector() {
 
   // 干员数据
   const [basicData, setBasicData] = useState<CharBasicData>();
-  const [charData, setCharData] = useState<CharData>();
 
   // 精英化阶段选择
   const phases = useMemo(() => charData?.phases, [charData]);
@@ -204,7 +215,7 @@ export default function OperatorSelector() {
         style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
       >
         <Select
-          disallowEmptySelection={true}
+          // disallowEmptySelection={true}
           label="选择干员"
           selectedKeys={[charName]}
           onChange={(evt) => setCharName(evt.target.value)}

@@ -209,7 +209,7 @@ export default function OperatorSelector({
     }
   }, [attribute, charData, equip, potential]);
 
-  const { instance, error } = useWasm("my_target");
+  const { instance, error } = useWasm("arkrog_calc.es6");
 
   return (
     <div>

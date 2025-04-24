@@ -16,14 +16,14 @@ yarn
 
 ```angular2html
 # .env.development
-VITE_API_BASE_URL=https://arkrog.com/api
+VITE_API_BASE_URL=http://localhost:5174
 ```
 
 - Frontend Only
 - Be really careful that this is the production environment
 ```angular2html
 # .env.development
-VITE_API_BASE_URL=http://localhost:5174
+VITE_API_BASE_URL=https://arkrog.com/api
 VITE_WASM_URL=http://localhost:8080  # optional for wasm developer
 ```
 

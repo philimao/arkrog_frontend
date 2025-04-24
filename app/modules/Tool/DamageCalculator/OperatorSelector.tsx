@@ -212,8 +212,7 @@ export default function OperatorSelector({
   const { getInstance } = useWasmStore();
 
   useEffect(() => {
-    const instance = getInstance("my_target");
-    console.log(instance);
+    getInstance("arkrog_calc").then((ins) => console.log(ins));
   }, [getInstance]);
 
   return (

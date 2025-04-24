@@ -8,47 +8,37 @@ type WasmStore = {
 };
 
 export const useWasmStore = create<WasmStore>()(
-  devtools((set, get) => ({
-    instances: {},
-    getInstance: (filename: string) => {
-      const _instance = get().instances[filename];
-      if (_instance) return _instance;
+  devtools(
+    (set, get) => ({
+      instances: {},
+      getInstance: async (filename: string) => {
+        const _instance = get().instances[filename];
+        if (_instance) return _instance;
 
-      return new Promise((resolve) => {
         const wasmBaseUrl =
           import.meta.env.VITE_WASM_URL ||
           import.meta.env.VITE_API_BASE_URL + "/wasm";
-        const scriptUrl = `${wasmBaseUrl}/${filename}.js`;
+        const scriptUrl = `${wasmBaseUrl}/${filename}.es6.js`;
 
-        window.Module = {
-          locateFile(path: string) {
-            return `${wasmBaseUrl}/${path}`;
-          },
-          onRuntimeInitialized() {
-            try {
-              const instance = window.Module;
-              set((state) => ({
+        return await import(scriptUrl)
+          .then((module) => module.default())
+          .then((instance) => {
+            set(
+              (state) => ({
                 ...state,
                 instances: { ...state.instances, [filename]: instance },
-              }));
-              resolve(instance);
-            } catch (err) {
-              console.log(err);
-              toast.error(
-                `Failed to load wasm\n${(err as Error).name}: ${(err as Error).message}`,
-              );
-            }
-          },
-        };
-
-        const script = document.createElement("script");
-        script.src = scriptUrl;
-        script.async = true;
-        script.onerror = () => {
-          toast.error("Failed to load wasm");
-        };
-        document.body.appendChild(script);
-      });
-    },
-  })),
+              }),
+              undefined,
+              "getInstance",
+            );
+            return instance;
+          })
+          .catch((err) => {
+            console.error(err);
+            toast.error(`Failed to load WASM script: ${scriptUrl}`);
+          });
+      },
+    }),
+    { name: "wasm" },
+  ),
 );

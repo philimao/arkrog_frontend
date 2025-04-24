@@ -22,7 +22,7 @@ export interface GameData {
   character_basic?: Record<CharId, CharBasicData>;
   character_table?: Record<CharId, CharData>;
   skill_table?: Record<string, SkillData>;
-  uniequip_table?: Record<string, UniequipData>;
+  uniequip_table?: Record<string, UniEquipData>;
   uniequipDict?: Record<string, object>;
 }
 
@@ -96,23 +96,25 @@ export interface UniequipBasicData {
   charEquipOrder: number;
 }
 
-export interface UniequipData {
-  phases: {
-    equipLevel: number;
-    parts: {
-      resKey: string;
-      target: string;
-      isToken: boolean;
-      addOrOverrideTalentDataBundle: {
-        candidates: CharTalentData[] | null;
-      };
-      overrideTraitDataBundle: {
-        candidates: CharTraitData[] | null;
-      };
-    }[];
-    attributeBlackboard: BlackboardData[];
-    tokenAttributeBlackboard: Record<string, BlackboardData[]>;
+export interface UniEquipPhaseData {
+  equipLevel: number;
+  parts: {
+    resKey: string;
+    target: string;
+    isToken: boolean;
+    addOrOverrideTalentDataBundle: {
+      candidates: CharTalentData[] | null;
+    };
+    overrideTraitDataBundle: {
+      candidates: CharTraitData[] | null;
+    };
   }[];
+  attributeBlackboard: BlackboardData[];
+  tokenAttributeBlackboard: Record<string, BlackboardData[]>;
+}
+
+export interface UniEquipData {
+  phases: UniEquipPhaseData[];
 }
 
 // 基础技能信息
@@ -123,25 +125,27 @@ export interface SkillBasicData {
   description: string;
 }
 
+export interface SkillLevelData {
+  name: string;
+  rangeId: string | null;
+  description: string;
+  skillType: "MANUAL";
+  durationType: "AMMO";
+  spData: {
+    spType: "INCREASE_WITH_TIME";
+    levelUpCost: null;
+    maxChargeTime: number;
+    spCost: number;
+    initSp: number;
+    increment: number;
+  };
+  duration: number;
+  blackboard: BlackboardData[];
+}
+
 export interface SkillData {
   skillId: string;
-  levels: {
-    name: string;
-    rangeId: string | null;
-    description: string;
-    skillType: "MANUAL";
-    durationType: "AMMO";
-    spData: {
-      spType: "INCREASE_WITH_TIME";
-      levelUpCost: null;
-      maxChargeTime: number;
-      spCost: number;
-      initSp: number;
-      increment: number;
-    };
-    duration: number;
-    blackboard: BlackboardData[];
-  }[];
+  levels: SkillLevelData[];
 }
 
 export type CharId = `char_${number}_${string}`;
@@ -310,6 +314,44 @@ export type RelicDataExt = ItemData & RelicData;
 export interface RelicData {
   id: `rogue_${number}_${string}`;
   buffs: RelicBuff[];
+}
+
+// 带*的域代表对计算非常重要
+export interface CalculatorInput {
+  phaseLevel: number; // 精英化等级
+  phase: CharPhase; // 精英化数据
+  level: number; // 干员等级
+  attribute: CharAttributeExt; // 干员局外面板*
+  skillKey: string; // 技能键名
+  skillLevel: number; // 技能等级
+  skill: SkillLevelData; // 选择的技能数据*
+  uniEquipId: string; // 模组ID
+  uniEquipLevel: number; // 模组等级
+  uniEquip: UniEquipData; // 选择的模组数据*
+  potential: number; // 潜能等级*
+}
+
+// 计算器返回值
+export interface CalculatorOutput {
+  auto: DamageData; // 普攻
+  skill: DamageData; // 技能
+  cycle: DamageData; // 周期
+  logs: string[]; // 运算过程
+}
+
+// 伤害数据
+export interface DamageData {
+  atk: number; // 面板攻击力
+  dps: DamageByType; // dps
+  total_damage: DamageByType; // 总伤
+}
+
+// 伤害分布
+export interface DamageByType {
+  phy?: number; // 物理
+  mag?: number; // 法术
+  pure?: number; // 真实
+  ep?: number; // 元素
 }
 
 // 敌人

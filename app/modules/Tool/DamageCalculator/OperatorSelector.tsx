@@ -16,6 +16,7 @@ import { Select, SelectItem } from "@heroui/react";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { applyAttrModifiers, applyBlackboard } from "~/utils/calculator";
+import { useWasm } from "~/modules/Tool/DamageCalculator/useWasm";
 
 const StyledOperatorAvatar = styled(OperatorAvatar)`
   width: 10rem;
@@ -207,6 +208,8 @@ export default function OperatorSelector({
       setResult(result);
     }
   }, [attribute, charData, equip, potential]);
+
+  const { instance, error } = useWasm("my_target");
 
   return (
     <div>

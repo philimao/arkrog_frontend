@@ -104,12 +104,31 @@ export const layerValueStrs = [
 ];
 
 /**
- * 局内生效的藏品名 TODO
+ * 局内生效的藏品名
  */
 export const inGameRelicNames = [
-  "Scout的狙击镜",
-  "叙拉古人的愤怒",
+  "黑色郁金香",
   "绿叶菜罐头",
+  "叙拉古人的愤怒",
+  "《光耀卡西米尔》",
+  "《归来》",
+  "湖中神盾",
+  "空羽兽",
+  "岩角号",
+  "荣耀绶带",
+  "古乔治营养原浆",
+  "支柱-援护",
+  "折戟-裂岩",
+  "锈刃-遗世独立",
+  "掠食之手",
+  "久居之手",
+  "轰鸣之手",
+  "诸王的冠冕",
+  "探索者背包",
+  "城墙之子",
+  "魔王的床榻",
+  "未叙魔王残片",
+  "魔王的祭器",
 ];
 
 /**
@@ -241,7 +260,6 @@ export function isBuffForChar(buff: RelicBuff) {
 
 export interface RelicWrapper {
   relicData: RelicDataExt;
-  isSelected: boolean;
   buffs: {
     key: string;
     isActive: boolean;
@@ -337,7 +355,6 @@ export function wrapRelicData(
   // console.log(relicDataExt.name);
   return {
     relicData: relicDataExt,
-    isSelected: false,
     buffs: relicDataExt.buffs.map((buff) => {
       const isActive =
         isRelicActive(relicDataExt) &&

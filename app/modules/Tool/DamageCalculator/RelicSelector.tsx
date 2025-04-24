@@ -11,6 +11,7 @@ import type { CharData, ItemData, RogueKey } from "~/types/gameData";
 import {
   allowedBlackboardKeyMap,
   finalizeRelicResults,
+  inGameRelicNames,
   type RelicWrapper,
   wrapRelicData,
 } from "~/modules/Tool/DamageCalculator/utils";
@@ -236,6 +237,9 @@ export default function RelicSelector({ charData }: { charData?: CharData }) {
                   style={{ background: "rgba(0,0,0,0.3)" }}
                 >
                   <strong>{relicWrapper.relicData.name}</strong>
+                  {inGameRelicNames.includes(relicWrapper.relicData.name) && (
+                    <span>（局内生效）</span>
+                  )}
                   <Divider className="my-1" />
                   {relicWrapper.buffs
                     .map((buff) => buff.charResult)

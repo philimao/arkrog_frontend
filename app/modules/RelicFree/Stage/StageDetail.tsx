@@ -20,14 +20,14 @@ const StyledDescriptionBlock = styled.div`
   white-space: pre-wrap;
 `;
 
-const StyledDescriptionTag = styled.div<{ tag: string }>`
+const StyledDescriptionTag = styled.div<{ $tag: string }>`
   float: right;
   padding: 0.25rem 1rem;
   margin-left: 0.25rem;
   font-size: 0.8rem;
   background: ${(props) =>
-    props.tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)"};
-`
+    props.$tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)"};
+`;
 
 const StyledBackButtonContainer = styled.div`
   position: absolute;
@@ -69,7 +69,7 @@ export default function StageDetail({
     }
   }, [mapRef]);
 
-  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ''}`;
+  const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ""}`;
 
   const eliteStageData: StageData | null = useMemo(() => {
     if (!stages || !stageData.id.match(/ro\d_n/)) return null;
@@ -81,23 +81,23 @@ export default function StageDetail({
 
   const navigate = useNavigate();
 
-  const shouldShowAdditionalDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
+  const shouldShowAdditionalDesc =
+    eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
   const renderAdditionalDesc = () => {
     const tag = eliteStageData
       ? "紧急"
       : stagePreview?.[stageData.id]?.boatDesc
         ? "带船"
-        : ""
-    return <>
-      <StyledDescriptionTag tag={tag}>
-        {tag}
-      </StyledDescriptionTag>
-      {eliteStageData
-        ? eliteStageData.eliteDesc
-        : stagePreview?.[stageData.id]?.boatDesc ?? ""
-      }
-    </>
-  }
+        : "";
+    return (
+      <>
+        <StyledDescriptionTag $tag={tag}>{tag}</StyledDescriptionTag>
+        {eliteStageData
+          ? eliteStageData.eliteDesc
+          : (stagePreview?.[stageData.id]?.boatDesc ?? "")}
+      </>
+    );
+  };
 
   return (
     <div className="mb-10 relative">
@@ -120,9 +120,11 @@ export default function StageDetail({
             .replace(/<@.*?>/, "")
             .replace(/<\/>/g, "")}
         </StyledDescriptionBlock>
-        {<StyledDescriptionBlock>
-          {shouldShowAdditionalDesc && renderAdditionalDesc()}
-        </StyledDescriptionBlock>}
+        {
+          <StyledDescriptionBlock>
+            {shouldShowAdditionalDesc && renderAdditionalDesc()}
+          </StyledDescriptionBlock>
+        }
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>

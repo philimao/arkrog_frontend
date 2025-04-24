@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import type { CharBasicData, CharsBasic } from "~/types/gameData";
+import type { CharBasicData, CharId } from "~/types/gameData";
 import type { TeamMemberData } from "~/types/recordType";
 
 async function URLValidation(url: string) {
@@ -109,7 +109,7 @@ function avToBv(av: number) {
 
 function charStrToData(
   charStr: string,
-  character_basic: CharsBasic,
+  character_basic: Record<CharId, CharBasicData>,
 ): TeamMemberData {
   let charId = "",
     name = "",

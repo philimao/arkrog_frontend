@@ -16,7 +16,7 @@ import { Select, SelectItem } from "@heroui/react";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { applyAttrModifiers, applyBlackboard } from "~/utils/calculator";
-import { useWasm } from "~/modules/Tool/DamageCalculator/useWasm";
+import { useWasmStore } from "~/stores/wasmStore";
 
 const StyledOperatorAvatar = styled(OperatorAvatar)`
   width: 10rem;
@@ -61,7 +61,7 @@ export default function OperatorSelector({
       setSkillLevel("9");
     else setSkillLevel("6");
     // 设置模组，模组默认值在useMemo中更新
-  }, [charName, character_basic, character_table]);
+  }, [charName, character_basic, character_table, setCharData]);
 
   // 干员数据
   const [basicData, setBasicData] = useState<CharBasicData>();
@@ -209,7 +209,12 @@ export default function OperatorSelector({
     }
   }, [attribute, charData, equip, potential]);
 
-  const { instance, error } = useWasm("my_target");
+  const { getInstance } = useWasmStore();
+
+  useEffect(() => {
+    const instance = getInstance("my_target");
+    console.log(instance);
+  }, [getInstance]);
 
   return (
     <div>

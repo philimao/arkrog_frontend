@@ -1,8 +1,8 @@
-declare module "/wasm/*.js" {
-  interface EmscriptenModule {
-    instance: WebAssembly.Instance;
+import type { EmscriptenModule } from "@types/emscripten";
+
+declare global {
+  interface Window {
+    Module: EmscriptenModule;
   }
-  export default function init(options: {
-    locateFile: (path: string) => string;
-  }): Promise<EmscriptenModule>;
 }
+export {};

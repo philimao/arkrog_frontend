@@ -144,7 +144,7 @@ export interface SkillData {
   }[];
 }
 
-type CharId = `char_${number}_${string}`;
+export type CharId = `char_${number}_${string}`;
 
 type SkillId = `skchr_${string}`;
 

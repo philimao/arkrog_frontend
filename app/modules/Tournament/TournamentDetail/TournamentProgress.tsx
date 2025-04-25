@@ -6,6 +6,7 @@ import { generateDateArray } from "./index";
 
 const StyledNav = styled.nav`
   position: relative;
+  text-align: center;
 
   &:not(:last-child)::after {
     width: 100%;
@@ -33,6 +34,7 @@ export default function TournamentProgress({
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const isTeam = tournamentData.type === "team";
   const currentStage = tournamentData.stages[currentStageIndex];
   const dates = generateDateArray(currentStage.startTime, currentStage.endTime);
   const schedule = new Map<string, TournamentGame>();
@@ -48,7 +50,7 @@ export default function TournamentProgress({
 
     if (game) {
       if (game.session) sessions.add(game.session);
-      schedule.set(player.mid, game);
+      isTeam ? schedule.set(player.name, game) : schedule.set(player.mid, game);
     }
   });
 
@@ -56,7 +58,68 @@ export default function TournamentProgress({
     setActiveIndex(0);
   }, [currentStageIndex]);
 
-  const renderScheduleUnit = (session?: string) => {
+  const renderScheduleIndividual = (session?: string) => {
+    const sortedSchedule = Array.from(schedule.entries())
+      .sort((a, b) => a[1].date - b[1].date)
+      .filter((entry) => (session ? entry[1].session === session : entry));
+
+    if (sortedSchedule.length === 0) {
+      return <tbody><tr><td className="text-center p-2 text-xl">暂无赛事</td></tr></tbody>;
+    }
+
+    return (
+      <tbody className="divide-y divide-mid-gray">
+        {sortedSchedule.map((entry, index) => (
+          <tr
+            key={index}
+            className="divide-x divide-mid-gray"
+          >
+            <td className="hidden md:table-cell p-4 w-[25%]">
+              <div className="flex items-center">
+                {renderPlayer(entry[0])}
+              </div>
+            </td>
+            <td className="table-cell md:hidden py-4 w-[25%]">
+              <div className="flex justify-center items-center">
+                {renderPlayer(entry[0], true)}
+              </div>
+            </td>
+            <td className="hidden md:table-cell p-4 w-[15%]">
+              <div className="flex flex-col justify-center items-center">
+                <p>{entry[1].starterSquad}</p>
+              </div>
+            </td>
+            <td className="table-cell p-4 md:hidden w-[15%]">
+              <div className="flex justify-center items-center">
+                <img
+                  src={`/images/squad/${entry[1].starterSquad}.png`}
+                  alt="squad"
+                  className="h-10 aspect-square object-contain"
+                />
+              </div>
+            </td>
+            <td className="hidden sm:table-cell p-4 w-[30%]">
+              <div className="flex justify-center items-center">
+                {entry[1].ending}
+              </div>
+            </td>
+            <td className="w-[20%]">
+              <div className="flex flex-col justify-center items-center p-2">
+                <p className="text-ak-blue text-xl">{entry[1].point}</p>
+              </div>
+            </td>
+            <td className="w-[10%]">
+              <div className="flex justify-center items-center p-2">
+                {new Date(entry[1].date).toLocaleTimeString("zh-CN").slice(0, -3)}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  };
+
+  const renderScheduleTeam = (session?: string) => {
     const sortedSchedule = Array.from(schedule.entries())
       .sort((a, b) => a[1].date - b[1].date)
       .filter((entry) => (session ? entry[1].session === session : entry));
@@ -66,52 +129,94 @@ export default function TournamentProgress({
     }
 
     return (
-      <>
-        {sortedSchedule.map((entry, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-4 sm:grid-cols-5 auto-cols-max divide-x divide-mid-gray"
-          >
-            <div className="hidden lg:flex h-full p-4">
-              {renderPlayer(entry[0])}
-            </div>
-            <div className="flex lg:hidden justify-center items-center h-full p-4">
-              {renderPlayer(entry[0], true)}
-            </div>
-            <div className="hidden md:flex justify-center items-center h-full p-4">
-              {entry[1].starterSquad}
-            </div>
-            <div className="flex justify-center items-center h-full p-4 md:hidden">
-              <img
-                src={`/images/squad/${entry[1].starterSquad}.png`}
-                alt="squad"
-                className="h-10 aspect-square object-contain"
-              />
-            </div>
-            <div className="hidden sm:flex justify-center items-center h-full p-4">{entry[1].ending}</div>
-            <div className="flex justify-center items-center h-full text-ak-blue text-xl">{entry[1].point}</div>
-            <div className="flex justify-center items-center h-full">
-              {new Date(entry[1].date).toLocaleTimeString("zh-CN").slice(0, -3)}
-            </div>
-          </div>
-        ))}
-      </>
+      <tbody className="divide-y divide-mid-gray">
+        {sortedSchedule.map((entry, index) => {
+          const team = tournamentData.teams?.find(
+            (team) => team.name === entry[0],
+          )
+
+          return (
+            <tr
+              key={index}
+              className="divide-x divide-mid-gray"
+            >
+              <td>
+                <div className="flex justify-center items-center">
+                  <img
+                    src={team?.avatar}
+                    className="h-16 w-16 aspect-square"
+                    alt="avatar"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+              </td>
+              <td className="hidden lg:table-cell p-4">
+                <div className="flex items-center">
+                  {renderPlayer(entry[0])}
+                </div>
+              </td>
+              <td className="table-cell lg:hidden p-4">
+                <div className="flex justify-center items-center">
+                  {renderPlayer(entry[0], true)}
+                </div>
+              </td>
+              <td className="hidden md:table-cell p-4">
+                <div className="flex flex-col justify-center items-center">
+                  <p>{entry[1].starterSquad}</p>
+                  <p>{entry[1].starterOp}</p>
+                </div>
+              </td>
+              <td className="table-cell p-4 md:hidden">
+                <div className="flex justify-center items-center">
+                  <img
+                    src={`/images/squad/${entry[1].starterSquad}.png`}
+                    alt="squad"
+                    className="h-10 aspect-square object-contain"
+                  />
+                </div>
+              </td>
+              <td className="hidden sm:table-cell p-4 w-20">
+                <div className="flex justify-center items-center">
+                  {entry[1].strategy}
+                </div>
+              </td>
+              <td className="hidden sm:table-cell p-4">
+                <div className="flex justify-center items-center">
+                  {entry[1].ending}
+                </div>
+              </td>
+              <td>
+                <div className="flex flex-col justify-center items-center p-2">
+                  <p>{entry[0] === team?.keyMember ? '创想家' : '讲述者'}</p>
+                  <p className="text-ak-blue text-xl">{entry[1].point}</p>
+                </div>
+              </td>
+              <td>
+                <div className="flex justify-center items-center p-2">
+                  {new Date(entry[1].date).toLocaleTimeString("zh-CN").slice(0, -3)}
+                </div>
+              </td>
+            </tr>
+          )}
+        )}
+      </tbody>
     );
   };
 
   const renderSchedule = (session?: string, index?: number) => {
     return (
-      <div
+      <table
         key={index}
-        className="w-full flex flex-col bg-black-gray-70 align-top divide-y divide-mid-gray"
+        className="w-full bg-black-gray-70 align-top divide-y divide-mid-gray"
       >
-        <div
-          className="flex justify-center bg-black-gray text-light-gray py-4"
-        >
-          {currentStage.name}{session}
-        </div>
-        {renderScheduleUnit(session)}
-      </div>
+        <thead>
+          <tr>
+            <td className="text-center bg-black-gray text-light-gray py-4" colSpan={7}>{currentStage.name}{session}</td>
+          </tr>
+        </thead>
+        {isTeam ? renderScheduleTeam(session) : renderScheduleIndividual(session)}
+      </table>
     );
   };
 
@@ -131,13 +236,13 @@ export default function TournamentProgress({
               <StyledNav
                 key={index}
                 className={
-                  "flex justify-center gap-2 p-1 flex-wrap " +
+                  "flex justify-center items-center gap-x-2 p-1 flex-wrap " +
                   `${activeIndex === index && "bg-ak-blue"}`
                 }
                 role="button"
                 onClick={() => setActiveIndex(index)}
                 style={{
-                  minWidth: `calc(${100 / Math.min(dates.length, 6)}% - 1px)`,
+                  minWidth: `calc(${Math.max(100 / dates.length, 18)}% - 1px)`,
                 }}
               >
                 <div

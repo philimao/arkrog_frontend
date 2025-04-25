@@ -133,10 +133,15 @@ export default function TournamentDetail() {
     return (
       <div className="flex gap-4 my-4">
         <div className="w-full max-w-40">
-          {/* TODO: replace with tournament avatar */}
-          <div className="w-full aspect-square bg-light-gray rounded-xl" />
+          <img
+            src={tournamentData.avatar}
+            className="rounded-xl aspect-square"
+            alt="avatar"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+          />
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 pr-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
             <div className="text-4xl lg:text-6xl font-bold">
               {tournamentData.name}
@@ -168,9 +173,9 @@ export default function TournamentDetail() {
     );
   };
 
-  const renderPlayer = (playerId: string, column?: boolean) => {
+  const renderPlayer = (playerInfo: string, column?: boolean) => {
     const player = tournamentData.players?.find(
-      (player) => player.mid === playerId,
+      (player) => player.mid === playerInfo || player.name === playerInfo,
     );
     return (
       <>

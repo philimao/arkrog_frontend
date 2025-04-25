@@ -14,7 +14,7 @@ export type RogueKey =
 export interface GameData {
   topics: Record<RogueKey, TopicData>;
   stages: Record<RogueKey, StageOfRogue>;
-  enemies: Record<string, EnemyData[]>;
+  enemies: Record<string, EnemyBasicData[]>;
   zones: Record<RogueKey, ZoneOfRogue>;
   traps: BasicObject;
   relics: Record<RogueKey, Record<string, RelicData>>;
@@ -23,7 +23,7 @@ export interface GameData {
   character_table?: Record<CharId, CharData>;
   skill_table?: Record<string, SkillData>;
   uniequip_table?: Record<string, UniEquipData>;
-  uniequipDict?: Record<string, object>;
+  uniequip_basic?: Record<string, UniEquipBasicData>;
 }
 
 // 肉鸽主题数据
@@ -58,6 +58,7 @@ export interface StageData {
   id: string;
   code: string;
   name: string;
+  levelId: string; // Obt/Roguelike/RO3/level_rogue3_b-5-b
   description: string;
   eliteDesc: string;
   difficulty: string;
@@ -81,10 +82,10 @@ export interface StagePreviewData {
   breadcrumb?: string;
 }
 
-export type UniequipsBasic = Record<string, UniequipBasicData>;
+export type UniequipsBasic = Record<string, UniEquipBasicData>;
 
 // 基础模组信息
-export interface UniequipBasicData {
+export interface UniEquipBasicData {
   uniEquipId: string;
   uniEquipName: string;
   uniEquipDesc: string;
@@ -317,7 +318,7 @@ export interface RelicData {
 }
 
 // 带*的域代表对计算非常重要
-export interface CalculatorInput {
+export interface CharInput {
   phaseLevel: number; // 精英化等级
   phase: CharPhase; // 精英化数据
   level: number; // 干员等级
@@ -355,7 +356,7 @@ export interface DamageByType {
 }
 
 // 敌人
-export interface EnemyData {
+export interface EnemyBasicData {
   profile: string;
   name: string;
   num: number;
@@ -372,4 +373,81 @@ export interface EnemyData {
   hpr: number;
   talent?: string;
   skills?: string[];
+}
+
+interface DefinedString {
+  m_defined: boolean;
+  m_value: string;
+}
+
+interface DefinedNumber {
+  m_defined: boolean;
+  m_value: number;
+}
+
+interface DefinedBoolean {
+  m_defined: boolean;
+  m_value: boolean;
+}
+
+interface DefinedStringArray {
+  m_defined: boolean;
+  m_value: string[];
+}
+
+export interface EnemySkillData {
+  prefabKey: string;
+  priority: number;
+  cooldown: number;
+  initCooldown: number;
+  spCost: number;
+  blackboard: BlackboardData[] | null;
+}
+
+export interface EnemyData {
+  id: string;
+  level: 0 | 1 | 2;
+  name: DefinedString;
+  description: DefinedNumber;
+  prefabKey: DefinedString;
+  attributes: {
+    maxHp: DefinedNumber;
+    atk: DefinedNumber;
+    def: DefinedNumber;
+    magicResistance: DefinedNumber;
+    blockCnt: DefinedNumber;
+    moveSpeed: DefinedNumber;
+    attackSpeed: DefinedNumber;
+    baseAttackTime: DefinedNumber;
+    tauntLevel: DefinedNumber;
+    epDamageResistance: DefinedNumber;
+    epResistance: DefinedNumber;
+    damageHitratePhysical: DefinedNumber;
+    damageHitrateMagical: DefinedNumber;
+    stunImmune: DefinedBoolean;
+    silenceImmune: DefinedBoolean;
+    sleepImmune: DefinedBoolean;
+    frozenImmune: DefinedBoolean;
+    levitateImmune: DefinedBoolean;
+    disarmedCombatImmune: DefinedBoolean;
+    fearedImmune: DefinedBoolean;
+  };
+  applyWay: {
+    m_defined: true;
+    m_value: "MELEE" | "RANGED";
+  };
+  motion: DefinedString;
+  enemyTags: DefinedStringArray;
+  lifePointReduce: DefinedNumber;
+  levelType: {
+    m_defined: true;
+    m_value: "BOSS" | "ELITE" | "NORMAL";
+  };
+  rangedRadius: DefinedNumber;
+  numOfExtraDrops: DefinedNumber;
+  viewRadius: DefinedNumber;
+  notCountInTotal: DefinedBoolean;
+  talentBlackboard: BlackboardData[] | null;
+  skills: EnemySkillData[] | null;
+  spData: null;
 }

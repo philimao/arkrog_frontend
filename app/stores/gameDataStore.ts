@@ -22,7 +22,7 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>()(
       relics: undefined,
       items: undefined,
       character_basic: undefined,
-      uniequipDict: undefined,
+      uniequip_basic: undefined,
       character_table: undefined,
       skill_table: undefined,
       uniequip_table: undefined,
@@ -47,16 +47,16 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>()(
             });
           }
           const character_basic = get().character_basic;
-          const uniequipDict: BasicObject = {};
+          const uniequip_basic: BasicObject = {};
           Object.values(character_basic || {}).forEach((charData) => {
             const { uniequip } = charData;
             for (const key in uniequip) {
-              uniequipDict[key] = uniequip[key];
+              uniequip_basic[key] = uniequip[key];
             }
           });
           set(
             {
-              uniequipDict: uniequipDict,
+              uniequip_basic,
               loading: false,
             },
             undefined,

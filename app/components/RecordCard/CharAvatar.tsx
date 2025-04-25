@@ -50,7 +50,7 @@ export default function CharAvatar({
   isBust: boolean;
   className?: string;
 }) {
-  const { uniequipDict } = useGameDataStore();
+  const { uniequip_basic } = useGameDataStore();
   const bgSrc = `/images/card/noinfo${isBust ? "-bust" : ""}.png`;
   const bustSrc = memberData
     ? `${import.meta.env.VITE_API_BASE_URL}/images/bust/${memberData?.charId.split("_").slice(-1)[0]}_e1.png`
@@ -60,8 +60,8 @@ export default function CharAvatar({
     : "/images/card/no-uniequip.png";
   const uniequipName =
     memberData &&
-    uniequipDict &&
-    uniequipDict[memberData?.uniequipId || ""]?.typeIcon.toUpperCase();
+    uniequip_basic &&
+    uniequip_basic[memberData?.uniequipId || ""]?.typeIcon.toUpperCase();
   const uniequipSrc =
     uniequipName && uniequipName !== "ORIGINAL"
       ? `${import.meta.env.VITE_API_BASE_URL}/images/uniequip/${uniequipName}_color.png`
@@ -69,9 +69,7 @@ export default function CharAvatar({
 
   return (
     <div
-      className={
-        `relative first-of-type:opacity-0 first-of-type:mb-2 ${className}`
-      }
+      className={`relative first-of-type:opacity-0 first-of-type:mb-2 ${className}`}
     >
       <div className="bg-dark-gray p-1 relative">
         <div className="relative h-full w-full overflow-hidden">

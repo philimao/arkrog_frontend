@@ -6,7 +6,7 @@
 
 ```
 // 带*的域代表对计算非常重要
-interface CalculatorInput {
+interface CharInput {
   phaseLevel: number;               // 精英化等级
   phase: CharPhase;                 // 精英化数据
   level: number;                    // 干员等级
@@ -41,8 +41,10 @@ interface DamageByType {
 }
 
 function calculate(
-  input: CalculatorInput,           // 计算器输入
+  charInput: CharInput,             // 干员数据输入
+  enemyInput: EnemyAttribute,       // 敌人最终面板
   charData: CharData,               // 干员解包原始数据
+  enemyData: EnemyData,             // 敌人解包原始数据
   skillData: SkillData,             // 技能原始解包数据
   equipData: UniequipData,          // 模组原始解包数据
   relics: RelicWrapper[],           // 有效藏品列表

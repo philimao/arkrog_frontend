@@ -3,9 +3,7 @@ import React, { useMemo } from "react";
 import {
   type RogueKey,
   type StageOfRogue,
-  type Stages,
   type TopicData,
-  type Topics,
 } from "~/types/gameData";
 import Loading from "~/components/Loading";
 import SelectorBanner from "~/modules/RelicFree/Selector/SelectorBanner";
@@ -21,7 +19,13 @@ export default function StageSelectorWrapper() {
   }
 }
 
-function StageSelector({ topics, stages }: { topics: Topics; stages: Stages }) {
+function StageSelector({
+  topics,
+  stages,
+}: {
+  topics: Record<RogueKey, TopicData>;
+  stages: Record<RogueKey, StageOfRogue>;
+}) {
   const [searchParams] = useSearchParams();
   const currentTopic: TopicData = useMemo(() => {
     const topicId = searchParams.get("topicId");

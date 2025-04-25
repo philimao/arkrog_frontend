@@ -11,12 +11,15 @@ import type {
   CharAttributeExt,
   CharBasicData,
   CharData,
+  CharInput,
+  RogueKey,
 } from "~/types/gameData";
 import { Select, SelectItem } from "@heroui/react";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { applyAttrModifiers, applyBlackboard } from "~/utils/calculator";
 import { useWasmStore } from "~/stores/wasmStore";
+import { chain } from "@react-aria/utils";
 
 const StyledOperatorAvatar = styled(OperatorAvatar)`
   width: 10rem;
@@ -24,9 +27,11 @@ const StyledOperatorAvatar = styled(OperatorAvatar)`
 `;
 
 export default function OperatorSelector({
+  rogueKey,
   charData,
   setCharData,
 }: {
+  rogueKey: RogueKey;
   charData?: CharData;
   setCharData: Dispatch<SetStateAction<CharData | undefined>>;
 }) {
@@ -139,7 +144,7 @@ export default function OperatorSelector({
       setUniEquipId("");
     }
   }, [basicData, frameIndex, phaseLevel]);
-  const equip = useMemo(
+  const uniEquip = useMemo(
     () => uniequip_table![uniEquipId]?.phases[parseInt(uniEquipLevel)],
     [uniEquipId, uniEquipLevel, uniequip_table],
   );
@@ -182,13 +187,13 @@ export default function OperatorSelector({
       /**
        * 应用模组效果
        */
-      if (equip) {
+      if (uniEquip) {
         // 基础值
-        for (const bb of equip.attributeBlackboard) {
+        for (const bb of uniEquip.attributeBlackboard) {
           applyBlackboard(bb, result);
         }
         // 天赋与特性效果
-        for (const part of equip.parts) {
+        for (const part of uniEquip.parts) {
           for (const candidates of [
             part.overrideTraitDataBundle.candidates, // 特性
             part.addOrOverrideTalentDataBundle.candidates, // 天赋
@@ -207,13 +212,49 @@ export default function OperatorSelector({
       }
       setResult(result);
     }
-  }, [attribute, charData, equip, potential]);
+  }, [attribute, charData, uniEquip, potential]);
 
   const { getInstance } = useWasmStore();
 
   useEffect(() => {
     getInstance("arkrog_calc").then((ins) => console.log(ins));
   }, [getInstance]);
+
+  const charInput: CharInput = useMemo(
+    () => ({
+      phaseLevel: parseInt(phaseLevel),
+      phase,
+      level: parseInt(frameIndex),
+      attribute: result,
+      skillKey,
+      skillLevel: parseInt(skillLevel),
+      skill,
+      uniEquipId,
+      uniEquipLevel: parseInt(uniEquipLevel),
+      uniEquip,
+      potential: parseInt(potential),
+    }),
+    [
+      frameIndex,
+      phase,
+      phaseLevel,
+      potential,
+      result,
+      skill,
+      skillKey,
+      skillLevel,
+      uniEquip,
+      uniEquipId,
+      uniEquipLevel,
+    ],
+  );
+
+  useEffect(() => {
+    console.log("charInput", charInput);
+    console.log("charData", charData);
+    console.log("skillData", skillObject);
+    console.log("uniEquipData", uniequip_table![uniEquipId]);
+  }, [charData, charInput, skillObject, uniEquipId, uniequip_table]);
 
   return (
     <div>
@@ -384,10 +425,10 @@ export default function OperatorSelector({
             {JSON.stringify(skill, null, 2)}
           </div>
         )}
-        {equip && (
+        {uniEquip && (
           <div className="whitespace-pre-wrap">
             <div>模组</div>
-            {JSON.stringify(equip, null, 2)}
+            {JSON.stringify(uniEquip, null, 2)}
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 import type {
   BlackboardData,
   CharData,
+  EnemyData,
   RelicBuff,
   RelicDataExt,
 } from "~/types/gameData";
@@ -425,4 +426,16 @@ export function finalizeRelicResults(
         });
     });
   return { charResult, enemyResult };
+}
+
+export function getEnemyAttributes(
+  enemyData: EnemyData,
+): Record<string, number | string | boolean> {
+  const attributes: Record<string, number | string | boolean> = {};
+  Object.keys(enemyData.attributes).forEach((key) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    attributes[key] = enemyData.attributes[key].m_value;
+  });
+  return attributes;
 }

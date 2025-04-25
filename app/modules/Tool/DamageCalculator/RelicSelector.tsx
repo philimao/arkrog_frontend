@@ -28,28 +28,16 @@ const filterFuncMap: Record<string, (relic: ItemData) => boolean> = {
   攻速: (relic: ItemData) => relic.usage.includes("攻击速度"),
 };
 
-export default function RelicSelector({ charData }: { charData?: CharData }) {
-  const { topics, relics, items } = useGameDataStore();
-
-  const [rogueKey, setRogueKey] = useState<RogueKey>("rogue_4");
-
-  // 难度选择
-  const [difficulty, setDifficulty] = useState<string>("N15");
-  const difficulties = useMemo(() => {
-    let array;
-    if (rogueKey === "rogue_1") array = ["王冠", "乌萨斯弯刀"];
-    else if (rogueKey === "rogue_4" || rogueKey === "rogue_2")
-      // 水月有N18了
-      array = Array(19)
-        .fill(0)
-        .map((_, i) => "N" + i);
-    else
-      array = Array(16)
-        .fill(0)
-        .map((_, i) => "N" + i);
-    setDifficulty(array.slice(-1)[0]);
-    return array;
-  }, [rogueKey]);
+export default function RelicSelector({
+  rogueKey,
+  difficulty,
+  charData,
+}: {
+  rogueKey: RogueKey;
+  difficulty: string;
+  charData?: CharData;
+}) {
+  const { relics, items } = useGameDataStore();
 
   // 按难度筛选藏品
   const relicsByDifficulty = useMemo(
@@ -165,6 +153,12 @@ export default function RelicSelector({ charData }: { charData?: CharData }) {
       relicsByChar,
       selectedRelicIds,
     );
+    console.log(
+      "relics",
+      relicsByChar.filter((relicWrapper) =>
+        selectedRelicIds.includes(relicWrapper.relicData.id),
+      ), // 局内生效
+    );
     console.log("charResult", charResult);
     console.log("enemyResult", enemyResult);
     setCharResult(charResult);
@@ -193,26 +187,6 @@ export default function RelicSelector({ charData }: { charData?: CharData }) {
         className="grid"
         style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
       >
-        <Select
-          disallowEmptySelection={true}
-          label="选择肉鸽主题"
-          selectedKeys={[rogueKey]}
-          onChange={(evt) => setRogueKey(evt.target.value as RogueKey)}
-        >
-          {Object.values(topics!).map((topic) => (
-            <SelectItem key={topic.id}>{topic.name}</SelectItem>
-          ))}
-        </Select>
-        <Select
-          disallowEmptySelection={true}
-          label="难度选择"
-          selectedKeys={[difficulty]}
-          onChange={(evt) => setDifficulty(evt.target.value)}
-        >
-          {difficulties.map((difficulty) => (
-            <SelectItem key={difficulty}>{difficulty}</SelectItem>
-          ))}
-        </Select>
         <Select
           selectionMode="multiple"
           label="藏品价值"

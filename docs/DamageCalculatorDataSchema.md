@@ -46,7 +46,7 @@ function calculate(
   charData: CharData,               // 干员解包原始数据
   enemyData: EnemyData,             // 敌人解包原始数据
   skillData: SkillData,             // 技能原始解包数据
-  equipData: UniequipData,          // 模组原始解包数据
+  uniEquipData: UniEquipData,       // 模组原始解包数据
   relics: RelicWrapper[],           // 有效藏品列表
 ) {
   // calculation process ...

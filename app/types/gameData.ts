@@ -67,6 +67,31 @@ export interface StageData {
   [key: string]: string | object | number;
 }
 
+export interface LevelData {
+  options: object;
+  levelId: null;
+  mapId: null;
+  bgmEvent: string;
+  environmentSe: string | null;
+  mapData: { map: number[][]; tiles: object[] };
+  tilesDisallowToLocate: string[];
+  runes: null;
+  optionalRunes: null;
+  globalBuffs: null;
+  routes: object[];
+  extraRoutes: object[];
+  enemies: EnemyData[];
+  enemyDbRefs: object[];
+  waves: object[];
+  branches: null;
+  predefines: object;
+  hardPredefines: object;
+  excludeCharIdList: string[] | null;
+  randomSeed: number;
+  operaConfig: null;
+  cameraPlugin: null;
+}
+
 export type StagePreview = Record<string, StagePreviewData>;
 
 // 关卡预览
@@ -320,15 +345,15 @@ export interface RelicData {
 // 带*的域代表对计算非常重要
 export interface CharInput {
   phaseLevel: number; // 精英化等级
-  phase: CharPhase; // 精英化数据
+  phase?: CharPhase; // 精英化数据
   level: number; // 干员等级
-  attribute: CharAttributeExt; // 干员局外面板*
+  attribute?: CharAttributeExt; // 干员局外面板*
   skillKey: string; // 技能键名
   skillLevel: number; // 技能等级
   skill: SkillLevelData; // 选择的技能数据*
   uniEquipId: string; // 模组ID
   uniEquipLevel: number; // 模组等级
-  uniEquip: UniEquipData; // 选择的模组数据*
+  uniEquip: UniEquipPhaseData; // 选择的模组数据*
   potential: number; // 潜能等级*
 }
 

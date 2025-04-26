@@ -138,9 +138,9 @@ export function TournamentTeamInfo({
               </div>
             </td>
             <td>
-              <div className="p-4 flex gap-12 justify-center flex-wrap">
-                {team.members.map((member) =>
-                  <div className="relative">
+              <div className="p-4 flex gap-x-12 gap-y-4 justify-center flex-wrap">
+                {team.members.map((member, index) =>
+                  <div className="relative" key={index}>
                     {team.keyMember === member && <StarIcon className="text-ak-blue absolute -left-6 top-6" width="1rem" />}
                     {renderPlayer(member, true)}
                   </div>

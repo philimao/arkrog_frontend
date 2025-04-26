@@ -1,435 +1,186 @@
+import { useEffect, useState } from "react";
+import { Form, Listbox, ListboxItem } from "@heroui/react";
+import type { CharData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import type {
-  CharAttribute,
-  CharAttributeExt,
-  CharBasicData,
-  CharData,
-  CharInput,
-  RogueKey,
-} from "~/types/gameData";
-import { Select, SelectItem } from "@heroui/react";
-import { styled } from "styled-components";
+import { debounce } from "@heroui/shared-utils";
+import { professions } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
-import { applyAttrModifiers, applyBlackboard } from "~/utils/calculator";
-import { useWasmStore } from "~/stores/wasmStore";
-import { chain } from "@react-aria/utils";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { styled } from "styled-components";
 
-const StyledOperatorAvatar = styled(OperatorAvatar)`
-  width: 10rem;
-  height: 10rem;
+const StyledOperatorSelectorWrapper = styled.div``;
+
+const StyledTitle = styled.div`
+  height: 3rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: var(--ak-blue) 1px solid;
 `;
 
-export default function OperatorSelector({
-  rogueKey,
+const StyledSelectorWrapper = styled.div`
+  margin-bottom: 1rem;
+  display: flex;
+`;
+
+export default function OperatorSelectorWrapper() {
+  const { charList, addCharData } = useDamageCalculatorStore();
+  return (
+    <StyledOperatorSelectorWrapper>
+      <StyledTitle>选择干员</StyledTitle>
+      <StyledSelectorWrapper>
+        {charList.length > 0 &&
+          charList.map((charData, i) =>
+            charData ? (
+              <OperatorButton charData={charData} i={i} key={i} />
+            ) : (
+              <OperatorSelector i={i} key={i} />
+            ),
+          )}
+        {/*{charList.length < 5 && charList[charList.length - 1] && (*/}
+        {/*  <div>*/}
+        {/*    <button onClick={() => addCharData()}>+</button>*/}
+        {/*  </div>*/}
+        {/*)}*/}
+      </StyledSelectorWrapper>
+    </StyledOperatorSelectorWrapper>
+  );
+}
+
+const StyledOperatorButtonWrapper = styled.div<{ $active: boolean }>`
+  position: relative;
+  color: ${(props) => (props.$active ? "black" : "white")};
+`;
+
+const StyledOperatorButton = styled.button<{ $active: boolean }>`
+  width: 10rem;
+  height: 3rem;
+  text-align: start;
+  padding: 0 0.75rem;
+  font-weight: bold;
+  background: ${(props) =>
+    props.$active ? "var(--ak-blue)" : "var(--dark-gray)"};
+`;
+
+const StyledRemoveButton = styled.button`
+  position: absolute;
+  padding: 0.75rem;
+  right: 0;
+  top: 0;
+`;
+
+export function OperatorButton({
   charData,
-  setCharData,
+  i,
 }: {
-  rogueKey: RogueKey;
-  charData?: CharData;
-  setCharData: Dispatch<SetStateAction<CharData | undefined>>;
+  charData: CharData;
+  i: number;
 }) {
-  const { character_basic, character_table, skill_table, uniequip_table } =
-    useGameDataStore();
-
-  // 选择干员
-  const charNames = ["赫德雷", "维什戴尔"];
-  const [charName, setCharName] = useState<string>("");
-
-  // 选择干员后
-  useEffect(() => {
-    if (!charName) return;
-    const basicData = Object.values(character_basic!).find(
-      (char) => char.name === charName,
-    );
-    const charData = character_table![basicData!.charId];
-    if (!basicData || !charData) throw new Error(`${charName} Not Found`);
-    setBasicData(basicData);
-    setCharData(charData);
-    // 设置精英化阶段为最大
-    const maxPhaseLevel = charData.phases.length - 1;
-    setPhaseLevel(maxPhaseLevel.toString());
-    const maxFrameIndex =
-      charData.phases[maxPhaseLevel].attributesKeyFrames.length - 1;
-    setFrameIndex(maxFrameIndex.toString());
-    // 设置为最后一个技能
-    const lastSkillKey = Object.keys(basicData.skills).slice(-1)[0];
-    setSkillKey(lastSkillKey!);
-    // 设置技能等级
-    if (maxPhaseLevel > 1 && parseInt(basicData.rarity.slice(-1)) > 3)
-      setSkillLevel("9");
-    else setSkillLevel("6");
-    // 设置模组，模组默认值在useMemo中更新
-  }, [charName, character_basic, character_table, setCharData]);
-
-  // 干员数据
-  const [basicData, setBasicData] = useState<CharBasicData>();
-
-  // 精英化阶段选择
-  const phases = useMemo(() => charData?.phases, [charData]);
-  const [phaseLevel, setPhaseLevel] = useState<string>("0");
-  const phase = useMemo(
-    () => phases?.[parseInt(phaseLevel)],
-    [phaseLevel, phases],
+  const { activeCharName, setActiveCharName, removeCharData } =
+    useDamageCalculatorStore();
+  const active = activeCharName === charData.name;
+  return (
+    <StyledOperatorButtonWrapper $active={active}>
+      <StyledOperatorButton
+        $active={active}
+        onClick={() => setActiveCharName(charData.name)}
+      >
+        {charData.name}
+      </StyledOperatorButton>
+      <StyledRemoveButton onClick={() => removeCharData(i)}>
+        X
+      </StyledRemoveButton>
+    </StyledOperatorButtonWrapper>
   );
+}
 
-  // 干员等级
-  const keyFrames = useMemo(
-    () => phase?.attributesKeyFrames,
-    [phase?.attributesKeyFrames],
-  );
-  const [frameIndex, setFrameIndex] = useState<string>("0");
+export function OperatorSelector({ i }: { i: number }) {
+  const { character_table } = useGameDataStore();
+  const { setCharData, setActiveCharName } = useDamageCalculatorStore();
+  const [showListBox, setShowListBox] = useState(false);
+  const [value, setValue] = useState("");
 
-  // 属性数据
-  const attribute = useMemo(
-    () => phase?.attributesKeyFrames[parseInt(frameIndex)],
-    [frameIndex, phase?.attributesKeyFrames],
-  );
-
-  // 技能选择
-  const skills = useMemo(
-    () => basicData && Object.values(basicData?.skills),
-    [basicData],
-  );
-  const [skillKey, setSkillKey] = useState<string>("");
-  const [skillLevel, setSkillLevel] = useState<string>("3");
-  const skillObject = useMemo(
-    () => skill_table![skillKey],
-    [skillKey, skill_table],
-  );
-  const skillLevels = useMemo(() => {
-    const levels =
-      parseInt(phaseLevel) > 1 && skillObject?.levels.length > 7
-        ? [
-            { key: 3, name: "4级" },
-            { key: 6, name: "7级" },
-            { key: 7, name: "专精一" },
-            { key: 8, name: "专精二" },
-            { key: 9, name: "专精三" },
-          ]
-        : parseInt(phaseLevel) > 0
-          ? [
-              { key: 3, name: "4级" },
-              { key: 6, name: "7级" },
-            ]
-          : [{ key: 3, name: "4级" }];
-    setSkillLevel(levels.slice(-1)[0]!.key.toString());
-    return levels;
-  }, [phaseLevel, skillObject?.levels.length]);
-  const skill = useMemo(
-    () => skillObject?.levels[parseInt(skillLevel)],
-    [skillLevel, skillObject?.levels],
-  );
-
-  // 模组选择
-  const [uniEquipId, setUniEquipId] = useState<string>("");
-  const [uniEquipLevel, setUniEquipLevel] = useState<string>("2");
-  const equips = useMemo(() => {
-    if (
-      phaseLevel === "2" &&
-      frameIndex === "1" &&
-      basicData &&
-      parseInt(basicData.rarity.slice(-1)!) > 3
-    ) {
-      const latestEquipId = Object.keys(basicData.uniequip).slice(-1)[0];
-      setUniEquipId(latestEquipId);
-      return basicData && Object.values(basicData.uniequip);
-    } else {
-      setUniEquipId("");
-    }
-  }, [basicData, frameIndex, phaseLevel]);
-  const uniEquip = useMemo(
-    () => uniequip_table![uniEquipId]?.phases[parseInt(uniEquipLevel)],
-    [uniEquipId, uniEquipLevel, uniequip_table],
-  );
-
-  // 潜能选择
-  const [potential, setPotential] = useState<string>("5");
-
-  // 面板计算
-  const [result, setResult] = useState<CharAttributeExt>();
-  useEffect(() => {
-    if (charData && attribute) {
-      console.log(charData);
-      const result = { ...attribute.data, damage_scale: 1 };
-      /**
-       * 应用信赖效果
-       */
-      const favor = charData.favorKeyFrames[1].data;
-      Object.keys(favor).forEach((key) => {
-        const typedKey = key as keyof CharAttribute;
-        if (typeof result[typedKey] === "number") {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          result[typedKey] += favor[typedKey];
-        } else {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          result[typedKey] = favor[typedKey];
-        }
-      });
-
-      /**
-       * 应用潜能效果
-       */
-      for (const pot of charData.potentialRanks.slice(0, parseInt(potential))) {
-        pot.buff?.attributes.attributeModifiers.forEach((mod) =>
-          applyAttrModifiers(mod, result),
-        );
-      }
-
-      /**
-       * 应用模组效果
-       */
-      if (uniEquip) {
-        // 基础值
-        for (const bb of uniEquip.attributeBlackboard) {
-          applyBlackboard(bb, result);
-        }
-        // 天赋与特性效果
-        for (const part of uniEquip.parts) {
-          for (const candidates of [
-            part.overrideTraitDataBundle.candidates, // 特性
-            part.addOrOverrideTalentDataBundle.candidates, // 天赋
-          ]) {
-            if (!candidates) continue;
-            // 从多个candidate中选出符合潜能的
-            const admittedTrait = candidates.findLast(
-              (item) => item.requiredPotentialRank <= parseInt(potential),
-            );
-            // console.log(admittedTrait);
-            for (const bb of admittedTrait!.blackboard) {
-              applyBlackboard(bb, result);
-            }
-          }
-        }
-      }
-      setResult(result);
-    }
-  }, [attribute, charData, uniEquip, potential]);
-
-  const { getInstance } = useWasmStore();
+  const [candidates, setCandidates] = useState<CharData[]>();
 
   useEffect(() => {
-    getInstance("arkrog_calc").then((ins) => console.log(ins));
-  }, [getInstance]);
-
-  const charInput: CharInput = useMemo(
-    () => ({
-      phaseLevel: parseInt(phaseLevel),
-      phase,
-      level: parseInt(frameIndex),
-      attribute: result,
-      skillKey,
-      skillLevel: parseInt(skillLevel),
-      skill,
-      uniEquipId,
-      uniEquipLevel: parseInt(uniEquipLevel),
-      uniEquip,
-      potential: parseInt(potential),
-    }),
-    [
-      frameIndex,
-      phase,
-      phaseLevel,
-      potential,
-      result,
-      skill,
-      skillKey,
-      skillLevel,
-      uniEquip,
-      uniEquipId,
-      uniEquipLevel,
-    ],
-  );
-
-  useEffect(() => {
-    console.log("charInput", charInput);
-    console.log("charData", charData);
-    console.log("skillData", skillObject);
-    console.log("uniEquipData", uniequip_table![uniEquipId]);
-  }, [charData, charInput, skillObject, uniEquipId, uniequip_table]);
+    debounce(
+      () =>
+        setCandidates(() => {
+          if (!value) return [];
+          return Object.values(character_table!).filter(
+            (charData) =>
+              !charData.isNotObtainable &&
+              professions.includes(charData.profession) &&
+              charData.name.toLowerCase().includes(value.toLowerCase()),
+          );
+        }),
+      100,
+    )();
+  }, [character_table, value]);
 
   return (
-    <div>
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
+    <div
+      className="w-40 relative me-4"
+      onBlur={() => setTimeout(() => setShowListBox(false), 300)}
+    >
+      <Form
+        onSubmit={(evt) => {
+          evt.preventDefault();
+          if (candidates?.length) {
+            setActiveCharName(candidates[0].name);
+            setCharData(candidates[0], i);
+            setShowListBox(false);
+          }
+        }}
       >
-        <Select
-          // disallowEmptySelection={true}
-          label="选择干员"
-          selectedKeys={[charName]}
-          onChange={(evt) => setCharName(evt.target.value)}
-        >
-          {charNames.map((name) => (
-            <SelectItem key={name}>{name}</SelectItem>
-          ))}
-        </Select>
-        {phases && (
-          <Select
-            disallowEmptySelection={true}
-            label="选择精英化阶段"
-            selectedKeys={[phaseLevel]}
-            onChange={(evt) => setPhaseLevel(evt.target.value)}
+        <input
+          placeholder="输入干员名称"
+          aria-label="char"
+          value={value}
+          onChange={(evt) => setValue(evt.target.value)}
+          onFocus={() => setShowListBox(true)}
+          className="px-3 w-full text-[1rem] h-12 bg-black-gray outline-none"
+        />
+      </Form>
+      <div className="absolute z-50" style={{ top: "100%", left: 0 }}>
+        {showListBox && candidates && (
+          <Listbox
+            aria-label="listbox"
+            emptyContent=""
+            classNames={{ base: "w-96" }}
           >
-            {phases.map((_, phaseIndex) => (
-              <SelectItem key={phaseIndex}>{"精英" + phaseIndex}</SelectItem>
+            {candidates.map((charData) => (
+              <ListboxItem
+                key={charData.name}
+                textValue={charData.name}
+                classNames={{ base: "bg-red rounded-none" }}
+                onPress={() => {
+                  setActiveCharName(charData.name);
+                  setCharData(charData, i);
+                }}
+              >
+                <div className="flex items-center p-2">
+                  <div
+                    className="w-12 h-12 me-2 border border-light-gray overflow-hidden"
+                    style={{ borderRadius: "50%" }}
+                  >
+                    <OperatorAvatar
+                      name={charData.name}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <div>
+                      <div className="font-bold">{charData.name}</div>
+                      <div className="text-[0.75rem] text-gray font-light">
+                        {charData.itemDesc}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ListboxItem>
             ))}
-          </Select>
-        )}
-        {keyFrames && (
-          <Select
-            disallowEmptySelection={true}
-            label="选择等级"
-            selectedKeys={[frameIndex]}
-            onChange={(evt) => setFrameIndex(evt.target.value)}
-          >
-            {keyFrames.map((frame, frameIndex) => (
-              <SelectItem key={frameIndex}>{frame.level + "级"}</SelectItem>
-            ))}
-          </Select>
-        )}
-        {charData && (
-          <Select
-            disallowEmptySelection={true}
-            label="选择潜能"
-            selectedKeys={[potential]}
-            onChange={(evt) => setPotential(evt.target.value)}
-          >
-            {Array(6)
-              .fill(0)
-              .map((_, index) => (
-                <SelectItem key={index}>{"潜能" + (index + 1)}</SelectItem>
-              ))}
-          </Select>
-        )}
-        {skills && (
-          <>
-            <Select
-              disallowEmptySelection={true}
-              label="选择技能"
-              items={skills}
-              selectedKeys={[skillKey]}
-              onChange={(evt) => setSkillKey(evt.target.value)}
-            >
-              {(skillItem) => (
-                <SelectItem key={skillItem.skillId}>
-                  {skillItem.name}
-                </SelectItem>
-              )}
-            </Select>
-            <Select
-              disallowEmptySelection={true}
-              label="技能等级"
-              selectedKeys={[skillLevel]}
-              onChange={(evt) => setSkillLevel(evt.target.value)}
-            >
-              {skillLevels.map((levelItem) => (
-                <SelectItem key={levelItem.key}>{levelItem.name}</SelectItem>
-              ))}
-            </Select>
-          </>
-        )}
-        {equips && (
-          <>
-            <Select
-              disallowEmptySelection={true}
-              label="选择模组"
-              selectedKeys={[uniEquipId]}
-              onChange={(evt) => setUniEquipId(evt.target.value)}
-            >
-              {equips.map((equip) => (
-                <SelectItem key={equip.uniEquipId}>
-                  {equip.uniEquipName}
-                </SelectItem>
-              ))}
-            </Select>
-            <Select
-              disallowEmptySelection={true}
-              label="模组等级"
-              selectedKeys={[uniEquipLevel]}
-              onChange={(evt) => setUniEquipLevel(evt.target.value)}
-              isDisabled={uniEquipId.startsWith("uniequip_001")}
-            >
-              {Array(3)
-                .fill(0)
-                .map((_, uniequipLevel) => (
-                  <SelectItem key={uniequipLevel}>
-                    {"Lv " + (uniequipLevel + 1)}
-                  </SelectItem>
-                ))}
-            </Select>
-          </>
-        )}
-      </div>
-      <div className="flex gap-8 my-4">
-        {charName && <StyledOperatorAvatar name={charName} />}
-        {result && (
-          <div>
-            <div>
-              最大生命值：<span>{result.maxHp}</span>
-            </div>
-            <div>
-              攻击力：<span>{result.atk}</span>
-            </div>
-            <div>
-              防御：<span>{result.def}</span>
-            </div>
-            <div>
-              法术抗性：<span>{result.magicResistance}</span>
-            </div>
-            <div>
-              费用：<span>{result.cost}</span>
-            </div>
-            <div>
-              阻挡数：<span>{result.blockCnt}</span>
-            </div>
-            <div>
-              攻击速度：<span>{result.attackSpeed}</span>
-            </div>
-            <div>
-              攻击间隔：<span>{result.baseAttackTime}</span>
-            </div>
-            <div>
-              再部署时间：<span>{result.respawnTime}</span>
-            </div>
-            <div>
-              每秒生命值回复：<span>{result.hpRecoveryPerSec}</span>
-            </div>
-            <div>
-              每秒技力回复：<span>{result.spRecoveryPerSec}</span>
-            </div>
-            <div>
-              伤害倍率：<span>{result.damage_scale}</span>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="hidden">
-        {attribute && (
-          <div className="whitespace-pre-wrap">
-            <div>面板</div>
-            {JSON.stringify(attribute, null, 2)}
-          </div>
-        )}
-        {skill && (
-          <div className="whitespace-pre-wrap">
-            <div>技能</div>
-            {JSON.stringify(skill, null, 2)}
-          </div>
-        )}
-        {uniEquip && (
-          <div className="whitespace-pre-wrap">
-            <div>模组</div>
-            {JSON.stringify(uniEquip, null, 2)}
-          </div>
+          </Listbox>
         )}
       </div>
     </div>

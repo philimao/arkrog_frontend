@@ -1,20 +1,33 @@
 import type { RogueKey } from "~/types/gameData";
-import { Select, SelectItem } from "@heroui/react";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { type Dispatch, type SetStateAction, useMemo } from "react";
+import { useMemo } from "react";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import ToolSelect from "~/modules/Tool/components/ToolSelect";
+import { outBuffMap } from "~/modules/Tool/DamageCalculator/utils";
+import { styled } from "styled-components";
 
-export default function TopicSelector({
-  rogueKey,
-  setRogueKey,
-  difficulty,
-  setDifficulty,
-}: {
-  rogueKey: RogueKey;
-  setRogueKey: Dispatch<SetStateAction<RogueKey>>;
-  difficulty: string;
-  setDifficulty: Dispatch<SetStateAction<string>>;
-}) {
+const StyledTopicSelector = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const StyledTitle = styled.div`
+  height: 3rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: var(--ak-blue) 1px solid;
+`;
+
+export default function TopicSelector() {
   const { topics } = useGameDataStore();
+  const {
+    rogueKey,
+    setRogueKey,
+    difficulty,
+    setDifficulty,
+    outBuff,
+    setOutBuff,
+  } = useDamageCalculatorStore();
 
   // 难度选择
   const difficulties = useMemo(() => {
@@ -34,30 +47,36 @@ export default function TopicSelector({
   }, [rogueKey, setDifficulty]);
 
   return (
-    <div
-      className="grid"
-      style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
-    >
-      <Select
-        disallowEmptySelection={true}
-        label="选择肉鸽主题"
-        selectedKeys={[rogueKey]}
-        onChange={(evt) => setRogueKey(evt.target.value as RogueKey)}
+    <StyledTopicSelector>
+      <StyledTitle>选择肉鸽</StyledTitle>
+      <div
+        className="grid gap-x-4 gap-y-1"
+        style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
       >
-        {Object.values(topics!).map((topic) => (
-          <SelectItem key={topic.id}>{topic.name}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        disallowEmptySelection={true}
-        label="难度选择"
-        selectedKeys={[difficulty]}
-        onChange={(evt) => setDifficulty(evt.target.value)}
-      >
-        {difficulties.map((difficulty) => (
-          <SelectItem key={difficulty}>{difficulty}</SelectItem>
-        ))}
-      </Select>
-    </div>
+        <ToolSelect<{ id: string; name: string }>
+          disallowEmptySelection={true}
+          label="肉鸽主题"
+          array={Object.values(topics!)}
+          getKey={(item) => item.id}
+          getValue={(item) => item.name}
+          selectedKeys={[rogueKey]}
+          onChange={(evt) => setRogueKey(evt.target.value as RogueKey)}
+        />
+        <ToolSelect<string>
+          disallowEmptySelection={true}
+          label="难度选择"
+          array={difficulties}
+          selectedKeys={[difficulty]}
+          onChange={(evt) => setDifficulty(evt.target.value)}
+        />
+        <ToolSelect
+          disallowEmptySelection={true}
+          label="科技树加成"
+          array={outBuffMap[rogueKey]!}
+          selectedKeys={[outBuff]}
+          onChange={(evt) => setOutBuff(evt.target.value)}
+        />
+      </div>
+    </StyledTopicSelector>
   );
 }

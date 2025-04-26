@@ -310,6 +310,9 @@ export interface CharData {
   profession: Profession;
   subProfessionId: string;
   displayTokenDict: object | null;
+  isNotObtainable: boolean;
+  itemDesc: string;
+  itemUsage: string;
   favorKeyFrames: AttributeKeyFrame[];
   phases: CharPhase[];
   talents: CharTalent[];

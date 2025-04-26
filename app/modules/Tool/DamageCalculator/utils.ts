@@ -4,6 +4,7 @@ import type {
   EnemyData,
   RelicBuff,
   RelicDataExt,
+  RogueKey,
 } from "~/types/gameData";
 
 /**
@@ -259,15 +260,24 @@ export function isBuffForChar(buff: RelicBuff) {
   }
 }
 
+export interface RelicWrapperBuff {
+  key: string;
+  isActive: boolean;
+  layer: number;
+  charResult: Record<string, number>;
+  enemyResult: Record<string, number>;
+}
+
+export interface RelicWrapper2 {
+  id: string;
+  name: string;
+  selected: boolean;
+  buffs: RelicWrapperBuff[];
+}
+
 export interface RelicWrapper {
   relicData: RelicDataExt;
-  buffs: {
-    key: string;
-    isActive: boolean;
-    layer: number;
-    charResult: Record<string, number>;
-    enemyResult: Record<string, number>;
-  }[];
+  buffs: RelicWrapperBuff[];
 }
 
 /**
@@ -439,3 +449,22 @@ export function getEnemyAttributes(
   });
   return attributes;
 }
+
+export const outBuffMap: Partial<Record<RogueKey, string[]>> = {
+  rogue_1: ["1"],
+  rogue_2: ["1", "1.2"],
+  rogue_3: ["1", "1.23"],
+  rogue_4: ["1", "1.2", "1.3"],
+};
+
+export const professions = [
+  "VANGUARD",
+  "SNIPER",
+  "CASTER",
+  "MEDIC",
+  "GUARD",
+  "DEFENDER",
+  "SPECIALIST",
+  "SUPPORTER",
+  "WARRIOR",
+];

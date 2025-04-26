@@ -1,14 +1,19 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useMemo, useState } from "react";
 import Loading from "~/components/Loading";
-import OperatorSelector from "~/modules/Tool/DamageCalculator/OperatorSelector";
+import OperatorDisplay from "~/modules/Tool/DamageCalculator/OperatorDisplay";
 import RelicSelector from "~/modules/Tool/DamageCalculator/RelicSelector";
 import type { CharData, EnemyData, RogueKey } from "~/types/gameData";
 import TopicSelector from "~/modules/Tool/DamageCalculator/TopicSelector";
 import StageSelector from "~/modules/Tool/DamageCalculator/StageSelector";
+import OperatorSelector from "~/modules/Tool/DamageCalculator/OperatorSelector";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import FooterPanel from "~/modules/Tool/DamageCalculator/FooterPanel";
+import { ResultDisplay } from "~/modules/Tool/DamageCalculator/ResultDisplay";
 
 export default function ToolIndex() {
   const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();
+  const { charList, activeCharName } = useDamageCalculatorStore();
   const [loading, setLoading] = useState(true);
 
   const [charData, setCharData] = useState<CharData>();
@@ -16,6 +21,10 @@ export default function ToolIndex() {
 
   const [rogueKey, setRogueKey] = useState<RogueKey>("rogue_4");
   const [difficulty, setDifficulty] = useState<string>("N15");
+
+  const activeCharData = useMemo(() => {
+    return charList.find((charData) => charData?.name === activeCharName);
+  }, [activeCharName, charList]);
 
   useEffect(() => {
     Promise.all([fetchCharacterRaw(), fetchGameDataExt()]).then(() =>
@@ -27,27 +36,25 @@ export default function ToolIndex() {
 
   return (
     <div>
-      <OperatorSelector
-        rogueKey={rogueKey}
-        charData={charData}
-        setCharData={setCharData}
-      />
-      <TopicSelector
-        rogueKey={rogueKey}
-        setRogueKey={setRogueKey}
-        difficulty={difficulty}
-        setDifficulty={setDifficulty}
-      />
-      <StageSelector
-        rogueKey={rogueKey}
-        enemyData={enemyData}
-        setEnemyData={setEnemyData}
-      />
-      <RelicSelector
-        rogueKey={rogueKey}
-        difficulty={difficulty}
-        charData={charData}
-      />
+      <OperatorSelector />
+      {activeCharData && (
+        <>
+          <OperatorDisplay charData={activeCharData} />
+          <ResultDisplay />
+          <TopicSelector />
+          <StageSelector
+            rogueKey={rogueKey}
+            enemyData={enemyData}
+            setEnemyData={setEnemyData}
+          />
+          <RelicSelector
+            rogueKey={rogueKey}
+            difficulty={difficulty}
+            charData={charData}
+          />
+        </>
+      )}
+      <FooterPanel />
     </div>
   );
 }

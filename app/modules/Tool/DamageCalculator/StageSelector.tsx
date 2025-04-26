@@ -7,10 +7,12 @@ import React, {
   useState,
 } from "react";
 import { navOfZone } from "~/utils/stageSelector";
-import { Button, Select, SelectItem } from "@heroui/react";
+import { Button } from "@heroui/react";
 import type { EnemyData, LevelData, RogueKey } from "~/types/gameData";
-import { _post, getPath, imageHost } from "~/utils/tools";
+import { _post } from "~/utils/tools";
 import { getEnemyAttributes } from "~/modules/Tool/DamageCalculator/utils";
+import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
+import ToolSelect from "~/modules/Tool/components/ToolSelect";
 
 export default function StageSelector({
   rogueKey,
@@ -33,14 +35,14 @@ export default function StageSelector({
     );
   }, [rogueKey, stages, zoneFilterId]);
 
-  const [stageId, setStageId] = useState<string>("");
+  const [stageId, setStageId] = useState<string>("ro4_b_8");
 
   const [levelData, setLevelData] = useState<LevelData>();
 
   async function handleLoadLevelData() {
     const stageData = stages![rogueKey][stageId];
     const stageRawData = await _post<LevelData>("/gamedata/level", {
-      levelId: stageData.levelId,
+      levelId: stageData.levelId.toLowerCase(),
     });
     setLevelData(stageRawData);
   }
@@ -51,32 +53,31 @@ export default function StageSelector({
     }
   }, [enemyData]);
 
+  console.log(renderStages);
   return (
     <div className="mb-4">
       <div
-        className="grid"
+        className="grid gap-x-4 gap-y-1"
         style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
       >
-        <Select
+        <ToolSelect
           disallowEmptySelection={true}
           label="选择区域"
+          array={navOfZone}
+          getKey={(zone) => zone.id}
+          getValue={(zone) => zone.name}
           selectedKeys={[zoneFilterId]}
           onChange={(evt) => setZoneFilterId(evt.target.value)}
-        >
-          {navOfZone.map((zone) => (
-            <SelectItem key={zone.id}>{zone.name}</SelectItem>
-          ))}
-        </Select>
-        <Select
+        />
+        <ToolSelect
           disallowEmptySelection={true}
           label="选择关卡"
+          array={renderStages}
+          getKey={(stage) => stage.id}
+          getValue={(stage) => stage.name}
           selectedKeys={[stageId]}
           onChange={(evt) => setStageId(evt.target.value)}
-        >
-          {renderStages.map((stage) => (
-            <SelectItem key={stage.id}>{stage.name}</SelectItem>
-          ))}
-        </Select>
+        />
       </div>
 
       {stageId && <Button onPress={handleLoadLevelData}>加载</Button>}
@@ -84,9 +85,6 @@ export default function StageSelector({
       {levelData && (
         <div className="flex whitespace-nowrap overflow-x-hidden">
           {levelData.enemies.map((enemyData) => {
-            const url = encodeURI(
-              imageHost + getPath(`头像_敌人_${enemyData.name.m_value}.png`),
-            );
             return (
               <div
                 className="w-24 me-4 shrink-0 cursor-pointer"
@@ -96,11 +94,8 @@ export default function StageSelector({
                   console.log("enemyData", enemyData);
                 }}
               >
-                <img
-                  src={url}
-                  alt={enemyData.name.m_value}
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
+                <EnemyAvatar
+                  name={enemyData.name.m_value}
                   onError={(evt) => {
                     (evt.target as HTMLImageElement).onerror = null;
                     (evt.target as HTMLImageElement).src =

@@ -6,6 +6,8 @@ export interface TournamentData {
   rogue: string;
   edition: string;
   type: "individual" | "team";
+  memberAlias: string;
+  keyMemberAlias: string;
   startTime: number;
   level: string;
   labels: string[];

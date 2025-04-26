@@ -65,6 +65,7 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
     }));
   },
   fetchUserInfo: async () => {
+    console.log(await hashString("短脖兔杯"));
     const info: UserInfo | undefined = await _get("/user/id");
     if (info) {
       set({ userInfo: info });

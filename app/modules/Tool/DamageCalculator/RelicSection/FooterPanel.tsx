@@ -2,7 +2,12 @@ import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Badge } from "@heroui/badge";
 import BuffPanel from "~/modules/Tool/DamageCalculator/RelicSection/BuffPanel";
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+  StyledClearRelicsButton,
+  StyledRelicCount,
+  StyledRelicCountInner,
+} from "~/modules/Tool/DamageCalculator/RelicSection/Shared";
 
 const StyledFooterPanel = styled.footer`
   width: 100vw;
@@ -19,34 +24,8 @@ const StyledFooterPanel = styled.footer`
   z-index: 100;
 `;
 
-const StyledRelicCount = styled.div`
-  width: 4.5rem;
-  height: 4rem;
-  background-size: contain;
-  background: #333333 url(/images/tool/calculator/footer_panel_relic.png)
-    no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-  cursor: pointer;
-`;
-
-const StyledRelicCountInner = styled.div`
-  text-align: center;
-  font-family: "Novecento", sans-serif;
-`;
-
 const StyledRelicsContainer = styled.div`
   margin-right: auto;
-`;
-
-const StyledClearRelicsButton = styled.button`
-  color: white;
-  background: var(--ak-dark-red);
-  font-weight: bold;
-  width: 6rem;
-  height: 2rem;
 `;
 
 const StyledAttrButton = styled.button``;
@@ -79,7 +58,7 @@ export default function FooterPanel() {
       </StyledRelicCount>
       <StyledRelicsContainer></StyledRelicsContainer>
       <BuffPanel show={showBuff} setShow={setShowBuff} />
-      <StyledClearRelicsButton>清空藏品</StyledClearRelicsButton>
+      <StyledClearRelicsButton>清空</StyledClearRelicsButton>
     </StyledFooterPanel>
   );
 }

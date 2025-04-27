@@ -116,14 +116,17 @@ function RougeSelector({
       );
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
-    tournaments.map((tournament) => {
+    tournaments.sort((a, b) =>
+      new Date(b.stages[0].startTime).getTime() -
+      new Date(a.stages[0].startTime).getTime(),
+    ).map((tournament) => {
       const edition = tournament.edition;
       if (!tournamentsByEdition.has(edition)) {
         tournamentsByEdition.set(edition, []);
       }
       tournamentsByEdition.get(edition)?.push(tournament);
     });
-    const editions = ['DLC_2', 'DLC_1', '初始版本'];
+    const editions = Array.from(tournamentsByEdition.keys());
 
     return (
       <>

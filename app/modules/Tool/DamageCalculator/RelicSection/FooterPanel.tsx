@@ -1,6 +1,8 @@
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Badge } from "@heroui/badge";
+import BuffPanel from "~/modules/Tool/DamageCalculator/RelicSection/BuffPanel";
+import { useState } from "react";
 
 const StyledFooterPanel = styled.footer`
   width: 100vw;
@@ -14,7 +16,7 @@ const StyledFooterPanel = styled.footer`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  z-index: 1000;
+  z-index: 100;
 `;
 
 const StyledRelicCount = styled.div`
@@ -50,13 +52,17 @@ const StyledClearRelicsButton = styled.button`
 const StyledAttrButton = styled.button``;
 
 export default function FooterPanel() {
-  const { activeCharName, relicsMap } = useDamageCalculatorStore();
+  const { activeCharName, relicsMap, toggleShowRelics } =
+    useDamageCalculatorStore();
   const activeRelics = relicsMap[activeCharName];
   const selectedLength =
     activeRelics?.filter((relic) => relic.selected).length || 0;
+
+  const [showBuff, setShowBuff] = useState(false);
+
   return (
     <StyledFooterPanel>
-      <StyledRelicCount>
+      <StyledRelicCount onClick={toggleShowRelics}>
         <Badge
           content="待选择藏品"
           isInvisible={selectedLength > 0}
@@ -72,9 +78,8 @@ export default function FooterPanel() {
         </Badge>
       </StyledRelicCount>
       <StyledRelicsContainer></StyledRelicsContainer>
+      <BuffPanel show={showBuff} setShow={setShowBuff} />
       <StyledClearRelicsButton>清空藏品</StyledClearRelicsButton>
-      <StyledAttrButton>干员加成</StyledAttrButton>
-      <StyledAttrButton>敌人加成</StyledAttrButton>
     </StyledFooterPanel>
   );
 }

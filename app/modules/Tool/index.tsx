@@ -34,12 +34,12 @@ export default function ToolIndex() {
         <>
           <OperatorDisplay charData={activeCharData} />
           <ResultDisplay />
-          <RelicSelector />
         </>
       )}
       <TopicSelector />
       <EnemySelector />
       <FooterPanel />
+      <RelicSelector />
     </div>
   );
 }

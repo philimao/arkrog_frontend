@@ -16,6 +16,34 @@ import {
   wrapRelicData,
 } from "~/modules/Tool/DamageCalculator/utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { styled } from "styled-components";
+import { StyledTitle } from "~/modules/Tool/components/Shared";
+
+const StyledRelicSelector = styled.div<{ $active: boolean }>`
+  display: ${(props) => (props.$active ? "block" : "none")};
+  position: fixed;
+  width: 100vw;
+  height: calc(100vh - 5rem);
+  left: 0;
+  top: 0;
+  z-index: 101;
+  overflow-x: auto;
+  background: rgba(68, 68, 68, 0.85);
+  backdrop-filter: blur(10px);
+`;
+
+const StyledButtonButton = styled.button`
+  position: fixed;
+  top: 2rem;
+  right: 0;
+  background: var(--black-gray);
+  font-size: 1rem;
+  padding: 0.5rem 2rem;
+`;
+
+const StyledRelicSelectorInner = styled.div`
+  padding: 5rem 8rem;
+`;
 
 // 关键词筛选器
 const filterTags = [
@@ -31,7 +59,8 @@ const filterFuncMap: Record<string, (relic: ItemData) => boolean> = {
 
 export default function RelicSelector() {
   const { relics, items } = useGameDataStore();
-  const { rogueKey, charData, difficulty } = useDamageCalculatorStore();
+  const { rogueKey, charData, difficulty, showRelics, toggleShowRelics } =
+    useDamageCalculatorStore();
 
   // 按难度筛选藏品
   const relicsByDifficulty = useMemo(
@@ -160,149 +189,153 @@ export default function RelicSelector() {
   }, [relicsByChar, selectedRelicIds]);
 
   return (
-    <div>
-      <div className="mb-4">
-        <textarea
-          className="w-full p-2 border rounded"
-          rows={3}
-          placeholder='请输入藏品 ID 数组，例如：["rogue_4_relic_legacy_82","rogue_4_relic_legacy_81"]'
-          value={inputRelicIds}
-          onChange={(e) => setInputRelicIds(e.target.value)}
-        />
-        <Button
-          className="mt-2"
-          color="primary"
-          onPress={handleSelectFromInput}
-        >
-          根据输入选中藏品
-        </Button>
-      </div>
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
-      >
-        <Select
-          selectionMode="multiple"
-          label="藏品价值"
-          selectedKeys={valueFilter}
-          onSelectionChange={setValueFilter as never}
-        >
-          {relicValues.map((relicType) => (
-            <SelectItem key={relicType}>{relicType}</SelectItem>
-          ))}
-        </Select>
-      </div>
-      <div className="my-4">
+    <StyledRelicSelector $active={showRelics}>
+      <StyledButtonButton onClick={toggleShowRelics}>返回</StyledButtonButton>
+      <StyledRelicSelectorInner>
+        <StyledTitle>选择藏品</StyledTitle>
         <div className="mb-4">
-          <strong className="mb-3">当前生效藏品</strong>
-          <div className="grid grid-cols-4 gap-4">
-            {relicsByChar
-              .filter((r) => selectedRelicIds.includes(r.relicData.id))
-              .map((relicWrapper) => (
-                <div
-                  className={"px-3 py-2"}
-                  key={relicWrapper.relicData.id}
-                  style={{ background: "rgba(0,0,0,0.3)" }}
-                >
-                  <strong>{relicWrapper.relicData.name}</strong>
-                  {inGameRelicNames.includes(relicWrapper.relicData.name) && (
-                    <span>（局内生效）</span>
-                  )}
-                  <Divider className="my-1" />
-                  {relicWrapper.buffs
-                    .map((buff) => buff.charResult)
-                    .flat()
-                    .map((bb, i) => {
-                      return Object.keys(bb).map((key) => (
-                        <div className="text-xs font-light" key={i + key}>
-                          {"干员" +
-                            allowedBlackboardKeyMap[key] +
-                            ": " +
-                            bb[key]}
-                        </div>
-                      ));
-                    })}
-                  {relicWrapper.buffs
-                    .map((buff) => buff.enemyResult)
-                    .flat()
-                    .map((bb, i) => {
-                      return Object.keys(bb).map((key) => (
-                        <div className="text-xs font-light" key={i + key}>
-                          {"敌方" +
-                            allowedBlackboardKeyMap[key] +
-                            ": " +
-                            bb[key]}
-                        </div>
-                      ));
-                    })}
-                  {relicWrapper.buffs.some((buff) => buff.layer) && (
-                    <div className="text-xs font-light">层数: 1</div>
-                  )}
-                </div>
-              ))}
+          <textarea
+            className="w-full p-2 border rounded"
+            rows={3}
+            placeholder='请输入藏品 ID 数组，例如：["rogue_4_relic_legacy_82","rogue_4_relic_legacy_81"]'
+            value={inputRelicIds}
+            onChange={(e) => setInputRelicIds(e.target.value)}
+          />
+          <Button
+            className="mt-2"
+            color="primary"
+            onPress={handleSelectFromInput}
+          >
+            根据输入选中藏品
+          </Button>
+        </div>
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}
+        >
+          <Select
+            selectionMode="multiple"
+            label="藏品价值"
+            selectedKeys={valueFilter}
+            onSelectionChange={setValueFilter as never}
+          >
+            {relicValues.map((relicType) => (
+              <SelectItem key={relicType}>{relicType}</SelectItem>
+            ))}
+          </Select>
+        </div>
+        <div className="my-4">
+          <div className="mb-4">
+            <strong className="mb-3">当前生效藏品</strong>
+            <div className="grid grid-cols-4 gap-4">
+              {relicsByChar
+                .filter((r) => selectedRelicIds.includes(r.relicData.id))
+                .map((relicWrapper) => (
+                  <div
+                    className={"px-3 py-2"}
+                    key={relicWrapper.relicData.id}
+                    style={{ background: "rgba(0,0,0,0.3)" }}
+                  >
+                    <strong>{relicWrapper.relicData.name}</strong>
+                    {inGameRelicNames.includes(relicWrapper.relicData.name) && (
+                      <span>（局内生效）</span>
+                    )}
+                    <Divider className="my-1" />
+                    {relicWrapper.buffs
+                      .map((buff) => buff.charResult)
+                      .flat()
+                      .map((bb, i) => {
+                        return Object.keys(bb).map((key) => (
+                          <div className="text-xs font-light" key={i + key}>
+                            {"干员" +
+                              allowedBlackboardKeyMap[key] +
+                              ": " +
+                              bb[key]}
+                          </div>
+                        ));
+                      })}
+                    {relicWrapper.buffs
+                      .map((buff) => buff.enemyResult)
+                      .flat()
+                      .map((bb, i) => {
+                        return Object.keys(bb).map((key) => (
+                          <div className="text-xs font-light" key={i + key}>
+                            {"敌方" +
+                              allowedBlackboardKeyMap[key] +
+                              ": " +
+                              bb[key]}
+                          </div>
+                        ));
+                      })}
+                    {relicWrapper.buffs.some((buff) => buff.layer) && (
+                      <div className="text-xs font-light">层数: 1</div>
+                    )}
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
-        <div className="mb-4">
-          <strong>干员加成：</strong>
-          {Object.keys(charResult).map((key) => (
-            <div className="me-2 text-sm" key={key}>
-              {allowedBlackboardKeyMap[key] +
-                ": " +
-                Math.round(charResult[key] * 100) / 100}
-            </div>
-          ))}
-        </div>
-        <div>
-          <strong>敌方加成：</strong>
-          {Object.keys(enemyResult).map((key) => (
-            <div className="me-2 text-sm" key={key}>
-              {allowedBlackboardKeyMap[key] +
-                ": " +
-                Math.round(enemyResult[key] * 100) / 100}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="my-4">
-        {filterTags.map((keys, i) => (
-          <div className="flex gap-2 mb-2" key={i}>
-            {keys.map((key) => (
-              <Button
-                key={key}
-                color={selectedTags.includes(key) ? "secondary" : "default"}
-                onPress={() =>
-                  setSelectedTags((prev) => {
-                    const updated = [...prev];
-                    const index = updated.findIndex((item) => item === key);
-                    if (index > -1) updated.splice(index, 1);
-                    else updated.push(key);
-                    return updated;
-                  })
-                }
-              >
-                {key}
-              </Button>
+          <div className="mb-4">
+            <strong>干员加成：</strong>
+            {Object.keys(charResult).map((key) => (
+              <div className="me-2 text-sm" key={key}>
+                {allowedBlackboardKeyMap[key] +
+                  ": " +
+                  Math.round(charResult[key] * 100) / 100}
+              </div>
             ))}
           </div>
-        ))}
-      </div>
-      <div className="flex mb-4">
-        <Button
-          className="ms-auto"
-          color="danger"
-          variant="flat"
-          size="sm"
-          onPress={() => setSelectedRelicIds([])}
-        >
-          清空选择
-        </Button>
-      </div>
-      <RelicsContainer
-        relicsByTag={relicsByTag}
-        selectedRelicIds={selectedRelicIds}
-        setSelectedRelicIds={setSelectedRelicIds}
-      />
-    </div>
+          <div>
+            <strong>敌方加成：</strong>
+            {Object.keys(enemyResult).map((key) => (
+              <div className="me-2 text-sm" key={key}>
+                {allowedBlackboardKeyMap[key] +
+                  ": " +
+                  Math.round(enemyResult[key] * 100) / 100}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="my-4">
+          {filterTags.map((keys, i) => (
+            <div className="flex gap-2 mb-2" key={i}>
+              {keys.map((key) => (
+                <Button
+                  key={key}
+                  color={selectedTags.includes(key) ? "secondary" : "default"}
+                  onPress={() =>
+                    setSelectedTags((prev) => {
+                      const updated = [...prev];
+                      const index = updated.findIndex((item) => item === key);
+                      if (index > -1) updated.splice(index, 1);
+                      else updated.push(key);
+                      return updated;
+                    })
+                  }
+                >
+                  {key}
+                </Button>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="flex mb-4">
+          <Button
+            className="ms-auto"
+            color="danger"
+            variant="flat"
+            size="sm"
+            onPress={() => setSelectedRelicIds([])}
+          >
+            清空选择
+          </Button>
+        </div>
+        <RelicsContainer
+          relicsByTag={relicsByTag}
+          selectedRelicIds={selectedRelicIds}
+          setSelectedRelicIds={setSelectedRelicIds}
+        />
+      </StyledRelicSelectorInner>
+    </StyledRelicSelector>
   );
 }
 

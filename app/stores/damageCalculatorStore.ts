@@ -18,6 +18,7 @@ interface DamageCalculatorStore {
   relicsMap: Record<string, RelicWrapper2[]>;
   enemyData: EnemyData;
   enemyDataParsed: EnemyDataParsed;
+  showRelics: boolean;
 }
 
 interface DamageCalculatorAction {
@@ -31,6 +32,7 @@ interface DamageCalculatorAction {
   setRelicsMap: (charName: string, relics: RelicWrapper2[]) => void;
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
+  toggleShowRelics: () => void;
 }
 
 export const useDamageCalculatorStore = create<
@@ -124,6 +126,16 @@ export const useDamageCalculatorStore = create<
           "setEnemyDataParsed",
         ),
       topicData: undefined,
+      showRelics: false,
+      toggleShowRelics: () =>
+        set(
+          (state) => ({
+            ...state,
+            showRelics: !state.showRelics,
+          }),
+          undefined,
+          "toggleShowRelics",
+        ),
     }),
     { name: "damageCalculatorStore" },
   ),

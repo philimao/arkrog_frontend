@@ -65,7 +65,9 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>()(
           // console.log(get());
         } catch (err) {
           console.error(err);
-          toast.error("游戏数据加载失败\n" + (err as Error).message);
+          toast.error(
+            `加载游戏数据失败！\n${(err as Error).name}:${(err as Error).message}`,
+          );
         }
       },
       fetchGameDataExt: async () => {

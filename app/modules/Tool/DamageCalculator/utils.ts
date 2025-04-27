@@ -1,7 +1,9 @@
 import type {
   BlackboardData,
   CharData,
+  DefinedData,
   EnemyData,
+  EnemyDataParsed,
   RelicBuff,
   RelicDataExt,
   RogueKey,
@@ -40,6 +42,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   "enemy_damage_resistance[inf]": "物理与法术伤害降低",
   sp_recovery_per_sec: "技力回复",
   attack_speed: "攻击速度",
+  base_attack_time: "攻击间隔",
   respawn_time: "再部署时间",
   "rogue_2_hit_to_add_sp[sarkaz]": "对萨卡兹造成伤害回复技力", // 讨魔义旗
   "modify_sp[warrior]": "近卫每次攻击获得技力", // 浴血
@@ -53,6 +56,8 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   atk_scale: "伤害倍率",
   range_radius: "伤害范围", // 烟花手
   move_speed: "移动速度",
+  ep_damage_resistance: "元素伤害抗性",
+  ep_resistance: "损伤抵抗",
 };
 
 /**
@@ -468,3 +473,41 @@ export const professions = [
   "SUPPORTER",
   "WARRIOR",
 ];
+
+export function parseDefinedData<T>(definedData: DefinedData<T>): T {
+  return definedData.m_value;
+}
+
+export function parseEnemyData(enemyData: EnemyData): EnemyDataParsed {
+  const attributes = enemyData.attributes;
+  return {
+    id: enemyData.id,
+    level: enemyData.level,
+    name: parseDefinedData(enemyData.name),
+    description: parseDefinedData(enemyData.description),
+    attributes: {
+      maxHp: parseDefinedData(attributes.maxHp),
+      atk: parseDefinedData(attributes.atk),
+      def: parseDefinedData(attributes.def),
+      magicResistance: parseDefinedData(attributes.magicResistance),
+      blockCnt: parseDefinedData(attributes.blockCnt),
+      moveSpeed: parseDefinedData(attributes.moveSpeed),
+      attackSpeed: parseDefinedData(attributes.attackSpeed),
+      baseAttackTime: parseDefinedData(attributes.baseAttackTime),
+      epDamageResistance: parseDefinedData(attributes.epDamageResistance),
+      epResistance: parseDefinedData(attributes.epResistance),
+    },
+    levelType: parseDefinedData(enemyData.levelType),
+    rangedRadius: enemyData.rangedRadius
+      ? parseDefinedData(enemyData.rangedRadius)
+      : 0,
+  };
+}
+
+export function snakeToCamel(str: string) {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+export function camelToSnake(str: string) {
+  return str.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+}

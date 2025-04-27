@@ -1,26 +1,19 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { act, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Loading from "~/components/Loading";
-import OperatorDisplay from "~/modules/Tool/DamageCalculator/OperatorDisplay";
-import RelicSelector from "~/modules/Tool/DamageCalculator/RelicSelector";
-import type { CharData, EnemyData, RogueKey } from "~/types/gameData";
-import TopicSelector from "~/modules/Tool/DamageCalculator/TopicSelector";
-import StageSelector from "~/modules/Tool/DamageCalculator/StageSelector";
-import OperatorSelector from "~/modules/Tool/DamageCalculator/OperatorSelector";
+import OperatorDisplay from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorDisplay";
+import RelicSelector from "~/modules/Tool/DamageCalculator/RelicSection/RelicSelector";
+import TopicSelector from "~/modules/Tool/DamageCalculator/EnemySection/TopicSelector";
+import OperatorSelector from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorSelector";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import FooterPanel from "~/modules/Tool/DamageCalculator/FooterPanel";
-import { ResultDisplay } from "~/modules/Tool/DamageCalculator/ResultDisplay";
+import FooterPanel from "~/modules/Tool/DamageCalculator/RelicSection/FooterPanel";
+import { ResultDisplay } from "~/modules/Tool/DamageCalculator/OperatorSection/ResultDisplay";
+import EnemySelector from "~/modules/Tool/DamageCalculator/EnemySection/EnemySelector";
 
 export default function ToolIndex() {
   const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();
   const { charList, activeCharName } = useDamageCalculatorStore();
   const [loading, setLoading] = useState(true);
-
-  const [charData, setCharData] = useState<CharData>();
-  const [enemyData, setEnemyData] = useState<EnemyData | undefined>();
-
-  const [rogueKey, setRogueKey] = useState<RogueKey>("rogue_4");
-  const [difficulty, setDifficulty] = useState<string>("N15");
 
   const activeCharData = useMemo(() => {
     return charList.find((charData) => charData?.name === activeCharName);
@@ -35,25 +28,17 @@ export default function ToolIndex() {
   if (loading) return <Loading />;
 
   return (
-    <div>
+    <div className="min-h-screen">
       <OperatorSelector />
       {activeCharData && (
         <>
           <OperatorDisplay charData={activeCharData} />
           <ResultDisplay />
-          <TopicSelector />
-          <StageSelector
-            rogueKey={rogueKey}
-            enemyData={enemyData}
-            setEnemyData={setEnemyData}
-          />
-          <RelicSelector
-            rogueKey={rogueKey}
-            difficulty={difficulty}
-            charData={charData}
-          />
+          <RelicSelector />
         </>
       )}
+      <TopicSelector />
+      <EnemySelector />
       <FooterPanel />
     </div>
   );

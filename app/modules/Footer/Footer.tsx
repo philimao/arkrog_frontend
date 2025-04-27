@@ -9,7 +9,7 @@ const StyledFooterContainer = styled.footer`
 const StyledFooterInner = styled.div`
   margin-top: 10rem;
   box-shadow: 0 -5px 10px 0 #18d1ff80;
-  height: 6rem;
+  height: 5rem;
   background: var(--mid-gray);
   display: flex;
   justify-content: center;

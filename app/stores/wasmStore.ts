@@ -20,7 +20,7 @@ export const useWasmStore = create<WasmStore>()(
           import.meta.env.VITE_API_BASE_URL + "/wasm";
         const scriptUrl = `${wasmBaseUrl}/${filename}.es6.js`;
 
-        return await import(scriptUrl)
+        return await import(/* @vite-ignore */ scriptUrl)
           .then((module) => module.default())
           .then((instance) => {
             set(

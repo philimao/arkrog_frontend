@@ -29,8 +29,8 @@ const StyledBackground = styled.div`
 `;
 
 export default function RootLayout() {
-  const [currentTheme, setCurrentTheme] = useState("dark");
-  const { fetchGameData, fetchGameDataExt } = useGameDataStore();
+  const [currentTheme] = useState("dark");
+  const { fetchGameData } = useGameDataStore();
   const { fetchUserInfo } = useUserInfoStore();
   const { fetchAppData } = useAppDataStore();
   const { fetchTournamentsData } = useTournamentDataStore();
@@ -57,20 +57,20 @@ export default function RootLayout() {
             <PageNavbar />
             <Outlet />
             <Footer />
-            <ToastContainer
-              autoClose={3000}
-              position={desktop ? "bottom-right" : "top-right"}
-              theme="dark"
-              closeOnClick
-              stacked
-              hideProgressBar
-              style={desktop ? {} : { width: "100vw" }}
-            />
             <GlobalModals />
             <ScrollToTop />
             <UploadCenter />
           </>
         )}
+        <ToastContainer
+          autoClose={3000}
+          position={desktop ? "bottom-right" : "top-right"}
+          theme="dark"
+          closeOnClick
+          stacked
+          hideProgressBar
+          style={desktop ? {} : { width: "100vw" }}
+        />
       </StyledBackground>
     </ThemeProvider>
   );

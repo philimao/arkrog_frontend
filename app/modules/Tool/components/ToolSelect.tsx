@@ -1,4 +1,6 @@
 import { Select, SelectItem, type SelectProps } from "@heroui/react";
+import { styled } from "styled-components";
+import type { HTMLAttributes } from "react";
 
 export default function ToolSelect<T>({
   array,

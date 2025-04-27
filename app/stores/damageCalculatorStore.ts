@@ -1,7 +1,12 @@
 import { create } from "zustand/index";
 import { devtools } from "zustand/middleware";
-import type { CharData, RogueKey } from "~/types/gameData";
-import type { RelicWrapper2 } from "~/modules/Tool/DamageCalculator/utils";
+import type {
+  CharData,
+  EnemyData,
+  EnemyDataParsed,
+  RogueKey,
+} from "~/types/gameData";
+import { type RelicWrapper2 } from "~/modules/Tool/DamageCalculator/utils";
 
 interface DamageCalculatorStore {
   rogueKey: RogueKey;
@@ -11,6 +16,8 @@ interface DamageCalculatorStore {
   charList: (CharData | undefined)[];
   activeCharName: string;
   relicsMap: Record<string, RelicWrapper2[]>;
+  enemyData: EnemyData;
+  enemyDataParsed: EnemyDataParsed;
 }
 
 interface DamageCalculatorAction {
@@ -22,13 +29,15 @@ interface DamageCalculatorAction {
   removeCharData: (i: number) => void;
   setActiveCharName: (charName: string) => void;
   setRelicsMap: (charName: string, relics: RelicWrapper2[]) => void;
+  setEnemyData: (enemyData: EnemyData) => void;
+  setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
 }
 
 export const useDamageCalculatorStore = create<
   DamageCalculatorStore & DamageCalculatorAction
 >()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       rogueKey: "rogue_4",
       setRogueKey: (rogueKey) =>
         set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
@@ -93,6 +102,26 @@ export const useDamageCalculatorStore = create<
           },
           undefined,
           "setRelicsMap",
+        ),
+      enemyData: undefined,
+      enemyDataParsed: undefined,
+      setEnemyData: (enemyData) =>
+        set(
+          (state) => ({
+            ...state,
+            enemyData,
+          }),
+          undefined,
+          "setEnemyData",
+        ),
+      setEnemyDataParsed: (enemyDataParsed) =>
+        set(
+          (state) => ({
+            ...state,
+            enemyDataParsed: enemyDataParsed,
+          }),
+          undefined,
+          "setEnemyDataParsed",
         ),
       topicData: undefined,
     }),

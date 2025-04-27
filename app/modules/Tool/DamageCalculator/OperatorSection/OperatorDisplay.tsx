@@ -9,7 +9,10 @@ import type {
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
-import { applyAttrModifiers, applyBlackboard } from "~/utils/calculator";
+import {
+  applyAttrModifiers,
+  applyBlackboard,
+} from "~/modules/Tool/DamageCalculator/calculator";
 import { useWasmStore } from "~/stores/wasmStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";

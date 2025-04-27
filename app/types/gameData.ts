@@ -403,24 +403,9 @@ export interface EnemyBasicData {
   skills?: string[];
 }
 
-interface DefinedString {
+export interface DefinedData<T> {
   m_defined: boolean;
-  m_value: string;
-}
-
-interface DefinedNumber {
-  m_defined: boolean;
-  m_value: number;
-}
-
-interface DefinedBoolean {
-  m_defined: boolean;
-  m_value: boolean;
-}
-
-interface DefinedStringArray {
-  m_defined: boolean;
-  m_value: string[];
+  m_value: T;
 }
 
 export interface EnemySkillData {
@@ -435,47 +420,68 @@ export interface EnemySkillData {
 export interface EnemyData {
   id: string;
   level: 0 | 1 | 2;
-  name: DefinedString;
-  description: DefinedNumber;
-  prefabKey: DefinedString;
+  name: DefinedData<string>;
+  description: DefinedData<string>;
+  prefabKey: DefinedData<string>;
   attributes: {
-    maxHp: DefinedNumber;
-    atk: DefinedNumber;
-    def: DefinedNumber;
-    magicResistance: DefinedNumber;
-    blockCnt: DefinedNumber;
-    moveSpeed: DefinedNumber;
-    attackSpeed: DefinedNumber;
-    baseAttackTime: DefinedNumber;
-    tauntLevel: DefinedNumber;
-    epDamageResistance: DefinedNumber;
-    epResistance: DefinedNumber;
-    damageHitratePhysical: DefinedNumber;
-    damageHitrateMagical: DefinedNumber;
-    stunImmune: DefinedBoolean;
-    silenceImmune: DefinedBoolean;
-    sleepImmune: DefinedBoolean;
-    frozenImmune: DefinedBoolean;
-    levitateImmune: DefinedBoolean;
-    disarmedCombatImmune: DefinedBoolean;
-    fearedImmune: DefinedBoolean;
+    maxHp: DefinedData<number>;
+    atk: DefinedData<number>;
+    def: DefinedData<number>;
+    magicResistance: DefinedData<number>;
+    blockCnt: DefinedData<number>;
+    moveSpeed: DefinedData<number>;
+    attackSpeed: DefinedData<number>;
+    baseAttackTime: DefinedData<number>;
+    tauntLevel: DefinedData<number>;
+    epDamageResistance: DefinedData<number>;
+    epResistance: DefinedData<number>;
+    damageHitratePhysical: DefinedData<number>;
+    damageHitrateMagical: DefinedData<number>;
+    stunImmune: DefinedData<boolean>;
+    silenceImmune: DefinedData<boolean>;
+    sleepImmune: DefinedData<boolean>;
+    frozenImmune: DefinedData<boolean>;
+    levitateImmune: DefinedData<boolean>;
+    disarmedCombatImmune: DefinedData<boolean>;
+    fearedImmune: DefinedData<boolean>;
   };
   applyWay: {
     m_defined: true;
     m_value: "MELEE" | "RANGED";
   };
-  motion: DefinedString;
-  enemyTags: DefinedStringArray;
-  lifePointReduce: DefinedNumber;
+  motion: DefinedData<string>;
+  enemyTags: DefinedData<string[]>;
+  lifePointReduce: DefinedData<number>;
   levelType: {
     m_defined: true;
     m_value: "BOSS" | "ELITE" | "NORMAL";
   };
-  rangedRadius: DefinedNumber;
-  numOfExtraDrops: DefinedNumber;
-  viewRadius: DefinedNumber;
-  notCountInTotal: DefinedBoolean;
+  rangedRadius: DefinedData<number>;
+  numOfExtraDrops: DefinedData<number>;
+  viewRadius: DefinedData<number>;
+  notCountInTotal: DefinedData<boolean>;
   talentBlackboard: BlackboardData[] | null;
   skills: EnemySkillData[] | null;
   spData: null;
+}
+
+export interface EnemyDataParsed {
+  id: string;
+  level: 0 | 1 | 2;
+  name: string;
+  description: string;
+  attributes: {
+    maxHp: number;
+    atk: number;
+    def: number;
+    magicResistance: number;
+    blockCnt: number;
+    moveSpeed: number;
+    attackSpeed: number;
+    baseAttackTime: number;
+    epDamageResistance: number;
+    epResistance: number;
+  };
+  levelType: "BOSS" | "ELITE" | "NORMAL";
+  rangedRadius: number | null;
 }

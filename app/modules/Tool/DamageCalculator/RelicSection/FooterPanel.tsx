@@ -9,8 +9,8 @@ const StyledFooterPanel = styled.footer`
   left: 0;
   bottom: 0;
   background: var(--black-gray);
-  box-shadow: 0 0 20px 0 var(--black-gray);
-  padding: 0.5rem 1rem;
+  box-shadow: 0 -5px 10px 0 #18d1ff80;
+  padding: 0.5rem 2rem 0.5rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;

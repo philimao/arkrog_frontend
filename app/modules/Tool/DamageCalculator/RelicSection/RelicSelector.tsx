@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { Button, Divider, Select, SelectItem } from "@heroui/react";
-import type { CharData, ItemData, RogueKey } from "~/types/gameData";
+import type { ItemData } from "~/types/gameData";
 import {
   allowedBlackboardKeyMap,
   finalizeRelicResults,
@@ -15,6 +15,7 @@ import {
   type RelicWrapper,
   wrapRelicData,
 } from "~/modules/Tool/DamageCalculator/utils";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 
 // 关键词筛选器
 const filterTags = [
@@ -28,16 +29,9 @@ const filterFuncMap: Record<string, (relic: ItemData) => boolean> = {
   攻速: (relic: ItemData) => relic.usage.includes("攻击速度"),
 };
 
-export default function RelicSelector({
-  rogueKey,
-  difficulty,
-  charData,
-}: {
-  rogueKey: RogueKey;
-  difficulty: string;
-  charData?: CharData;
-}) {
+export default function RelicSelector() {
   const { relics, items } = useGameDataStore();
+  const { rogueKey, charData, difficulty } = useDamageCalculatorStore();
 
   // 按难度筛选藏品
   const relicsByDifficulty = useMemo(

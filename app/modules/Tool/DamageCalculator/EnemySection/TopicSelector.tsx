@@ -1,21 +1,14 @@
 import type { RogueKey } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { outBuffMap } from "~/modules/Tool/DamageCalculator/utils";
 import { styled } from "styled-components";
+import { StyledTitle } from "~/modules/Tool/components/Shared";
 
 const StyledTopicSelector = styled.div`
   margin-bottom: 1rem;
-`;
-
-const StyledTitle = styled.div`
-  height: 3rem;
-  font-weight: bold;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  border-bottom: var(--ak-blue) 1px solid;
 `;
 
 export default function TopicSelector() {
@@ -42,13 +35,21 @@ export default function TopicSelector() {
       array = Array(16)
         .fill(0)
         .map((_, i) => "N" + i);
-    setDifficulty(array.slice(-1)[0]);
     return array;
-  }, [rogueKey, setDifficulty]);
+  }, [rogueKey]);
+
+  useEffect(() => {
+    setDifficulty(difficulties[difficulties.length - 1]);
+  }, [difficulties, setDifficulty]);
+
+  useEffect(() => {
+    const outBuffs = outBuffMap[rogueKey];
+    setOutBuff(outBuffs![outBuffs!.length - 1]);
+  }, [rogueKey, setOutBuff]);
 
   return (
     <StyledTopicSelector>
-      <StyledTitle>选择肉鸽</StyledTitle>
+      <StyledTitle>选择主题</StyledTitle>
       <div
         className="grid gap-x-4 gap-y-1"
         style={{ gridTemplateColumns: "repeat(auto-fill, 15rem)" }}

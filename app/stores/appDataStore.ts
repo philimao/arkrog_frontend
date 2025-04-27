@@ -3,6 +3,7 @@ import { _get } from "~/utils/tools";
 import type { StagePreview } from "~/types/gameData";
 import type { ArticleType, BannerType } from "~/types/appData";
 import { devtools } from "zustand/middleware";
+import { toast } from "react-toastify";
 
 type AppDataStore = {
   banners?: BannerType[];
@@ -29,9 +30,14 @@ export const useAppDataStore = create<AppDataStore & AppDataAction>()(
       recommendArticles: undefined,
       charImages: undefined,
       fetchAppData: async () => {
-        const bundle = await _get<AppDataStore>("/app/bundle");
-        set({ ...bundle }, undefined, "fetchAppData");
-        // console.log(get());
+        try {
+          const bundle = await _get<AppDataStore>("/app/bundle");
+          set({ ...bundle }, undefined, "fetchAppData");
+        } catch (err) {
+          toast.error(
+            `加载应用数据失败！\n${(err as Error).name}: ${(err as Error).message}`,
+          );
+        }
       },
     }),
     { name: "appDataStore" },

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Form, Listbox, ListboxItem } from "@heroui/react";
+import React, { useEffect, useState } from "react";
+import { Listbox, ListboxItem } from "@heroui/react";
 import type { CharData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { debounce } from "@heroui/shared-utils";
@@ -7,15 +7,11 @@ import { professions } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
+import ToolInput from "~/modules/Tool/components/ToolInput";
+import { StyledTitle } from "~/modules/Tool/components/Shared";
 
-const StyledOperatorSelectorWrapper = styled.div``;
-
-const StyledTitle = styled.div`
-  height: 3rem;
-  font-weight: bold;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  border-bottom: var(--ak-blue) 1px solid;
+const StyledOperatorSelectorWrapper = styled.div`
+  //min-height: 35vh;
 `;
 
 const StyledSelectorWrapper = styled.div`
@@ -123,8 +119,11 @@ export function OperatorSelector({ i }: { i: number }) {
       className="w-40 relative me-4"
       onBlur={() => setTimeout(() => setShowListBox(false), 300)}
     >
-      <Form
-        onSubmit={(evt) => {
+      <ToolInput
+        value={value}
+        setValue={setValue}
+        onFocus={() => setShowListBox(true)}
+        onEnter={(evt) => {
           evt.preventDefault();
           if (candidates?.length) {
             setActiveCharName(candidates[0].name);
@@ -132,16 +131,8 @@ export function OperatorSelector({ i }: { i: number }) {
             setShowListBox(false);
           }
         }}
-      >
-        <input
-          placeholder="输入干员名称"
-          aria-label="char"
-          value={value}
-          onChange={(evt) => setValue(evt.target.value)}
-          onFocus={() => setShowListBox(true)}
-          className="px-3 w-full text-[1rem] h-12 bg-black-gray outline-none"
-        />
-      </Form>
+        placeholder="输入干员名称"
+      />
       <div className="absolute z-50" style={{ top: "100%", left: 0 }}>
         {showListBox && candidates && (
           <Listbox

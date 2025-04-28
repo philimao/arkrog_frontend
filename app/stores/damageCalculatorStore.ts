@@ -6,8 +6,8 @@ import type {
   EnemyData,
   EnemyDataParsed,
   RogueKey,
+  RelicWrapper,
 } from "~/types/gameData";
-import { type RelicWrapper } from "~/modules/Tool/DamageCalculator/utils";
 
 interface DamageCalculatorStore {
   rogueKey: RogueKey;
@@ -15,10 +15,14 @@ interface DamageCalculatorStore {
   outBuff: string;
   charList: CharData[];
   activeCharName: string;
+  showRelics: boolean;
   relicsMap: Record<string, Record<RogueKey, RelicWrapper[]>>;
+  enemyBuff: Record<string, number>;
+  charsBuff: Record<string, Record<string, number>>;
+  charsBuffInGame: Record<string, Record<string, number>>;
+  selectedIds: string[];
   enemyData: EnemyData;
   enemyDataParsed: EnemyDataParsed;
-  showRelics: boolean;
 }
 
 interface DamageCalculatorAction {
@@ -34,8 +38,6 @@ interface DamageCalculatorAction {
     rogueKey: RogueKey,
     relics: RelicWrapper[],
   ) => void;
-  setEnemyData: (enemyData: EnemyData) => void;
-  setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
   toggleShowRelics: () => void;
   setRelicLayer: (id: string, layer: string) => string;
   updateRelic: (
@@ -48,6 +50,13 @@ interface DamageCalculatorAction {
     key: string,
     value: number | string | boolean,
   ) => void;
+  setSelectedIds: (ids: string[]) => void;
+  toggleRelicSelection: (id: string) => void;
+  setEnemyData: (enemyData: EnemyData) => void;
+  setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
+  setEnemyBuff: (buff: Record<string, number>) => void;
+  setCharsBuff: (charName: string, buff: Record<string, number>) => void;
+  setCharsBuffInGame: (charName: string, buff: Record<string, number>) => void;
 }
 
 export const useDamageCalculatorStore = create<
@@ -108,6 +117,16 @@ export const useDamageCalculatorStore = create<
           undefined,
           "setActiveCharName",
         ),
+      showRelics: false as boolean,
+      toggleShowRelics: () =>
+        set(
+          (state) => ({
+            ...state,
+            showRelics: !state.showRelics,
+          }),
+          undefined,
+          "toggleShowRelics",
+        ),
       relicsMap: {},
       setRelicWrapper: (charName, rogueKey, relics) =>
         set(
@@ -154,18 +173,37 @@ export const useDamageCalculatorStore = create<
         ),
       setRelicLayer: (id: string, layer: string) => {
         const layerNumber = parseInt(layer);
-        if (layerNumber) {
-          set(
-            (state) => {
-              state.relicsMap[state.activeCharName][state.rogueKey].find(
-                (r) => r.id === id,
-              )!.layer = layerNumber || 0;
-            },
-            undefined,
-            "setRelicLayer",
-          );
-        }
+        set(
+          (state) => {
+            state.relicsMap[state.activeCharName][state.rogueKey].find(
+              (r) => r.id === id,
+            )!.layer = layerNumber || 0;
+          },
+          undefined,
+          "setRelicLayer",
+        );
         return layerNumber.toString();
+      },
+      selectedIds: [] as string[],
+      setSelectedIds: (ids) =>
+        set(
+          (state) => ({ ...state, selectedIds: ids }),
+          undefined,
+          "setSelectedIds",
+        ),
+      toggleRelicSelection: (id) => {
+        set(
+          (state) => {
+            if (state.selectedIds.includes(id)) {
+              const i = state.selectedIds.indexOf(id);
+              state.selectedIds.splice(i, 1);
+            } else {
+              state.selectedIds.push(id);
+            }
+          },
+          undefined,
+          "toggleRelicSelection",
+        );
       },
       enemyData: undefined as unknown as EnemyData,
       enemyDataParsed: undefined as unknown as EnemyDataParsed,
@@ -187,15 +225,31 @@ export const useDamageCalculatorStore = create<
           undefined,
           "setEnemyDataParsed",
         ),
-      showRelics: false as boolean,
-      toggleShowRelics: () =>
+      enemyBuff: {} as Record<string, number>,
+      charsBuff: {} as Record<string, Record<string, number>>,
+      charsBuffInGame: {} as Record<string, Record<string, number>>,
+      setEnemyBuff: (buff) =>
         set(
-          (state) => ({
-            ...state,
-            showRelics: !state.showRelics,
-          }),
+          (state) => ({ ...state, enemyBuff: buff }),
           undefined,
-          "toggleShowRelics",
+          "setEnemyBuff",
+        ),
+      setCharsBuff: (charName, buff) => {
+        set(
+          (state) => {
+            state.charsBuff[charName] = buff as never;
+          },
+          undefined,
+          "setCharsBuff",
+        );
+      },
+      setCharsBuffInGame: (charName, buff) =>
+        set(
+          (state) => {
+            state.charsBuffInGame[charName] = buff as never;
+          },
+          undefined,
+          "setCharsBuffInGame",
         ),
     })),
     { name: "damageCalculatorStore" },

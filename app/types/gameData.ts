@@ -348,6 +348,27 @@ export interface RelicData {
   buffs: RelicBuff[];
 }
 
+export interface RelicWrapperBuff {
+  key: string;
+  isActive: boolean;
+  charResult: Record<string, number>;
+  enemyResult: Record<string, number>;
+}
+
+export interface RelicWrapper {
+  id: string;
+  name: string;
+  value: number;
+  usage: string;
+  isActive: boolean;
+  userActive: boolean;
+  isFavorite: boolean;
+  hasLayer: boolean;
+  layer: number;
+  show: boolean;
+  buffs: RelicWrapperBuff[];
+}
+
 // 带*的域代表对计算非常重要
 export interface CharInput {
   phaseLevel: number; // 精英化等级

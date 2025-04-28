@@ -2,18 +2,24 @@ import { styled } from "styled-components";
 import {
   allowedBlackboardKeyMap,
   relicAlterToBasic,
-  type RelicWrapper,
 } from "~/modules/Tool/DamageCalculator/utils";
-import React, { type FormEvent, useState } from "react";
+import React, { type FormEvent, useEffect, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
 import { Divider } from "@heroui/react";
-import { StyledTitle } from "~/modules/Tool/components/Shared";
+import {
+  StyledModeOption,
+  StyledModeSelector,
+  StyledTitle,
+} from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import type { RelicWrapper } from "~/types/gameData";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
+  max-height: calc(100vh - 23rem);
+  overflow-y: auto;
 `;
 
 const StyledRelicsInner = styled.div`
@@ -27,6 +33,7 @@ export default function RelicsContainer({
 }: {
   relicsWrappers: RelicWrapper[];
 }) {
+  const [showAll, setShowAll] = useState(false);
   const [mode, setMode] = useState("列表模式");
   return (
     <StyledRelicsContainer>
@@ -35,20 +42,33 @@ export default function RelicsContainer({
         activeMode={mode}
         setActiveMode={setMode}
       >
-        <span />
+        <StyledModeSelector>
+          <StyledModeOption
+            $active={!showAll}
+            onClick={() => setShowAll(false)}
+          >
+            隐藏无关
+          </StyledModeOption>
+          <StyledModeOption $active={showAll} onClick={() => setShowAll(true)}>
+            显示全部
+          </StyledModeOption>
+        </StyledModeSelector>
       </StyledTitle>
       <StyledRelicsInner>
         {relicsWrappers
-          .filter((relicWrapper) => relicWrapper.show)
+          .filter(
+            (relicWrapper) =>
+              relicWrapper.show && (showAll || relicWrapper.isActive),
+          )
           .map((relicWrapper) => (
-            <RelicItem key={relicWrapper.id} relicWrapper={relicWrapper} />
+            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} />
           ))}
       </StyledRelicsInner>
     </StyledRelicsContainer>
   );
 }
 
-const StyledRelicItem = styled.div<{ $selected: boolean }>`
+const StyledRelicBlock = styled.div<{ $selected: boolean }>`
   display: flex;
   gap: 1rem;
   position: relative;
@@ -89,23 +109,32 @@ const StyledLayerWrapper = styled.div`
   }
 `;
 
-function RelicItem({ relicWrapper }: { relicWrapper: RelicWrapper }) {
-  const { setRelicLayer, updateRelic } = useDamageCalculatorStore();
+function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
+  const { setRelicLayer, toggleRelicSelection, selectedIds } =
+    useDamageCalculatorStore();
   const DEBUG = false;
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
+
+  useEffect(() => {
+    setLayer((prev) => {
+      if (prev !== "NaN") {
+        return relicWrapper.layer.toString();
+      } else return prev;
+    });
+  }, [relicWrapper]);
 
   function updateRelicLayer(evt: FormEvent) {
     evt.preventDefault();
     setLayer(setRelicLayer(relicWrapper.id, layer));
   }
 
+  const selected = selectedIds.includes(relicWrapper.id);
+
   return (
-    <StyledRelicItem
-      $selected={relicWrapper.selected}
+    <StyledRelicBlock
+      $selected={selected}
       key={relicWrapper.id}
-      onClick={() =>
-        updateRelic(relicWrapper.id, "selected", !relicWrapper.selected)
-      }
+      onClick={() => toggleRelicSelection(relicWrapper.id)}
     >
       <StyledImageWrapper>
         <LazyImage
@@ -119,7 +148,8 @@ function RelicItem({ relicWrapper }: { relicWrapper: RelicWrapper }) {
         <StyledLayerWrapper>
           <span>层数</span>
           <ToolInput
-            className="h-5 px-1 bg-[#333333]"
+            className="h-5 bg-[#333333] text-center"
+            style={{ padding: "0" }}
             value={layer}
             setValue={setLayer}
             onClick={(evt) => evt.stopPropagation()}
@@ -164,6 +194,6 @@ function RelicItem({ relicWrapper }: { relicWrapper: RelicWrapper }) {
           </>
         )}
       </div>
-    </StyledRelicItem>
+    </StyledRelicBlock>
   );
 }

@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@heroui/react";
 import {
   finalizeRelicResults,
-  type RelicWrapper,
   wrapRelicData,
 } from "~/modules/Tool/DamageCalculator/utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
@@ -16,8 +15,11 @@ import {
   StyledRelicCountInner,
 } from "~/modules/Tool/DamageCalculator/RelicSection/Shared";
 import RelicsContainer from "~/modules/Tool/DamageCalculator/RelicSection/RelicsContainer";
-import type { CharData, RelicDataExt } from "~/types/gameData";
+import type { CharData, RelicWrapper } from "~/types/gameData";
 import { useShallow } from "zustand/react/shallow";
+import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
+import { shallow } from "zustand/vanilla/shallow";
+import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
 
 const StyledRelicSelector = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "block" : "none")};
@@ -42,7 +44,7 @@ const StyledBackButton = styled.button`
 `;
 
 const StyledRelicSelectorInner = styled.div`
-  padding: 5rem 8rem;
+  padding: 5rem 8rem 1rem 8rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -88,6 +90,10 @@ const StyledSelectedRelics = styled.div`
 const StyledSelectedRelicsContainer = styled.div`
   margin-right: auto;
   padding: 0 1rem;
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 3.5rem);
+  gap: 0.5rem;
 `;
 
 const StyledBuffContainer = styled.div`
@@ -130,14 +136,16 @@ const StyledBuffInfo = styled.div<{ $type: string }>`
 
 const StyledBuffInfoInner = styled.div`
   text-align: center;
+  white-space: nowrap;
 `;
 
 const StyledBuffText = styled.div`
+  height: 100%;
   flex-grow: 1;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(6, auto);
-  grid-auto-flow: column;
+  grid-template-rows: repeat(10, auto);
+  //grid-auto-flow: column;
   grid-auto-rows: auto;
   gap: 0.25rem;
   font-size: 0.8rem;
@@ -185,8 +193,18 @@ function RelicSelector({
   relicWrappers: RelicWrapper[];
 }) {
   const { items } = useGameDataStore();
-  const { rogueKey, difficulty, showRelics, updateRelics, toggleShowRelics } =
-    useDamageCalculatorStore();
+  const {
+    rogueKey,
+    difficulty,
+    showRelics,
+    updateRelics,
+    toggleShowRelics,
+    selectedIds,
+    setSelectedIds,
+    setCharsBuff,
+    setCharsBuffInGame,
+    setEnemyBuff,
+  } = useDamageCalculatorStore();
 
   // Tag筛选
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -252,10 +270,6 @@ function RelicSelector({
     valueFilter,
   ]);
 
-  // 藏品选择
-  const [charResult, setCharResult] = useState<Record<string, number>>({});
-  const [enemyResult, setEnemyResult] = useState<Record<string, number>>({});
-
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
   // const selectRelicsByIds = (ids: string[]) => {
   //   setSelectedRelicIds((prev) => {
@@ -280,23 +294,32 @@ function RelicSelector({
   //   }
   // };
 
-  // // 应用藏品效果
-  // useEffect(() => {
-  //   const { charResult, enemyResult } = finalizeRelicResults(
-  //     relicsByChar,
-  //     selectedRelicIds,
-  //   );
-  //   console.log(
-  //     "relics",
-  //     relicsByChar.filter((relicWrapper) =>
-  //       selectedRelicIds.includes(relicWrapper.id),
-  //     ), // 局内生效
-  //   );
-  //   console.log("charResult", charResult);
-  //   console.log("enemyResult", enemyResult);
-  //   setCharResult(charResult);
-  //   setEnemyResult(enemyResult);
-  // }, [relicsByChar, selectedRelicIds]);
+  // 应用藏品效果
+  const charName = charData?.name || "";
+  useEffect(() => {
+    const { charResult, inGameResult, enemyResult } = finalizeRelicResults(
+      relicWrappers,
+      selectedIds,
+    );
+    setCharsBuff(charName, charResult);
+    setCharsBuffInGame(charName, inGameResult);
+    setEnemyBuff(enemyResult);
+  }, [
+    charName,
+    relicWrappers,
+    selectedIds,
+    setCharsBuff,
+    setCharsBuffInGame,
+    setEnemyBuff,
+  ]);
+
+  const { enemyBuff } = useDamageCalculatorStore();
+  const charBuff = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuff[charName]),
+  );
+  const charBuffInGame = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuffInGame[charName]),
+  );
 
   return (
     <StyledRelicSelector $active={showRelics}>
@@ -368,12 +391,26 @@ function RelicSelector({
         <StyledSelectedRelics>
           <StyledRelicCount onClick={toggleShowRelics}>
             <StyledRelicCountInner>
-              <div className="text-lg">{0}</div>
+              <div className="text-lg">{selectedIds.length}</div>
               <div>已选藏品</div>
             </StyledRelicCountInner>
           </StyledRelicCount>
-          <StyledSelectedRelicsContainer></StyledSelectedRelicsContainer>
-          <StyledClearRelicsButton>清空</StyledClearRelicsButton>
+          <StyledSelectedRelicsContainer>
+            {selectedIds
+              .map((id) =>
+                relicWrappers.find((relicWrapper) => relicWrapper.id === id),
+              )
+              .map((relicWrapper) => (
+                <RelicItem
+                  key={relicWrapper!.id}
+                  relicWrapper={relicWrapper!}
+                  editable={true}
+                />
+              ))}
+          </StyledSelectedRelicsContainer>
+          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>
+            清空
+          </StyledClearRelicsButton>
         </StyledSelectedRelics>
 
         <StyledBuffContainer>
@@ -381,16 +418,21 @@ function RelicSelector({
             <StyledBuffColumn $type={type} key={type}>
               <StyledBuffInfo $type={type}>
                 <StyledBuffInfoInner>
-                  <div className="text-xl">0</div>
+                  <div className="text-xl">
+                    {type === "operator"
+                      ? Object.keys(charBuff).length +
+                        Object.keys(charBuffInGame).length
+                      : Object.keys(enemyBuff).length}
+                  </div>
                   <div>{typeMap[type as never] + "加成"}</div>
                 </StyledBuffInfoInner>
               </StyledBuffInfo>
               <StyledBuffText>
-                <div>攻击力：100</div>
-                <div>攻击力：100</div>
-                <div>攻击力：100</div>
-                <div>攻击力：100</div>
-                <div>攻击力：100</div>
+                {type === "operator" ? (
+                  <BuffText charBuff={charBuff} inGameBuff={charBuffInGame} />
+                ) : (
+                  <BuffText enemyBuff={enemyBuff} />
+                )}
               </StyledBuffText>
             </StyledBuffColumn>
           ))}

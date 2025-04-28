@@ -6,6 +6,7 @@ import type {
   EnemyDataParsed,
   RelicBuff,
   RelicDataExt,
+  RelicWrapper,
   RogueKey,
 } from "~/types/gameData";
 
@@ -45,8 +46,9 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   base_attack_time: "攻击间隔",
   respawn_time: "再部署时间",
   "rogue_2_hit_to_add_sp[sarkaz]": "对萨卡兹造成伤害回复技力", // 讨魔义旗
-  "modify_sp[warrior]": "近卫每次攻击获得技力", // 浴血
+  "modify_sp[warrior]": "近卫攻击获得技力", // 浴血
   "modify_sp[pioneer]": "先锋初始获得技力",
+  "modify_sp[tank]": "重装受击获得技力",
   "modify_sp[born]": "每次再部署获得技力",
   interval: "攻受回技能获得1技力间隔", // interval在sp上面才能被优先选为bb key
   sp: "_技力",
@@ -265,27 +267,6 @@ export function isBuffForChar(buff: RelicBuff) {
   }
 }
 
-export interface RelicWrapperBuff {
-  key: string;
-  isActive: boolean;
-  charResult: Record<string, number>;
-  enemyResult: Record<string, number>;
-}
-
-export interface RelicWrapper {
-  id: string;
-  name: string;
-  value: number;
-  usage: string;
-  isActive: boolean;
-  selected: boolean;
-  isFavorite: boolean;
-  hasLayer: boolean;
-  layer: number;
-  show: boolean;
-  buffs: RelicWrapperBuff[];
-}
-
 /**
  * 用于替换bb.key
  */
@@ -402,8 +383,8 @@ export function wrapRelicData(
     value: relicDataExt.value,
     usage: relicDataExt.usage,
     show: relicDataExt.show,
-    selected: false,
     isActive: buffs.some((b) => b.isActive),
+    userActive: true,
     isFavorite: false,
     hasLayer: hasLayer,
     layer: layer,
@@ -421,32 +402,41 @@ export function finalizeRelicResults(
   selectedRelicIds: string[],
 ) {
   const charResult: Record<string, number> = {};
+  const inGameResult: Record<string, number> = {};
   const enemyResult: Record<string, number> = {};
+  const run = (
+    relicWrapper: RelicWrapper,
+    buffResult: Record<string, number>,
+    result: Record<string, number>,
+  ) => {
+    for (const key in buffResult) {
+      result[key] =
+        (result[key] || 0) + (relicWrapper.layer || 1) * buffResult[key];
+    }
+  };
   relicWrappers
     // 用户选择的藏品
     .filter(
       (relicWrapper) =>
         selectedRelicIds.includes(relicWrapper.id) &&
-        !inGameRelicNames.includes(relicWrapper.name), // 局内生效
+        relicWrapper.isActive &&
+        relicWrapper.userActive,
     )
     .forEach((relicWrapper) => {
       relicWrapper.buffs
         // 能对当前干员生效的藏品
         .filter((buff) => buff.isActive)
         .forEach((buff) => {
-          for (const key in buff.charResult) {
-            charResult[key] =
-              (charResult[key] || 0) +
-              (relicWrapper.layer || 1) * buff.charResult[key];
+          if (inGameRelicNames.includes(relicWrapper.name)) {
+            // 局内生效
+            run(relicWrapper, buff.charResult, inGameResult);
+          } else {
+            run(relicWrapper, buff.charResult, charResult);
           }
-          for (const key in buff.enemyResult) {
-            enemyResult[key] =
-              (enemyResult[key] || 0) +
-              (relicWrapper.layer || 1) * buff.enemyResult[key];
-          }
+          run(relicWrapper, buff.enemyResult, enemyResult);
         });
     });
-  return { charResult, enemyResult };
+  return { charResult, inGameResult, enemyResult };
 }
 
 export function getEnemyAttributes(

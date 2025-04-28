@@ -21,7 +21,7 @@ const StyledTitleText = styled.span`
   align-self: end;
 `;
 
-const StyledModeSelector = styled.div`
+export const StyledModeSelector = styled.div`
   margin-left: auto;
   display: flex;
   gap: 1rem;
@@ -29,7 +29,7 @@ const StyledModeSelector = styled.div`
   cursor: pointer;
 `;
 
-const StyledModeOption = styled.span<{ $active: boolean }>`
+export const StyledModeOption = styled.span<{ $active: boolean }>`
   color: ${(props) => (props.$active ? "var(--ak-blue)" : "white")};
   display: flex;
   align-self: end;

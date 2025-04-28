@@ -1,5 +1,8 @@
 import { styled } from "styled-components";
-import { type Dispatch, type SetStateAction, useRef } from "react";
+import React, { type Dispatch, type SetStateAction, useRef } from "react";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { useShallow } from "zustand/react/shallow";
+import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
 
 const StyledBuffPanel = styled.div`
   display: flex;
@@ -50,7 +53,7 @@ export default function BuffPanel({
 
 const StyledBuffTrigger = styled.div`
   height: 4rem;
-  min-width: 13rem;
+  width: 6rem;
   display: flex;
   gap: 1rem;
   color: var(--light-gray);
@@ -88,19 +91,26 @@ const StyledBuffTriggerText = styled.div`
 `;
 
 function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
+  const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
+  const charBuff = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuff[charName]),
+  );
+  const charBuffInGame = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuffInGame[charName]),
+  );
   return (
     <StyledBuffTrigger onClick={onClick}>
       <StyledBuffTriggerInfo $type={type}>
         <StyledBuffTriggerInfoInner>
-          <div>0</div>
+          <div>
+            {type === "operator"
+              ? Object.keys(charBuff).length +
+                Object.keys(charBuffInGame).length
+              : Object.keys(enemyBuff).length}
+          </div>
           <div>{typeMap[type as never] + "加成"}</div>
         </StyledBuffTriggerInfoInner>
       </StyledBuffTriggerInfo>
-      <StyledBuffTriggerText>
-        <div>攻击力：100</div>
-        <div>攻击力：100</div>
-        <div>攻击力：100</div>
-      </StyledBuffTriggerText>
     </StyledBuffTrigger>
   );
 }
@@ -158,9 +168,12 @@ const StyledBuffTooltipTitle = styled.div<{ $type: string }>`
   }
 `;
 
-const StyledBuffTooltipText = styled.div`
+const StyledBuffTooltipText = styled.div<{ $type: string }>`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(
+    ${({ $type }) => ($type === "operator" ? 2 : 1)},
+    1fr
+  );
   grid-template-rows: repeat(6, auto);
   grid-auto-flow: column;
   grid-auto-rows: auto;
@@ -169,6 +182,13 @@ const StyledBuffTooltipText = styled.div`
 `;
 
 function BuffTooltip({ show }: { show: boolean }) {
+  const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
+  const charBuff = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuff[charName]),
+  );
+  const charBuffInGame = useDamageCalculatorStore(
+    useShallow((state) => state.charsBuffInGame[charName]),
+  );
   return (
     <StyledBuffTooltip $show={show}>
       {Object.keys(typeMap).map((type) => (
@@ -179,15 +199,19 @@ function BuffTooltip({ show }: { show: boolean }) {
           />
           <StyledBuffTooltipTitle $type={type}>
             <span>{typeMap[type as never] + "加成"}</span>
-            <span>0</span>
+            <span>
+              {type === "operator"
+                ? Object.keys(charBuff).length +
+                  Object.keys(charBuffInGame).length
+                : Object.keys(enemyBuff).length}
+            </span>
           </StyledBuffTooltipTitle>
-          <StyledBuffTooltipText>
-            <div>攻击力：100</div>
-            <div>攻击力：100</div>
-            <div>攻击力：100</div>
-            <div>攻击力：100</div>
-            <div>攻击力：100</div>
-            <div>攻击力：100</div>
+          <StyledBuffTooltipText $type={type}>
+            {type === "operator" ? (
+              <BuffText charBuff={charBuff} inGameBuff={charBuffInGame} />
+            ) : (
+              <BuffText enemyBuff={enemyBuff} />
+            )}
           </StyledBuffTooltipText>
         </StyledBuffTooltipCol>
       ))}

@@ -111,6 +111,7 @@ function mergeArray<T>(target: T[], source: T[]): T[] {
 }
 
 export const imageHost = "https://media.prts.wiki/";
+export const assetsHost = "https://torappu.prts.wiki/assets/";
 
 export function getPath(filename: string): string {
   const md5 = MD5(filename).toString();

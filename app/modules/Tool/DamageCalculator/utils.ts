@@ -268,20 +268,21 @@ export function isBuffForChar(buff: RelicBuff) {
 export interface RelicWrapperBuff {
   key: string;
   isActive: boolean;
-  layer: number;
   charResult: Record<string, number>;
   enemyResult: Record<string, number>;
 }
 
-export interface RelicWrapper2 {
+export interface RelicWrapper {
   id: string;
   name: string;
+  value: number;
+  usage: string;
+  isActive: boolean;
   selected: boolean;
-  buffs: RelicWrapperBuff[];
-}
-
-export interface RelicWrapper {
-  relicData: RelicDataExt;
+  isFavorite: boolean;
+  hasLayer: boolean;
+  layer: number;
+  show: boolean;
   buffs: RelicWrapperBuff[];
 }
 
@@ -369,40 +370,44 @@ export function wrapRelicData(
   charData?: CharData,
 ): RelicWrapper {
   // console.log(relicDataExt.name);
+  const buffs = relicDataExt.buffs.map((buff) => {
+    const isActive =
+      isRelicActive(relicDataExt) &&
+      isBuffActive(buff, charData) &&
+      isBlackboardActive(buff, charData);
+    const charResult = {};
+    const enemyResult = {};
+    if (isActive) {
+      const result = isBuffForChar(buff) ? charResult : enemyResult;
+      applyBlackboard(buff, result);
+    }
+    return {
+      key: buff.key,
+      isActive,
+      charResult,
+      enemyResult,
+    };
+  });
+  const hasLayer = relicDataExt.buffs.some(
+    (buff) =>
+      buff.key.startsWith("layer_char") ||
+      buff.key.startsWith("char_squad") ||
+      buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!)),
+  );
+
+  const layer = hasLayer ? 1 : 0;
   return {
-    relicData: relicDataExt,
-    buffs: relicDataExt.buffs.map((buff) => {
-      const isActive =
-        isRelicActive(relicDataExt) &&
-        isBuffActive(buff, charData) &&
-        isBlackboardActive(buff, charData);
-      const charResult = {};
-      const enemyResult = {};
-      // if (relicDataExt.name === "“讨魔义旗”") {
-      //   console.log(
-      //     isRelicActive(relicDataExt),
-      //     isBuffActive(buff, charData),
-      //     isBlackboardActive(buff, charData),
-      //   );
-      // }
-      if (isActive) {
-        const result = isBuffForChar(buff) ? charResult : enemyResult;
-        applyBlackboard(buff, result);
-      }
-      const layer =
-        buff.key.startsWith("layer_char") ||
-        buff.key.startsWith("char_squad") ||
-        buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!))
-          ? 1
-          : 0;
-      return {
-        key: buff.key,
-        isActive,
-        layer,
-        charResult,
-        enemyResult,
-      };
-    }),
+    id: relicDataExt.id,
+    name: relicDataExt.name,
+    value: relicDataExt.value,
+    usage: relicDataExt.usage,
+    show: relicDataExt.show,
+    selected: false,
+    isActive: buffs.some((b) => b.isActive),
+    isFavorite: false,
+    hasLayer: hasLayer,
+    layer: layer,
+    buffs: buffs,
   };
 }
 
@@ -421,8 +426,8 @@ export function finalizeRelicResults(
     // 用户选择的藏品
     .filter(
       (relicWrapper) =>
-        selectedRelicIds.includes(relicWrapper.relicData.id) &&
-        !inGameRelicNames.includes(relicWrapper.relicData.name), // 局内生效
+        selectedRelicIds.includes(relicWrapper.id) &&
+        !inGameRelicNames.includes(relicWrapper.name), // 局内生效
     )
     .forEach((relicWrapper) => {
       relicWrapper.buffs
@@ -431,12 +436,13 @@ export function finalizeRelicResults(
         .forEach((buff) => {
           for (const key in buff.charResult) {
             charResult[key] =
-              (charResult[key] || 0) + (buff.layer || 1) * buff.charResult[key];
+              (charResult[key] || 0) +
+              (relicWrapper.layer || 1) * buff.charResult[key];
           }
           for (const key in buff.enemyResult) {
             enemyResult[key] =
               (enemyResult[key] || 0) +
-              (buff.layer || 1) * buff.enemyResult[key];
+              (relicWrapper.layer || 1) * buff.enemyResult[key];
           }
         });
     });
@@ -510,4 +516,8 @@ export function snakeToCamel(str: string) {
 
 export function camelToSnake(str: string) {
   return str.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+}
+
+export function relicAlterToBasic(str: string) {
+  return str.split("_").slice(0, 5).join("_");
 }

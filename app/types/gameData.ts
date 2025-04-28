@@ -338,7 +338,10 @@ export interface RelicBuff {
   blackboard: BlackboardData[];
 }
 
-export type RelicDataExt = ItemData & RelicData;
+export type RelicDataExt = ItemData &
+  RelicData & {
+    show: boolean;
+  };
 
 export interface RelicData {
   id: `rogue_${number}_${string}`;

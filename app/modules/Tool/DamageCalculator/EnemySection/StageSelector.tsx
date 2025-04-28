@@ -146,7 +146,7 @@ export default function StageSelector() {
           <div className="flex items-end">
             <Button
               radius="none"
-              className="h-12 bg-black-gray hover:bg-mid-gray w-full"
+              className="h-12 bg-black-gray hover:bg-mid-gray w-full font-bold"
               onPress={handleLoadLevelData}
             >
               加载

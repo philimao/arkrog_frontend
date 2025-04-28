@@ -39,7 +39,7 @@ export default function ToolIndex() {
       <TopicSelector />
       <EnemySelector />
       <FooterPanel />
-      <RelicSelector />
+      <RelicSelector charData={activeCharData} />
     </div>
   );
 }

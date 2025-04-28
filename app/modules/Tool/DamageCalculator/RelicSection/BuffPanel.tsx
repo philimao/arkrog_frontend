@@ -172,7 +172,7 @@ function BuffTooltip({ show }: { show: boolean }) {
   return (
     <StyledBuffTooltip $show={show}>
       {Object.keys(typeMap).map((type) => (
-        <StyledBuffTooltipCol $type={type}>
+        <StyledBuffTooltipCol $type={type} key={type}>
           <StyledBuffTooltipImg
             src={`/images/tool/calculator/${type}_buff.png`}
             alt="bg"

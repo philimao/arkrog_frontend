@@ -31,9 +31,9 @@ const StyledRelicsContainer = styled.div`
 const StyledAttrButton = styled.button``;
 
 export default function FooterPanel() {
-  const { activeCharName, relicsMap, toggleShowRelics } =
+  const { activeCharName, relicsMap, rogueKey, toggleShowRelics } =
     useDamageCalculatorStore();
-  const activeRelics = relicsMap[activeCharName];
+  const activeRelics = relicsMap[activeCharName]?.[rogueKey];
   const selectedLength =
     activeRelics?.filter((relic) => relic.selected).length || 0;
 

@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import type { TopicData, Topics } from "~/types/gameData";
+import type { RogueKey, TopicData } from "~/types/gameData";
 import { useSearchParams } from "react-router";
 import React from "react";
 
@@ -83,7 +83,7 @@ export default function SelectorBanner({
   topics,
   currentTopic,
 }: {
-  topics: Topics;
+  topics: Record<RogueKey, TopicData>;
   currentTopic: TopicData;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -103,7 +103,8 @@ export default function SelectorBanner({
                 role="button"
                 onClick={() => {
                   searchParams.set("topicId", topic.id);
-                  if (topic.id !== currentTopic.id) searchParams.delete("zoneId");
+                  if (topic.id !== currentTopic.id)
+                    searchParams.delete("zoneId");
                   setSearchParams(searchParams, {
                     preventScrollReset: true,
                   });

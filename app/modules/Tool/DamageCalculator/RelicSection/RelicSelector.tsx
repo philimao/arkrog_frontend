@@ -237,10 +237,9 @@ function RelicSelector({
       .filter(
         (relicWrapper) =>
           !(
-            valueFilter.size &&
-            !valueFilter.has(relicWrapper.value.toString()) &&
-            (!searchValue || relicWrapper.name.includes(searchValue))
-          ),
+            valueFilter.size && !valueFilter.has(relicWrapper.value.toString())
+          ) &&
+          (!searchValue || relicWrapper.name.includes(searchValue)),
       )
       // 藏品价值与关键字筛选
       .filter(
@@ -420,9 +419,9 @@ function RelicSelector({
                 <StyledBuffInfoInner>
                   <div className="text-xl">
                     {type === "operator"
-                      ? Object.keys(charBuff).length +
-                        Object.keys(charBuffInGame).length
-                      : Object.keys(enemyBuff).length}
+                      ? Object.keys(charBuff || {}).length +
+                        Object.keys(charBuffInGame || {}).length
+                      : Object.keys(enemyBuff || {}).length}
                   </div>
                   <div>{typeMap[type as never] + "加成"}</div>
                 </StyledBuffInfoInner>

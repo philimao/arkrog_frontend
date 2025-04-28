@@ -11,7 +11,10 @@ export default function EnemyAvatar({
   className = "w-full",
   ...props
 }: EnemyAvatarProps) {
-  const url = encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
+  const url =
+    name === "木桩"
+      ? "/images/tool/calculator/dummy.png"
+      : encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
   return (
     <img
       className={className}

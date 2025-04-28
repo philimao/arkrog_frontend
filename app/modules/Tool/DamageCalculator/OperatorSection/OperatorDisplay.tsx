@@ -41,15 +41,28 @@ const StyledSelectWrapper = styled.div`
 
 const StyledAttributeWrapper = styled.div`
   display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 0.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(6, auto);
+  gap: 0.5rem 2rem;
   font-size: 0.8rem;
-  //& > div {
-  //  background: var(--black-gray);
-  //  padding: 0 0.5rem;
-  //  white-space: nowrap;
-  //  display: inline-block;
-  //}
+  justify-content: center;
+  background: rgba(24, 24, 24, 0.7);
+  padding: 1rem 1.5rem;
+  & > div {
+    display: flex;
+    align-items: center;
+    background: var(--black-gray);
+    padding: 0 0.5rem;
+    white-space: nowrap;
+    & > span:first-child {
+      font-weight: bold;
+      margin-right: 1.5rem;
+    }
+    & > span:last-child {
+      margin-left: auto;
+      font-family: "NovecentoWide", sans-serif;
+    }
+  }
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
@@ -342,6 +355,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               getKey={(equip) => equip.uniEquipId}
               getValue={(equip) => equip.uniEquipName}
               onChange={(evt) => setUniEquipId(evt.target.value)}
+              isDisabled={!uniEquipId}
             />
             <ToolSelect
               disallowEmptySelection={true}
@@ -351,7 +365,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               getValue={(_, i) => "Lv " + (i + 1)}
               selectedKeys={[uniEquipLevel]}
               onChange={(evt) => setUniEquipLevel(evt.target.value)}
-              isDisabled={uniEquipId.startsWith("uniequip_001")}
+              isDisabled={!uniEquipId || uniEquipId.startsWith("uniequip_001")}
             />
           </>
         )}
@@ -360,40 +374,52 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         {result && (
           <>
             <div>
-              最大生命值：<span>{result.maxHp}</span>
+              <span>最大生命值</span>
+              <span>{result.maxHp}</span>
             </div>
             <div>
-              攻击力：<span>{result.atk}</span>
+              <span>攻击力</span>
+              <span>{result.atk}</span>
             </div>
             <div>
-              防御：<span>{result.def}</span>
+              <span>防御</span>
+              <span>{result.def}</span>
             </div>
             <div>
-              法术抗性：<span>{result.magicResistance}</span>
+              <span>法术抗性</span>
+              <span>{result.magicResistance}</span>
             </div>
             <div>
-              费用：<span>{result.cost}</span>
+              <span>费用</span>
+              <span>{result.cost}</span>
             </div>
             <div>
-              阻挡数：<span>{result.blockCnt}</span>
+              <span>阻挡数</span>
+              <span>{result.blockCnt}</span>
             </div>
             <div>
-              攻击速度：<span>{result.attackSpeed}</span>
+              <span>攻击速度</span>
+              <span>{result.attackSpeed}</span>
             </div>
             <div>
-              攻击间隔：<span>{result.baseAttackTime}</span>
+              <span>攻击间隔</span>
+              <span>{result.baseAttackTime}</span>
             </div>
             <div>
-              再部署时间：<span>{result.respawnTime}</span>
+              <span>再部署</span>
+              <span>{result.respawnTime}</span>
             </div>
             <div>
-              每秒生命值回复：<span>{result.hpRecoveryPerSec}</span>
+              <span>每秒生命回复</span>
+              <span>{result.hpRecoveryPerSec}</span>
             </div>
             <div>
-              每秒技力回复：<span>{result.spRecoveryPerSec}</span>
+              <span>每秒技力回复</span>
+              <span>{result.spRecoveryPerSec}</span>
             </div>
             <div>
-              伤害倍率：<span>{result.damage_scale}</span>
+              <span>伤害倍率</span>
+              <span>{result.damage_scale}</span>
             </div>
           </>
         )}

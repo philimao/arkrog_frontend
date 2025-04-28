@@ -5,10 +5,10 @@ import { GridContainer } from "~/modules/Tool/components/Shared";
 import {
   allowedBlackboardKeyMap,
   camelToSnake,
-  parseEnemyData,
 } from "~/modules/Tool/DamageCalculator/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
+import type { EnemyDataParsed } from "~/types/gameData";
 
 const StyledEnemyDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -84,10 +84,14 @@ const keys = [
 ];
 
 export default function EnemyDisplay() {
-  const { enemyData, enemyDataParsed, setEnemyDataParsed } =
-    useDamageCalculatorStore();
+  const { enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
   const [phase, setPhase] = useState<number>(1);
   const [_enemyDataParsed, _setEnemyDataParsed] = useState(enemyDataParsed);
+  const enemyRef = useRef(enemyDataParsed);
+
+  useEffect(() => {
+    enemyRef.current = { ...enemyDataParsed };
+  }, [enemyDataParsed.name]);
 
   useEffect(() => {
     _setEnemyDataParsed(enemyDataParsed);
@@ -112,7 +116,9 @@ export default function EnemyDisplay() {
             ))}
         </StyledPhase>
         <StyledRestore
-          onClick={() => setEnemyDataParsed(parseEnemyData(enemyData))}
+          onClick={() =>
+            setEnemyDataParsed(enemyRef.current as EnemyDataParsed)
+          }
         >
           恢复初始
         </StyledRestore>

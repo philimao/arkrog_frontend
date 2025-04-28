@@ -26,6 +26,13 @@ const StyledFooterPanel = styled.footer`
   z-index: 100;
 `;
 
+const StyledCollapseButton = styled.div`
+  //width: 10rem;
+  //border-top: 2px solid rgba(255, 255, 255, 0);
+  //border-bottom: 2px solid rgba(255, 255, 255, 0);
+  //border-left: 2px solid rgba(255, 255, 255);
+`;
+
 const StyledRelicsContainer = styled.div`
   height: 4.5rem;
   padding: 0.5rem;
@@ -56,12 +63,14 @@ export default function FooterPanel() {
   return (
     <StyledFooterPanel>
       {showRelics ? (
-        <StyledRelicCount onClick={toggleShowRelics}>
-          <StyledRelicCountInner>
-            <div className="text-lg">↓</div>
-            <div>收起</div>
-          </StyledRelicCountInner>
-        </StyledRelicCount>
+        <StyledCollapseButton>
+          <StyledRelicCount onClick={toggleShowRelics}>
+            <StyledRelicCountInner>
+              <div className="text-lg">↓</div>
+              <div>收起</div>
+            </StyledRelicCountInner>
+          </StyledRelicCount>
+        </StyledCollapseButton>
       ) : (
         <>
           <StyledRelicCount onClick={toggleShowRelics}>

@@ -105,23 +105,31 @@ export function ResultDisplay() {
           {["dps", "total_damage"].map((colKey) => (
             <StyledResultColumn key={colKey}>
               <StyledNumberTotal>
-                <label>{map[key] + (colKey === "dps" ? "DPS" : "总伤")}</label>
+                <label>
+                  {map[key as never] + (colKey === "dps" ? "DPS" : "总伤")}
+                </label>
                 <div>
-                  {Object.values(result[key][colKey]).reduce((a, b) => a + b)}
+                  {
+                    Object.values(result[key as never][colKey]).reduce(
+                      (a: number, b: number) => ((a as number) + b) as number,
+                    ) as never
+                  }
                 </div>
               </StyledNumberTotal>
               <StyledOperator>=</StyledOperator>
-              {Object.keys(result[key][colKey]).map((damageType, i, array) => (
-                <>
-                  <StyledNumberPart $type={damageType} key={i}>
-                    <label>{type[damageType]}</label>
-                    <div>{result[key][colKey][damageType]}</div>
-                  </StyledNumberPart>
-                  {i < array.length - 1 && (
-                    <StyledOperator key={"add" + i}>+</StyledOperator>
-                  )}
-                </>
-              ))}
+              {Object.keys(result[key as never][colKey]).map(
+                (damageType, i, array) => (
+                  <>
+                    <StyledNumberPart $type={damageType} key={i}>
+                      <label>{type[damageType as never]}</label>
+                      <div>{result[key as never][colKey][damageType]}</div>
+                    </StyledNumberPart>
+                    {i < array.length - 1 && (
+                      <StyledOperator key={"add" + i}>+</StyledOperator>
+                    )}
+                  </>
+                ),
+              )}
             </StyledResultColumn>
           ))}
         </StyledResultRow>

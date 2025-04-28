@@ -25,14 +25,17 @@ export default function OperatorSelectorWrapper() {
     <StyledOperatorSelectorWrapper>
       <StyledTitle>选择干员</StyledTitle>
       <StyledSelectorWrapper>
-        {charList.length > 0 &&
+        {charList.length > 0 ? (
           charList.map((charData, i) =>
             charData ? (
               <OperatorButton charData={charData} i={i} key={i} />
             ) : (
               <OperatorSelector i={i} key={i} />
             ),
-          )}
+          )
+        ) : (
+          <OperatorSelector i={0} />
+        )}
         {/*{charList.length < 5 && charList[charList.length - 1] && (*/}
         {/*  <div>*/}
         {/*    <button onClick={() => addCharData()}>+</button>*/}
@@ -133,12 +136,12 @@ export function OperatorSelector({ i }: { i: number }) {
         }}
         placeholder="输入干员名称"
       />
-      <div className="absolute z-50" style={{ top: "100%", left: 0 }}>
+      <div className="absolute z-50" style={{ top: "110%", left: 0 }}>
         {showListBox && candidates && (
           <Listbox
             aria-label="listbox"
             emptyContent=""
-            classNames={{ base: "w-96" }}
+            classNames={{ base: "w-96 bg-black-gray" }}
           >
             {candidates.map((charData) => (
               <ListboxItem

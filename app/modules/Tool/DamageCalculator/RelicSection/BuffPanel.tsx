@@ -85,11 +85,6 @@ const StyledBuffTriggerInfoInner = styled.div`
   }
 `;
 
-const StyledBuffTriggerText = styled.div`
-  display: grid;
-  font-size: 0.85rem;
-`;
-
 function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
   const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
   const charBuff = useDamageCalculatorStore(
@@ -104,9 +99,9 @@ function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
         <StyledBuffTriggerInfoInner>
           <div>
             {type === "operator"
-              ? Object.keys(charBuff).length +
-                Object.keys(charBuffInGame).length
-              : Object.keys(enemyBuff).length}
+              ? Object.keys(charBuff || {}).length +
+                Object.keys(charBuffInGame || {}).length
+              : Object.keys(enemyBuff || {}).length}
           </div>
           <div>{typeMap[type as never] + "加成"}</div>
         </StyledBuffTriggerInfoInner>
@@ -117,7 +112,7 @@ function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
 
 const StyledBuffTooltip = styled.div<{ $show: boolean }>`
   display: ${(props) => (props.$show ? "flex" : "none")};
-  background: rgba(24, 24, 24, 0.7);
+  background: rgba(24, 24, 24, 0.99);
   position: fixed;
   right: 0;
   bottom: 5.5rem;
@@ -201,9 +196,9 @@ function BuffTooltip({ show }: { show: boolean }) {
             <span>{typeMap[type as never] + "加成"}</span>
             <span>
               {type === "operator"
-                ? Object.keys(charBuff).length +
-                  Object.keys(charBuffInGame).length
-                : Object.keys(enemyBuff).length}
+                ? Object.keys(charBuff || {}).length +
+                  Object.keys(charBuffInGame || {}).length
+                : Object.keys(enemyBuff || {}).length}
             </span>
           </StyledBuffTooltipTitle>
           <StyledBuffTooltipText $type={type}>

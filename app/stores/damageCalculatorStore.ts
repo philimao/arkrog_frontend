@@ -88,7 +88,6 @@ export const useDamageCalculatorStore = create<
           (state) => {
             const charList = state.charList;
             charList[i] = charData;
-            return { ...state, charList };
           },
           undefined,
           "setCharData",
@@ -105,7 +104,6 @@ export const useDamageCalculatorStore = create<
             } else {
               activeCharName = charList[0]!.name;
             }
-            return { ...state, charList, activeCharName };
           },
           undefined,
           "removeCharData",

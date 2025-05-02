@@ -447,14 +447,14 @@ export function finalizeRelicResults(
   return { charResult, inGameResult, enemyResult };
 }
 
-export function getEnemyAttributes(
-  enemyData: EnemyData,
+export function getEnemyParsedAttributes(
+  enemyData: EnemyDataParsed,
 ): Record<string, number | string | boolean> {
   const attributes: Record<string, number | string | boolean> = {};
   Object.keys(enemyData.attributes).forEach((key) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    attributes[key] = enemyData.attributes[key].m_value;
+    attributes[key] = enemyData.attributes[key];
   });
   return attributes;
 }

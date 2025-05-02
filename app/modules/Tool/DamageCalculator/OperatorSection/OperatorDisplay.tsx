@@ -20,6 +20,7 @@ import { Button } from "@heroui/react";
 import log from "eslint-plugin-react/lib/util/log";
 import {
   camelToSnake,
+  getEnemyParsedAttributes,
   snakeToCamel,
 } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
@@ -195,7 +196,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       attribute
     ) {
       // console.log(charData);
-      const result = { ...attribute.data, damageScale: 1 };
+      const result = { ...attribute.data, damageScale: 1, damage_scale: 1 };
 
       /**
        * 手动修改部分
@@ -300,38 +301,40 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
   const { getInstance } = useWasmStore();
 
+  const [wasmLoaded, setWasmLoaded] = useState(false);
+
   useEffect(() => {
-    getInstance("arkrog_calc").then((ins) => console.log(ins));
+    getInstance("arkrog_calc").then(() => setWasmLoaded(true));
   }, [getInstance]);
 
-  // const charInput: CharInput = useMemo(
-  //   () => ({
-  //     phaseLevel: parseInt(phaseLevel),
-  //     phase,
-  //     level: parseInt(frameIndex),
-  //     attribute: result,
-  //     skillKey,
-  //     skillLevel: parseInt(skillLevel),
-  //     skill,
-  //     uniEquipId,
-  //     uniEquipLevel: parseInt(uniEquipLevel),
-  //     uniEquip,
-  //     potential: parseInt(potential),
-  //   }),
-  //   [
-  //     frameIndex,
-  //     phase,
-  //     phaseLevel,
-  //     potential,
-  //     result,
-  //     skill,
-  //     skillKey,
-  //     skillLevel,
-  //     uniEquip,
-  //     uniEquipId,
-  //     uniEquipLevel,
-  //   ],
-  // );
+  const charInput: CharInput = useMemo(
+    () => ({
+      phaseLevel: parseInt(phaseLevel),
+      phase,
+      level: parseInt(frameIndex),
+      attribute: result,
+      skillKey,
+      skillLevel: parseInt(skillLevel),
+      skill,
+      uniEquipId,
+      uniEquipLevel: parseInt(uniEquipLevel),
+      uniEquip,
+      potential: parseInt(potential),
+    }),
+    [
+      frameIndex,
+      phase,
+      phaseLevel,
+      potential,
+      result,
+      skill,
+      skillKey,
+      skillLevel,
+      uniEquip,
+      uniEquipId,
+      uniEquipLevel,
+    ],
+  );
 
   // useEffect(() => {
   //   console.log("charInput", charInput);
@@ -445,27 +448,39 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           )}
         </div>
         <div>
-          <Button
-            className="hidden"
-            onPress={() => {
-              const props = {
-                charAttribute: result,
-                charData: charData,
-                uniEquip: uniEquip,
-                skill: skill,
-                enemyAttribute: enemyDataParsed,
-                enemyData: enemyData,
-                relics: selectedIds.map((id) =>
-                  relicsMap[activeCharName][rogueKey].find(
-                    (relic) => relic.id === id,
-                  ),
-                ),
-              };
-              console.log(props);
-            }}
-          >
-            Get Input
-          </Button>
+          {wasmLoaded && (
+            <Button
+              className=""
+              onPress={() => {
+                // const props = {
+                //   charAttribute: result,
+                //   charData: charData,
+                //   uniEquip: uniEquip,
+                //   skill: skill,
+                //   enemyAttribute: enemyDataParsed,
+                //   enemyData: enemyData,
+                //   relics: selectedIds.map((id) =>
+                //     relicsMap[activeCharName][rogueKey].find(
+                //       (relic) => relic.id === id,
+                //     ),
+                //   ),
+                // };
+                // console.log(props);
+                console.log(enemyDataParsed);
+                const props = {
+                  charInput,
+                  enemyInput: getEnemyParsedAttributes(enemyDataParsed),
+                };
+                console.log(props);
+
+                getInstance("arkrog_calc").then((ins) => {
+                  console.log(ins.calculator(JSON.stringify(props)));
+                });
+              }}
+            >
+              Calculate (in console)
+            </Button>
+          )}
         </div>
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">

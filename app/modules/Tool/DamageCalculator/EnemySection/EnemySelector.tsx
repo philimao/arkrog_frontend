@@ -1,6 +1,6 @@
 import { StyledTitle } from "~/modules/Tool/components/Shared";
 import { styled } from "styled-components";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import StageSelector from "~/modules/Tool/DamageCalculator/EnemySection/StageSelector";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
@@ -95,6 +95,10 @@ function QuickSelector() {
       "id",
     );
   }, [rogueKey, stageEnemies]);
+
+  useEffect(() => {
+    setEnemyDataParsed(dummy);
+  }, []);
 
   return (
     <QuickSelectorWrapper>

@@ -26,6 +26,7 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>()(
       character_table: undefined,
       skill_table: undefined,
       uniequip_table: undefined,
+      stageEnemies: undefined,
       loading: false,
       fetchGameData: async () => {
         try {
@@ -86,6 +87,7 @@ export const useGameDataStore = create<Partial<GameData> & GameDataAction>()(
               "fetchGameDataExt",
             );
           }
+          console.log(get());
           set({ loading: false }, undefined, "loading");
         } catch (err) {
           toast.error("游戏补充数据加载失败\n" + (err as Error).message);

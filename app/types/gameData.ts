@@ -24,6 +24,7 @@ export interface GameData {
   skill_table?: Record<string, SkillData>;
   uniequip_table?: Record<string, UniEquipData>;
   uniequip_basic?: Record<string, UniEquipBasicData>;
+  stageEnemies?: Record<RogueKey, Record<string, EnemyDataParsed[]>>;
 }
 
 // 肉鸽主题数据

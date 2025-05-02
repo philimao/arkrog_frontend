@@ -16,6 +16,7 @@ import {
 import { useWasmStore } from "~/stores/wasmStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
+import { Button } from "@heroui/react";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -68,6 +69,8 @@ const StyledAttributeWrapper = styled.div`
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const { outBuff, activeCharName } = useDamageCalculatorStore();
   const { character_basic, skill_table, uniequip_table } = useGameDataStore();
+  const { enemyDataParsed, enemyData, selectedIds, relicsMap, rogueKey } =
+    useDamageCalculatorStore();
 
   // 选择干员后
   useEffect(() => {
@@ -443,6 +446,28 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
             {JSON.stringify(uniEquip, null, 2)}
           </div>
         )}
+      </div>
+      <div>
+        <Button
+          onPress={() => {
+            const props = {
+              charAttribute: result,
+              charData: charData,
+              uniEquip: uniEquip,
+              skill: skill,
+              enemyAttribute: enemyDataParsed,
+              enemyData: enemyData,
+              relics: selectedIds.map((id) =>
+                relicsMap[activeCharName][rogueKey].find(
+                  (relic) => relic.id === id,
+                ),
+              ),
+            };
+            console.log(props);
+          }}
+        >
+          Get Input
+        </Button>
       </div>
     </StyledOperatorDisplayWrapper>
   );

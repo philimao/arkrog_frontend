@@ -17,10 +17,21 @@ const StyledOperatorSelectorWrapper = styled.div`
 const StyledSelectorWrapper = styled.div`
   margin-bottom: 1rem;
   display: flex;
+  gap: 1rem;
 `;
 
 export default function OperatorSelectorWrapper() {
-  const { charList, addCharData } = useDamageCalculatorStore();
+  const { character_table } = useGameDataStore();
+  const { charList, setCharData } = useDamageCalculatorStore();
+
+  useEffect(() => {
+    Object.values(character_table!)
+      .filter((charData) => ["赫德雷", "伊内丝"].includes(charData.name))
+      .forEach((charData, i) => {
+        setCharData(charData, i);
+      });
+  }, [character_table, setCharData]);
+
   return (
     <StyledOperatorSelectorWrapper>
       <StyledTitle>选择干员</StyledTitle>
@@ -86,9 +97,9 @@ export function OperatorButton({
       >
         {charData.name}
       </StyledOperatorButton>
-      <StyledRemoveButton onClick={() => removeCharData(i)}>
-        X
-      </StyledRemoveButton>
+      {/*<StyledRemoveButton onClick={() => removeCharData(i)}>*/}
+      {/*  X*/}
+      {/*</StyledRemoveButton>*/}
     </StyledOperatorButtonWrapper>
   );
 }
@@ -155,7 +166,7 @@ export function OperatorSelector({ i }: { i: number }) {
               >
                 <div className="flex items-center p-2">
                   <div
-                    className="w-12 h-12 me-2 border border-light-gray overflow-hidden"
+                    className="w-12 h-12 me-2 border border-light-gray overflow-hidden flex-shrink-0"
                     style={{ borderRadius: "50%" }}
                   >
                     <OperatorAvatar

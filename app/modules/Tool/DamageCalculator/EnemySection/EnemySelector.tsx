@@ -1,11 +1,12 @@
 import { StyledTitle } from "~/modules/Tool/components/Shared";
 import { styled } from "styled-components";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import StageSelector from "~/modules/Tool/DamageCalculator/EnemySection/StageSelector";
-import enemies from "~/modules/Tool/DamageCalculator/EnemySection/popularEnemies";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import type { EnemyDataParsed } from "~/types/gameData";
 
 const StyledEnemySelector = styled.div`
   margin-bottom: 2rem;
@@ -38,6 +39,7 @@ const QuickSelectorWrapper = styled.div`
 
 const QuickSelectorEnemies = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 `;
 
@@ -51,15 +53,56 @@ const QuickSelectorEnemy = styled.button`
   }
 `;
 
+const dummy: EnemyDataParsed = {
+  id: "dummy",
+  level: 0,
+  name: "木桩",
+  description: "请任意调整木桩数值",
+  attributes: {
+    maxHp: 0,
+    atk: 0,
+    def: 0,
+    magicResistance: 0,
+    blockCnt: 0,
+    moveSpeed: 0,
+    attackSpeed: 0,
+    baseAttackTime: 0,
+    epDamageResistance: 0,
+    epResistance: 0,
+  },
+  levelType: "NORMAL",
+  rangedRadius: 0,
+};
+
+function uniqueByProperty(arr: never[], prop: string) {
+  return [...new Map(arr.map((item) => [item[prop], item])).values()];
+}
+
 function QuickSelector() {
-  const { enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
+  const { stageEnemies } = useGameDataStore();
+  const { rogueKey, enemyDataParsed, setEnemyDataParsed } =
+    useDamageCalculatorStore();
+
+  const popularEnemies = useMemo(() => {
+    return uniqueByProperty(
+      Object.values(stageEnemies![rogueKey])
+        .map((enemies) =>
+          enemies.filter(
+            (enemyDataParsed) => enemyDataParsed.levelType === "BOSS",
+          ),
+        )
+        .flat() as never,
+      "id",
+    );
+  }, [rogueKey, stageEnemies]);
+
   return (
     <QuickSelectorWrapper>
       <QuickSelectorEnemies>
-        {enemies.map((enemy) => (
+        {[dummy, ...popularEnemies].map((enemy) => (
           <QuickSelectorEnemy
-            className={enemy.name === enemyDataParsed?.name ? "active" : ""}
             key={enemy.id}
+            className={enemy.id === enemyDataParsed?.id ? "active" : ""}
             onClick={() => setEnemyDataParsed(enemy)}
           >
             <EnemyAvatar name={enemy.name} />

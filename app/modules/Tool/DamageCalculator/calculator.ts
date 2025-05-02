@@ -6,8 +6,8 @@ import type {
 
 export function applyBlackboard(bb: BlackboardData, result: CharAttributeExt) {
   switch (bb.key) {
-    case "damage_scale": {
-      result.damage_scale += bb.value - 1;
+    case "damageScale": {
+      result.damageScale += bb.value - 1;
       break;
     }
     case "max_hp": {

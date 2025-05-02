@@ -25,10 +25,14 @@ export default function OperatorSelectorWrapper() {
   const { charList, setCharData } = useDamageCalculatorStore();
 
   useEffect(() => {
-    Object.values(character_table!)
-      .filter((charData) => ["赫德雷", "伊内丝"].includes(charData.name))
+    ["赫德雷", "Mon3tr", "维娜·维多利亚", "维什戴尔"]
+      .map((charName) =>
+        Object.values(character_table!).find(
+          (charData) => charData.name === charName,
+        ),
+      )
       .forEach((charData, i) => {
-        setCharData(charData, i);
+        setCharData(charData!, i);
       });
   }, [character_table, setCharData]);
 

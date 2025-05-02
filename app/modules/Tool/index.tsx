@@ -9,6 +9,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import FooterPanel from "~/modules/Tool/DamageCalculator/RelicSection/FooterPanel";
 import { ResultDisplay } from "~/modules/Tool/DamageCalculator/OperatorSection/ResultDisplay";
 import EnemySelector from "~/modules/Tool/DamageCalculator/EnemySection/EnemySelector";
+import OperatorSection from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
 
 export default function ToolIndex() {
   const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();

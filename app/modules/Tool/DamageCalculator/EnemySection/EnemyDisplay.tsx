@@ -138,7 +138,8 @@ export default function EnemyDisplay() {
                 className={"h-8 font-bold text-xl " + color}
                 value={_enemyDataParsed.attributes[key as never]}
                 setValue={(value: string) => {
-                  const number = parseInt(value) || 0;
+                  // TODO parse float
+                  const number = parseFloat(value) || 0;
                   const updated = {
                     ..._enemyDataParsed,
                     attributes: {

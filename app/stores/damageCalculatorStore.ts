@@ -9,6 +9,12 @@ import type {
   RelicWrapper,
 } from "~/types/gameData";
 
+interface AttributeModifier {
+  atkBase: number;
+  atkPercent: number;
+  atkFinal: number;
+}
+
 interface DamageCalculatorStore {
   rogueKey: RogueKey;
   difficulty: string;
@@ -20,6 +26,7 @@ interface DamageCalculatorStore {
   enemyBuff: Record<string, number>;
   charsBuff: Record<string, Record<string, number>>;
   charsBuffInGame: Record<string, Record<string, number>>;
+  charsModifier: Record<string, AttributeModifier>;
   selectedIds: string[];
   enemyData: EnemyData;
   enemyDataParsed: EnemyDataParsed;
@@ -57,6 +64,7 @@ interface DamageCalculatorAction {
   setEnemyBuff: (buff: Record<string, number>) => void;
   setCharsBuff: (charName: string, buff: Record<string, number>) => void;
   setCharsBuffInGame: (charName: string, buff: Record<string, number>) => void;
+  setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
 }
 
 export const useDamageCalculatorStore = create<
@@ -249,6 +257,16 @@ export const useDamageCalculatorStore = create<
           undefined,
           "setCharsBuffInGame",
         ),
+      charsModifier: {} as Record<string, AttributeModifier>,
+      setCharsModifier: (charName, modifier) => {
+        set(
+          (state) => {
+            state.charsModifier[charName] = modifier;
+          },
+          undefined,
+          "setCharsModifier",
+        );
+      },
     })),
     { name: "damageCalculatorStore" },
   ),

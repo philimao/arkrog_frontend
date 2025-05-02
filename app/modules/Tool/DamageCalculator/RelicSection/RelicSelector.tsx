@@ -204,6 +204,7 @@ function RelicSelector({
     setCharsBuff,
     setCharsBuffInGame,
     setEnemyBuff,
+    outBuff,
   } = useDamageCalculatorStore();
 
   // Tag筛选
@@ -297,6 +298,7 @@ function RelicSelector({
   const charName = charData?.name || "";
   useEffect(() => {
     const { charResult, inGameResult, enemyResult } = finalizeRelicResults(
+      parseFloat(outBuff),
       relicWrappers,
       selectedIds,
     );
@@ -305,6 +307,7 @@ function RelicSelector({
     setEnemyBuff(enemyResult);
   }, [
     charName,
+    outBuff,
     relicWrappers,
     selectedIds,
     setCharsBuff,

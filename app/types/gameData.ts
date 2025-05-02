@@ -240,7 +240,7 @@ export interface CharAttribute {
 }
 
 export type CharAttributeExt = CharAttribute & {
-  damage_scale: number;
+  damageScale: number;
 };
 
 export interface AttributeKeyFrame {

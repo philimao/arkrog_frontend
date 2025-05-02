@@ -394,16 +394,24 @@ export function wrapRelicData(
 
 /**
  * 根据藏品选择情况计算最终藏品加成结果
+ * @param outBuff
  * @param relicWrappers
  * @param selectedRelicIds
  */
 export function finalizeRelicResults(
+  outBuff: number,
   relicWrappers: RelicWrapper[],
   selectedRelicIds: string[],
 ) {
   const charResult: Record<string, number> = {};
   const inGameResult: Record<string, number> = {};
   const enemyResult: Record<string, number> = {};
+  // 局外加成
+  if (outBuff > 1) {
+    charResult["max_hp"] = outBuff;
+    charResult["atk"] = outBuff;
+    charResult["def"] = outBuff;
+  }
   const run = (
     relicWrapper: RelicWrapper,
     buffResult: Record<string, number>,

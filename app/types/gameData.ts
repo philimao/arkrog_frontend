@@ -387,7 +387,7 @@ export interface CharInput {
 
 // 计算器返回值
 export interface CalculatorOutput {
-  auto: DamageData; // 普攻
+  attack: DamageData; // 普攻
   skill: DamageData; // 技能
   cycle: DamageData; // 周期
   logs: string[]; // 运算过程
@@ -395,7 +395,7 @@ export interface CalculatorOutput {
 
 // 伤害数据
 export interface DamageData {
-  atk: number; // 面板攻击力
+  dph: number; // 面板攻击力
   dps: DamageByType; // dps
   total_damage: DamageByType; // 总伤
 }

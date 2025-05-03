@@ -19,6 +19,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { Button } from "@heroui/react";
 import {
+  allowedBlackboardKeyMap,
   getEnemyParsedAttributes,
   inGameRelicNames,
   snakeToCamel,
@@ -74,12 +75,18 @@ const StyledAttributeWrapper = styled.div`
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { outBuff, activeCharName, charsBuff, charsModifier } =
+  const { outBuff, activeCharName, charsBuff, charsBuffInGame, charsModifier } =
     useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } =
     useGameDataStore();
-  const { enemyDataParsed, enemyData, selectedIds, relicsMap, rogueKey } =
-    useDamageCalculatorStore();
+  const {
+    enemyDataParsed,
+    enemyData,
+    selectedIds,
+    relicsMap,
+    rogueKey,
+    setCalcOutput,
+  } = useDamageCalculatorStore();
 
   // 选择干员后
   useEffect(() => {
@@ -190,6 +197,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
   // 面板计算
   const [result, setResult] = useState<CharAttributeExt>();
+  const [inGameBuff, setInGameBuff] = useState<Record<string, number>>({});
   useEffect(() => {
     if (
       charsBuff?.[charData.name] &&
@@ -262,15 +270,48 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         }
       }
 
-      // 应用藏品加成
+      // 应用局外藏品加成
       Object.entries(charsBuff[charData.name]).map(([buffKey, buffValue]) => {
         const key = snakeToCamel(buffKey);
         let factor = buffValue;
         if (key === "atk") factor += modifier.atkPercent / 100;
-        const value = result[key as never] as number;
+        const value = (result[key as never] as number) || 1;
         console.log(key, factor, value);
         (result[key as never] as number) = factor * value;
       });
+
+      // 应用局内效果
+      const inGameBuff = {};
+      // 天赋
+      console.log(charData.talents);
+      charData.talents.map((talent) => {
+        for (const bb of talent.candidates.slice(-1)[0]!.blackboard) {
+          applyBlackboard(bb, inGameBuff);
+        }
+      });
+      // 模组效果
+      uniEquip?.parts.forEach((part) => {
+        if (part.addOrOverrideTalentDataBundle?.candidates) {
+          for (const bb of part.addOrOverrideTalentDataBundle?.candidates?.slice(
+            -1,
+          )[0].blackboard) {
+            if (allowedBlackboardKeyMap[bb.key]) {
+              inGameBuff[snakeToCamel(bb.key)] = bb.value;
+            }
+          }
+        }
+        if (part.overrideTraitDataBundle?.candidates) {
+          for (const bb of part.overrideTraitDataBundle?.candidates?.slice(
+            -1,
+          )[0].blackboard) {
+            console.log(bb);
+            if (allowedBlackboardKeyMap[bb.key]) {
+              inGameBuff[snakeToCamel(bb.key)] = bb.value;
+            }
+          }
+        }
+      });
+      setInGameBuff(inGameBuff);
 
       if (modifier.atkFinal) {
         result.atk += modifier.atkFinal;
@@ -300,14 +341,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     charsModifier,
   ]);
 
-  const { getInstance } = useWasmStore();
-
-  const [wasmLoaded, setWasmLoaded] = useState(false);
-
-  useEffect(() => {
-    getInstance("arkrog_calc").then(() => setWasmLoaded(true));
-  }, [getInstance]);
-
   const charInput: CharInput = useMemo(
     () => ({
       phaseLevel: parseInt(phaseLevel),
@@ -336,6 +369,83 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquipLevel,
     ],
   );
+
+  const { getInstance } = useWasmStore();
+
+  const [wasmIns, setWasmIns] = useState<WasmModule>();
+
+  useEffect(() => {
+    getInstance("arkrog_calc").then((ins) => {
+      setWasmIns(ins as unknown as WasmModule);
+    });
+  }, [getInstance]);
+
+  const relicList: RelicDataExt[] = useMemo(
+    () =>
+      Object.values(items![rogueKey])
+        .filter((item) => item.type === "RELIC")
+        .map((item) => ({
+          ...item,
+          ...relics![rogueKey][item.id],
+          show: true,
+        })),
+    [items, relics, rogueKey],
+  );
+
+  useEffect(() => {
+    if (!wasmIns || !charsBuffInGame[activeCharName]) return;
+    const charBuffInGame = {};
+    Object.keys(charsBuffInGame[activeCharName]).map((key) => {
+      charBuffInGame[snakeToCamel(key)] = charsBuffInGame[activeCharName][key];
+    });
+    Object.entries(inGameBuff).map(([key, value]) => {
+      charBuffInGame[key] = (charBuffInGame[key] || 0) + value;
+    });
+    const props = {
+      charInput: {
+        ...charInput,
+        charsBuffInGame: charBuffInGame,
+      },
+      enemyInput: getEnemyParsedAttributes(enemyDataParsed),
+      charData: charData, // 干员解包原始数据
+      enemyData: enemyData, // 敌人解包原始数据
+      skillData: skillObject, // 技能原始解包数据
+      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
+      relics: selectedIds
+        .map((id) =>
+          relicsMap[activeCharName][rogueKey].find((relic) => relic.id === id),
+        )
+        .filter((relic) => inGameRelicNames.includes(relic!.name))
+        .map((r) => ({
+          relicData: relicList.find((relic) => relic.id === r?.id),
+          ...r,
+        })), // 有效藏品列表
+    };
+    console.log(props);
+
+    const calcResult = wasmIns.calculator(JSON.stringify(props));
+    // const logs = calcResult.logs;
+    console.log(calcResult);
+    setCalcOutput(calcResult);
+    // console.log(new Array(logs.size()).fill(0).map((_, id) => logs.get(id)));
+  }, [
+    activeCharName,
+    charData,
+    charInput,
+    charsBuffInGame,
+    enemyData,
+    enemyDataParsed,
+    inGameBuff,
+    relicList,
+    relicsMap,
+    rogueKey,
+    selectedIds,
+    setCalcOutput,
+    skillObject,
+    uniEquipId,
+    uniequip_table,
+    wasmIns,
+  ]);
 
   // useEffect(() => {
   //   console.log("charInput", charInput);
@@ -446,65 +556,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               <div>模组</div>
               {JSON.stringify(uniEquip, null, 2)}
             </div>
-          )}
-        </div>
-        <div>
-          {wasmLoaded && (
-            <Button
-              className=""
-              onPress={() => {
-                // const props = {
-                //   charAttribute: result,
-                //   charData: charData,
-                //   uniEquip: uniEquip,
-                //   skill: skill,
-                //   enemyAttribute: enemyDataParsed,
-                //   enemyData: enemyData,
-                //   relics: selectedIds.map((id) =>
-                //     relicsMap[activeCharName][rogueKey].find(
-                //       (relic) => relic.id === id,
-                //     ),
-                //   ),
-                // };
-                // console.log(props);
-                const relicList: RelicDataExt[] = Object.values(
-                  items![rogueKey],
-                )
-                  .filter((item) => item.type === "RELIC")
-                  .map((item) => ({
-                    ...item,
-                    ...relics![rogueKey][item.id],
-                    show: true,
-                  }));
-
-                const props = {
-                  charInput,
-                  enemyInput: getEnemyParsedAttributes(enemyDataParsed),
-                  charData: charData, // 干员解包原始数据
-                  enemyData: enemyData, // 敌人解包原始数据
-                  skillData: skillObject, // 技能原始解包数据
-                  uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
-                  relics: selectedIds
-                    .map((id) =>
-                      relicsMap[activeCharName][rogueKey].find(
-                        (relic) => relic.id === id,
-                      ),
-                    )
-                    .filter((relic) => inGameRelicNames.includes(relic!.name))
-                    .map((r) => ({
-                      relicData: relicList.find((relic) => relic.id === r?.id),
-                      ...r,
-                    })), // 有效藏品列表
-                };
-                console.log(props);
-
-                getInstance("arkrog_calc").then((ins) => {
-                  console.log(ins.calculator(JSON.stringify(props)));
-                });
-              }}
-            >
-              Calculate (in console)
-            </Button>
           )}
         </div>
       </StyledOperatorDisplayWrapper>

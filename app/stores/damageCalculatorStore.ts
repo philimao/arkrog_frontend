@@ -7,6 +7,7 @@ import type {
   EnemyDataParsed,
   RogueKey,
   RelicWrapper,
+  CalculatorOutput,
 } from "~/types/gameData";
 
 interface AttributeModifier {
@@ -30,6 +31,7 @@ interface DamageCalculatorStore {
   selectedIds: string[];
   enemyData: EnemyData;
   enemyDataParsed: EnemyDataParsed;
+  calcOutput: CalculatorOutput;
 }
 
 interface DamageCalculatorAction {
@@ -65,6 +67,7 @@ interface DamageCalculatorAction {
   setCharsBuff: (charName: string, buff: Record<string, number>) => void;
   setCharsBuffInGame: (charName: string, buff: Record<string, number>) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
+  setCalcOutput: (output: CalculatorOutput) => void;
 }
 
 export const useDamageCalculatorStore = create<
@@ -265,6 +268,16 @@ export const useDamageCalculatorStore = create<
           },
           undefined,
           "setCharsModifier",
+        );
+      },
+      calcOutput: undefined as unknown as CalculatorOutput,
+      setCalcOutput: (output) => {
+        set(
+          (state) => {
+            state.calcOutput = output;
+          },
+          undefined,
+          "setCalcOutput",
         );
       },
     })),

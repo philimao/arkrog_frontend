@@ -1,4 +1,5 @@
 import { styled } from "styled-components";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 
 const StyledResultDisplay = styled.div`
   background: var(--black-gray);
@@ -9,31 +10,13 @@ const StyledResultDisplay = styled.div`
   margin-bottom: 2rem;
 `;
 
-const d = {
-  atk: 999, // 面板攻击力
-  dps: {
-    phy: 114514,
-    pure: 114514,
-  }, // dps
-  total_damage: {
-    phy: 1919810,
-    pure: 1919810,
-  },
-};
-
 const type = {
   phy: "物理",
   pure: "真实",
 };
 
-const result = {
-  auto: d, // 普攻
-  skill: d, // 技能
-  cycle: d, // 周期
-};
-
 const map = {
-  auto: "普通",
+  attack: "普攻",
   skill: "技能",
   cycle: "周期",
 };
@@ -98,42 +81,60 @@ const StyledNumberPart = styled(StyledNumberContainer)<{ $type: string }>`
 `;
 
 export function ResultDisplay() {
+  const { calcOutput } = useDamageCalculatorStore();
+  if (!calcOutput) return null;
   return (
     <StyledResultDisplay>
-      {Object.keys(result).map((key) => (
-        <StyledResultRow key={key}>
-          {["dps", "total_damage"].map((colKey) => (
-            <StyledResultColumn key={colKey}>
-              <StyledNumberTotal>
-                <label>
-                  {map[key as never] + (colKey === "dps" ? "DPS" : "总伤")}
-                </label>
-                <div>
-                  {
-                    Object.values(result[key as never][colKey]).reduce(
-                      (a: number, b: number) => ((a as number) + b) as number,
-                    ) as never
-                  }
-                </div>
-              </StyledNumberTotal>
-              <StyledOperator>=</StyledOperator>
-              {Object.keys(result[key as never][colKey]).map(
-                (damageType, i, array) => (
-                  <>
-                    <StyledNumberPart $type={damageType} key={i}>
-                      <label>{type[damageType as never]}</label>
-                      <div>{result[key as never][colKey][damageType]}</div>
-                    </StyledNumberPart>
-                    {i < array.length - 1 && (
-                      <StyledOperator key={"add" + i}>+</StyledOperator>
-                    )}
-                  </>
-                ),
-              )}
-            </StyledResultColumn>
-          ))}
-        </StyledResultRow>
-      ))}
+      {Object.keys(calcOutput).map((key) => {
+        if (key === "logs") return null;
+        return (
+          <StyledResultRow key={key}>
+            {["dps", "total_damage"].map((colKey) => {
+              const collected = (
+                Object.values(calcOutput[key as never][colKey]) as number[]
+              ).reduce((a, b) => a + b, 0);
+              const collectedStr = Number.isInteger(collected)
+                ? collected.toString()
+                : collected.toFixed(2);
+              return (
+                <StyledResultColumn key={colKey}>
+                  <StyledNumberTotal>
+                    <label>
+                      {map[key as never] + (colKey === "dps" ? "DPS" : "总伤")}
+                    </label>
+                    <div>{collectedStr}</div>
+                  </StyledNumberTotal>
+                  <StyledOperator>=</StyledOperator>
+                  {Object.keys(calcOutput[key as never][colKey])
+                    .filter(
+                      (damageType) =>
+                        calcOutput[key as never][colKey][damageType],
+                    )
+                    .map((damageType, i, array) => {
+                      const num = calcOutput[key as never][colKey][
+                        damageType
+                      ] as number;
+                      const numStr = Number.isInteger(num)
+                        ? num.toString()
+                        : num.toFixed(2);
+                      return (
+                        <>
+                          <StyledNumberPart $type={damageType} key={i}>
+                            <label>{type[damageType as never]}</label>
+                            <div>{numStr}</div>
+                          </StyledNumberPart>
+                          {i < array.length - 1 && (
+                            <StyledOperator key={"add" + i}>+</StyledOperator>
+                          )}
+                        </>
+                      );
+                    })}
+                </StyledResultColumn>
+              );
+            })}
+          </StyledResultRow>
+        );
+      })}
     </StyledResultDisplay>
   );
 }

@@ -144,7 +144,13 @@ export const inGameRelicNames = [
 /**
  * 藏品黑名单（价值低或难以计入）
  */
-export const disallowedRelicNames = ["黑色郁金香", "古堡的子嗣", "衣卡兹"];
+export const disallowedRelicNames = [
+  "黑色郁金香",
+  "古堡的子嗣",
+  "衣卡兹",
+  "文学的开端", // 这次不做
+  "Scout的狙击镜",
+];
 
 /**
  * valueStr黑名单（用于判断isBuffActive)
@@ -334,7 +340,8 @@ export function applyBlackboard(
   const activeBlackboard = getActiveBlackboard(buff);
   if (activeBlackboard.length) {
     activeBlackboard.forEach((bb) => {
-      result[bb.key] = (result[bb.key] || 0) + bb.value;
+      const bbKey = bb.key.split(/[.@]/).slice(-1)[0];
+      result[bbKey] = (result[bbKey] || 0) + bb.value;
     });
   } else {
     console.log(buff);

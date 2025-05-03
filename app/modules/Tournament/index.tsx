@@ -74,9 +74,14 @@ function RougeSelector({
               role="button"
               onClick={() => navigate(tournament.id)}
             >
-              {/* TODO: replace with images from backend */}
               <div className="w-full max-w-40">
-                <div className="w-full aspect-square bg-light-gray rounded-xl" />
+                <img
+                  src={tournament.avatar}
+                  className="aspect-square"
+                  alt="avatar"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                />
               </div>
               <div className="flex flex-col pl-4 gap-1">
                 <div className="text-3xl font-bold">{tournament.name}</div>
@@ -111,7 +116,10 @@ function RougeSelector({
       );
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
-    tournaments.map((tournament) => {
+    tournaments.sort((a, b) =>
+      new Date(b.stages[0].startTime).getTime() -
+      new Date(a.stages[0].startTime).getTime(),
+    ).map((tournament) => {
       const edition = tournament.edition;
       if (!tournamentsByEdition.has(edition)) {
         tournamentsByEdition.set(edition, []);
@@ -133,15 +141,21 @@ function RougeSelector({
             <div className="w-full border-b-ak-blue border-b-1 my-4 opacity-50" />
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4 grow">
               {tournamentsByEdition.get(edition)?.map((tournament) => (
-                <div className="flex flex-col items-center" key={tournament.id}>
-                  {/* TODO: replace with images from backend */}
+                <div className="flex flex-col items-center gap-2" key={tournament.id}>
                   <div
                     role="button"
-                    className="w-full aspect-square bg-light-gray mb-2 rounded-xl relative"
+                    className="w-full aspect-square relative"
                     onClick={() => {
                       navigate(tournament.id);
                     }}
                   >
+                    <img
+                      src={tournament.avatar}
+                      className="rounded-xl aspect-square"
+                      alt="avatar"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                    />
                     {ongoingTournaments.includes(tournament) && (
                       <div className="absolute bg-ak-dark-red top-6 -right-2 px-2 rounded-sm">
                         进行中

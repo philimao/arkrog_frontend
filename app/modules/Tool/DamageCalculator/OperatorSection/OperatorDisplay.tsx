@@ -6,6 +6,7 @@ import type {
   CharBasicData,
   CharData,
   CharInput,
+  RelicDataExt,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
@@ -17,10 +18,9 @@ import { useWasmStore } from "~/stores/wasmStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { Button } from "@heroui/react";
-import log from "eslint-plugin-react/lib/util/log";
 import {
-  camelToSnake,
   getEnemyParsedAttributes,
+  inGameRelicNames,
   snakeToCamel,
 } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
@@ -76,7 +76,8 @@ const StyledAttributeWrapper = styled.div`
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const { outBuff, activeCharName, charsBuff, charsModifier } =
     useDamageCalculatorStore();
-  const { character_basic, skill_table, uniequip_table } = useGameDataStore();
+  const { relics, items, character_basic, skill_table, uniequip_table } =
+    useGameDataStore();
   const { enemyDataParsed, enemyData, selectedIds, relicsMap, rogueKey } =
     useDamageCalculatorStore();
 
@@ -466,10 +467,34 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 //   ),
                 // };
                 // console.log(props);
-                console.log(enemyDataParsed);
+                const relicList: RelicDataExt[] = Object.values(
+                  items![rogueKey],
+                )
+                  .filter((item) => item.type === "RELIC")
+                  .map((item) => ({
+                    ...item,
+                    ...relics![rogueKey][item.id],
+                    show: true,
+                  }));
+
                 const props = {
                   charInput,
                   enemyInput: getEnemyParsedAttributes(enemyDataParsed),
+                  charData: charData, // 干员解包原始数据
+                  enemyData: enemyData, // 敌人解包原始数据
+                  skillData: skillObject, // 技能原始解包数据
+                  uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
+                  relics: selectedIds
+                    .map((id) =>
+                      relicsMap[activeCharName][rogueKey].find(
+                        (relic) => relic.id === id,
+                      ),
+                    )
+                    .filter((relic) => inGameRelicNames.includes(relic!.name))
+                    .map((r) => ({
+                      relicData: relicList.find((relic) => relic.id === r?.id),
+                      ...r,
+                    })), // 有效藏品列表
                 };
                 console.log(props);
 

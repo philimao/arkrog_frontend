@@ -138,6 +138,7 @@ export const inGameRelicNames = [
   "魔王的床榻",
   "未叙魔王残片",
   "魔王的祭器",
+  "几丁质刺刃",
 ];
 
 /**

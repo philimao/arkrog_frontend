@@ -18,7 +18,6 @@ import RelicsContainer from "~/modules/Tool/DamageCalculator/RelicSection/Relics
 import type { CharData, RelicWrapper } from "~/types/gameData";
 import { useShallow } from "zustand/react/shallow";
 import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
-import { shallow } from "zustand/vanilla/shallow";
 import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
 
 const StyledRelicSelector = styled.div<{ $active: boolean }>`

@@ -116,16 +116,19 @@ function RougeSelector({
       );
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
-    tournaments.sort((a, b) =>
-      new Date(b.stages[0].startTime).getTime() -
-      new Date(a.stages[0].startTime).getTime(),
-    ).map((tournament) => {
-      const edition = tournament.edition;
-      if (!tournamentsByEdition.has(edition)) {
-        tournamentsByEdition.set(edition, []);
-      }
-      tournamentsByEdition.get(edition)?.push(tournament);
-    });
+    tournaments
+      .sort(
+        (a, b) =>
+          new Date(b.stages[0].startTime).getTime() -
+          new Date(a.stages[0].startTime).getTime(),
+      )
+      .map((tournament) => {
+        const edition = tournament.edition;
+        if (!tournamentsByEdition.has(edition)) {
+          tournamentsByEdition.set(edition, []);
+        }
+        tournamentsByEdition.get(edition)?.push(tournament);
+      });
     const editions = Array.from(tournamentsByEdition.keys());
 
     return (
@@ -141,7 +144,10 @@ function RougeSelector({
             <div className="w-full border-b-ak-blue border-b-1 my-4 opacity-50" />
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4 grow">
               {tournamentsByEdition.get(edition)?.map((tournament) => (
-                <div className="flex flex-col items-center gap-2" key={tournament.id}>
+                <div
+                  className="flex flex-col items-center gap-2"
+                  key={tournament.id}
+                >
                   <div
                     role="button"
                     className="w-full aspect-square relative"
@@ -195,6 +201,10 @@ function RougeSelector({
             {topic.name}
           </div>
         ))}
+      </div>
+      <div style={{ margin: "-2rem 0 2rem" }}>
+        （当前仍在数据对接中，希望收录比赛请加入影语集反馈群 909687635
+        并联系管理员）
       </div>
       {renderTournaments()}
     </div>

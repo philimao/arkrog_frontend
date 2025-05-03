@@ -94,6 +94,7 @@ export default function FooterPanel() {
                 .map((id) =>
                   relicWrappers.find((relicWrapper) => relicWrapper.id === id),
                 )
+                .filter((i) => i)
                 .map((relicWrapper) => (
                   <RelicItem
                     key={relicWrapper!.id}

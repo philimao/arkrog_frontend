@@ -107,7 +107,7 @@ const ScheduleCell = ({
 
   return (
     <td key={sessionIndex} className="text-light-gray py-4 align-top">
-      <div className="flex gap-6 px-4 flex-wrap">
+      <div className="flex gap-4 px-4 flex-wrap">
         {sortedSchedule.map((entry, index) => (
           <span key={index}>{renderPlayer(entry[0], true)}</span>
         ))}
@@ -146,18 +146,18 @@ const TeamNameCell = ({
 
 const TeamMembersCell = ({
   members,
-  keyMember,
+  leader,
   renderPlayer
 }: {
   members: string[],
-  keyMember?: string,
+  leader?: string,
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode
 }) => (
   <div className="p-4 flex gap-x-12 gap-y-4 justify-center flex-wrap">
     {members.map((member, index) => (
       <div className="relative" key={index}>
-        {keyMember === member && (
-          <StarIcon className="text-ak-blue absolute -left-6 top-6" width="1rem" />
+        {leader === member && (
+          <StarIcon className="text-ak-blue absolute -left-4 top-6" width="1rem" />
         )}
         {renderPlayer(member, true)}
       </div>
@@ -263,7 +263,7 @@ export function TournamentTeamInfo({
             <td>
               <TeamMembersCell
                 members={team.members}
-                keyMember={team.keyMember}
+                leader={team.leader}
                 renderPlayer={renderPlayer}
               />
             </td>

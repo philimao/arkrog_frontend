@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
+import type { TournamentData, TournamentGame, TournamentStage } from "~/types/tournamentsData";
 import { styled } from "styled-components";
 import { ArrowLeftIcon, ArrowRightIcon } from "~/components/Icons";
 import { generateDateArray } from "./index";
@@ -62,26 +62,32 @@ const DateNavigation = ({
 const StageNavigation = ({
   currentStageIndex,
   setCurrentStageIndex,
-  totalStages
+  stages
 }: {
   currentStageIndex: number,
   setCurrentStageIndex: (index: number) => void,
-  totalStages: number
+  stages: TournamentStage[]
 }) => (
   <>
     {currentStageIndex > 0 && (
-      <ArrowLeftIcon
-        className="w-4 h-4 text-ak-blue absolute -top-6 sm:top-2 left-0 sm:-left-6"
+      <div
+        className="flex items-center justify-end gap-2 text-ak-blue absolute top-4 -left-[88px] w-20 border-none"
         role="button"
         onClick={() => setCurrentStageIndex(currentStageIndex - 1)}
-      />
+      >
+        {stages[currentStageIndex - 1].name}
+        <ArrowLeftIcon />
+      </div>
     )}
-    {currentStageIndex < totalStages - 1 && (
-      <ArrowRightIcon
-        className="w-4 h-4 text-ak-blue absolute -top-6 sm:top-2 right-0 sm:-right-6"
+    {currentStageIndex < stages.length - 1 && (
+      <div
+        className="flex items-center justify-start gap-2 text-ak-blue absolute top-4 left-full ml-2 w-20 border-none"
         role="button"
         onClick={() => setCurrentStageIndex(currentStageIndex + 1)}
-      />
+      >
+        <ArrowRightIcon />
+        {stages[currentStageIndex + 1].name}
+      </div>
     )}
   </>
 );
@@ -408,25 +414,27 @@ export default function TournamentProgress({
 
   return (
     <>
-      <div className="relative">
-        <StageNavigation
-          currentStageIndex={currentStageIndex}
-          setCurrentStageIndex={setCurrentStageIndex}
-          totalStages={tournamentData.stages.length}
-        />
+      <div>
         <DateNavigation
           dates={dates}
           activeIndex={activeIndex}
           setActiveIndex={setActiveIndex}
         />
       </div>
-      <div className="w-full flex flex-col divide-y divide-mid-gray">
+      <div className="relative w-full flex flex-col divide-y divide-mid-gray">
         {sessions.size ? (
           Array.from(sessions).map((session, index) => (
             <ScheduleTable key={index} session={session} index={index} />
           ))
         ) : (
-          <ScheduleTable />
+          <>
+            <StageNavigation
+              currentStageIndex={currentStageIndex}
+              setCurrentStageIndex={setCurrentStageIndex}
+              stages={tournamentData.stages}
+            />
+            <ScheduleTable />
+          </>
         )}
       </div>
     </>

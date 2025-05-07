@@ -14,6 +14,7 @@ const StyledFinalResultAvatar = styled.div`
   );
 
   .imgWrapper {
+    padding: 4px;
     background: linear-gradient(
       to bottom,
       white 0%,
@@ -47,7 +48,7 @@ const PlayerAvatar = ({ imageSrc }: { imageSrc: string }) => (
     <div className="imgWrapper">
       <img
         src={imageSrc}
-        className="p-1 aspect-square"
+        className="bg-dark-gray aspect-square"
         alt="avatar"
         referrerPolicy="no-referrer"
         crossOrigin="anonymous"
@@ -87,12 +88,16 @@ export function TournamentFinalResultIndividual({
 }: {
   tournamentData: TournamentData;
 }) {
-  const topTiers = getTopTiers(tournamentData.players, 3);
+  const final = tournamentData.stages[tournamentData.stages.length - 1];
+  // TODO: replace isFinalOneOnOne with the data from tournament instead of player
+  const finalPlayer = tournamentData.players?.find((player) => player.games.find((g: any) => g.stage === final.name));
+  const isFinalOneOnOne = finalPlayer?.games[finalPlayer.games.length - 1].type === '1on1';
+  const topTiers = getTopTiers(tournamentData.players, isFinalOneOnOne ? 2 : 3);
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
 
   return (
-    <div className="grid sm:grid-cols-3 gap-8">
+    <div className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}>
       {topTiers.map((player, index) => {
         const lastGame = player.games[player.games.length - 1];
         const rank = index + 1;
@@ -126,13 +131,13 @@ export function TournamentFinalResultIndividual({
 
 // Team member row component
 const TeamMemberRow = ({
-  member,
+  isTeamLeader,
   isKeyMember,
   keyMemberAlias,
   memberAlias,
   player
 }: {
-  member: string;
+  isTeamLeader: boolean;
   isKeyMember: boolean;
   keyMemberAlias: string;
   memberAlias: string;
@@ -142,7 +147,7 @@ const TeamMemberRow = ({
 
   return (
     <div className="relative bg-black-gray flex items-center justify-between gap-4 pl-8 py-2">
-      {isKeyMember && (
+      {isTeamLeader && (
         <span className="absolute h-full left-2 flex items-center">
           <StarIcon className="text-ak-blue" width="1rem" />
         </span>
@@ -198,11 +203,12 @@ export function TournamentFinalResultTeam({
                 (player) => player.name === member
               );
               const isKeyMember = team.keyMember === member;
+              const isTeamLeader = team.leader === member;
 
               return (
                 <TeamMemberRow
                   key={memberIndex}
-                  member={member}
+                  isTeamLeader={isTeamLeader}
                   isKeyMember={isKeyMember}
                   keyMemberAlias={tournamentData.keyMemberAlias}
                   memberAlias={tournamentData.memberAlias}

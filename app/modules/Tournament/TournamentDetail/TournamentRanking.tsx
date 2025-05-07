@@ -447,6 +447,7 @@ export function TournamentRankingTeam({
                   const isLastPlayer = playerIndex === players.length - 1;
                   const playerGame = player.games.find((game) => game.stage === stage.name);
                   const isKeyMember = player.name === team?.keyMember;
+                  const isTeamLeader = player.name === team?.leader;
                   const showRank = (sortBy[index] === "point" && isFirstPlayer) || sortBy[index] === "date";
 
                   return (
@@ -489,7 +490,7 @@ export function TournamentRankingTeam({
                       }
 
                       <td className={`sticky left-[144px] sm:left-[192px] ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}>
-                        {isKeyMember && (
+                        {isTeamLeader && (
                           <div className="absolute top-0 left-2 h-full flex items-center">
                             <StarIcon className="text-ak-blue" width="1rem" />
                           </div>

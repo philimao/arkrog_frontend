@@ -181,7 +181,7 @@ export default function TournamentDetail() {
       <>
         {player && (
           <div
-            className={`flex items-center ${column ? "flex-col w-16 gap-1" : "gap-3"}`}
+            className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}
           >
             <div className="w-16 h-16 aspect-square bg-light-gray">
               <img
@@ -234,9 +234,9 @@ export default function TournamentDetail() {
         <SectionContainer
           title="比赛时间"
           content={tournamentData.stages.map((stage, index) => (
-            <div key={index} className="flex gap-2">
-              <div>{stage.name}</div>
-              <div>{`${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日 - ${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
+            <div key={index} className="flex flex-wrap">
+              <div>{`${stage.name}：`}</div>
+              <div>{`${new Date(stage.startTime).getFullYear()}年${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日~${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
             </div>
           ))}
         />

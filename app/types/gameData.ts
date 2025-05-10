@@ -303,6 +303,8 @@ export interface CharPotential {
 // 干员详细信息
 export interface CharData {
   name: string;
+  /** 潜能物品ID */
+  potentialItemId: string;
   description: string;
   displayNumber: string;
   appellation: string;
@@ -370,42 +372,69 @@ export interface RelicWrapper {
   buffs: RelicWrapperBuff[];
 }
 
-// 带*的域代表对计算非常重要
+/**
+ * 干员输入数据结构
+ * 带*的域代表对计算非常重要
+ */
 export interface CharInput {
-  phaseLevel: number; // 精英化等级
-  phase?: CharPhase; // 精英化数据
-  level: number; // 干员等级
-  attribute?: CharAttributeExt; // 干员局外面板*
-  skillKey: string; // 技能键名
-  skillLevel: number; // 技能等级
-  skill: SkillLevelData; // 选择的技能数据*
-  uniEquipId: string; // 模组ID
-  uniEquipLevel: number; // 模组等级
-  uniEquip: UniEquipPhaseData; // 选择的模组数据*
-  potential: number; // 潜能等级*
+  /** 精英化等级 */
+  phaseLevel: number;
+  /** 精英化数据 */
+  phase?: CharPhase;
+  /** 干员等级 */
+  level: number;
+  /** 干员局外面板 */
+  attribute?: CharAttributeExt;
+  /** 技能键名 */
+  skillKey: string;
+  /** 技能等级 */
+  skillLevel: number;
+  /** 选择的技能数据 */
+  skill: SkillLevelData;
+  /** 模组ID */
+  uniEquipId: string;
+  /** 模组等级 */
+  uniEquipLevel: number;
+  /** 选择的模组数据 */
+  uniEquip: UniEquipPhaseData;
+  /** 潜能等级 */
+  potential: number;
+  /** 干员在游戏中的增益 */
+  charsBuffInGame: CharBuffInGame;
 }
 
-// 计算器返回值
-export interface CalculatorOutput {
-  attack: DamageData; // 普攻
-  skill: DamageData; // 技能
-  cycle: DamageData; // 周期
-  logs: string[]; // 运算过程
+/** 干员在游戏中的增益 */
+export interface CharBuffInGame {
+  /** 攻击力 */
+  atk: number;
+  /** 最大生命值 */
+  maxHp: number;
+  /** 物理抗性 */
+  damageResistance: number;
+  /** 伤害倍率 */
+  damageScale: number;
 }
 
-// 伤害数据
+/** 伤害数据 */
 export interface DamageData {
-  dph: number; // 面板攻击力
-  dps: DamageByType; // dps
-  total_damage: DamageByType; // 总伤
+  /** 面板攻击力 */
+  dph: number;
+  /** dps */
+  dps: DamageByType;
+  /** 总伤 */
+  total_damage: DamageByType;
 }
 
-// 伤害分布
+/** 伤害分布 */
 export interface DamageByType {
-  phy?: number; // 物理
-  mag?: number; // 法术
-  pure?: number; // 真实
-  ep?: number; // 元素
+  /** 物理伤害 */
+  phy: number;
+  /** 法术伤害 */
+  mag: number;
+  /** 真实伤害 */
+  pure: number;
+  /** 元素伤害 */
+  ep: number;
 }
 
 // 敌人
@@ -509,4 +538,86 @@ export interface EnemyDataParsed {
   };
   levelType: "BOSS" | "ELITE" | "NORMAL";
   rangedRadius: number | null;
+}
+
+/** 敌人最终面板 */
+export interface EnemyAttribute {
+  /** 最大生命值 */
+  maxHp: number;
+  /** 攻击力 */
+  atk: number;
+  /** 防御力 */
+  def: number;
+  /** 法术抗性 */
+  magicResistance: number;
+  /** 部署费用 */
+  cost: number;
+  /** 阻挡数 */
+  blockCnt: number;
+  /** 移动速度 */
+  moveSpeed: number;
+  /** 攻击速度 */
+  attackSpeed: number;
+  /** 基础攻击间隔 */
+  baseAttackTime: number;
+  /** 再部署时间 */
+  respawnTime: number;
+  /** 每秒生命恢复 */
+  hpRecoveryPerSec: number;
+  /** 每秒技力恢复 */
+  spRecoveryPerSec: number;
+  /** 最大部署数量 */
+  maxDeployCount: number;
+  /** 重量等级 */
+  massLevel: number;
+  /** 基础力量等级 */
+  baseForceLevel: number;
+  /** 嘲讽等级 */
+  tauntLevel: number;
+  /** 元素伤害抗性 */
+  epDamageResistance: number;
+  /** 元素抗性 */
+  epResistance: number;
+  /** 物理命中率 */
+  damageHitratePhysical: number;
+  /** 法术命中率 */
+  damageHitrateMagical: number;
+  /** 眩晕免疫 */
+  stunImmune: boolean;
+  /** 沉默免疫 */
+  silenceImmune: boolean;
+  /** 睡眠免疫 */
+  sleepImmune: boolean;
+  /** 冻结免疫 */
+  frozenImmune: boolean;
+  /** 浮空免疫 */
+  levitateImmune: boolean;
+  /** 缴械免疫 */
+  disarmedCombatImmune: boolean;
+  /** 恐惧免疫 */
+  fearedImmune: boolean;
+}
+
+/** 伤害计算器输入参数 */
+export interface CalculatorInput {
+  /** 干员输入数据结构 */
+  charInput: CharInput;
+  /** 干员基础数据 */
+  charData: CharData;
+  /** 敌人最终面板 */
+  enemyInput: EnemyAttribute;
+  /** 藏品 */
+  relics: RelicWrapper[];
+}
+
+/** 伤害计算器输出参数 */
+export interface CalculatorOutput {
+  /** 普攻伤害 */
+  attack: DamageData;
+  /** 技能伤害 */
+  skill: DamageData;
+  /** 周期伤害 */
+  cycle: DamageData;
+  /** 运算过程 */
+  logs: string[];
 }

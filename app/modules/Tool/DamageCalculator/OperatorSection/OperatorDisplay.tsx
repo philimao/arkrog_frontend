@@ -4,6 +4,7 @@ import type {
   CharAttribute,
   CharAttributeExt,
   CharBasicData,
+  CharBuffInGame,
   CharData,
   CharInput,
   RelicDataExt,
@@ -13,6 +14,7 @@ import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import {
   applyAttrModifiers,
   applyBlackboard,
+  calculator,
 } from "~/modules/Tool/DamageCalculator/calculator";
 import { useWasmStore } from "~/stores/wasmStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
@@ -25,6 +27,7 @@ import {
   snakeToCamel,
 } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
+import { CalculatorHelper } from "../calculator/helper";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -394,7 +397,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
   useEffect(() => {
     if (!wasmIns || !charsBuffInGame[activeCharName]) return;
-    const charBuffInGame = {};
+    const charBuffInGame: CharBuffInGame = {
+      atk: 0,
+      maxHp: 0,
+      damageResistance: 0,
+      damageScale: 0,
+    };
     Object.keys(charsBuffInGame[activeCharName]).map((key) => {
       charBuffInGame[snakeToCamel(key)] = charsBuffInGame[activeCharName][key];
     });
@@ -423,9 +431,9 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     };
     console.log(props);
 
-    const calcResult = wasmIns.calculator(JSON.stringify(props));
-    // const logs = calcResult.logs;
-    console.log(calcResult);
+    const calcResult = calculator(props);
+    // 标准打印
+    CalculatorHelper.print(props, calcResult);
     setCalcOutput(calcResult);
     // console.log(new Array(logs.size()).fill(0).map((_, id) => logs.get(id)));
   }, [

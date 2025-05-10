@@ -1,0 +1,2243 @@
+{
+    "charInput": {
+        "phaseLevel": 2,
+        "phase": {
+            "characterPrefabKey": "char_4088_hodrer",
+            "rangeId": "1-1",
+            "maxLevel": 90,
+            "attributesKeyFrames": [
+                {
+                    "level": 1,
+                    "data": {
+                        "maxHp": 4670,
+                        "atk": 1323,
+                        "def": 0,
+                        "magicResistance": 0,
+                        "cost": 24,
+                        "blockCnt": 2,
+                        "moveSpeed": 1,
+                        "attackSpeed": 100,
+                        "baseAttackTime": 2.5,
+                        "respawnTime": 70,
+                        "hpRecoveryPerSec": 0,
+                        "spRecoveryPerSec": 1,
+                        "maxDeployCount": 1,
+                        "maxDeckStackCnt": 0,
+                        "tauntLevel": 0,
+                        "massLevel": 0,
+                        "baseForceLevel": 0,
+                        "stunImmune": false,
+                        "silenceImmune": false,
+                        "sleepImmune": false,
+                        "frozenImmune": false,
+                        "levitateImmune": false,
+                        "disarmedCombatImmune": false,
+                        "fearedImmune": false
+                    }
+                },
+                {
+                    "level": 90,
+                    "data": {
+                        "maxHp": 5988,
+                        "atk": 1576,
+                        "def": 0,
+                        "magicResistance": 0,
+                        "cost": 24,
+                        "blockCnt": 2,
+                        "moveSpeed": 1,
+                        "attackSpeed": 100,
+                        "baseAttackTime": 2.5,
+                        "respawnTime": 70,
+                        "hpRecoveryPerSec": 0,
+                        "spRecoveryPerSec": 1,
+                        "maxDeployCount": 1,
+                        "maxDeckStackCnt": 0,
+                        "tauntLevel": 0,
+                        "massLevel": 0,
+                        "baseForceLevel": 0,
+                        "stunImmune": false,
+                        "silenceImmune": false,
+                        "sleepImmune": false,
+                        "frozenImmune": false,
+                        "levitateImmune": false,
+                        "disarmedCombatImmune": false,
+                        "fearedImmune": false
+                    }
+                }
+            ],
+            "evolveCost": [
+                {
+                    "id": "3223",
+                    "count": 4,
+                    "type": "MATERIAL"
+                },
+                {
+                    "id": "30145",
+                    "count": 4,
+                    "type": "MATERIAL"
+                },
+                {
+                    "id": "31064",
+                    "count": 6,
+                    "type": "MATERIAL"
+                }
+            ]
+        },
+        "level": 1,
+        "attribute": {
+            "maxHp": 9344,
+            "atk": 2380,
+            "def": 1,
+            "magicResistance": 0,
+            "cost": 22,
+            "blockCnt": 2,
+            "moveSpeed": 1,
+            "attackSpeed": 100,
+            "baseAttackTime": 2.5,
+            "respawnTime": 70,
+            "hpRecoveryPerSec": 0,
+            "spRecoveryPerSec": 1,
+            "maxDeployCount": 1,
+            "maxDeckStackCnt": 0,
+            "tauntLevel": 0,
+            "massLevel": 0,
+            "baseForceLevel": 0,
+            "stunImmune": false,
+            "silenceImmune": false,
+            "sleepImmune": false,
+            "frozenImmune": false,
+            "levitateImmune": false,
+            "disarmedCombatImmune": false,
+            "fearedImmune": false,
+            "damageScale": 1,
+            "damage_scale": 1
+        },
+        "skillKey": "skchr_hodrer_3",
+        "skillLevel": 9,
+        "skill": {
+            "name": "死境硝烟",
+            "rangeId": null,
+            "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+            "skillType": "MANUAL",
+            "durationType": "NONE",
+            "spData": {
+                "spType": "INCREASE_WITH_TIME",
+                "levelUpCost": null,
+                "maxChargeTime": 1,
+                "spCost": 50,
+                "initSp": 40,
+                "increment": 1
+            },
+            "prefabId": "skchr_hodrer_3",
+            "duration": 70,
+            "blackboard": [
+                {
+                    "key": "max_hp",
+                    "value": 0.6,
+                    "valueStr": null
+                },
+                {
+                    "key": "atk",
+                    "value": 1.2,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@hp_ratio",
+                    "value": 0.05,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@buff_prob",
+                    "value": 0.25,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@stun",
+                    "value": 5,
+                    "valueStr": null
+                },
+                {
+                    "key": "ability_range_forward_extend",
+                    "value": 1,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@value",
+                    "value": 100,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@damage",
+                    "value": 200,
+                    "valueStr": null
+                }
+            ]
+        },
+        "uniEquipId": "uniequip_002_hodrer",
+        "uniEquipLevel": 2,
+        "uniEquip": {
+            "equipLevel": 3,
+            "parts": [
+                {
+                    "resKey": "hodrer_equip_1_3_p1",
+                    "target": "TRAIT",
+                    "isToken": false,
+                    "validInGameTag": null,
+                    "addOrOverrideTalentDataBundle": {
+                        "candidates": null
+                    },
+                    "overrideTraitDataBundle": {
+                        "candidates": [
+                            {
+                                "additionalDescription": "受到的治疗效果提升<@ba.kw>20%</>",
+                                "unlockCondition": {
+                                    "phase": "PHASE_2",
+                                    "level": 60
+                                },
+                                "requiredPotentialRank": 0,
+                                "blackboard": [
+                                    {
+                                        "key": "heal_scale",
+                                        "value": 1.2,
+                                        "valueStr": null
+                                    }
+                                ],
+                                "overrideDescripton": null,
+                                "prefabKey": null,
+                                "rangeId": null
+                            }
+                        ]
+                    }
+                },
+                {
+                    "resKey": "hodrer_equip_1_3_p2",
+                    "target": "TALENT",
+                    "isToken": false,
+                    "validInGameTag": null,
+                    "addOrOverrideTalentDataBundle": {
+                        "candidates": [
+                            {
+                                "displayRangeId": false,
+                                "upgradeDescription": "使自身与身后一格的友军获得28%的<$ba.protect>庇护</>，且造成的物理伤害提升10%",
+                                "talentIndex": 1,
+                                "unlockCondition": {
+                                    "phase": "PHASE_2",
+                                    "level": 60
+                                },
+                                "requiredPotentialRank": 0,
+                                "prefabKey": "2",
+                                "name": "余火之氅",
+                                "description": null,
+                                "rangeId": "b-1",
+                                "blackboard": [
+                                    {
+                                        "key": "damage_resistance",
+                                        "value": 0.28,
+                                        "valueStr": null
+                                    },
+                                    {
+                                        "key": "damage_scale",
+                                        "value": 1.1,
+                                        "valueStr": null
+                                    }
+                                ],
+                                "tokenKey": null,
+                                "isHideTalent": false
+                            },
+                            {
+                                "displayRangeId": false,
+                                "upgradeDescription": "使自身与身后一格的友军获得31%<@ba.talpu>（+3%）</>的<$ba.protect>庇护</>，且造成的物理伤害提升10%",
+                                "talentIndex": 1,
+                                "unlockCondition": {
+                                    "phase": "PHASE_2",
+                                    "level": 60
+                                },
+                                "requiredPotentialRank": 4,
+                                "prefabKey": "2",
+                                "name": "余火之氅",
+                                "description": null,
+                                "rangeId": "b-1",
+                                "blackboard": [
+                                    {
+                                        "key": "damage_resistance",
+                                        "value": 0.31,
+                                        "valueStr": null
+                                    },
+                                    {
+                                        "key": "damage_scale",
+                                        "value": 1.1,
+                                        "valueStr": null
+                                    }
+                                ],
+                                "tokenKey": null,
+                                "isHideTalent": false
+                            }
+                        ]
+                    },
+                    "overrideTraitDataBundle": {
+                        "candidates": null
+                    }
+                }
+            ],
+            "attributeBlackboard": [
+                {
+                    "key": "max_hp",
+                    "value": 450,
+                    "valueStr": null
+                },
+                {
+                    "key": "atk",
+                    "value": 130,
+                    "valueStr": null
+                }
+            ],
+            "tokenAttributeBlackboard": {}
+        },
+        "potential": 5,
+        "charsBuffInGame": {
+            "atk": 2.5,
+            "maxHp": 1,
+            "damageResistance": 0.31,
+            "damageScale": 1.1
+        }
+    },
+    "enemyInput": {
+        "maxHp": 0,
+        "atk": 0,
+        "def": 0,
+        "magicResistance": 0,
+        "blockCnt": 0,
+        "moveSpeed": 0,
+        "attackSpeed": 0,
+        "baseAttackTime": 0,
+        "epDamageResistance": 0,
+        "epResistance": 0
+    },
+    "charData": {
+        "name": "赫德雷",
+        "description": "同时攻击阻挡的<@ba.kw>所有敌人</>",
+        "canUseGeneralPotentialItem": true,
+        "canUseActivityPotentialItem": false,
+        "potentialItemId": "p_char_4088_hodrer",
+        "activityPotentialItemId": null,
+        "classicPotentialItemId": null,
+        "nationId": null,
+        "groupId": "babel",
+        "teamId": null,
+        "displayNumber": "B216",
+        "appellation": "Hoederer",
+        "position": "MELEE",
+        "tagList": [
+            "输出"
+        ],
+        "itemUsage": "萨卡兹雇佣兵赫德雷，披着战争向你走来。",
+        "itemDesc": "这不是他的选择，萨卡兹没有太多选择。",
+        "itemObtainApproach": "招募寻访",
+        "isNotObtainable": false,
+        "isSpChar": false,
+        "maxPotentialLevel": 5,
+        "rarity": "TIER_6",
+        "profession": "WARRIOR",
+        "subProfessionId": "crusher",
+        "trait": null,
+        "phases": [
+            {
+                "characterPrefabKey": "char_4088_hodrer",
+                "rangeId": "1-1",
+                "maxLevel": 50,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 2626,
+                            "atk": 742,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 20,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 50,
+                        "data": {
+                            "maxHp": 3549,
+                            "atk": 1031,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 20,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": null
+            },
+            {
+                "characterPrefabKey": "char_4088_hodrer",
+                "rangeId": "1-1",
+                "maxLevel": 80,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 3549,
+                            "atk": 1031,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 22,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 80,
+                        "data": {
+                            "maxHp": 4670,
+                            "atk": 1323,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 22,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": [
+                    {
+                        "id": "3221",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30032",
+                        "count": 10,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30052",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "characterPrefabKey": "char_4088_hodrer",
+                "rangeId": "1-1",
+                "maxLevel": 90,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 4670,
+                            "atk": 1323,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 24,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 90,
+                        "data": {
+                            "maxHp": 5988,
+                            "atk": 1576,
+                            "def": 0,
+                            "magicResistance": 0,
+                            "cost": 24,
+                            "blockCnt": 2,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.5,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": [
+                    {
+                        "id": "3223",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30145",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "31064",
+                        "count": 6,
+                        "type": "MATERIAL"
+                    }
+                ]
+            }
+        ],
+        "skills": [
+            {
+                "skillId": "skchr_hodrer_1",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31034",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30013",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31054",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30084",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30125",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31044",
+                                "count": 5,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                }
+            },
+            {
+                "skillId": "skchr_hodrer_2",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31054",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30073",
+                                "count": 5,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31044",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31024",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30135",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31084",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                }
+            },
+            {
+                "skillId": "skchr_hodrer_3",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31034",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31013",
+                                "count": 5,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31074",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31044",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30145",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31014",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_2",
+                    "level": 1
+                }
+            }
+        ],
+        "displayTokenDict": null,
+        "talents": [
+            {
+                "candidates": [
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_1",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "1",
+                        "name": "及锋而试",
+                        "description": "攻击敌人时攻击力提升至105%，若目标处于<$ba.stun>晕眩</>、<$ba.root>束缚</>则改为提升至125%",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "atk_scale",
+                                "value": 1.25,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk_scale_2",
+                                "value": 1.05,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": null,
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "1",
+                        "name": "及锋而试",
+                        "description": "攻击敌人时攻击力提升至110%，若目标处于<$ba.stun>晕眩</>、<$ba.root>束缚</>则改为提升至140%",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "atk_scale",
+                                "value": 1.4,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk_scale_2",
+                                "value": 1.1,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": null,
+                        "isHideTalent": false
+                    }
+                ]
+            },
+            {
+                "candidates": [
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "2",
+                        "name": "余火之氅",
+                        "description": "使自身与身后一格的友军获得18%的<$ba.protect>庇护</>",
+                        "rangeId": "b-1",
+                        "blackboard": [
+                            {
+                                "key": "damage_resistance",
+                                "value": 0.18,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": null,
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 4,
+                        "prefabKey": "2",
+                        "name": "余火之氅",
+                        "description": "使自身与身后一格的友军获得21%<@ba.talpu>（+3%）</>的<$ba.protect>庇护</>",
+                        "rangeId": "b-1",
+                        "blackboard": [
+                            {
+                                "key": "damage_resistance",
+                                "value": 0.21,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": null,
+                        "isHideTalent": false
+                    }
+                ]
+            }
+        ],
+        "potentialRanks": [
+            {
+                "type": "BUFF",
+                "description": "部署费用-1",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "COST",
+                                "formulaItem": "ADDITION",
+                                "value": -1,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "BUFF",
+                "description": "生命上限+250",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "MAX_HP",
+                                "formulaItem": "ADDITION",
+                                "value": 250,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "BUFF",
+                "description": "攻击力+45",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "ATK",
+                                "formulaItem": "ADDITION",
+                                "value": 45,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "CUSTOM",
+                "description": "第二天赋效果增强",
+                "buff": null,
+                "equivalentCost": null
+            },
+            {
+                "type": "BUFF",
+                "description": "部署费用-1",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "COST",
+                                "formulaItem": "ADDITION",
+                                "value": -1,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            }
+        ],
+        "favorKeyFrames": [
+            {
+                "level": 0,
+                "data": {
+                    "maxHp": 0,
+                    "atk": 0,
+                    "def": 0,
+                    "magicResistance": 0,
+                    "cost": 0,
+                    "blockCnt": 0,
+                    "moveSpeed": 0,
+                    "attackSpeed": 0,
+                    "baseAttackTime": 0,
+                    "respawnTime": 0,
+                    "hpRecoveryPerSec": 0,
+                    "spRecoveryPerSec": 0,
+                    "maxDeployCount": 0,
+                    "maxDeckStackCnt": 0,
+                    "tauntLevel": 0,
+                    "massLevel": 0,
+                    "baseForceLevel": 0,
+                    "stunImmune": false,
+                    "silenceImmune": false,
+                    "sleepImmune": false,
+                    "frozenImmune": false,
+                    "levitateImmune": false,
+                    "disarmedCombatImmune": false,
+                    "fearedImmune": false
+                }
+            },
+            {
+                "level": 50,
+                "data": {
+                    "maxHp": 500,
+                    "atk": 80,
+                    "def": 0,
+                    "magicResistance": 0,
+                    "cost": 0,
+                    "blockCnt": 0,
+                    "moveSpeed": 0,
+                    "attackSpeed": 0,
+                    "baseAttackTime": 0,
+                    "respawnTime": 0,
+                    "hpRecoveryPerSec": 0,
+                    "spRecoveryPerSec": 0,
+                    "maxDeployCount": 0,
+                    "maxDeckStackCnt": 0,
+                    "tauntLevel": 0,
+                    "massLevel": 0,
+                    "baseForceLevel": 0,
+                    "stunImmune": false,
+                    "silenceImmune": false,
+                    "sleepImmune": false,
+                    "frozenImmune": false,
+                    "levitateImmune": false,
+                    "disarmedCombatImmune": false,
+                    "fearedImmune": false
+                }
+            }
+        ],
+        "allSkillLvlup": [
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3301",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3301",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30041",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30021",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30052",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30062",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30032",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30103",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3303",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "31053",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30033",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    }
+                ]
+            }
+        ]
+    },
+    "skillData": {
+        "skillId": "skchr_hodrer_3",
+        "iconId": null,
+        "hidden": false,
+        "levels": [
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 80,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.15,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 77,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.15,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.4,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 74,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.15,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 70,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.6,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 67,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.7,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 64,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.8,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 60,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.45,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 0.9,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 4,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 57,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.45,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 4,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 54,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.45,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 1.1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 4,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "死境硝烟",
+                "rangeId": null,
+                "description": "每秒流失<@ba.vdown>{attack@value}</>点生命，并使自身攻击过和攻击过自身的敌人每秒受到<@ba.vup>{attack@damage}</>点真实伤害；攻击距离<@ba.vup>+{ability_range_forward_extend}</>，生命上限<@ba.vup>+{max_hp:0%}</>，攻击力<@ba.vup>+{atk:0%}</>，每次攻击回复自身<@ba.vup>{attack@hp_ratio:0%}</>的生命且有<@ba.vup>{attack@buff_prob:0%}</>概率使目标<$ba.stun>晕眩</><@ba.vup>{attack@stun}</>秒",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WITH_TIME",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 50,
+                    "initSp": 40,
+                    "increment": 1
+                },
+                "prefabId": "skchr_hodrer_3",
+                "duration": 70,
+                "blackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 0.6,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 1.2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@hp_ratio",
+                        "value": 0.05,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@buff_prob",
+                        "value": 0.25,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@stun",
+                        "value": 5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "ability_range_forward_extend",
+                        "value": 1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@value",
+                        "value": 100,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@damage",
+                        "value": 200,
+                        "valueStr": null
+                    }
+                ]
+            }
+        ]
+    },
+    "uniEquipData": {
+        "phases": [
+            {
+                "equipLevel": 1,
+                "parts": [
+                    {
+                        "resKey": "hodrer_equip_1_1_p1",
+                        "target": "TRAIT",
+                        "isToken": false,
+                        "validInGameTag": null,
+                        "addOrOverrideTalentDataBundle": {
+                            "candidates": null
+                        },
+                        "overrideTraitDataBundle": {
+                            "candidates": [
+                                {
+                                    "additionalDescription": "受到的治疗效果提升<@ba.kw>20%</>",
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 0,
+                                    "blackboard": [
+                                        {
+                                            "key": "heal_scale",
+                                            "value": 1.2,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "overrideDescripton": null,
+                                    "prefabKey": null,
+                                    "rangeId": null
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "attributeBlackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 290,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 92,
+                        "valueStr": null
+                    }
+                ],
+                "tokenAttributeBlackboard": {}
+            },
+            {
+                "equipLevel": 2,
+                "parts": [
+                    {
+                        "resKey": "hodrer_equip_1_2_p1",
+                        "target": "TRAIT",
+                        "isToken": false,
+                        "validInGameTag": null,
+                        "addOrOverrideTalentDataBundle": {
+                            "candidates": null
+                        },
+                        "overrideTraitDataBundle": {
+                            "candidates": [
+                                {
+                                    "additionalDescription": "受到的治疗效果提升<@ba.kw>20%</>",
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 0,
+                                    "blackboard": [
+                                        {
+                                            "key": "heal_scale",
+                                            "value": 1.2,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "overrideDescripton": null,
+                                    "prefabKey": null,
+                                    "rangeId": null
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "resKey": "hodrer_equip_1_2_p2",
+                        "target": "TALENT",
+                        "isToken": false,
+                        "validInGameTag": null,
+                        "addOrOverrideTalentDataBundle": {
+                            "candidates": [
+                                {
+                                    "displayRangeId": false,
+                                    "upgradeDescription": "使自身与身后一格的友军获得24%的<$ba.protect>庇护</>，且造成的物理伤害提升6%",
+                                    "talentIndex": 1,
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 0,
+                                    "prefabKey": "2",
+                                    "name": "余火之氅",
+                                    "description": null,
+                                    "rangeId": "b-1",
+                                    "blackboard": [
+                                        {
+                                            "key": "damage_resistance",
+                                            "value": 0.24,
+                                            "valueStr": null
+                                        },
+                                        {
+                                            "key": "damage_scale",
+                                            "value": 1.06,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "tokenKey": null,
+                                    "isHideTalent": false
+                                },
+                                {
+                                    "displayRangeId": false,
+                                    "upgradeDescription": "使自身与身后一格的友军获得27%<@ba.talpu>（+3%）</>的<$ba.protect>庇护</>，且造成的物理伤害提升6%",
+                                    "talentIndex": 1,
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 4,
+                                    "prefabKey": "2",
+                                    "name": "余火之氅",
+                                    "description": null,
+                                    "rangeId": "b-1",
+                                    "blackboard": [
+                                        {
+                                            "key": "damage_resistance",
+                                            "value": 0.27,
+                                            "valueStr": null
+                                        },
+                                        {
+                                            "key": "damage_scale",
+                                            "value": 1.06,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "tokenKey": null,
+                                    "isHideTalent": false
+                                }
+                            ]
+                        },
+                        "overrideTraitDataBundle": {
+                            "candidates": null
+                        }
+                    }
+                ],
+                "attributeBlackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 380,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 112,
+                        "valueStr": null
+                    }
+                ],
+                "tokenAttributeBlackboard": {}
+            },
+            {
+                "equipLevel": 3,
+                "parts": [
+                    {
+                        "resKey": "hodrer_equip_1_3_p1",
+                        "target": "TRAIT",
+                        "isToken": false,
+                        "validInGameTag": null,
+                        "addOrOverrideTalentDataBundle": {
+                            "candidates": null
+                        },
+                        "overrideTraitDataBundle": {
+                            "candidates": [
+                                {
+                                    "additionalDescription": "受到的治疗效果提升<@ba.kw>20%</>",
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 0,
+                                    "blackboard": [
+                                        {
+                                            "key": "heal_scale",
+                                            "value": 1.2,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "overrideDescripton": null,
+                                    "prefabKey": null,
+                                    "rangeId": null
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "resKey": "hodrer_equip_1_3_p2",
+                        "target": "TALENT",
+                        "isToken": false,
+                        "validInGameTag": null,
+                        "addOrOverrideTalentDataBundle": {
+                            "candidates": [
+                                {
+                                    "displayRangeId": false,
+                                    "upgradeDescription": "使自身与身后一格的友军获得28%的<$ba.protect>庇护</>，且造成的物理伤害提升10%",
+                                    "talentIndex": 1,
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 0,
+                                    "prefabKey": "2",
+                                    "name": "余火之氅",
+                                    "description": null,
+                                    "rangeId": "b-1",
+                                    "blackboard": [
+                                        {
+                                            "key": "damage_resistance",
+                                            "value": 0.28,
+                                            "valueStr": null
+                                        },
+                                        {
+                                            "key": "damage_scale",
+                                            "value": 1.1,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "tokenKey": null,
+                                    "isHideTalent": false
+                                },
+                                {
+                                    "displayRangeId": false,
+                                    "upgradeDescription": "使自身与身后一格的友军获得31%<@ba.talpu>（+3%）</>的<$ba.protect>庇护</>，且造成的物理伤害提升10%",
+                                    "talentIndex": 1,
+                                    "unlockCondition": {
+                                        "phase": "PHASE_2",
+                                        "level": 60
+                                    },
+                                    "requiredPotentialRank": 4,
+                                    "prefabKey": "2",
+                                    "name": "余火之氅",
+                                    "description": null,
+                                    "rangeId": "b-1",
+                                    "blackboard": [
+                                        {
+                                            "key": "damage_resistance",
+                                            "value": 0.31,
+                                            "valueStr": null
+                                        },
+                                        {
+                                            "key": "damage_scale",
+                                            "value": 1.1,
+                                            "valueStr": null
+                                        }
+                                    ],
+                                    "tokenKey": null,
+                                    "isHideTalent": false
+                                }
+                            ]
+                        },
+                        "overrideTraitDataBundle": {
+                            "candidates": null
+                        }
+                    }
+                ],
+                "attributeBlackboard": [
+                    {
+                        "key": "max_hp",
+                        "value": 450,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "atk",
+                        "value": 130,
+                        "valueStr": null
+                    }
+                ],
+                "tokenAttributeBlackboard": {}
+            }
+        ]
+    },
+    "relics": [
+        {
+            "relicData": {
+                "id": "rogue_4_relic_legacy_171",
+                "name": "几丁质刺刃",
+                "description": "一种更有效的外骨骼生长方案。能够撕裂猎物，抵御打击，也可以化作同胞的美食。",
+                "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+                "obtainApproach": "在集成战略模式中获得",
+                "iconId": "rogue_4_relic_legacy_171",
+                "type": "RELIC",
+                "subType": "NONE",
+                "rarity": "SUPER_RARE",
+                "value": 16,
+                "sortId": 999,
+                "canSacrifice": true,
+                "unlockCondDesc": null,
+                "buffs": [
+                    {
+                        "key": "char_random_target_attribute",
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "multiplier@atk",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "multiplier@max_hp",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "effect",
+                                "value": 0,
+                                "valueStr": "relic_1_m17_buff_01_start"
+                            },
+                            {
+                                "key": "selector.profession",
+                                "value": 0,
+                                "valueStr": "warrior|sniper|tank|medic|support|caster|special|pioneer"
+                            }
+                        ]
+                    }
+                ],
+                "show": true
+            },
+            "id": "rogue_4_relic_legacy_171",
+            "name": "几丁质刺刃",
+            "value": 16,
+            "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+            "show": true,
+            "isActive": true,
+            "userActive": true,
+            "isFavorite": false,
+            "hasLayer": false,
+            "layer": 0,
+            "buffs": [
+                {
+                    "key": "char_random_target_attribute",
+                    "isActive": true,
+                    "charResult": {
+                        "atk": 1,
+                        "max_hp": 1
+                    },
+                    "enemyResult": {}
+                }
+            ]
+        },
+        {
+            "relicData": {
+                "id": "rogue_4_relic_legacy_154",
+                "name": "诸王的冠冕",
+                "description": "无名的诸王啊，纵使王国毁灭，仍愿您护佑伊比利亚。",
+                "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+                "obtainApproach": "在集成战略模式中获得",
+                "iconId": "rogue_4_relic_legacy_154",
+                "type": "RELIC",
+                "subType": "NONE",
+                "rarity": "SUPER_RARE",
+                "value": 16,
+                "sortId": 999,
+                "canSacrifice": true,
+                "unlockCondDesc": null,
+                "buffs": [
+                    {
+                        "key": "global_buff_normal",
+                        "blackboard": [
+                            {
+                                "key": "key",
+                                "value": 0,
+                                "valueStr": "rogue_2_relic_mark[king_suit]"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "char_ability_new",
+                        "blackboard": [
+                            {
+                                "key": "key",
+                                "value": 0,
+                                "valueStr": "rogue_2_atk_up[life_point][king_suit]"
+                            },
+                            {
+                                "key": "rogue_2_atk_up[king_suit].atk",
+                                "value": 0.5,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "rogue_2_atk_up[king_suit][bonus].atk",
+                                "value": 1.5,
+                                "valueStr": null
+                            }
+                        ]
+                    }
+                ],
+                "show": true
+            },
+            "id": "rogue_4_relic_legacy_154",
+            "name": "诸王的冠冕",
+            "value": 16,
+            "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+            "show": true,
+            "isActive": true,
+            "userActive": true,
+            "isFavorite": false,
+            "hasLayer": false,
+            "layer": 0,
+            "buffs": [
+                {
+                    "key": "global_buff_normal",
+                    "isActive": false,
+                    "charResult": {},
+                    "enemyResult": {}
+                },
+                {
+                    "key": "char_ability_new",
+                    "isActive": true,
+                    "charResult": {
+                        "atk": 1.5
+                    },
+                    "enemyResult": {}
+                }
+            ]
+        }
+    ]
+}

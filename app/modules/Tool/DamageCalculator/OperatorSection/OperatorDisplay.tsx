@@ -8,6 +8,7 @@ import type {
   CharData,
   CharInput,
   RelicDataExt,
+  CalculatorInput,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
@@ -16,10 +17,8 @@ import {
   applyBlackboard,
   calculator,
 } from "~/modules/Tool/DamageCalculator/calculator";
-import { useWasmStore } from "~/stores/wasmStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
-import { Button } from "@heroui/react";
 import {
   allowedBlackboardKeyMap,
   getEnemyParsedAttributes,
@@ -373,16 +372,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     ],
   );
 
-  const { getInstance } = useWasmStore();
-
-  const [wasmIns, setWasmIns] = useState<WasmModule>();
-
-  useEffect(() => {
-    getInstance("arkrog_calc").then((ins) => {
-      setWasmIns(ins as unknown as WasmModule);
-    });
-  }, [getInstance]);
-
   const relicList: RelicDataExt[] = useMemo(
     () =>
       Object.values(items![rogueKey])
@@ -396,7 +385,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   );
 
   useEffect(() => {
-    if (!wasmIns || !charsBuffInGame[activeCharName]) return;
+    if (!charsBuffInGame[activeCharName]) return;
     const charBuffInGame: CharBuffInGame = {
       atk: 0,
       maxHp: 0,
@@ -409,7 +398,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     Object.entries(inGameBuff).map(([key, value]) => {
       charBuffInGame[key] = (charBuffInGame[key] || 0) + value;
     });
-    const props = {
+    const input: CalculatorInput = {
       charInput: {
         ...charInput,
         charsBuffInGame: charBuffInGame,
@@ -429,13 +418,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           ...r,
         })), // 有效藏品列表
     };
-    console.log(props);
-
-    const calcResult = calculator(props);
+    const calcResult = calculator(input);
     // 标准打印
-    CalculatorHelper.print(props, calcResult);
+    CalculatorHelper.print(input, calcResult);
     setCalcOutput(calcResult);
-    // console.log(new Array(logs.size()).fill(0).map((_, id) => logs.get(id)));
   }, [
     activeCharName,
     charData,
@@ -452,12 +438,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     skillObject,
     uniEquipId,
     uniequip_table,
-    wasmIns,
   ]);
-
-  // useEffect(() => {
-  //   console.log("charInput", charInput);
-  // }, [charInput]);
 
   return (
     <div className="mb-4">

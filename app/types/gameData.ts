@@ -604,8 +604,14 @@ export interface CalculatorInput {
   charInput: CharInput;
   /** 干员基础数据 */
   charData: CharData;
+  /** 技能数据 */
+  skillData: SkillData;
   /** 敌人最终面板 */
   enemyInput: EnemyAttribute;
+  /** 敌人基础数据 */
+  enemyData: EnemyData;
+  /** 模组数据 */
+  uniEquipData: UniEquipData;
   /** 藏品 */
   relics: RelicWrapper[];
 }

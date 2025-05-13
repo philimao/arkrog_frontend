@@ -412,7 +412,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         .map((id) =>
           relicsMap[activeCharName][rogueKey].find((relic) => relic.id === id),
         )
-        .filter((relic) => inGameRelicNames.includes(relic!.name))
+        // .filter((relic) => inGameRelicNames.includes(relic!.name))
         .map((r) => ({
           relicData: relicList.find((relic) => relic.id === r?.id),
           ...r,

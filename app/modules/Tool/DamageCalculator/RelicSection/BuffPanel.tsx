@@ -176,6 +176,7 @@ const StyledBuffTooltipText = styled.div<{ $type: string }>`
   font-size: 0.9rem;
 `;
 
+/** Buff加成面板Tooltip */
 function BuffTooltip({ show }: { show: boolean }) {
   const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
   const charBuff = useDamageCalculatorStore(

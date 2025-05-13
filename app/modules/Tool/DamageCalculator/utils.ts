@@ -81,8 +81,7 @@ export const allowedBlackboardValueStrs = [
   "damage_scale[normal]", // 增伤
   (charData: CharData) => `damage_scale[${charData.profession.toLowerCase()}]`, // 职业队增伤（枯法）
   "modify_sp_recover[normal]", // 技力回复
-  (charData: CharData) =>
-    `modify_sp_recover[${charData.profession.toLowerCase()}]`,
+  (charData: CharData) => `modify_sp_recover[${charData.profession.toLowerCase()}]`,
   "rogue_3_tokenEvolution", // 空羽兽
   "rogue_2_hit_to_add_sp[tag]", //“讨魔义旗”
   "rogue_4_extra_aoe_damage[hand]", // 烟花之手
@@ -164,8 +163,8 @@ export const disallowedValueStrs = [
  * 藏品是否在黑名单内，是否可以生效
  * @param relicDataExt
  */
-export function isRelicActive(relicDataExt: RelicDataExt) {
-  return !disallowedRelicNames.includes(relicDataExt.name);
+export function isRelicActive(name: string) {
+  return !disallowedRelicNames.includes(name);
 }
 
 /**
@@ -175,8 +174,7 @@ export function isRelicActive(relicDataExt: RelicDataExt) {
  * @param charData
  */
 export function isBuffActive(buff: RelicBuff, charData?: CharData): boolean {
-  if (buff.blackboard.some((bb) => disallowedValueStrs.includes(bb.valueStr!)))
-    return false;
+  if (buff.blackboard.some((bb) => disallowedValueStrs.includes(bb.valueStr!))) return false;
   // 使用buff的外层key判断
   if (["char", "layer_char"].some((prefix) => buff.key.startsWith(prefix))) {
     // layer_char_xxx为可叠层藏品，如米诺斯，金杯
@@ -187,10 +185,7 @@ export function isBuffActive(buff: RelicBuff, charData?: CharData): boolean {
     return (
       valueStr?.startsWith("enemy") ||
       !charData ||
-      allowedBlackboardValueStrs.some(
-        (item) =>
-          (typeof item === "function" ? item(charData) : item) === valueStr,
-      )
+      allowedBlackboardValueStrs.some((item) => (typeof item === "function" ? item(charData) : item) === valueStr)
     );
   }
   // 均不匹配，不生效
@@ -202,17 +197,12 @@ export function isBuffActive(buff: RelicBuff, charData?: CharData): boolean {
  * @param buff
  * @param charData
  */
-export function isBlackboardActive(
-  buff: RelicBuff,
-  charData?: CharData,
-): boolean {
+export function isBlackboardActive(buff: RelicBuff, charData?: CharData): boolean {
   // 空羽兽 key=char & valueStr=token 为召唤物效果
   if (
     buff.key.startsWith("char") &&
     buff.blackboard.find(
-      (bb) =>
-        bb.key === "selector.profession" &&
-        (bb.valueStr === "token" || bb.valueStr === "trap"), // 必须是8大职业
+      (bb) => bb.key === "selector.profession" && (bb.valueStr === "token" || bb.valueStr === "trap"), // 必须是8大职业
     )
   )
     return false;
@@ -223,11 +213,7 @@ export function isBlackboardActive(
 
   let bbSelector;
   // 职业选择 warrior | pioneer | tank | support | caster | special | medic | sniper
-  if (
-    (bbSelector = buff.blackboard.find(
-      (bb) => bb.key === "selector.profession",
-    ))
-  ) {
+  if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.profession"))) {
     // 职业筛选为token且拥有召唤物，或职业筛选通过 空羽兽
     if (
       bbSelector.valueStr === "token"
@@ -237,17 +223,11 @@ export function isBlackboardActive(
       return false;
   }
   // 子职业选择
-  if (
-    (bbSelector = buff.blackboard.find(
-      (bb) => bb.key === "selector.sub_profession",
-    ))
-  ) {
+  if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.sub_profession"))) {
     if (charData.subProfessionId !== bbSelector.valueStr) return false;
   }
   // 部署位置选择 melee | ranged
-  if (
-    (bbSelector = buff.blackboard.find((bb) => bb.key === "selector.buildable"))
-  ) {
+  if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.buildable"))) {
     if (charData.position.toLowerCase() !== bbSelector.valueStr) return false;
   }
   // 是否有key在白名单中
@@ -265,9 +245,8 @@ export function isBuffForChar(buff: RelicBuff) {
   } else if (buff.key.startsWith("global")) {
     const valueStr = buff.blackboard[0].valueStr!;
     return (
-      blackboardValueStrsForChar.some((item) =>
-        item instanceof RegExp ? item.test(valueStr) : item === valueStr,
-      ) || !buff.blackboard[0].valueStr?.startsWith("enemy")
+      blackboardValueStrsForChar.some((item) => (item instanceof RegExp ? item.test(valueStr) : item === valueStr)) ||
+      !buff.blackboard[0].valueStr?.startsWith("enemy")
     );
   } else {
     console.log(buff);
@@ -307,9 +286,7 @@ export function getActiveBlackboard(buff: RelicBuff): BlackboardData[] {
     }
   }
   if (bbKey) {
-    const allowedKey = Object.keys(allowedBlackboardKeyMap).find((key) =>
-      buff.blackboard.find((bb) => bb.key === key),
-    );
+    const allowedKey = Object.keys(allowedBlackboardKeyMap).find((key) => buff.blackboard.find((bb) => bb.key === key));
     if (allowedKey) {
       const allowed = buff.blackboard.find((bb) => bb.key === allowedKey);
       return [
@@ -334,10 +311,7 @@ export function getActiveBlackboard(buff: RelicBuff): BlackboardData[] {
  * @param buff
  * @param result
  */
-export function applyBlackboard(
-  buff: RelicBuff,
-  result: Record<string, number>,
-) {
+export function applyBlackboard(buff: RelicBuff, result: Record<string, number>) {
   const activeBlackboard = getActiveBlackboard(buff);
   if (activeBlackboard.length) {
     activeBlackboard.forEach((bb) => {
@@ -355,16 +329,11 @@ export function applyBlackboard(
  * @param relicDataExt
  * @param charData
  */
-export function wrapRelicData(
-  relicDataExt: RelicDataExt,
-  charData?: CharData,
-): RelicWrapper {
+export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): RelicWrapper {
   // console.log(relicDataExt.name);
   const buffs = relicDataExt.buffs.map((buff) => {
     const isActive =
-      isRelicActive(relicDataExt) &&
-      isBuffActive(buff, charData) &&
-      isBlackboardActive(buff, charData);
+      isRelicActive(relicDataExt.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
     const charResult = {};
     const enemyResult = {};
     if (isActive) {
@@ -407,11 +376,7 @@ export function wrapRelicData(
  * @param relicWrappers
  * @param selectedRelicIds
  */
-export function finalizeRelicResults(
-  outBuff: number,
-  relicWrappers: RelicWrapper[],
-  selectedRelicIds: string[],
-) {
+export function finalizeRelicResults(outBuff: number, relicWrappers: RelicWrapper[], selectedRelicIds: string[]) {
   const charResult: Record<string, number> = {};
   const inGameResult: Record<string, number> = {};
   const enemyResult: Record<string, number> = {};
@@ -421,23 +386,30 @@ export function finalizeRelicResults(
     charResult["atk"] = outBuff;
     charResult["def"] = outBuff;
   }
-  const run = (
-    relicWrapper: RelicWrapper,
-    buffResult: Record<string, number>,
-    result: Record<string, number>,
-  ) => {
+  const run = (relicWrapper: RelicWrapper, buffResult: Record<string, number>, result: Record<string, number>) => {
     for (const key in buffResult) {
-      result[key] =
-        (result[key] || 0) + (relicWrapper.layer || 1) * buffResult[key];
+      // 物理易伤、法术易伤、真伤易伤：多个buff效果取合, 但需要减去1
+      if (["damage_scale[phy]", "damage_scale[mag]", "damage_scale[pure]"].includes(key)) {
+        result[key] = (result[key] || 1) + (buffResult[key] - 1);
+        continue;
+      }
+      // 元素易伤: 多个buff效果相乘
+      if (key === "damage_scale[ep]") {
+        if (result[key]) {
+          result[key] *= buffResult[key];
+        } else {
+          result[key] = buffResult[key];
+        }
+        continue;
+      }
+      // 其他buff效果取合
+      result[key] = (result[key] || 0) + (relicWrapper.layer || 1) * buffResult[key];
     }
   };
   relicWrappers
     // 用户选择的藏品
     .filter(
-      (relicWrapper) =>
-        selectedRelicIds.includes(relicWrapper.id) &&
-        relicWrapper.isActive &&
-        relicWrapper.userActive,
+      (relicWrapper) => selectedRelicIds.includes(relicWrapper.id) && relicWrapper.isActive && relicWrapper.userActive,
     )
     .forEach((relicWrapper) => {
       relicWrapper.buffs
@@ -456,9 +428,7 @@ export function finalizeRelicResults(
   return { charResult, inGameResult, enemyResult };
 }
 
-export function getEnemyParsedAttributes(
-  enemyData: EnemyDataParsed,
-): Record<string, number | string | boolean> {
+export function getEnemyParsedAttributes(enemyData: EnemyDataParsed): Record<string, number | string | boolean> {
   const attributes: Record<string, number | string | boolean> = {};
   Object.keys(enemyData.attributes).forEach((key) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -511,9 +481,7 @@ export function parseEnemyData(enemyData: EnemyData): EnemyDataParsed {
       epResistance: parseDefinedData(attributes.epResistance),
     },
     levelType: parseDefinedData(enemyData.levelType),
-    rangedRadius: enemyData.rangedRadius
-      ? parseDefinedData(enemyData.rangedRadius)
-      : 0,
+    rangedRadius: enemyData.rangedRadius ? parseDefinedData(enemyData.rangedRadius) : 0,
   };
 }
 

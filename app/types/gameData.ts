@@ -213,17 +213,29 @@ export interface BlackboardData {
 
 // 阶段面板数据
 export interface CharAttribute {
+  /** 最大生命值 */
   maxHp: number;
+  /** 攻击力 */
   atk: number;
+  /** 防御力 */
   def: number;
+  /** 法术抗性 */
   magicResistance: number;
+  /** 部署费用 */
   cost: number;
+  /** 阻挡数 */
   blockCnt: number;
+  /** 移动速度 */
   moveSpeed: number;
+  /** 攻击速度 */
   attackSpeed: number;
+  /** 基础攻击间隔 */
   baseAttackTime: number;
+  /** 再部署时间 */
   respawnTime: number;
+  /** 每秒生命恢复 */
   hpRecoveryPerSec: number;
+  /** 每秒技力恢复 */
   spRecoveryPerSec: number;
   maxDeployCount: number;
   maxDeckStackCnt: number;
@@ -370,6 +382,7 @@ export interface RelicWrapper {
   layer: number;
   show: boolean;
   buffs: RelicWrapperBuff[];
+  relicData: RelicData;
 }
 
 /**

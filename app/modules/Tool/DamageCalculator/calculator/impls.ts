@@ -1,8 +1,8 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 
-const implMap = new Map<string, (input: CalculatorInput) => CalculatorOutput>();
-
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
+
+const implMap = new Map<string, CalculatorImpl>();
 
 /**
  * 注册干员计算器实现

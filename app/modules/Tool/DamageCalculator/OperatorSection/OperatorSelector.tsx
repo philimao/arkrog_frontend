@@ -23,14 +23,15 @@ const StyledSelectorWrapper = styled.div`
 export default function OperatorSelectorWrapper() {
   const { character_table } = useGameDataStore();
   const { charList, setCharData } = useDamageCalculatorStore();
-
+  const allowCharNames = ["赫德雷", "Mon3tr", "维娜·维多利亚", "维什戴尔", "空弦", "玛恩纳", "安洁莉娜", "新约能天使"];
   useEffect(() => {
-    ["赫德雷", "Mon3tr", "维娜·维多利亚", "维什戴尔"]
-      .map((charName) =>
-        Object.values(character_table!).find(
-          (charData) => charData.name === charName,
-        ),
-      )
+    Object.values(character_table!)
+      .filter((CharData) => {
+        return !["TOKEN", "TRAP"].includes(CharData.profession) && allowCharNames.includes(CharData.name);
+      })
+      .sort((char1, char2) => {
+        return allowCharNames.indexOf(char1.name) - allowCharNames.indexOf(char2.name);
+      })
       .forEach((charData, i) => {
         setCharData(charData!, i);
       });

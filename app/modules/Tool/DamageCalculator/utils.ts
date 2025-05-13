@@ -150,6 +150,7 @@ export const disallowedRelicNames = [
   "衣卡兹",
   "文学的开端", // 这次不做
   "Scout的狙击镜",
+  "奴隶猎捕器",
 ];
 
 /**

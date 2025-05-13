@@ -385,7 +385,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   );
 
   useEffect(() => {
-    if (!charsBuffInGame[activeCharName]) return;
+    if (!charInput.attribute || !charsBuffInGame[activeCharName]) return;
     const charBuffInGame: CharBuffInGame = {
       atk: 0,
       maxHp: 0,

@@ -33,7 +33,7 @@ export default function RelicsContainer({
 }: {
   relicsWrappers: RelicWrapper[];
 }) {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
   return (
     <StyledRelicsContainer>
@@ -43,14 +43,14 @@ export default function RelicsContainer({
         setActiveMode={setMode}
       >
         <StyledModeSelector>
+          <StyledModeOption $active={showAll} onClick={() => setShowAll(true)}>
+            显示全部
+          </StyledModeOption>
           <StyledModeOption
             $active={!showAll}
             onClick={() => setShowAll(false)}
           >
             隐藏无关
-          </StyledModeOption>
-          <StyledModeOption $active={showAll} onClick={() => setShowAll(true)}>
-            显示全部
           </StyledModeOption>
         </StyledModeSelector>
       </StyledTitle>

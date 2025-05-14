@@ -144,6 +144,11 @@ export default function UploadBox({
     }
   };
 
+  const resetFileSelection = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+    const element = e.target as HTMLInputElement;
+    element.value = '';
+  };
+
   // 拖动文件相关处理，如果缺少drop时会打开新窗口
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -221,6 +226,7 @@ export default function UploadBox({
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileSelect}
+        onClick={resetFileSelection}
       />
       <StyledUploadFileTable>
         <tbody>

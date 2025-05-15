@@ -11,3 +11,8 @@ export function calculator(input: CalculatorInput): CalculatorOutput {
   const impl = getCalculatorImpl(input.charData.appellation);
   return impl(input);
 }
+
+export function calculator_beta(input: CalculatorInput): CalculatorOutput {
+  const impl = getCalculatorImpl(input.charData.appellation + "_beta");
+  return impl(input);
+}

@@ -578,10 +578,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           )}
         </div>
       </StyledOperatorDisplayWrapper>
-      <div className="flex gap-4">
-        {/* <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} /> */}
+      {/* <div className="flex gap-4">
+        <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
         <OperatorModifier />
-      </div>
+      </div> */}
       <div className="flex gap-4">
         {result && <OperatorAttributesOld result={result} />}
         <OperatorModifier />

@@ -1,14 +1,6 @@
 import type { BasicObject } from "~/types/core";
 
-export type RogueKey =
-  | "rogue_1"
-  | "rogue_2"
-  | "rogue_3"
-  | "rogue_4"
-  | "rogue_5"
-  | "rogue_6"
-  | "rogue_7"
-  | "rogue_8";
+export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
 
 // 游戏数据
 export interface GameData {
@@ -181,15 +173,7 @@ type SkillId = `skchr_${string}`;
 
 export type SkillsBasic = Record<SkillId, SkillBasicData>;
 
-export type Profession =
-  | "VANGUARD"
-  | "SNIPER"
-  | "CASTER"
-  | "MEDIC"
-  | "GUARD"
-  | "DEFENDER"
-  | "SPECIALIST"
-  | "SUPPORTER";
+export type Profession = "VANGUARD" | "SNIPER" | "CASTER" | "MEDIC" | "GUARD" | "DEFENDER" | "SPECIALIST" | "SUPPORTER";
 
 // 干员基础信息
 export interface CharBasicData {
@@ -361,6 +345,8 @@ export type RelicDataExt = ItemData &
 export interface RelicData {
   id: `rogue_${number}_${string}`;
   buffs: RelicBuff[];
+  /** 藏品效果 */
+  usage: string;
 }
 
 export interface RelicWrapperBuff {
@@ -414,6 +400,8 @@ export interface CharInput {
   potential: number;
   /** 干员在游戏中的增益 */
   charsBuffInGame: CharBuffInGame;
+  /** 科技加成 */
+  tech: number;
 }
 
 /** 干员在游戏中的增益 */

@@ -1,5 +1,7 @@
 import type {
+  AttributeModifier,
   BlackboardData,
+  CharAttributeExt,
   CharData,
   DefinedData,
   EnemyData,
@@ -321,6 +323,62 @@ export function applyBlackboard(buff: RelicBuff, result: Record<string, number>)
   } else {
     console.log(buff);
     throw new Error("active blackboard not found");
+  }
+}
+
+/** 应用黑板数组(来自模组) */
+export function applyBlackboardData(bb: BlackboardData, result: CharAttributeExt) {
+  switch (bb.key) {
+    case "damageScale": {
+      result.damageScale += bb.value - 1;
+      break;
+    }
+    case "max_hp": {
+      result.maxHp += bb.value;
+      break;
+    }
+    case "atk": {
+      result.atk += bb.value;
+      break;
+    }
+  }
+}
+
+/**
+ * 应用潜能效果
+ * @param mod
+ * @param result
+ */
+export function applyAttrModifiers(mod: AttributeModifier, result: CharAttributeExt) {
+  switch (mod.attributeType) {
+    case "COST": {
+      result.cost += mod.value;
+      break;
+    }
+    case "MAX_HP": {
+      result.maxHp += mod.value;
+      break;
+    }
+    case "ATK": {
+      result.atk += mod.value;
+      break;
+    }
+    case "DEF": {
+      result.def += mod.value;
+      break;
+    }
+    case "ATTACK_SPEED": {
+      result.attackSpeed += mod.value;
+      break;
+    }
+    case "MAGIC_RESISTANCE": {
+      result.magicResistance += mod.value;
+      break;
+    }
+    case "RESPAWN_TIME": {
+      result.respawnTime += mod.value;
+      break;
+    }
   }
 }
 

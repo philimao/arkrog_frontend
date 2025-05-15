@@ -15,3 +15,4 @@ build
 Dockerfile
 scripts/*
 wasm/*
+.history

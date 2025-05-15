@@ -8,6 +8,7 @@ import type {
   CharAttributeExt,
   CharInput,
   CharAttribute,
+  RelicData,
 } from "~/types/gameData";
 import { isRelicActive, applyAttrModifiers, applyBlackboardData } from "../utils";
 import { BUFF_KEYS } from "./constant";
@@ -44,11 +45,11 @@ interface RelicAnalysisResult {
     /** 防御力 */
     def: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 攻击速度来源 */
-    attack_speed_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    attack_speed_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 防御力来源 */
-    def_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    def_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
   };
   /** 藏品rune 乘算 */
   relic_rune_mul: {
@@ -84,7 +85,7 @@ interface RelicAnalysisResult {
     /** 攻击力 */
     atk: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
   };
   /** 全局Buff 最终乘算 */
   global_buff_final_mul: {
@@ -125,14 +126,21 @@ export class CalculatorHelper {
   }
 
   /** 计算局外面板 */
-  static calculatePanel(charInput: CharInput, charData: CharData, relics: RelicWrapper[]): CharAttributeExt {
-    const analysisResult = CalculatorHelper.analyzeRelics({ tech: charInput.tech, charData, relics });
+  static calculatePanel(input: { charInput: CharInput; charData: CharData; relics: RelicWrapper[] }): CharAttributeExt {
+    const { charInput, charData, relics } = input;
+    const analysisResult = CalculatorHelper.analyzeRelics({ charInput, charData, relics });
     // 获取精英化等级属性
     const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
 
     const result = { ...attribute, damageScale: 1 } as CharAttributeExt;
     const consoleData = [];
-    consoleData.push({ type: "基础属性", ...result });
+    consoleData.push({
+      type: "基础属性",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     /** 应用信赖效果 */
     const favor = charData.favorKeyFrames[1].data;
@@ -148,13 +156,25 @@ export class CalculatorHelper {
         result[typedKey] = favor[typedKey];
       }
     }
-    consoleData.push({ type: "应用信赖效果", ...result });
+    consoleData.push({
+      type: "信赖效果",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     /** 应用潜能效果 */
     for (const pot of charData.potentialRanks.slice(0, charInput.potential)) {
       pot.buff?.attributes.attributeModifiers.forEach((mod) => applyAttrModifiers(mod, result));
     }
-    consoleData.push({ type: "应用潜能效果", ...result });
+    consoleData.push({
+      type: "潜能效果",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     /** 应用模组效果 */
     const uniEquip = charInput.uniEquip;
@@ -178,19 +198,37 @@ export class CalculatorHelper {
         }
       }
     }
-    consoleData.push({ type: "应用模组效果", ...result });
+    consoleData.push({
+      type: "模组效果",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     /** 应用局外加成(加算) */
     result.atk += analysisResult.relic_rune_add.atk;
     result.attackSpeed += analysisResult.relic_rune_add.attack_speed;
     result.def += analysisResult.relic_rune_add.def;
-    consoleData.push({ type: "应用局外加成(加算)", ...result });
+    consoleData.push({
+      type: "局外加成(加算)",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     /** 应用局外加成(乘算) */
     result.atk = Math.round(result.atk * analysisResult.relic_rune_mul.atk);
     result.def = Math.round(result.def * analysisResult.relic_rune_mul.def);
     result.maxHp = Math.round(result.maxHp * analysisResult.relic_rune_mul.max_hp);
-    consoleData.push({ type: "应用局外加成(乘算)", ...result });
+    consoleData.push({
+      type: "局外加成(乘算)",
+      攻击力: result.atk,
+      攻击速度: result.attackSpeed,
+      防御力: result.def,
+      最大生命值: result.maxHp,
+    });
 
     console.table(consoleData);
     return result;
@@ -204,8 +242,8 @@ export class CalculatorHelper {
    * @param input.relics 藏品
    * @deprecated 还不能用
    */
-  static analyzeRelics(input: { tech: number; charData: CharData; relics: RelicWrapper[] }) {
-    const { tech, charData, relics } = input;
+  static analyzeRelics(input: { charInput: CharInput; charData: CharData; relics: RelicWrapper[] }) {
+    const { charInput, charData, relics } = input;
     const result: RelicAnalysisResult = {
       invalidRelics: [],
       categories: {
@@ -255,6 +293,7 @@ export class CalculatorHelper {
       },
     };
     // 科技树加成
+    const tech = charInput.tech;
     if (tech > 1) {
       result.relic_rune_mul.atk += tech - 1;
       result.relic_rune_mul.atk_source.push({ name: "科技树", usage: "科技树加成" });
@@ -262,6 +301,27 @@ export class CalculatorHelper {
       result.relic_rune_mul.def_source.push({ name: "科技树", usage: "科技树加成" });
       result.relic_rune_mul.max_hp += tech - 1;
       result.relic_rune_mul.max_hp_source.push({ name: "科技树", usage: "科技树加成" });
+    }
+    if (charInput.attributeModifier.atkBase) {
+      result.relic_rune_add.atk += charInput.attributeModifier.atkBase;
+      result.relic_rune_add.atk_source.push({
+        name: "用户修正属性",
+        usage: `用户修正属性 +${charInput.attributeModifier.atkBase}`,
+      });
+    }
+    if (charInput.attributeModifier.atkPercent) {
+      result.relic_rune_mul.atk += charInput.attributeModifier.atkPercent / 100;
+      result.relic_rune_mul.atk_source.push({
+        name: "用户修正属性",
+        usage: `用户修正属性 +${charInput.attributeModifier.atkPercent}%`,
+      });
+    }
+    if (charInput.attributeModifier.atkFinal) {
+      result.global_buff_final_add.atk += charInput.attributeModifier.atkFinal;
+      result.global_buff_final_add.atk_source.push({
+        name: "用户修正属性",
+        usage: `用户修正属性 +${charInput.attributeModifier.atkFinal}`,
+      });
     }
     // 筛选藏品
     for (const relic of relics) {
@@ -319,8 +379,16 @@ export class CalculatorHelper {
     result.categories.relic_rune_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
       if (result.relic_rune_mul.atk) {
-        result.relic_rune_mul.atk *= blackboard.atk;
+        result.relic_rune_mul.atk += blackboard.atk;
         result.relic_rune_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+      }
+      if (result.relic_rune_mul.def) {
+        result.relic_rune_mul.def += blackboard.def;
+        result.relic_rune_mul.def_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+      }
+      if (result.relic_rune_mul.max_hp) {
+        result.relic_rune_mul.max_hp += blackboard.max_hp;
+        result.relic_rune_mul.max_hp_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
     // 计算全局Buff 直接加算
@@ -335,7 +403,7 @@ export class CalculatorHelper {
     result.categories.global_buff_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
       if (result.global_buff_mul.atk) {
-        result.global_buff_mul.atk *= blackboard.atk;
+        result.global_buff_mul.atk += blackboard.atk;
         result.global_buff_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
@@ -351,7 +419,7 @@ export class CalculatorHelper {
     result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
       if (result.global_buff_final_mul.atk) {
-        result.global_buff_final_mul.atk *= blackboard.atk;
+        result.global_buff_final_mul.atk += blackboard.atk;
         result.global_buff_final_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
@@ -370,11 +438,14 @@ export class CalculatorHelper {
       attack_speed: number;
       /** 防御力 */
       def: number;
+      /** 最大生命值 */
+      max_hp: number;
     } = {
       key: "char",
       atk: 0,
       attack_speed: 0,
       def: 0,
+      max_hp: 0,
     };
     buff.blackboard.forEach((item) => {
       if (item.key === "key") {
@@ -391,6 +462,9 @@ export class CalculatorHelper {
       }
       if (item.key === "atk") {
         blackboard.atk = item.value;
+      }
+      if (item.key === "max_hp") {
+        blackboard.max_hp = item.value;
       }
     });
     return blackboard;
@@ -417,7 +491,7 @@ export class CalculatorHelper {
     console.log(output);
     console.groupEnd();
     CalculatorHelper.printRelicAnalysisResult(
-      CalculatorHelper.analyzeRelics({ tech: input.charInput.tech, charData: input.charData, relics: input.relics }),
+      CalculatorHelper.analyzeRelics({ charInput: input.charInput, charData: input.charData, relics: input.relics }),
     );
     console.groupEnd();
     console.groupCollapsed("查看结构化输出");
@@ -473,5 +547,18 @@ export class CalculatorHelper {
     ];
     console.table(btd);
     console.groupEnd();
+  }
+
+  static printRelicKeyMap(relicList: RelicData[]) {
+    const relicBuff: { [key: string]: string[] } = {};
+    relicList.forEach((relic) => {
+      relic.buffs.forEach((buff) => {
+        if (!relicBuff[buff.key]) {
+          relicBuff[buff.key] = [];
+        }
+        relicBuff[buff.key].push(relic.name);
+      });
+    });
+    console.log("藏品Buff Key Map", relicBuff);
   }
 }

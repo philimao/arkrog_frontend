@@ -347,6 +347,8 @@ export interface RelicData {
   buffs: RelicBuff[];
   /** 藏品效果 */
   usage: string;
+  /** 藏品名称 */
+  name: string;
 }
 
 export interface RelicWrapperBuff {
@@ -402,6 +404,15 @@ export interface CharInput {
   charsBuffInGame: CharBuffInGame;
   /** 科技加成 */
   tech: number;
+  /** 属性修正 */
+  attributeModifier: {
+    /** 攻击力 藏品rune加算 */
+    atkBase: number;
+    /** 攻击力 藏品rune乘算 (atkPercent / 100)% */
+    atkPercent: number;
+    /** 攻击力 最终加算(鼓舞加算) */
+    atkFinal: number;
+  };
 }
 
 /** 干员在游戏中的增益 */

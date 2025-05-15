@@ -89,7 +89,7 @@ export function OperatorAttributesOld({ result }: { result: CharAttributeExt }) 
 export default function OperatorAttributes(props: { charData: CharData, charInput: CharInput, relics: RelicWrapper[] }) {
   const [result, setResult] = useState<CharAttributeExt | null>(null);
   useEffect(() => {
-    setResult(CalculatorHelper.calculatePanel(props.charInput, props.charData, props.relics));
+    setResult(CalculatorHelper.calculatePanel({ charInput: props.charInput, charData: props.charData, relics: props.relics }));
   }, [props.charData, props.charInput, props.relics]);
   return <StyledAttributeWrapper>
     {result && (

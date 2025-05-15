@@ -352,6 +352,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         damageScale: 0,
       },
       tech: parseFloat(outBuff),
+      attributeModifier: charsModifier[activeCharName],
     }),
     [
       frameIndex,
@@ -366,6 +367,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquipId,
       uniEquipLevel,
       outBuff,
+      charsModifier,
+      activeCharName,
     ],
   );
 
@@ -381,27 +384,18 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     [items, relics, rogueKey],
   );
 
+  /** 选择的藏品 */
   const selectedRelics = useMemo(() => {
     return selectedIds
       .map((id) =>
-        relicsMap[activeCharName][rogueKey].find((relic) => relic.id === id),
+        relicsMap[activeCharName]?.[rogueKey]?.find((relic) => relic.id === id),
       )
-        .map((r) => ({
-          relicData: relicList.find((relic) => relic.id === r?.id),
-          ...r,
-        })) as RelicWrapper[]
+      .filter((r) => r?.userActive)
+      .map((r) => ({
+        relicData: relicList.find((relic) => relic.id === r?.id),
+        ...r,
+      })) as RelicWrapper[]
   }, [relicList, relicsMap, activeCharName, rogueKey, selectedIds]);
-  // console.log("藏品总结", relicList);
-  // const relicBuff: { [key: string]: string[] } = {};
-  // relicList.forEach((relic) => {
-  //   relic.buffs.forEach((buff) => {
-  //     if (!relicBuff[buff.key]) {
-  //       relicBuff[buff.key] = [];
-  //     }
-  //     relicBuff[buff.key].push(relic.name);
-  //   });
-  // });
-  // console.log("藏品Buff总结", relicBuff);
 
   useEffect(() => {
     if (!charInput.attribute || !charsBuffInGame[activeCharName]) return;
@@ -441,7 +435,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     // 标准打印
     CalculatorHelper.print(input, calcResult);
     CalculatorHelper.printRelicAnalysisResult(CalculatorHelper.analyzeRelics({
-      tech: input.charInput.tech,
+      charInput: input.charInput,
       charData: input.charData,
       relics: relicList.map((relic) => {
         return {
@@ -578,13 +572,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           )}
         </div>
       </StyledOperatorDisplayWrapper>
-      {/* <div className="flex gap-4">
-        <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
+      <div className="flex gap-4">
+        { charInput.attributeModifier && <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} /> }
         <OperatorModifier />
-      </div> */}
+      </div>
       <div className="flex gap-4">
         {result && <OperatorAttributesOld result={result} />}
-        <OperatorModifier />
       </div>
     </div>
   );

@@ -1,14 +1,7 @@
 import { create } from "zustand/index";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
-import type {
-  CharData,
-  EnemyData,
-  EnemyDataParsed,
-  RogueKey,
-  RelicWrapper,
-  CalculatorOutput,
-} from "~/types/gameData";
+import type { CharData, EnemyData, EnemyDataParsed, RogueKey, RelicWrapper, CalculatorOutput } from "~/types/gameData";
 
 interface AttributeModifier {
   atkBase: number;
@@ -42,23 +35,11 @@ interface DamageCalculatorAction {
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
   setActiveCharName: (charName: string) => void;
-  setRelicWrapper: (
-    charName: string,
-    rogueKey: RogueKey,
-    relics: RelicWrapper[],
-  ) => void;
+  setRelicWrapper: (charName: string, rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   toggleShowRelics: () => void;
   setRelicLayer: (id: string, layer: string) => string;
-  updateRelic: (
-    id: string,
-    key: string,
-    value: number | string | boolean,
-  ) => void;
-  updateRelics: (
-    ids: string[],
-    key: string,
-    value: number | string | boolean,
-  ) => void;
+  updateRelic: (id: string, key: string, value: number | string | boolean) => void;
+  updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
   setSelectedIds: (ids: string[]) => void;
   toggleRelicSelection: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
@@ -70,20 +51,15 @@ interface DamageCalculatorAction {
   setCalcOutput: (output: CalculatorOutput) => void;
 }
 
-export const useDamageCalculatorStore = create<
-  DamageCalculatorStore & DamageCalculatorAction
->()(
+export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCalculatorAction>()(
   devtools(
     immer((set) => ({
       rogueKey: "rogue_4" as RogueKey,
-      setRogueKey: (rogueKey) =>
-        set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
+      setRogueKey: (rogueKey) => set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
       difficulty: "N18",
-      setDifficulty: (difficulty) =>
-        set((state) => ({ ...state, difficulty }), undefined, "setDifficulty"),
+      setDifficulty: (difficulty) => set((state) => ({ ...state, difficulty }), undefined, "setDifficulty"),
       outBuff: "1.3",
-      setOutBuff: (outBuff: string) =>
-        set((state) => ({ ...state, outBuff }), undefined, "setOutBuff"),
+      setOutBuff: (outBuff: string) => set((state) => ({ ...state, outBuff }), undefined, "setOutBuff"),
       charList: [] as CharData[],
       addCharData: () =>
         set(
@@ -121,11 +97,7 @@ export const useDamageCalculatorStore = create<
         ),
       activeCharName: "",
       setActiveCharName: (charName) =>
-        set(
-          (state) => ({ ...state, activeCharName: charName }),
-          undefined,
-          "setActiveCharName",
-        ),
+        set((state) => ({ ...state, activeCharName: charName }), undefined, "setActiveCharName"),
       showRelics: false as boolean,
       toggleShowRelics: () =>
         set(
@@ -151,13 +123,9 @@ export const useDamageCalculatorStore = create<
       updateRelic: (id, key, value) =>
         set(
           (state) => {
-            const relicWrappers = state.relicsMap[state.activeCharName]?.[
-              state.rogueKey
-            ] as RelicWrapper[];
+            const relicWrappers = state.relicsMap[state.activeCharName]?.[state.rogueKey] as RelicWrapper[];
             if (relicWrappers) {
-              relicWrappers.find((relicWrapper) => relicWrapper.id === id)![
-                key as keyof RelicWrapper
-              ] = value as never;
+              relicWrappers.find((relicWrapper) => relicWrapper.id === id)![key as keyof RelicWrapper] = value as never;
             }
           },
           false,
@@ -166,9 +134,7 @@ export const useDamageCalculatorStore = create<
       updateRelics: (ids, key, value) =>
         set(
           (state) => {
-            const relicWrappers = state.relicsMap[state.activeCharName]?.[
-              state.rogueKey
-            ] as RelicWrapper[];
+            const relicWrappers = state.relicsMap[state.activeCharName]?.[state.rogueKey] as RelicWrapper[];
             if (relicWrappers) {
               relicWrappers
                 .filter((relicWrapper) => ids.includes(relicWrapper.id))
@@ -184,9 +150,7 @@ export const useDamageCalculatorStore = create<
         const layerNumber = parseInt(layer);
         set(
           (state) => {
-            state.relicsMap[state.activeCharName][state.rogueKey].find(
-              (r) => r.id === id,
-            )!.layer = layerNumber || 0;
+            state.relicsMap[state.activeCharName][state.rogueKey].find((r) => r.id === id)!.layer = layerNumber || 0;
           },
           undefined,
           "setRelicLayer",
@@ -194,12 +158,7 @@ export const useDamageCalculatorStore = create<
         return layerNumber.toString();
       },
       selectedIds: [] as string[],
-      setSelectedIds: (ids) =>
-        set(
-          (state) => ({ ...state, selectedIds: ids }),
-          undefined,
-          "setSelectedIds",
-        ),
+      setSelectedIds: (ids) => set((state) => ({ ...state, selectedIds: ids }), undefined, "setSelectedIds"),
       toggleRelicSelection: (id) => {
         set(
           (state) => {
@@ -237,12 +196,7 @@ export const useDamageCalculatorStore = create<
       enemyBuff: {} as Record<string, number>,
       charsBuff: {} as Record<string, Record<string, number>>,
       charsBuffInGame: {} as Record<string, Record<string, number>>,
-      setEnemyBuff: (buff) =>
-        set(
-          (state) => ({ ...state, enemyBuff: buff }),
-          undefined,
-          "setEnemyBuff",
-        ),
+      setEnemyBuff: (buff) => set((state) => ({ ...state, enemyBuff: buff }), undefined, "setEnemyBuff"),
       setCharsBuff: (charName, buff) => {
         set(
           (state) => {

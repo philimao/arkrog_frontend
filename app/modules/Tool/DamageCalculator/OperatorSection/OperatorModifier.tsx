@@ -37,7 +37,7 @@ export default function OperatorModifier() {
 
   useEffect(() => {
     handleBlur();
-  }, []);
+  }, [activeCharName]);
 
   return (
     <div className="flex flex-col gap-2">

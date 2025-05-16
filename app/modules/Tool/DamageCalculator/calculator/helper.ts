@@ -49,6 +49,10 @@ export interface RelicAnalysisResult {
     def: number;
     /** 部署费用 */
     cost: number;
+    /** 每秒生命回复 */
+    hp_recovery_per_sec: number;
+    /** 每秒技力回复 */
+    sp_recovery_per_sec: number;
     /** 最大生命值来源 */
     max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 攻击力来源 */
@@ -59,6 +63,22 @@ export interface RelicAnalysisResult {
     def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 部署费用来源 */
     cost_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    /** 每秒生命回复来源 */
+    hp_recovery_per_sec_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 每秒技力回复来源 */
+    sp_recovery_per_sec_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
   };
   /** 藏品rune 乘算 */
   relic_rune_mul: {
@@ -105,7 +125,18 @@ export interface RelicAnalysisResult {
   };
   /** 全局Buff 堆叠 */
   global_buff_stack: {
+    /** 通用增伤 */
     damage_scale: number;
+    /** 物理增伤 */
+    damage_scale_phy: number;
+    /** 法术增伤 */
+    damage_scale_mag: number;
+    /** 真实增伤 */
+    damage_scale_pure: number;
+    /** 敌人防御增加 */
+    // enemy_def_add: number;
+    /** 敌人防御增加 */
+    // enemy_def_mul: number;
   };
 }
 /**
@@ -159,6 +190,10 @@ export class CalculatorHelper {
         def_source: [],
         cost: 0,
         cost_source: [],
+        hp_recovery_per_sec: 0,
+        hp_recovery_per_sec_source: [],
+        sp_recovery_per_sec: 0,
+        sp_recovery_per_sec_source: [],
       },
       relic_rune_mul: {
         atk: 1,
@@ -186,6 +221,9 @@ export class CalculatorHelper {
       },
       global_buff_stack: {
         damage_scale: 1,
+        damage_scale_phy: 1,
+        damage_scale_mag: 1,
+        damage_scale_pure: 1,
       },
     };
   }
@@ -311,11 +349,18 @@ export class CalculatorHelper {
     result.def += context.relic_rune_add.def;
     result.maxHp += context.relic_rune_add.max_hp;
     result.cost += context.relic_rune_add.cost;
+    result.hpRecoveryPerSec += context.relic_rune_add.hp_recovery_per_sec;
 
     /** 应用局外加成(乘算) */
     result.atk = Math.round(result.atk * context.relic_rune_mul.atk);
     result.def = Math.round(result.def * context.relic_rune_mul.def);
     result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp);
+
+    /** 局内加算 */
+    /** 局内乘算 */
+    /** 最终加算 */
+    /** 最终乘算 */
+
     return result;
   }
 
@@ -541,6 +586,7 @@ export class CalculatorHelper {
       // 藏品rune 加算
       relic.relicData.buffs.forEach((buff) => {
         if (!CalculatorHelper.isRelicForChar(buff, relic, charData)) {
+          result.categories.other.push({ buff, relic });
           return;
         }
         if (BUFF_KEYS.藏品rune.加算.includes(buff.key)) {
@@ -575,6 +621,7 @@ export class CalculatorHelper {
           value: blackboard.atk,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
       if (blackboard.attack_speed) {
@@ -584,6 +631,7 @@ export class CalculatorHelper {
           value: blackboard.attack_speed * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
       if (blackboard.def) {
@@ -593,6 +641,7 @@ export class CalculatorHelper {
           value: blackboard.def,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
       if (blackboard.cost) {
@@ -602,6 +651,17 @@ export class CalculatorHelper {
           value: blackboard.cost,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
+        });
+      }
+      if (blackboard.hp_recovery_per_sec) {
+        result.relic_rune_add.hp_recovery_per_sec += blackboard.hp_recovery_per_sec;
+        result.relic_rune_add.hp_recovery_per_sec_source.push({
+          buff,
+          value: blackboard.hp_recovery_per_sec,
+          usage: relic.relicData.usage,
+          name: relic.name,
+          relic,
         });
       }
     });
@@ -615,6 +675,7 @@ export class CalculatorHelper {
           value: blackboard.atk,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
       if (blackboard.def) {
@@ -624,6 +685,7 @@ export class CalculatorHelper {
           value: blackboard.def,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
       if (blackboard.max_hp) {
@@ -633,6 +695,7 @@ export class CalculatorHelper {
           value: blackboard.max_hp,
           usage: relic.relicData.usage,
           name: relic.name,
+          relic,
         });
       }
     });
@@ -687,6 +750,10 @@ export class CalculatorHelper {
       max_hp: number;
       /** 部署费用 */
       cost: number;
+      /** 每秒生命回复 */
+      hp_recovery_per_sec: number;
+      /** 每秒技力回复 */
+      sp_recovery_per_sec: number;
     } = {
       key: "char",
       atk: 0,
@@ -694,6 +761,8 @@ export class CalculatorHelper {
       def: 0,
       max_hp: 0,
       cost: 0,
+      hp_recovery_per_sec: 0,
+      sp_recovery_per_sec: 0,
     };
     buff.blackboard.forEach((item) => {
       if (item.key === "key") {
@@ -717,15 +786,18 @@ export class CalculatorHelper {
       if (item.key === "cost") {
         blackboard.cost = item.value;
       }
+      if (item.key === "hp_recovery_per_sec") {
+        blackboard.hp_recovery_per_sec = item.value;
+      }
+      if (item.key === "sp_recovery_per_sec") {
+        blackboard.sp_recovery_per_sec = item.value;
+      }
     });
     return blackboard;
   }
 
   /** 该藏品Buff对干员是否生效 */
   static isRelicForChar(buff: RelicBuff, relic: RelicWrapper, charData: CharData): boolean {
-    console.log("isRelicForChar", isRelicActive(relic.name));
-    console.log("isBuffActive", isBuffActive(buff, charData));
-    console.log("isBlackboardActive", isBlackboardActive(buff, charData));
     const isActive = isRelicActive(relic.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
     return isActive;
   }
@@ -782,7 +854,7 @@ export class CalculatorHelper {
   }
 
   static printRelicAnalysisResult(result: RelicAnalysisResult) {
-    console.groupCollapsed("查看加成结果");
+    console.groupCollapsed("加成详细数据");
     console.log(result);
     console.log("藏品rune 加算", result.relic_rune_add);
     console.log("藏品rune 乘算", result.relic_rune_mul);
@@ -791,20 +863,27 @@ export class CalculatorHelper {
     console.log("全局Buff 最终加算", result.global_buff_final_add);
     console.log("全局Buff 最终乘算", result.global_buff_final_mul);
     console.log("全局Buff 堆叠", result.global_buff_stack);
+    console.groupEnd();
+    console.groupCollapsed("加成表格");
     const btd = [
-      {
-        计算方式: "局外加算",
-        攻击力: result.relic_rune_add.atk,
-        攻击速度: result.relic_rune_add.attack_speed,
-        防御力: result.relic_rune_add.def,
-      },
-      { 计算方式: "局外乘算", 攻击力: result.relic_rune_mul.atk },
-      { 计算方式: "局内直接加算", 攻击力: result.global_buff_add.atk },
-      { 计算方式: "局内直接乘算", 攻击力: result.global_buff_mul.atk },
-      { 计算方式: "局内最终加算", 攻击力: result.global_buff_final_add.atk },
-      { 计算方式: "局内最终乘算", 攻击力: result.global_buff_final_mul.atk },
-      { 计算方式: "全局Buff 堆叠", 攻击力: result.global_buff_stack },
-    ];
+      { type: "局外加算", buff: result.relic_rune_add },
+      { type: "局外乘算", buff: result.relic_rune_mul },
+      { type: "局内直接加算", buff: result.global_buff_add },
+      { type: "局内直接乘算", buff: result.global_buff_mul },
+      { type: "局内最终加算", buff: result.global_buff_final_add },
+      { type: "局内最终乘算", buff: result.global_buff_final_mul },
+      { type: "全局Buff 堆叠", buff: result.global_buff_stack },
+    ].map((buff: any) => {
+      return {
+        计算方式: buff.type,
+        攻击力: buff.buff.atk,
+        攻击速度: buff.buff.attack_speed,
+        防御力: buff.buff.def,
+        最大生命值: buff.buff.max_hp,
+        部署费用: buff.buff.cost,
+        每秒生命回复: buff.buff.hp_recovery_per_sec,
+      };
+    });
     console.table(btd);
     console.groupEnd();
   }

@@ -169,7 +169,7 @@ export function useAttackSpeedTagGroups(props: {
 }): AttrCalcToken[] {
   const { attribute, context } = props;
 
-  return [
+  const tokens = [
     {
       tooltip: "基础",
       tags: [
@@ -180,13 +180,18 @@ export function useAttackSpeedTagGroups(props: {
       ],
     },
   ];
+
+  if (tokens[0].tags.length < 2) {
+    return [];
+  }
+  return tokens;
 }
 
 /** 部署费用属性计算公式 */
 export function useCostTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
   const { attribute, context } = props;
 
-  return [
+  const tokens: AttrCalcToken[] = [
     {
       tooltip: "基础",
       tags: [
@@ -195,8 +200,36 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Rel
       ],
     },
   ];
+
+  if (tokens[0].tags.length < 2) {
+    return [];
+  }
+  return tokens;
 }
 
+/** 每秒生命回复属性计算公式 */
+export function useHpRecoveryPerSecTagGroups(props: {
+  attribute: CharAttribute;
+  context: RelicAnalysisResult;
+}): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  const tokens: AttrCalcToken[] = [
+    {
+      tooltip: "基础",
+      tags: [],
+    },
+  ];
+  if (attribute.hpRecoveryPerSec) tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.hpRecoveryPerSec}</AttrTag>);
+  for (const item of context.relic_rune_add.hp_recovery_per_sec_source) {
+    tokens[0].tags.push(<AttrTag tooltip={item.name}>{item.value}</AttrTag>);
+  }
+
+  if (tokens[0].tags.length === 0) {
+    return [];
+  }
+  return tokens;
+}
 export default function OperatorAttributes(props: {
   charData: CharData;
   charInput: CharInput;
@@ -210,6 +243,8 @@ export default function OperatorAttributes(props: {
   const defTagGroups = useDefTagGroups({ attribute: attribute!, context });
   const attackSpeedTagGroups = useAttackSpeedTagGroups({ attribute: attribute!, context });
   const costTagGroups = useCostTagGroups({ attribute: attribute!, context });
+  const hpRecoveryPerSecTagGroups = useHpRecoveryPerSecTagGroups({ attribute: attribute!, context });
+
   useEffect(() => {
     let context = CalculatorHelper.analyzeChar({
       charInput: props.charInput,
@@ -232,16 +267,16 @@ export default function OperatorAttributes(props: {
         <>
           <div>
             <span>最大生命值</span>
-            <AttrAtkDisplay tagGroups={maxHpTagGroups}>{result.maxHp}</AttrAtkDisplay>
+            <AttrDisplay calcTokens={maxHpTagGroups}>{result.maxHp}</AttrDisplay>
           </div>
 
           <div>
             <span>攻击力</span>
-            <AttrAtkDisplay tagGroups={atkTagGroups}>{result.atk}</AttrAtkDisplay>
+            <AttrDisplay calcTokens={atkTagGroups}>{result.atk}</AttrDisplay>
           </div>
           <div>
             <span>防御</span>
-            <AttrAtkDisplay tagGroups={defTagGroups}>{result.def}</AttrAtkDisplay>
+            <AttrDisplay calcTokens={defTagGroups}>{result.def}</AttrDisplay>
           </div>
           <div>
             <span>法术抗性</span>
@@ -249,7 +284,7 @@ export default function OperatorAttributes(props: {
           </div>
           <div>
             <span>费用</span>
-            <AttrAtkDisplay tagGroups={costTagGroups}>{result.cost}</AttrAtkDisplay>
+            <AttrDisplay calcTokens={costTagGroups}>{result.cost}</AttrDisplay>
           </div>
           <div>
             <span>阻挡数</span>
@@ -257,7 +292,7 @@ export default function OperatorAttributes(props: {
           </div>
           <div>
             <span>攻击速度</span>
-            <AttrAtkDisplay tagGroups={attackSpeedTagGroups}>{result.attackSpeed}</AttrAtkDisplay>
+            <AttrDisplay calcTokens={attackSpeedTagGroups}>{result.attackSpeed}</AttrDisplay>
           </div>
           <div>
             <span>攻击间隔</span>
@@ -269,7 +304,7 @@ export default function OperatorAttributes(props: {
           </div>
           <div>
             <span>每秒生命回复</span>
-            <span>{result.hpRecoveryPerSec}</span>
+            <AttrDisplay calcTokens={hpRecoveryPerSecTagGroups}>{result.hpRecoveryPerSec}</AttrDisplay>
           </div>
           <div>
             <span>每秒技力回复</span>
@@ -285,18 +320,22 @@ export default function OperatorAttributes(props: {
   );
 }
 
-/** 攻击力属性展示 */
-function AttrAtkDisplay(props: { tagGroups: AttrCalcToken[]; children: React.ReactNode }) {
-  const { tagGroups, children } = props;
+/** 属性展示 */
+function AttrDisplay(props: { calcTokens: AttrCalcToken[]; children: React.ReactNode }) {
+  const { calcTokens, children } = props;
+  console.log("calcTokens", children, calcTokens);
 
+  if (calcTokens.length === 0) {
+    return <span>{children}</span>;
+  }
   return (
     <Popover placement="top">
       <PopoverTrigger>
-        <span>{children}</span>
+        <span className="cursor-pointer">{children}</span>
       </PopoverTrigger>
       <PopoverContent>
         <div className="px-1 py-2">
-          {tagGroups.map((group, index) => (
+          {calcTokens.map((group, index) => (
             <span key={group.tooltip}>
               {"( "}
               {group.tags.map((tag, i) => {
@@ -305,7 +344,7 @@ function AttrAtkDisplay(props: { tagGroups: AttrCalcToken[]; children: React.Rea
                 }
                 return tag;
               })}
-              {index < tagGroups.length - 1 ? " ) * " : " )"}
+              {index < calcTokens.length - 1 ? " ) * " : " )"}
             </span>
           ))}
         </div>

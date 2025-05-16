@@ -53,7 +53,6 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   "modify_sp[tank]": "重装受击获得技力",
   "modify_sp[born]": "每次再部署获得技力",
   interval: "攻受回技能获得1技力间隔", // interval在sp上面才能被优先选为bb key
-  sp: "_技力",
   hp_ratio: "当前生命值百分比",
   "modify_sp[attack_or_damage]": "攻受回技能获得1技力间隔", // 浴血
   prob: "概率",
@@ -63,6 +62,8 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   ep_damage_resistance: "元素伤害抗性",
   ep_resistance: "损伤抵抗",
   cost: "部署费用",
+  hp_recovery_per_sec: "每秒恢复生命",
+  sp: "初始技力",
 };
 
 /**

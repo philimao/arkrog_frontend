@@ -4,6 +4,7 @@ import { assetsHost } from "~/utils/tools";
 import type { RelicWrapper } from "~/types/gameData";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useEffect, useState } from "react";
+import { Tooltip } from "@heroui/react";
 
 const StyledRelicItem = styled.div<{
   $editable: boolean;
@@ -13,8 +14,7 @@ const StyledRelicItem = styled.div<{
   height: 100%;
   aspect-ratio: 1;
   cursor: pointer;
-  background: ${(props) =>
-    props.$editable ? "rgba(78, 78, 78, 0.50)" : "transparent"};
+  background: ${(props) => (props.$editable ? "rgba(78, 78, 78, 0.50)" : "transparent")};
   opacity: ${(props) => (props.$userActive ? "1" : "0.3")};
   user-select: none;
   & > div > * {
@@ -86,8 +86,7 @@ export default function RelicItem({
   relicWrapper: RelicWrapper;
   editable?: boolean;
 }) {
-  const { updateRelic, setRelicLayer, toggleRelicSelection } =
-    useDamageCalculatorStore();
+  const { updateRelic, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
 
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
@@ -101,20 +100,17 @@ export default function RelicItem({
 
   return (
     <StyledRelicItem
-      onClick={() =>
-        updateRelic(relicWrapper.id, "userActive", !relicWrapper.userActive)
-      }
+      onClick={() => updateRelic(relicWrapper.id, "userActive", !relicWrapper.userActive)}
       $userActive={relicWrapper.userActive}
       $editable={editable}
     >
       <StyledInner>
-        <StyledRelicImg
-          src={
-            assetsHost +
-            `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`
-          }
-          alt={relicWrapper.name}
-        />
+        <Tooltip delay={500} closeDelay={150} content={relicWrapper.usage || "无"}>
+          <StyledRelicImg
+            src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`}
+            alt={relicWrapper.name}
+          />
+        </Tooltip>
       </StyledInner>
 
       {editable && (

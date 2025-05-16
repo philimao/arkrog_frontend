@@ -402,7 +402,7 @@ export interface CharInput {
   potential: number;
   /** 干员在游戏中的增益 */
   charsBuffInGame: CharBuffInGame;
-  /** 科技加成 */
+  /** 科技加成(百分比) */
   tech: number;
   /** 属性修正 */
   attributeModifier: {

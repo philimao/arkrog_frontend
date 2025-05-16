@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { styled } from "styled-components";
-import type { CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
-import { CalculatorHelper } from "../calculator/helper";
+import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
+import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
+import { CalculatorHelper, type RelicAnalysisResult } from "../calculator/helper";
+import { Chip, Tooltip } from "@heroui/react";
 
 const StyledAttributeWrapper = styled.div`
   display: grid;
@@ -30,119 +32,278 @@ const StyledAttributeWrapper = styled.div`
 `;
 
 export function OperatorAttributesOld({ result }: { result: CharAttributeExt }) {
-  return <StyledAttributeWrapper>
-    {result && (
-      <>
-        <div>
-          <span>最大生命值</span>
-          <span>{result.maxHp}</span>
-        </div>
-        <div>
-          <span>攻击力</span>
-          <span>{result.atk}</span>
-        </div>
-        <div>
-          <span>防御</span>
-          <span>{result.def}</span>
-        </div>
-        <div>
-          <span>法术抗性</span>
-          <span>{result.magicResistance}</span>
-        </div>
-        <div>
-          <span>费用</span>
-          <span>{result.cost}</span>
-        </div>
-        <div>
-          <span>阻挡数</span>
-          <span>{result.blockCnt}</span>
-        </div>
-        <div>
-          <span>攻击速度</span>
-          <span>{result.attackSpeed}</span>
-        </div>
-        <div>
-          <span>攻击间隔</span>
-          <span>{result.baseAttackTime}</span>
-        </div>
-        <div>
-          <span>再部署</span>
-          <span>{result.respawnTime}</span>
-        </div>
-        <div>
-          <span>每秒生命回复</span>
-          <span>{result.hpRecoveryPerSec}</span>
-        </div>
-        <div>
-          <span>每秒技力回复</span>
-          <span>{result.spRecoveryPerSec}</span>
-        </div>
-        <div>
-          <span>伤害倍率</span>
-          <span>{result.damageScale}</span>
-        </div>
-      </>
-    )}
-  </StyledAttributeWrapper>
+  return (
+    <StyledAttributeWrapper>
+      {result && (
+        <>
+          <div>
+            <span>最大生命值</span>
+            <span>{result.maxHp}</span>
+          </div>
+          <div>
+            <span>攻击力</span>
+            <span>{result.atk}</span>
+          </div>
+          <div>
+            <span>防御</span>
+            <span>{result.def}</span>
+          </div>
+          <div>
+            <span>法术抗性</span>
+            <span>{result.magicResistance}</span>
+          </div>
+          <div>
+            <span>费用</span>
+            <span>{result.cost}</span>
+          </div>
+          <div>
+            <span>阻挡数</span>
+            <span>{result.blockCnt}</span>
+          </div>
+          <div>
+            <span>攻击速度</span>
+            <span>{result.attackSpeed}</span>
+          </div>
+          <div>
+            <span>攻击间隔</span>
+            <span>{result.baseAttackTime}</span>
+          </div>
+          <div>
+            <span>再部署</span>
+            <span>{result.respawnTime}</span>
+          </div>
+          <div>
+            <span>每秒生命回复</span>
+            <span>{result.hpRecoveryPerSec}</span>
+          </div>
+          <div>
+            <span>每秒技力回复</span>
+            <span>{result.spRecoveryPerSec}</span>
+          </div>
+          <div>
+            <span>伤害倍率</span>
+            <span>{result.damageScale}</span>
+          </div>
+        </>
+      )}
+    </StyledAttributeWrapper>
+  );
 }
 
-export default function OperatorAttributes(props: { charData: CharData, charInput: CharInput, relics: RelicWrapper[] }) {
+/** 属性计算公式Token */
+interface AttrCalcToken {
+  tooltip: string;
+  tags: React.ReactNode[];
+}
+
+/** 最大生命值属性计算公式 */
+export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  return [
+    {
+      tooltip: "基础",
+      tags: [
+        <AttrTag tooltip="基础">{attribute?.maxHp}</AttrTag>,
+        ...context.relic_rune_add.max_hp_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+    {
+      tooltip: "局外乘区",
+      tags: [
+        <AttrTag tooltip="基数">1</AttrTag>,
+        ...context.relic_rune_mul.max_hp_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+  ];
+}
+
+/** 攻击力属性计算公式 */
+export function useAtkTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  return [
+    {
+      tooltip: "基础",
+      tags: [
+        <AttrTag tooltip="基础">{attribute?.atk}</AttrTag>,
+        ...context.relic_rune_add.atk_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+    {
+      tooltip: "局外乘区",
+      tags: [
+        <AttrTag tooltip="基数">1</AttrTag>,
+        ...context.relic_rune_mul.atk_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+  ];
+}
+
+/** 防御属性计算公式 */
+export function useDefTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  return [
+    {
+      tooltip: "基础",
+      tags: [
+        <AttrTag tooltip="基础">{attribute?.def}</AttrTag>,
+        ...context.relic_rune_add.def_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+    {
+      tooltip: "局外乘区",
+      tags: [
+        <AttrTag tooltip="基数">1</AttrTag>,
+        ...context.relic_rune_mul.def_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+  ];
+}
+
+/** 攻击速度属性计算公式 */
+export function useAttackSpeedTagGroups(props: {
+  attribute: CharAttribute;
+  context: RelicAnalysisResult;
+}): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  return [
+    {
+      tooltip: "基础",
+      tags: [
+        <AttrTag tooltip="基础">{attribute?.attackSpeed}</AttrTag>,
+        ...context.relic_rune_add.attack_speed_source.map((item) => (
+          <AttrTag tooltip={item.name}>{item.value}</AttrTag>
+        )),
+      ],
+    },
+  ];
+}
+
+export default function OperatorAttributes(props: {
+  charData: CharData;
+  charInput: CharInput;
+  relics: RelicWrapper[];
+}) {
   const [result, setResult] = useState<CharAttributeExt | null>(null);
+  const [context, setContext] = useState<RelicAnalysisResult>(CalculatorHelper.createAdditionContext());
+  const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
+  const maxHpTagGroups = useMaxHpTagGroups({ attribute: attribute!, context });
+  const atkTagGroups = useAtkTagGroups({ attribute: attribute!, context });
+  const defTagGroups = useDefTagGroups({ attribute: attribute!, context });
+  const attackSpeedTagGroups = useAttackSpeedTagGroups({ attribute: attribute!, context });
   useEffect(() => {
-    setResult(CalculatorHelper.calculatePanel({ charInput: props.charInput, charData: props.charData, relics: props.relics }));
+    let context = CalculatorHelper.analyzeChar({
+      charInput: props.charInput,
+      charData: props.charData,
+    });
+    context = CalculatorHelper.analyzeRelics(
+      {
+        charInput: props.charInput,
+        charData: props.charData,
+        relics: props.relics,
+      },
+      context,
+    );
+    setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
+    setContext(context);
   }, [props.charData, props.charInput, props.relics]);
-  return <StyledAttributeWrapper>
-    {result && (
-      <>
-        <div>
-          <span>最大生命值</span>
-          <span>{result.maxHp}</span>
+  return (
+    <StyledAttributeWrapper>
+      {result && (
+        <>
+          <div>
+            <span>最大生命值</span>
+            <AttrAtkDisplay tagGroups={maxHpTagGroups}>{result.maxHp}</AttrAtkDisplay>
+          </div>
+
+          <div>
+            <span>攻击力</span>
+            <AttrAtkDisplay tagGroups={atkTagGroups}>{result.atk}</AttrAtkDisplay>
+          </div>
+          <div>
+            <span>防御</span>
+            <AttrAtkDisplay tagGroups={defTagGroups}>{result.def}</AttrAtkDisplay>
+          </div>
+          <div>
+            <span>法术抗性</span>
+            <span>{result.magicResistance}</span>
+          </div>
+          <div>
+            <span>费用</span>
+            <span>{result.cost}</span>
+          </div>
+          <div>
+            <span>阻挡数</span>
+            <span>{result.blockCnt}</span>
+          </div>
+          <div>
+            <span>攻击速度</span>
+            <AttrAtkDisplay tagGroups={attackSpeedTagGroups}>{result.attackSpeed}</AttrAtkDisplay>
+          </div>
+          <div>
+            <span>攻击间隔</span>
+            <span>{result.baseAttackTime}</span>
+          </div>
+          <div>
+            <span>再部署</span>
+            <span>{result.respawnTime}</span>
+          </div>
+          <div>
+            <span>每秒生命回复</span>
+            <span>{result.hpRecoveryPerSec}</span>
+          </div>
+          <div>
+            <span>每秒技力回复</span>
+            <span>{result.spRecoveryPerSec}</span>
+          </div>
+          <div>
+            <span>伤害倍率</span>
+            <span>{result.damageScale}</span>
+          </div>
+        </>
+      )}
+    </StyledAttributeWrapper>
+  );
+}
+
+/** 攻击力属性展示 */
+function AttrAtkDisplay(props: { tagGroups: AttrCalcToken[]; children: React.ReactNode }) {
+  const { tagGroups, children } = props;
+
+  return (
+    <Popover placement="top">
+      <PopoverTrigger>
+        <span>{children}</span>
+      </PopoverTrigger>
+      <PopoverContent>
+        <div className="px-1 py-2">
+          {tagGroups.map((group, index) => (
+            <span key={group.tooltip}>
+              {"( "}
+              {group.tags.map((tag, i) => {
+                if (i < group.tags.length - 1) {
+                  return <>{tag} + </>;
+                }
+                return tag;
+              })}
+              {index < tagGroups.length - 1 ? " ) * " : " )"}
+            </span>
+          ))}
         </div>
-        <div>
-          <span>攻击力</span>
-          <span>{result.atk}</span>
-        </div>
-        <div>
-          <span>防御</span>
-          <span>{result.def}</span>
-        </div>
-        <div>
-          <span>法术抗性</span>
-          <span>{result.magicResistance}</span>
-        </div>
-        <div>
-          <span>费用</span>
-          <span>{result.cost}</span>
-        </div>
-        <div>
-          <span>阻挡数</span>
-          <span>{result.blockCnt}</span>
-        </div>
-        <div>
-          <span>攻击速度</span>
-          <span>{result.attackSpeed}</span>
-        </div>
-        <div>
-          <span>攻击间隔</span>
-          <span>{result.baseAttackTime}</span>
-        </div>
-        <div>
-          <span>再部署</span>
-          <span>{result.respawnTime}</span>
-        </div>
-        <div>
-          <span>每秒生命回复</span>
-          <span>{result.hpRecoveryPerSec}</span>
-        </div>
-        <div>
-          <span>每秒技力回复</span>
-          <span>{result.spRecoveryPerSec}</span>
-        </div>
-        <div>
-          <span>伤害倍率</span>
-          <span>{result.damageScale}</span>
-        </div>
-      </>
-    )}
-  </StyledAttributeWrapper>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function AttrTag(props: { children: React.ReactNode; tooltip: string }) {
+  return (
+    <Tooltip content={props.tooltip}>
+      <Chip color="warning" variant="faded">
+        {props.children}
+      </Chip>
+    </Tooltip>
+  );
 }

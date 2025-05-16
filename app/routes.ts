@@ -36,6 +36,10 @@ export default [
     ]),
     route("/tournament", "routes/TournamentLayout.tsx", [
       index("modules/Tournament/index.tsx"),
+      route(
+        "create",
+        "modules/Tournament/TournamentCreate/index.tsx",
+      ),
       route(":tournamentId", "modules/Tournament/TournamentDetail/index.tsx"),
       route(
         ":tournamentId/edit",

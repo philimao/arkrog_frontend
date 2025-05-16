@@ -3,7 +3,6 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import Loading from "~/components/Loading";
 import type { RogueKey } from "~/types/gameData";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
-import { styled } from "styled-components";
 import { useNavigate } from "react-router";
 import { openModal } from "~/utils/dom";
 import TournamentInfo from "./TournamentInfo";
@@ -12,42 +11,7 @@ import TournamentFinalResult from "./TournamentFinalResult";
 import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Markdown from "react-markdown";
-
-export const StyledDivider = styled.div`
-  border-bottom: var(--ak-blue) 1px solid;
-  margin: 1.25rem 0;
-  width: 100%;
-`;
-
-const StyledBackButtonContainer = styled.div`
-  position: absolute;
-  width: 100vw;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-`;
-
-const StyledBackButton = styled.button`
-  position: absolute;
-  right: 0;
-  top: 3.5rem;
-  padding: 0.5rem 2rem;
-  background: var(--black-gray);
-`;
-
-const StyledEditButton = styled.button`
-  position: absolute;
-  right: 0;
-  top: 6.5rem;
-  padding: 0.5rem 2rem;
-  background: var(--black-gray);
-`;
-
-export const StyledStageTitleNum = styled.div`
-  font-size: 3rem;
-  font-family: "Novecento", sans-serif;
-  transform: translateY(-1.25rem);
-`;
+import { StyledBackButton, StyledBackButtonContainer, StyledDivider, StyledEditButton } from "../components/Shared";
 
 export function SectionContainer({
   title,

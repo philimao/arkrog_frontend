@@ -1,8 +1,9 @@
 import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
-import { generateDateArray, SectionContainer, StyledDivider, StyledStageTitleNum } from ".";
+import { generateDateArray, SectionContainer } from ".";
 import React, { useState } from "react";
 import { StarIcon } from "~/components/Icons";
 import TournamentProgress from "./TournamentProgress";
+import { StyledDivider, StyledStageTitleNum } from "../components/Shared";
 
 // Common types
 type PlayerRendererProps = {

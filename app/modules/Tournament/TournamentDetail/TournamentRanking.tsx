@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { TournamentData, TournamentGame, TournamentTeamStage } from "~/types/tournamentsData";
-import { SectionContainer, StyledDivider, StyledStageTitleNum } from ".";
+import { SectionContainer } from ".";
 import { SortIcon, StarIcon } from "~/components/Icons";
 import { styled } from "styled-components";
+import { StyledDivider, StyledStageTitleNum } from "../components/Shared";
 
 // Types
 type SortByType = "point" | "date";

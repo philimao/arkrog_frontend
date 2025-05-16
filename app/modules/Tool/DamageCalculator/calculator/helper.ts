@@ -11,7 +11,7 @@ import type {
   RelicData,
   BlackboardData,
 } from "~/types/gameData";
-import { isRelicActive, applyAttrModifiers, applyBlackboardData } from "../utils";
+import { isRelicActive, applyAttrModifiers, applyBlackboardData, isBuffActive, isBlackboardActive } from "../utils";
 import { BUFF_KEYS } from "./constant";
 
 /** 藏品分析结果 */
@@ -47,6 +47,8 @@ export interface RelicAnalysisResult {
     attack_speed: number;
     /** 防御力 */
     def: number;
+    /** 部署费用 */
+    cost: number;
     /** 最大生命值来源 */
     max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 攻击力来源 */
@@ -55,6 +57,8 @@ export interface RelicAnalysisResult {
     attack_speed_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 防御力来源 */
     def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    /** 部署费用来源 */
+    cost_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
   };
   /** 藏品rune 乘算 */
   relic_rune_mul: {
@@ -153,6 +157,8 @@ export class CalculatorHelper {
         attack_speed_source: [],
         def: 0,
         def_source: [],
+        cost: 0,
+        cost_source: [],
       },
       relic_rune_mul: {
         atk: 1,
@@ -304,6 +310,7 @@ export class CalculatorHelper {
     result.attackSpeed += context.relic_rune_add.attack_speed;
     result.def += context.relic_rune_add.def;
     result.maxHp += context.relic_rune_add.max_hp;
+    result.cost += context.relic_rune_add.cost;
 
     /** 应用局外加成(乘算) */
     result.atk = Math.round(result.atk * context.relic_rune_mul.atk);
@@ -323,7 +330,7 @@ export class CalculatorHelper {
     const favor = charData.favorKeyFrames[1].data;
     for (const key in favor) {
       const typedKey = key as keyof CharAttribute;
-      if (typedKey === "atk") {
+      if (typedKey === "atk" && favor.atk) {
         result.relic_rune_add.atk += favor.atk;
         result.relic_rune_add.atk_source.push({
           name: "信赖效果",
@@ -339,7 +346,7 @@ export class CalculatorHelper {
           usage: `信赖效果 +${favor.attackSpeed}`,
         });
       }
-      if (typedKey === "def") {
+      if (typedKey === "def" && favor.def) {
         result.relic_rune_add.def += favor.def;
         result.relic_rune_add.def_source.push({
           name: "信赖效果",
@@ -347,7 +354,7 @@ export class CalculatorHelper {
           usage: `信赖效果 +${favor.def}`,
         });
       }
-      if (typedKey === "maxHp") {
+      if (typedKey === "maxHp" && favor.maxHp) {
         result.relic_rune_add.max_hp += favor.maxHp;
         result.relic_rune_add.max_hp_source.push({
           name: "信赖效果",
@@ -361,6 +368,15 @@ export class CalculatorHelper {
     for (const pot of charData.potentialRanks.slice(0, charInput.potential)) {
       pot.buff?.attributes.attributeModifiers.forEach((mod) => {
         switch (mod.attributeType) {
+          case "COST": {
+            result.relic_rune_add.cost += mod.value;
+            result.relic_rune_add.cost_source.push({
+              name: "潜能效果",
+              value: mod.value,
+              usage: `潜能效果 +${mod.value}`,
+            });
+            break;
+          }
           case "MAX_HP": {
             result.relic_rune_add.max_hp += mod.value;
             result.relic_rune_add.max_hp_source.push({
@@ -456,7 +472,7 @@ export class CalculatorHelper {
   }
 
   /**
-   * 分析藏品
+   * 分析藏品加成
    * @param input 输入
    * @param input.charInput 角色输入
    * @param input.charData 角色数据
@@ -515,7 +531,7 @@ export class CalculatorHelper {
         usage: `用户修正属性 +${charInput.attributeModifier.atkFinal}`,
       });
     }
-    // 筛选藏品
+    /** 筛选藏品 */
     for (const relic of relics) {
       // 藏品在黑名单中
       if (!isRelicActive(relic.name)) {
@@ -524,6 +540,9 @@ export class CalculatorHelper {
       }
       // 藏品rune 加算
       relic.relicData.buffs.forEach((buff) => {
+        if (!CalculatorHelper.isRelicForChar(buff, relic, charData)) {
+          return;
+        }
         if (BUFF_KEYS.藏品rune.加算.includes(buff.key)) {
           result.categories.relic_rune_add.push({ buff, relic });
         } else if (BUFF_KEYS.藏品rune.乘算.includes(buff.key)) {
@@ -572,6 +591,15 @@ export class CalculatorHelper {
         result.relic_rune_add.def_source.push({
           buff,
           value: blackboard.def,
+          usage: relic.relicData.usage,
+          name: relic.name,
+        });
+      }
+      if (blackboard.cost) {
+        result.relic_rune_add.cost += blackboard.cost;
+        result.relic_rune_add.cost_source.push({
+          buff,
+          value: blackboard.cost,
           usage: relic.relicData.usage,
           name: relic.name,
         });
@@ -657,12 +685,15 @@ export class CalculatorHelper {
       def: number;
       /** 最大生命值 */
       max_hp: number;
+      /** 部署费用 */
+      cost: number;
     } = {
       key: "char",
       atk: 0,
       attack_speed: 0,
       def: 0,
       max_hp: 0,
+      cost: 0,
     };
     buff.blackboard.forEach((item) => {
       if (item.key === "key") {
@@ -683,8 +714,20 @@ export class CalculatorHelper {
       if (item.key === "max_hp") {
         blackboard.max_hp = item.value;
       }
+      if (item.key === "cost") {
+        blackboard.cost = item.value;
+      }
     });
     return blackboard;
+  }
+
+  /** 该藏品Buff对干员是否生效 */
+  static isRelicForChar(buff: RelicBuff, relic: RelicWrapper, charData: CharData): boolean {
+    console.log("isRelicForChar", isRelicActive(relic.name));
+    console.log("isBuffActive", isBuffActive(buff, charData));
+    console.log("isBlackboardActive", isBlackboardActive(buff, charData));
+    const isActive = isRelicActive(relic.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
+    return isActive;
   }
 
   /** 标准打印 */

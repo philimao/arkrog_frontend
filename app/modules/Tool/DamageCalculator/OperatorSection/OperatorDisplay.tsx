@@ -13,9 +13,7 @@ import type {
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
-import {
-  calculator,
-} from "~/modules/Tool/DamageCalculator/calculator";
+import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import {
@@ -52,38 +50,25 @@ const StyledSelectWrapper = styled.div`
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { outBuff, activeCharName, charsBuff, charsBuffInGame, charsModifier } =
-    useDamageCalculatorStore();
-  const { relics, items, character_basic, skill_table, uniequip_table } =
-    useGameDataStore();
-  const {
-    enemyDataParsed,
-    enemyData,
-    selectedIds,
-    relicsMap,
-    rogueKey,
-    setCalcOutput,
-  } = useDamageCalculatorStore();
+  const { outBuff, activeCharName, charsBuff, charsBuffInGame, charsModifier } = useDamageCalculatorStore();
+  const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
+  const { enemyDataParsed, enemyData, selectedIds, relicsMap, rogueKey, setCalcOutput } = useDamageCalculatorStore();
 
   // 选择干员后
   useEffect(() => {
-    const basicData = Object.values(character_basic!).find(
-      (char) => char.name === activeCharName,
-    );
+    const basicData = Object.values(character_basic!).find((char) => char.name === activeCharName);
     if (!basicData) throw new Error(`${activeCharName} Not Found`);
     setBasicData(basicData);
     // 设置精英化阶段为最大
     const maxPhaseLevel = charData.phases.length - 1;
     setPhaseLevel(maxPhaseLevel.toString());
-    const maxFrameIndex =
-      charData.phases[maxPhaseLevel].attributesKeyFrames.length - 1;
+    const maxFrameIndex = charData.phases[maxPhaseLevel].attributesKeyFrames.length - 1;
     setFrameIndex(maxFrameIndex.toString());
     // 设置为最后一个技能
     const lastSkillKey = Object.keys(basicData.skills).slice(-1)[0];
     setSkillKey(lastSkillKey!);
     // 设置技能等级
-    if (maxPhaseLevel > 1 && parseInt(basicData.rarity.slice(-1)) > 3)
-      setSkillLevel("9");
+    if (maxPhaseLevel > 1 && parseInt(basicData.rarity.slice(-1)) > 3) setSkillLevel("9");
     else setSkillLevel("6");
     // 设置模组，模组默认值在useMemo中更新
   }, [activeCharName, charData.phases, character_basic]);
@@ -94,16 +79,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   // 精英化阶段选择
   const phases = useMemo(() => charData?.phases, [charData]);
   const [phaseLevel, setPhaseLevel] = useState<string>("0");
-  const phase = useMemo(
-    () => phases?.[parseInt(phaseLevel)],
-    [phaseLevel, phases],
-  );
+  const phase = useMemo(() => phases?.[parseInt(phaseLevel)], [phaseLevel, phases]);
 
   // 干员等级
-  const keyFrames = useMemo(
-    () => phase?.attributesKeyFrames,
-    [phase?.attributesKeyFrames],
-  );
+  const keyFrames = useMemo(() => phase?.attributesKeyFrames, [phase?.attributesKeyFrames]);
   const [frameIndex, setFrameIndex] = useState<string>("0");
 
   // 属性数据
@@ -113,16 +92,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   );
 
   // 技能选择
-  const skills = useMemo(
-    () => basicData && Object.values(basicData?.skills),
-    [basicData],
-  );
+  const skills = useMemo(() => basicData && Object.values(basicData?.skills), [basicData]);
   const [skillKey, setSkillKey] = useState<string>("");
   const [skillLevel, setSkillLevel] = useState<string>("3");
-  const skillObject = useMemo(
-    () => skill_table![skillKey],
-    [skillKey, skill_table],
-  );
+  const skillObject = useMemo(() => skill_table![skillKey], [skillKey, skill_table]);
   const skillLevels = useMemo(() => {
     const levels =
       parseInt(phaseLevel) > 1 && skillObject?.levels.length > 7
@@ -142,21 +115,13 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setSkillLevel(levels.slice(-1)[0]!.key.toString());
     return levels;
   }, [phaseLevel, skillObject?.levels.length]);
-  const skill = useMemo(
-    () => skillObject?.levels[parseInt(skillLevel)],
-    [skillLevel, skillObject?.levels],
-  );
+  const skill = useMemo(() => skillObject?.levels[parseInt(skillLevel)], [skillLevel, skillObject?.levels]);
 
   // 模组选择
   const [uniEquipId, setUniEquipId] = useState<string>("");
   const [uniEquipLevel, setUniEquipLevel] = useState<string>("2");
   const equips = useMemo(() => {
-    if (
-      phaseLevel === "2" &&
-      frameIndex === "1" &&
-      basicData &&
-      parseInt(basicData.rarity.slice(-1)!) > 3
-    ) {
+    if (phaseLevel === "2" && frameIndex === "1" && basicData && parseInt(basicData.rarity.slice(-1)!) > 3) {
       const latestEquipId = Object.keys(basicData.uniequip).slice(-1)[0];
       setUniEquipId(latestEquipId);
       return basicData && Object.values(basicData.uniequip);
@@ -178,11 +143,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
   /** 面板计算 */
   useEffect(() => {
-    if (
-      charsBuff?.[charData.name] &&
-      charsModifier?.[charData.name] &&
-      attribute
-    ) {
+    if (charsBuff?.[charData.name] && charsModifier?.[charData.name] && attribute) {
       // console.log(charData);
       const result = { ...attribute.data, damageScale: 1, damage_scale: 1 };
       console.groupCollapsed("计算局外面板OLD");
@@ -220,9 +181,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
        * 应用潜能效果
        */
       for (const pot of charData.potentialRanks.slice(0, parseInt(potential))) {
-        pot.buff?.attributes.attributeModifiers.forEach((mod) =>
-          applyAttrModifiers(mod, result),
-        );
+        pot.buff?.attributes.attributeModifiers.forEach((mod) => applyAttrModifiers(mod, result));
       }
       console.log("应用潜能效果", { ...result });
 
@@ -242,9 +201,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           ]) {
             if (!candidates) continue;
             // 从多个candidate中选出符合潜能的
-            const admittedTrait = candidates.findLast(
-              (item) => item.requiredPotentialRank <= parseInt(potential),
-            );
+            const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= parseInt(potential));
             // console.log(admittedTrait);
             for (const bb of admittedTrait!.blackboard) {
               applyBlackboardData(bb, result);
@@ -282,18 +239,14 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       // 模组效果
       uniEquip?.parts.forEach((part) => {
         if (part.addOrOverrideTalentDataBundle?.candidates) {
-          for (const bb of part.addOrOverrideTalentDataBundle?.candidates?.slice(
-            -1,
-          )[0].blackboard) {
+          for (const bb of part.addOrOverrideTalentDataBundle?.candidates?.slice(-1)[0].blackboard) {
             if (allowedBlackboardKeyMap[bb.key]) {
               inGameBuff[snakeToCamel(bb.key)] = bb.value;
             }
           }
         }
         if (part.overrideTraitDataBundle?.candidates) {
-          for (const bb of part.overrideTraitDataBundle?.candidates?.slice(
-            -1,
-          )[0].blackboard) {
+          for (const bb of part.overrideTraitDataBundle?.candidates?.slice(-1)[0].blackboard) {
             console.log(bb);
             if (allowedBlackboardKeyMap[bb.key]) {
               inGameBuff[snakeToCamel(bb.key)] = bb.value;
@@ -308,9 +261,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       }
 
       ["maxHp", "atk", "def"].forEach((key) => {
-        (result[key as never] as number) = Math.round(
-          result[key as never] as number,
-        );
+        (result[key as never] as number) = Math.round(result[key as never] as number);
       });
 
       console.log(result);
@@ -320,16 +271,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
       setResult(result);
     }
-  }, [
-    attribute,
-    charData,
-    uniEquip,
-    potential,
-    outBuff,
-    charsBuff,
-    activeCharName,
-    charsModifier,
-  ]);
+  }, [attribute, charData, uniEquip, potential, outBuff, charsBuff, activeCharName, charsModifier]);
 
   /** 计算器干员输入 */
   const charInput: CharInput = useMemo(
@@ -387,14 +329,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   /** 选择的藏品 */
   const selectedRelics = useMemo(() => {
     return selectedIds
-      .map((id) =>
-        relicsMap[activeCharName]?.[rogueKey]?.find((relic) => relic.id === id),
-      )
+      .map((id) => relicsMap[activeCharName]?.[rogueKey]?.find((relic) => relic.id === id))
       .filter((r) => r?.userActive)
       .map((r) => ({
         relicData: relicList.find((relic) => relic.id === r?.id),
         ...r,
-      })) as RelicWrapper[]
+      })) as RelicWrapper[];
   }, [relicList, relicsMap, activeCharName, rogueKey, selectedIds]);
 
   useEffect(() => {
@@ -422,9 +362,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       skillData: skillObject, // 技能原始解包数据
       uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: selectedIds
-        .map((id) =>
-          relicsMap[activeCharName][rogueKey].find((relic) => relic.id === id),
-        )
+        .map((id) => relicsMap[activeCharName][rogueKey].find((relic) => relic.id === id))
         // .filter((relic) => inGameRelicNames.includes(relic!.name))
         .map((r) => ({
           relicData: relicList.find((relic) => relic.id === r?.id),
@@ -434,17 +372,17 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
-    CalculatorHelper.printRelicAnalysisResult(CalculatorHelper.analyzeRelics({
-      charInput: input.charInput,
-      charData: input.charData,
-      relics: relicList.map((relic) => {
-        return {
-          name: relic.name,
-          relicData: relic,
-          layer: 1,
-        } as any;
-      }),
-    }))
+    // CalculatorHelper.printRelicAnalysisResult(CalculatorHelper.analyzeRelics({
+    //   charInput: input.charInput,
+    //   charData: input.charData,
+    //   relics: relicList.map((relic) => {
+    //     return {
+    //       name: relic.name,
+    //       relicData: relic,
+    //       layer: 1,
+    //     } as any;
+    //   }),
+    // }))
     setCalcOutput(calcResult);
   }, [
     activeCharName,
@@ -544,9 +482,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 getValue={(_, i) => "Lv " + (i + 1)}
                 selectedKeys={[uniEquipLevel]}
                 onChange={(evt) => setUniEquipLevel(evt.target.value)}
-                isDisabled={
-                  !uniEquipId || uniEquipId.startsWith("uniequip_001")
-                }
+                isDisabled={!uniEquipId || uniEquipId.startsWith("uniequip_001")}
               />
             </>
           )}
@@ -573,12 +509,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         </div>
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">
-        { charInput.attributeModifier && <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} /> }
+        {charInput.attributeModifier && (
+          <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
+        )}
         <OperatorModifier />
       </div>
-      <div className="flex gap-4">
-        {result && <OperatorAttributesOld result={result} />}
-      </div>
+      <div className="flex gap-4">{result && <OperatorAttributesOld result={result} />}</div>
     </div>
   );
 }

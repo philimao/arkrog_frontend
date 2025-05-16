@@ -182,6 +182,21 @@ export function useAttackSpeedTagGroups(props: {
   ];
 }
 
+/** 部署费用属性计算公式 */
+export function useCostTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+  const { attribute, context } = props;
+
+  return [
+    {
+      tooltip: "基础",
+      tags: [
+        <AttrTag tooltip="基础">{attribute?.cost}</AttrTag>,
+        ...context.relic_rune_add.cost_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+      ],
+    },
+  ];
+}
+
 export default function OperatorAttributes(props: {
   charData: CharData;
   charInput: CharInput;
@@ -194,6 +209,7 @@ export default function OperatorAttributes(props: {
   const atkTagGroups = useAtkTagGroups({ attribute: attribute!, context });
   const defTagGroups = useDefTagGroups({ attribute: attribute!, context });
   const attackSpeedTagGroups = useAttackSpeedTagGroups({ attribute: attribute!, context });
+  const costTagGroups = useCostTagGroups({ attribute: attribute!, context });
   useEffect(() => {
     let context = CalculatorHelper.analyzeChar({
       charInput: props.charInput,
@@ -233,7 +249,7 @@ export default function OperatorAttributes(props: {
           </div>
           <div>
             <span>费用</span>
-            <span>{result.cost}</span>
+            <AttrAtkDisplay tagGroups={costTagGroups}>{result.cost}</AttrAtkDisplay>
           </div>
           <div>
             <span>阻挡数</span>

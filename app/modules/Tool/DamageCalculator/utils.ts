@@ -62,6 +62,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   move_speed: "移动速度",
   ep_damage_resistance: "元素伤害抗性",
   ep_resistance: "损伤抵抗",
+  cost: "部署费用",
 };
 
 /**

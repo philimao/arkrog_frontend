@@ -13,6 +13,7 @@ const StyledResultDisplay = styled.div`
 const type = {
   phy: "物理",
   pure: "真实",
+  mag: "法术"
 };
 
 const map = {
@@ -120,7 +121,7 @@ export function ResultDisplay() {
                       return (
                         <>
                           <StyledNumberPart $type={damageType} key={i}>
-                            <label>{type[damageType as never]}</label>
+                            <label>{type[damageType as never] || damageType}</label>
                             <div>{numStr}</div>
                           </StyledNumberPart>
                           {i < array.length - 1 && (

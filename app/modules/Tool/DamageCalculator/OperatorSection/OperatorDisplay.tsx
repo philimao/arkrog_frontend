@@ -9,24 +9,25 @@ import type {
   CharInput,
   RelicDataExt,
   CalculatorInput,
+  RelicWrapper,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import {
-  applyAttrModifiers,
-  applyBlackboard,
   calculator,
 } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import {
   allowedBlackboardKeyMap,
+  applyAttrModifiers,
+  applyBlackboardData,
   getEnemyParsedAttributes,
-  inGameRelicNames,
   snakeToCamel,
 } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
 import { CalculatorHelper } from "../calculator/helper";
+import OperatorAttributes, { OperatorAttributesOld } from "./OperatorAttributes";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -47,32 +48,6 @@ const StyledSelectWrapper = styled.div`
   gap: 0.5rem;
   & > * {
     width: 10rem;
-  }
-`;
-
-const StyledAttributeWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  //grid-template-rows: repeat(6, auto);
-  gap: 0.5rem 2rem;
-  font-size: 0.8rem;
-  justify-content: center;
-  background: rgba(24, 24, 24, 0.7);
-  padding: 1rem 1.5rem;
-  & > div {
-    display: flex;
-    align-items: center;
-    background: var(--black-gray);
-    padding: 0 0.5rem;
-    white-space: nowrap;
-    & > span:first-child {
-      font-weight: bold;
-      margin-right: 1.5rem;
-    }
-    & > span:last-child {
-      margin-left: auto;
-      font-family: "NovecentoWide", sans-serif;
-    }
   }
 `;
 
@@ -197,9 +172,11 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   // 潜能选择
   const [potential, setPotential] = useState<string>("5");
 
-  // 面板计算
+  /** 面板计算 */
   const [result, setResult] = useState<CharAttributeExt>();
   const [inGameBuff, setInGameBuff] = useState<Record<string, number>>({});
+
+  /** 面板计算 */
   useEffect(() => {
     if (
       charsBuff?.[charData.name] &&
@@ -208,6 +185,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     ) {
       // console.log(charData);
       const result = { ...attribute.data, damageScale: 1, damage_scale: 1 };
+      console.groupCollapsed("计算局外面板OLD");
+      console.log("基础属性", { ...result });
 
       /**
        * 手动修改部分
@@ -235,6 +214,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           result[typedKey] = favor[typedKey];
         }
       });
+      console.log("应用信赖效果", { ...result });
 
       /**
        * 应用潜能效果
@@ -244,6 +224,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           applyAttrModifiers(mod, result),
         );
       }
+      console.log("应用潜能效果", { ...result });
 
       /**
        * 应用模组效果
@@ -251,7 +232,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       if (uniEquip) {
         // 基础值
         for (const bb of uniEquip.attributeBlackboard) {
-          applyBlackboard(bb, result);
+          applyBlackboardData(bb, result);
         }
         // 天赋与特性效果
         for (const part of uniEquip.parts) {
@@ -266,11 +247,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
             );
             // console.log(admittedTrait);
             for (const bb of admittedTrait!.blackboard) {
-              applyBlackboard(bb, result);
+              applyBlackboardData(bb, result);
             }
           }
         }
       }
+      console.log("应用模组效果", { ...result });
 
       // 应用局外藏品加成
       Object.entries(charsBuff[charData.name]).map(([buffKey, buffValue]) => {
@@ -279,16 +261,22 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         if (key === "atk") factor += modifier.atkPercent / 100;
         const value = (result[key as never] as number) || 1;
         console.log(key, factor, value);
-        (result[key as never] as number) = factor * value;
+        if (key === "attackSpeed") {
+          (result[key as never] as number) = factor + result[key];
+        } else {
+          (result[key as never] as number) = factor * value;
+        }
       });
+      console.log("应用局外藏品加成", { ...result });
+      console.groupEnd();
 
       // 应用局内效果
-      const inGameBuff = {};
+      const inGameBuff: any = {};
       // 天赋
       console.log(charData.talents);
       charData.talents.map((talent) => {
         for (const bb of talent.candidates.slice(-1)[0]!.blackboard) {
-          applyBlackboard(bb, inGameBuff);
+          applyBlackboardData(bb, inGameBuff);
         }
       });
       // 模组效果
@@ -343,6 +331,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     charsModifier,
   ]);
 
+  /** 计算器干员输入 */
   const charInput: CharInput = useMemo(
     () => ({
       phaseLevel: parseInt(phaseLevel),
@@ -356,6 +345,14 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquipLevel: parseInt(uniEquipLevel),
       uniEquip,
       potential: parseInt(potential),
+      charsBuffInGame: {
+        atk: 0,
+        maxHp: 0,
+        damageResistance: 0,
+        damageScale: 0,
+      },
+      tech: parseFloat(outBuff),
+      attributeModifier: charsModifier[activeCharName],
     }),
     [
       frameIndex,
@@ -369,6 +366,9 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquip,
       uniEquipId,
       uniEquipLevel,
+      outBuff,
+      charsModifier,
+      activeCharName,
     ],
   );
 
@@ -383,6 +383,19 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         })),
     [items, relics, rogueKey],
   );
+
+  /** 选择的藏品 */
+  const selectedRelics = useMemo(() => {
+    return selectedIds
+      .map((id) =>
+        relicsMap[activeCharName]?.[rogueKey]?.find((relic) => relic.id === id),
+      )
+      .filter((r) => r?.userActive)
+      .map((r) => ({
+        relicData: relicList.find((relic) => relic.id === r?.id),
+        ...r,
+      })) as RelicWrapper[]
+  }, [relicList, relicsMap, activeCharName, rogueKey, selectedIds]);
 
   useEffect(() => {
     if (!charInput.attribute || !charsBuffInGame[activeCharName]) return;
@@ -421,6 +434,17 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
+    CalculatorHelper.printRelicAnalysisResult(CalculatorHelper.analyzeRelics({
+      charInput: input.charInput,
+      charData: input.charData,
+      relics: relicList.map((relic) => {
+        return {
+          name: relic.name,
+          relicData: relic,
+          layer: 1,
+        } as any;
+      }),
+    }))
     setCalcOutput(calcResult);
   }, [
     activeCharName,
@@ -549,61 +573,11 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         </div>
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">
-        <StyledAttributeWrapper>
-          {result && (
-            <>
-              <div>
-                <span>最大生命值</span>
-                <span>{result.maxHp}</span>
-              </div>
-              <div>
-                <span>攻击力</span>
-                <span>{result.atk}</span>
-              </div>
-              <div>
-                <span>防御</span>
-                <span>{result.def}</span>
-              </div>
-              <div>
-                <span>法术抗性</span>
-                <span>{result.magicResistance}</span>
-              </div>
-              <div>
-                <span>费用</span>
-                <span>{result.cost}</span>
-              </div>
-              <div>
-                <span>阻挡数</span>
-                <span>{result.blockCnt}</span>
-              </div>
-              <div>
-                <span>攻击速度</span>
-                <span>{result.attackSpeed}</span>
-              </div>
-              <div>
-                <span>攻击间隔</span>
-                <span>{result.baseAttackTime}</span>
-              </div>
-              <div>
-                <span>再部署</span>
-                <span>{result.respawnTime}</span>
-              </div>
-              <div>
-                <span>每秒生命回复</span>
-                <span>{result.hpRecoveryPerSec}</span>
-              </div>
-              <div>
-                <span>每秒技力回复</span>
-                <span>{result.spRecoveryPerSec}</span>
-              </div>
-              <div>
-                <span>伤害倍率</span>
-                <span>{result.damageScale}</span>
-              </div>
-            </>
-          )}
-        </StyledAttributeWrapper>
+        { charInput.attributeModifier && <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} /> }
         <OperatorModifier />
+      </div>
+      <div className="flex gap-4">
+        {result && <OperatorAttributesOld result={result} />}
       </div>
     </div>
   );

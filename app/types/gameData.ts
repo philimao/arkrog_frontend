@@ -1,14 +1,6 @@
 import type { BasicObject } from "~/types/core";
 
-export type RogueKey =
-  | "rogue_1"
-  | "rogue_2"
-  | "rogue_3"
-  | "rogue_4"
-  | "rogue_5"
-  | "rogue_6"
-  | "rogue_7"
-  | "rogue_8";
+export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
 
 // 游戏数据
 export interface GameData {
@@ -181,15 +173,7 @@ type SkillId = `skchr_${string}`;
 
 export type SkillsBasic = Record<SkillId, SkillBasicData>;
 
-export type Profession =
-  | "VANGUARD"
-  | "SNIPER"
-  | "CASTER"
-  | "MEDIC"
-  | "GUARD"
-  | "DEFENDER"
-  | "SPECIALIST"
-  | "SUPPORTER";
+export type Profession = "VANGUARD" | "SNIPER" | "CASTER" | "MEDIC" | "GUARD" | "DEFENDER" | "SPECIALIST" | "SUPPORTER";
 
 // 干员基础信息
 export interface CharBasicData {
@@ -361,6 +345,10 @@ export type RelicDataExt = ItemData &
 export interface RelicData {
   id: `rogue_${number}_${string}`;
   buffs: RelicBuff[];
+  /** 藏品效果 */
+  usage: string;
+  /** 藏品名称 */
+  name: string;
 }
 
 export interface RelicWrapperBuff {
@@ -414,6 +402,17 @@ export interface CharInput {
   potential: number;
   /** 干员在游戏中的增益 */
   charsBuffInGame: CharBuffInGame;
+  /** 科技加成 */
+  tech: number;
+  /** 属性修正 */
+  attributeModifier: {
+    /** 攻击力 藏品rune加算 */
+    atkBase: number;
+    /** 攻击力 藏品rune乘算 (atkPercent / 100)% */
+    atkPercent: number;
+    /** 攻击力 最终加算(鼓舞加算) */
+    atkFinal: number;
+  };
 }
 
 /** 干员在游戏中的增益 */

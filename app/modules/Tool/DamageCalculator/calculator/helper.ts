@@ -414,6 +414,12 @@ export class CalculatorHelper {
     // 获取精英化等级属性
     const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
     const result = { ...attribute, damageScale: 1 } as CharAttributeExt;
+
+    /** 覆盖自然技力回复-攻回技能不会自动回复技力 */
+    if (charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK") {
+      result.spRecoveryPerSec = 0;
+    }
+
     /** 应用局外加成(加算) */
     result.atk += context.relic_rune_add.atk;
     result.attackSpeed += context.relic_rune_add.attack_speed;

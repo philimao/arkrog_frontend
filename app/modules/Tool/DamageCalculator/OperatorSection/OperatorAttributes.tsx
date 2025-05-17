@@ -238,8 +238,9 @@ export function useHpRecoveryPerSecTagGroups(props: {
 export function useSpRecoveryPerSecTagGroups(props: {
   attribute: CharAttribute;
   context: RelicAnalysisResult;
+  charInput: CharInput;
 }): AttrCalcToken[] {
-  const { attribute, context } = props;
+  const { attribute, context, charInput } = props;
 
   const tokens: AttrCalcToken[] = [
     {
@@ -247,12 +248,14 @@ export function useSpRecoveryPerSecTagGroups(props: {
       tags: [],
     },
   ];
-  if (attribute.spRecoveryPerSec) tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.spRecoveryPerSec}</AttrTag>);
+  /** 攻回技能不会自动回复技力 */
+  if (charInput.skill.spData.spType === "INCREASE_WITH_TIME" && attribute.spRecoveryPerSec)
+    tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.spRecoveryPerSec}</AttrTag>);
   for (const item of context.in_game_buff_add.sp_recovery_per_sec_source) {
     tokens[0].tags.push(<AttrTag tooltip={item.name}>{item.value}</AttrTag>);
   }
 
-  if (tokens[0].tags.length < 2) {
+  if (tokens[0].tags.length < 1) {
     return [];
   }
   return tokens;
@@ -272,7 +275,11 @@ export default function OperatorAttributes(props: {
   const attackSpeedTagGroups = useAttackSpeedTagGroups({ attribute: attribute!, context });
   const costTagGroups = useCostTagGroups({ attribute: attribute!, context });
   const hpRecoveryPerSecTagGroups = useHpRecoveryPerSecTagGroups({ attribute: attribute!, context });
-  const spRecoveryPerSecTagGroups = useSpRecoveryPerSecTagGroups({ attribute: attribute!, context });
+  const spRecoveryPerSecTagGroups = useSpRecoveryPerSecTagGroups({
+    attribute: attribute!,
+    context,
+    charInput: props.charInput,
+  });
 
   useEffect(() => {
     let context = CalculatorHelper.analyzeChar({

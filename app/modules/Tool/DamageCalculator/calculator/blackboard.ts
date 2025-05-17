@@ -104,7 +104,9 @@ registerRelicBlackboard("modify_sp[attack_or_damage]", (buff: RelicBuff, relic: 
 registerRelicBlackboard("modify_sp_recover[normal]", (buff: RelicBuff, relic: RelicWrapper) => {
   const sp_recovery_per_sec = getByKeySafe(buff.blackboard, "sp_recovery_per_sec");
   return {
-    isActive: () => true,
+    isActive(input) {
+      return input.charInput.skill.spData.spType === "INCREASE_WITH_TIME";
+    },
     apply(context: RelicAnalysisResult): void {
       context.in_game_buff_add.sp_recovery_per_sec += sp_recovery_per_sec.value;
       context.in_game_buff_add.sp_recovery_per_sec_source.push({

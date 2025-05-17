@@ -99,43 +99,44 @@ export default function RelicItem({
   }, [relicWrapper]);
 
   return (
-    <StyledRelicItem
-      onClick={() => updateRelic(relicWrapper.id, "userActive", !relicWrapper.userActive)}
-      $userActive={relicWrapper.userActive}
-      $editable={editable}
-    >
-      <StyledInner>
-        <Tooltip delay={500} closeDelay={150} content={relicWrapper.usage || "无"}>
+    <Tooltip delay={500} closeDelay={150} content={relicWrapper.usage || "无"}>
+      <StyledRelicItem
+        onClick={() => updateRelic(relicWrapper.id, "userActive", !relicWrapper.userActive)}
+        $userActive={relicWrapper.userActive}
+        $editable={editable}
+      >
+        <StyledInner>
           <StyledRelicImg
+            draggable={false}
             src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`}
             alt={relicWrapper.name}
           />
-        </Tooltip>
-      </StyledInner>
+        </StyledInner>
 
-      {editable && (
-        <StyledCloseButton
-          onClick={(evt) => {
-            evt.stopPropagation();
-            toggleRelicSelection(relicWrapper.id);
-          }}
-          tabIndex={-1}
-        >
-          <span>X</span>
-        </StyledCloseButton>
-      )}
-      {relicWrapper.hasLayer && (
-        <StyledLayerWrapper>
-          <input
-            type="text"
-            value={layer}
-            onChange={(evt) => setLayer(evt.target.value)}
-            onClick={(evt) => evt.stopPropagation()}
-            onKeyDown={(evt) => evt.key === "Enter" && evt.currentTarget.blur()}
-            onBlur={() => setLayer(setRelicLayer(relicWrapper.id, layer))}
-          />
-        </StyledLayerWrapper>
-      )}
-    </StyledRelicItem>
+        {editable && (
+          <StyledCloseButton
+            onClick={(evt) => {
+              evt.stopPropagation();
+              toggleRelicSelection(relicWrapper.id);
+            }}
+            tabIndex={-1}
+          >
+            <span>X</span>
+          </StyledCloseButton>
+        )}
+        {relicWrapper.hasLayer && (
+          <StyledLayerWrapper>
+            <input
+              type="text"
+              value={layer}
+              onChange={(evt) => setLayer(evt.target.value)}
+              onClick={(evt) => evt.stopPropagation()}
+              onKeyDown={(evt) => evt.key === "Enter" && evt.currentTarget.blur()}
+              onBlur={() => setLayer(setRelicLayer(relicWrapper.id, layer))}
+            />
+          </StyledLayerWrapper>
+        )}
+      </StyledRelicItem>
+    </Tooltip>
   );
 }

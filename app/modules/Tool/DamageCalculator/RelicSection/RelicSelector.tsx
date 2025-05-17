@@ -1,10 +1,7 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@heroui/react";
-import {
-  finalizeRelicResults,
-  wrapRelicData,
-} from "~/modules/Tool/DamageCalculator/utils";
+import { finalizeRelicResults, wrapRelicData } from "~/modules/Tool/DamageCalculator/utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import { GridContainer, StyledTitle } from "~/modules/Tool/components/Shared";
@@ -60,8 +57,7 @@ const StyledTagRow = styled.div`
 `;
 
 const StyledTagButton = styled.button<{ $selected: boolean }>`
-  background: ${(props) =>
-    props.$selected ? "var(--ak-blue)" : "var(--black-gray)"};
+  background: ${(props) => (props.$selected ? "var(--ak-blue)" : "var(--black-gray)")};
   color: ${(props) => (props.$selected ? "black" : "white")};
   font-weight: bold;
   font-size: 0.9rem;
@@ -103,9 +99,8 @@ const StyledBuffContainer = styled.div`
 const StyledBuffColumn = styled.div<{ $type: string }>`
   flex: 1 1;
   padding: 0.5rem 1rem;
-  background: rgba(24, 24, 24, 0.7)
-    url(/images/tool/calculator/${(props) => props.$type}_buff.png) no-repeat
-    95% center / auto 80%;
+  background: rgba(24, 24, 24, 0.7) url(/images/tool/calculator/${(props) => props.$type}_buff.png) no-repeat 95%
+    center / auto 80%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -123,8 +118,7 @@ const StyledBuffInfo = styled.div<{ $type: string }>`
   margin-right: 1.25rem;
   align-items: center;
   & > div:first-child {
-    color: ${(props) =>
-      props.$type === "operator" ? "var(--ak-blue)" : "var(--ak-red)"};
+    color: ${(props) => (props.$type === "operator" ? "var(--ak-blue)" : "var(--ak-red)")};
     line-height: 1.5rem;
   }
   & > div:last-child {
@@ -150,11 +144,7 @@ const StyledBuffText = styled.div`
   font-size: 0.8rem;
 `;
 
-export default function RelicSelectorWrapper({
-  charData,
-}: {
-  charData?: CharData;
-}) {
+export default function RelicSelectorWrapper({ charData }: { charData?: CharData }) {
   const { relics, items } = useGameDataStore();
   const { rogueKey, setRelicWrapper } = useDamageCalculatorStore();
 
@@ -172,25 +162,17 @@ export default function RelicSelectorWrapper({
   );
 
   useEffect(() => {
-    setRelicWrapper(charData?.name || "", rogueKey, relicsByChar2);
-  }, [charData?.name, relicsByChar2, rogueKey, setRelicWrapper]);
+    setRelicWrapper(rogueKey, relicsByChar2);
+  }, [relicsByChar2, rogueKey, setRelicWrapper]);
 
-  const relicWrappers = useDamageCalculatorStore(
-    useShallow((state) => state.relicsMap[charData?.name || ""]?.[rogueKey]),
-  );
+  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
 
   if (!relicWrappers) return null;
 
   return <RelicSelector charData={charData} relicWrappers={relicWrappers} />;
 }
 
-function RelicSelector({
-  charData,
-  relicWrappers,
-}: {
-  charData?: CharData;
-  relicWrappers: RelicWrapper[];
-}) {
+function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relicWrappers: RelicWrapper[] }) {
   const { items } = useGameDataStore();
   const {
     rogueKey,
@@ -201,7 +183,6 @@ function RelicSelector({
     selectedIds,
     setSelectedIds,
     setCharsBuff,
-    setCharsBuffInGame,
     setEnemyBuff,
     outBuff,
   } = useDamageCalculatorStore();
@@ -236,9 +217,7 @@ function RelicSelector({
       // Tag筛选
       .filter(
         (relicWrapper) =>
-          !(
-            valueFilter.size && !valueFilter.has(relicWrapper.value.toString())
-          ) &&
+          !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
           (!searchValue || relicWrapper.name.includes(searchValue)),
       )
       // 藏品价值与关键字筛选
@@ -248,8 +227,7 @@ function RelicSelector({
           selectedTags.some((kw) =>
             filterFuncMap[kw]
               ? filterFuncMap[kw](relicWrapper)
-              : relicWrapper.name.includes(kw) ||
-                relicWrapper.usage.includes(kw),
+              : relicWrapper.name.includes(kw) || relicWrapper.usage.includes(kw),
           ),
       )
       .map((r) => r.id);
@@ -258,16 +236,7 @@ function RelicSelector({
       .map((relicWrapper) => relicWrapper.id);
     updateRelics(showIds, "show", true);
     updateRelics(hideIds, "show", false);
-  }, [
-    difficulty,
-    items,
-    relicWrappers,
-    rogueKey,
-    searchValue,
-    selectedTags,
-    updateRelics,
-    valueFilter,
-  ]);
+  }, [difficulty, items, relicWrappers, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
   // const selectRelicsByIds = (ids: string[]) => {
@@ -296,31 +265,14 @@ function RelicSelector({
   // 应用藏品效果
   const charName = charData?.name || "";
   useEffect(() => {
-    const { charResult, inGameResult, enemyResult } = finalizeRelicResults(
-      parseFloat(outBuff),
-      relicWrappers,
-      selectedIds,
-    );
+    const { charResult, enemyResult } = finalizeRelicResults(parseFloat(outBuff), relicWrappers, selectedIds);
     setCharsBuff(charName, charResult);
-    setCharsBuffInGame(charName, inGameResult);
     setEnemyBuff(enemyResult);
-  }, [
-    charName,
-    outBuff,
-    relicWrappers,
-    selectedIds,
-    setCharsBuff,
-    setCharsBuffInGame,
-    setEnemyBuff,
-  ]);
+  }, [charName, outBuff, relicWrappers, selectedIds, setCharsBuff, setEnemyBuff]);
 
   const { enemyBuff } = useDamageCalculatorStore();
-  const charBuff = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuff[charName]),
-  );
-  const charBuffInGame = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuffInGame[charName]),
-  );
+  const charBuff = useDamageCalculatorStore(useShallow((state) => state.charsBuff[charName]));
+  const charBuffInGame = useDamageCalculatorStore(useShallow((state) => state.charsBuffInGame[charName]));
 
   return (
     <StyledRelicSelector $active={showRelics}>
@@ -373,8 +325,7 @@ function RelicSelector({
             label="输入藏品名称"
             radius="none"
             classNames={{
-              inputWrapper:
-                "bg-black-gray h-14 group-data-[focus-visible=true]:!ring-0",
+              inputWrapper: "bg-black-gray h-14 group-data-[focus-visible=true]:!ring-0",
               label: "text-light-gray text-[0.8rem]",
               input: "font-bold",
             }}
@@ -398,20 +349,12 @@ function RelicSelector({
           </StyledRelicCount>
           <StyledSelectedRelicsContainer>
             {selectedIds
-              .map((id) =>
-                relicWrappers.find((relicWrapper) => relicWrapper.id === id),
-              )
+              .map((id) => relicWrappers.find((relicWrapper) => relicWrapper.id === id))
               .map((relicWrapper) => (
-                <RelicItem
-                  key={relicWrapper!.id}
-                  relicWrapper={relicWrapper!}
-                  editable={true}
-                />
+                <RelicItem key={relicWrapper!.id} relicWrapper={relicWrapper!} editable={true} />
               ))}
           </StyledSelectedRelicsContainer>
-          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>
-            清空
-          </StyledClearRelicsButton>
+          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>
         </StyledSelectedRelics>
 
         <StyledBuffContainer>
@@ -421,8 +364,7 @@ function RelicSelector({
                 <StyledBuffInfoInner>
                   <div className="text-xl">
                     {type === "operator"
-                      ? Object.keys(charBuff || {}).length +
-                        Object.keys(charBuffInGame || {}).length
+                      ? Object.keys(charBuff || {}).length + Object.keys(charBuffInGame || {}).length
                       : Object.keys(enemyBuff || {}).length}
                   </div>
                   <div>{typeMap[type as never] + "加成"}</div>

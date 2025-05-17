@@ -1,8 +1,8 @@
 import { styled } from "styled-components";
-import React, { type Dispatch, type SetStateAction, useRef } from "react";
+import { type Dispatch, type SetStateAction, useRef } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useShallow } from "zustand/react/shallow";
-import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
+import { type AdditionEntry, CalculatorHelper } from "../calculator";
 
 const StyledBuffPanel = styled.div`
   display: flex;
@@ -13,14 +13,9 @@ const typeMap = {
   enemy: "敌方",
 };
 
-export default function BuffPanel({
-  show,
-  setShow,
-}: {
-  show: boolean;
-  setShow: Dispatch<SetStateAction<boolean>>;
-}) {
+export default function BuffPanel({ show, setShow }: { show: boolean; setShow: Dispatch<SetStateAction<boolean>> }) {
   const tooltip = useRef(null);
+
   return (
     <StyledBuffPanel>
       {Object.keys(typeMap).map((type) => (
@@ -30,11 +25,7 @@ export default function BuffPanel({
           onClick={() => {
             if (show) return;
             const listener = (evt: MouseEvent) => {
-              if (
-                !(tooltip.current! as HTMLDivElement).contains(
-                  evt.target as HTMLElement,
-                )
-              ) {
+              if (!(tooltip.current! as HTMLDivElement)?.contains(evt.target as HTMLElement)) {
                 document.removeEventListener("click", listener);
                 setShow(false);
               }
@@ -66,9 +57,7 @@ const StyledBuffTrigger = styled.div`
 
 const StyledBuffTriggerInfo = styled.div<{ $type: string }>`
   padding: 0 0.75rem;
-  background: #333333
-    url(/images/tool/calculator/${(props) => props.$type}_buff.png) no-repeat
-    center / contain;
+  background: #333333 url(/images/tool/calculator/${(props) => props.$type}_buff.png) no-repeat center / contain;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -87,22 +76,13 @@ const StyledBuffTriggerInfoInner = styled.div`
 
 function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
   const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
-  const charBuff = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuff[charName]),
-  );
-  const charBuffInGame = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuffInGame[charName]),
-  );
+  const charBuff = useDamageCalculatorStore(useShallow((state) => state.charsBuff[charName]));
+
   return (
     <StyledBuffTrigger onClick={onClick}>
       <StyledBuffTriggerInfo $type={type}>
         <StyledBuffTriggerInfoInner>
-          <div>
-            {type === "operator"
-              ? Object.keys(charBuff || {}).length +
-                Object.keys(charBuffInGame || {}).length
-              : Object.keys(enemyBuff || {}).length}
-          </div>
+          <div>{type === "operator" ? Object.keys(charBuff || {}).length : Object.keys(enemyBuff || {}).length}</div>
           <div>{typeMap[type as never] + "加成"}</div>
         </StyledBuffTriggerInfoInner>
       </StyledBuffTriggerInfo>
@@ -156,8 +136,7 @@ const StyledBuffTooltipTitle = styled.div<{ $type: string }>`
     margin-right: 1rem;
   }
   & > span:nth-child(2) {
-    color: ${(props) =>
-      props.$type === "operator" ? "var(--ak-blue)" : "var(--ak-red)"};
+    color: ${(props) => (props.$type === "operator" ? "var(--ak-blue)" : "var(--ak-red)")};
     font-size: 2rem;
     line-height: 1.7rem;
   }
@@ -165,10 +144,7 @@ const StyledBuffTooltipTitle = styled.div<{ $type: string }>`
 
 const StyledBuffTooltipText = styled.div<{ $type: string }>`
   display: grid;
-  grid-template-columns: repeat(
-    ${({ $type }) => ($type === "operator" ? 2 : 1)},
-    1fr
-  );
+  grid-template-columns: repeat(${({ $type }) => ($type === "operator" ? 2 : 1)}, 1fr);
   grid-template-rows: repeat(6, auto);
   grid-auto-flow: column;
   grid-auto-rows: auto;
@@ -178,35 +154,46 @@ const StyledBuffTooltipText = styled.div<{ $type: string }>`
 
 /** Buff加成面板Tooltip */
 function BuffTooltip({ show }: { show: boolean }) {
-  const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
-  const charBuff = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuff[charName]),
-  );
-  const charBuffInGame = useDamageCalculatorStore(
-    useShallow((state) => state.charsBuffInGame[charName]),
-  );
+  const { relicAnalysisResult } = useDamageCalculatorStore();
+
+  let additionEntry: AdditionEntry = {
+    in_game_char: [],
+    out_game_char: [],
+    enemy: [],
+  };
+  if (relicAnalysisResult) {
+    additionEntry = CalculatorHelper.outputAdditionEntry(relicAnalysisResult);
+  }
+
   return (
     <StyledBuffTooltip $show={show}>
       {Object.keys(typeMap).map((type) => (
         <StyledBuffTooltipCol $type={type} key={type}>
-          <StyledBuffTooltipImg
-            src={`/images/tool/calculator/${type}_buff.png`}
-            alt="bg"
-          />
+          <StyledBuffTooltipImg src={`/images/tool/calculator/${type}_buff.png`} alt="bg" />
           <StyledBuffTooltipTitle $type={type}>
             <span>{typeMap[type as never] + "加成"}</span>
             <span>
               {type === "operator"
-                ? Object.keys(charBuff || {}).length +
-                  Object.keys(charBuffInGame || {}).length
-                : Object.keys(enemyBuff || {}).length}
+                ? additionEntry.out_game_char.length + additionEntry.in_game_char.length
+                : additionEntry.enemy.length}
             </span>
           </StyledBuffTooltipTitle>
           <StyledBuffTooltipText $type={type}>
             {type === "operator" ? (
-              <BuffText charBuff={charBuff} inGameBuff={charBuffInGame} />
+              <>
+                {additionEntry.out_game_char.map((content) => (
+                  <div key={content}>{content}</div>
+                ))}
+                {additionEntry.in_game_char.map((content) => (
+                  <div key={content}>{content}</div>
+                ))}
+              </>
             ) : (
-              <BuffText enemyBuff={enemyBuff} />
+              <>
+                {additionEntry.enemy.map((content) => (
+                  <div key={content}>{content}</div>
+                ))}
+              </>
             )}
           </StyledBuffTooltipText>
         </StyledBuffTooltipCol>

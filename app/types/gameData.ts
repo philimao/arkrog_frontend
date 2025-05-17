@@ -384,7 +384,7 @@ export interface CharInput {
   phase?: CharPhase;
   /** 干员等级 */
   level: number;
-  /** 干员局外面板 */
+  /** 干员局外面板 @deprecated */
   attribute?: CharAttributeExt;
   /** 技能键名 */
   skillKey: string;
@@ -400,7 +400,7 @@ export interface CharInput {
   uniEquip: UniEquipPhaseData;
   /** 潜能等级 */
   potential: number;
-  /** 干员在游戏中的增益 */
+  /** 干员在游戏中的增益 @deprecated */
   charsBuffInGame: CharBuffInGame;
   /** 科技加成(百分比) */
   tech: number;
@@ -415,7 +415,7 @@ export interface CharInput {
   };
 }
 
-/** 干员在游戏中的增益 */
+/** 干员在游戏中的增益 @deprecated */
 export interface CharBuffInGame {
   /** 攻击力 */
   atk: number;

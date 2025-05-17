@@ -11,7 +11,7 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
   return {
     isActive: () => true,
     apply(context: RelicAnalysisResult): void {
-      context.in_game_buff_final_mul.enemy_atk_down -= atk.value;
+      context.in_game_buff_final_mul.enemy_atk_down += atk.value;
       context.in_game_buff_final_mul.enemy_atk_down_source.push({
         name: relic.name,
         value: atk.value,

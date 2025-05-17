@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
@@ -102,7 +102,7 @@ export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: Re
 
   return [
     {
-      tooltip: "基础",
+      tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.maxHp}</AttrTag>,
         ...context.relic_rune_add.max_hp_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
@@ -171,7 +171,7 @@ export function useAttackSpeedTagGroups(props: {
 
   const tokens = [
     {
-      tooltip: "基础",
+      tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.attackSpeed}</AttrTag>,
         ...context.relic_rune_add.attack_speed_source.map((item) => (
@@ -375,7 +375,7 @@ function AttrDisplay(props: { calcTokens: AttrCalcToken[]; children: React.React
               {"( "}
               {group.tags.map((tag, i) => {
                 if (i < group.tags.length - 1) {
-                  return <>{tag} + </>;
+                  return <span key={i}>{tag} + </span>;
                 }
                 return tag;
               })}

@@ -10,7 +10,14 @@ import type {
   CharAttribute,
   BlackboardData,
 } from "~/types/gameData";
-import { isRelicActive, applyAttrModifiers, applyBlackboardData, isBuffActive, isBlackboardActive } from "../utils";
+import {
+  isRelicActive,
+  applyAttrModifiers,
+  applyBlackboardData,
+  isBuffActive,
+  isBlackboardActive,
+  allowedBlackboardKeyMap,
+} from "../utils";
 import { BUFF_KEYS } from "./constant";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 
@@ -197,6 +204,17 @@ export interface RelicAnalysisResult {
     }>;
   };
 }
+
+/** 加成词条 */
+export interface AdditionEntry {
+  /** 干员加成 */
+  in_game_char: string[];
+  /** 局外加成 */
+  out_game_char: string[];
+  /** 敌人加成 */
+  enemy: string[];
+}
+
 /**
  * 计算器的一些辅助函数
  */
@@ -902,6 +920,58 @@ export class CalculatorHelper {
   static isRelicForChar(buff: RelicBuff, relic: RelicWrapper, charData: CharData): boolean {
     const isActive = isRelicActive(relic.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
     return isActive;
+  }
+
+  /** 把上下文输出一个加成词条 */
+  static outputAdditionEntry(context: RelicAnalysisResult): AdditionEntry {
+    const result: AdditionEntry = {
+      in_game_char: [],
+      out_game_char: [],
+      enemy: [],
+    };
+    const parse = (key: string, value: number) =>
+      `${allowedBlackboardKeyMap[key] || key}: ${value > 1 ? value : Math.round(value * 100) + "%"}`;
+    Object.entries(context.relic_rune_add).forEach(([key, value]) => {
+      if (typeof value === "number" && value > 0) {
+        result.out_game_char.push(parse(key, value));
+      }
+    });
+    Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+      if (typeof value === "number" && value !== 1) {
+        result.out_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100) + "%"}`);
+      }
+    });
+    Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
+      if (typeof value === "number" && value > 0) {
+        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value}`);
+      }
+    });
+    Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
+      if (typeof value === "number" && value !== 1) {
+        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      }
+    });
+    Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+      const isEnemy = [
+        "enemy_atk_down",
+        "enemy_def_down",
+        "enemy_damage_scale_phy",
+        "enemy_damage_scale_mag",
+        "enemy_damage_scale_pure",
+      ].includes(key);
+      if (!isEnemy && typeof value === "number" && value !== 1) {
+        result.in_game_char.push(`最终乘算${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      }
+      if (isEnemy && typeof value === "number" && value !== 1) {
+        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      }
+    });
+    Object.entries(context.global_buff_stack).forEach(([key, value]) => {
+      if (typeof value === "number" && value !== 1) {
+        result.in_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      }
+    });
+    return result;
   }
 
   /** 标准打印 */

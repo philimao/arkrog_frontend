@@ -2,6 +2,7 @@ import { create } from "zustand/index";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
 import type { CharData, EnemyData, EnemyDataParsed, RogueKey, RelicWrapper, CalculatorOutput } from "~/types/gameData";
+import type { RelicAnalysisResult } from "~/modules/Tool/DamageCalculator/calculator";
 
 interface AttributeModifier {
   atkBase: number;
@@ -14,9 +15,12 @@ interface DamageCalculatorStore {
   difficulty: string;
   outBuff: string;
   charList: CharData[];
+  /** 当前选中的角色 */
   activeCharName: string;
+  /** 仅有藏品的加成上下文 */
+  relicAnalysisResult?: RelicAnalysisResult;
   showRelics: boolean;
-  relicsMap: Record<string, Record<RogueKey, RelicWrapper[]>>;
+  relicsMap: Record<RogueKey, RelicWrapper[]>;
   enemyBuff: Record<string, number>;
   charsBuff: Record<string, Record<string, number>>;
   charsBuffInGame: Record<string, Record<string, number>>;
@@ -35,7 +39,8 @@ interface DamageCalculatorAction {
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
   setActiveCharName: (charName: string) => void;
-  setRelicWrapper: (charName: string, rogueKey: RogueKey, relics: RelicWrapper[]) => void;
+  setRelicAnalysisResult: (relicAnalysisResult: RelicAnalysisResult) => void;
+  setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   toggleShowRelics: () => void;
   setRelicLayer: (id: string, layer: string) => string;
   updateRelic: (id: string, key: string, value: number | string | boolean) => void;
@@ -46,7 +51,6 @@ interface DamageCalculatorAction {
   setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
   setEnemyBuff: (buff: Record<string, number>) => void;
   setCharsBuff: (charName: string, buff: Record<string, number>) => void;
-  setCharsBuffInGame: (charName: string, buff: Record<string, number>) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
 }
@@ -98,6 +102,8 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       activeCharName: "",
       setActiveCharName: (charName) =>
         set((state) => ({ ...state, activeCharName: charName }), undefined, "setActiveCharName"),
+      setRelicAnalysisResult: (relicAnalysisResult: RelicAnalysisResult) =>
+        set((state) => ({ ...state, relicAnalysisResult }), undefined, "setRelicAnalysisResult"),
       showRelics: false as boolean,
       toggleShowRelics: () =>
         set(
@@ -108,14 +114,11 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "toggleShowRelics",
         ),
-      relicsMap: {},
-      setRelicWrapper: (charName, rogueKey, relics) =>
+      relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
+      setRelicWrapper: (rogueKey, relics) =>
         set(
           (state) => {
-            state.relicsMap[charName] = {
-              ...state.relicsMap[charName],
-              [rogueKey]: relics,
-            };
+            state.relicsMap[rogueKey] = relics;
           },
           false,
           "setRelicWrapper",
@@ -123,7 +126,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       updateRelic: (id, key, value) =>
         set(
           (state) => {
-            const relicWrappers = state.relicsMap[state.activeCharName]?.[state.rogueKey] as RelicWrapper[];
+            const relicWrappers = state.relicsMap[state.rogueKey] as RelicWrapper[];
             if (relicWrappers) {
               relicWrappers.find((relicWrapper) => relicWrapper.id === id)![key as keyof RelicWrapper] = value as never;
             }
@@ -134,7 +137,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       updateRelics: (ids, key, value) =>
         set(
           (state) => {
-            const relicWrappers = state.relicsMap[state.activeCharName]?.[state.rogueKey] as RelicWrapper[];
+            const relicWrappers = state.relicsMap[state.rogueKey] as RelicWrapper[];
             if (relicWrappers) {
               relicWrappers
                 .filter((relicWrapper) => ids.includes(relicWrapper.id))
@@ -150,7 +153,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         const layerNumber = parseInt(layer);
         set(
           (state) => {
-            state.relicsMap[state.activeCharName][state.rogueKey].find((r) => r.id === id)!.layer = layerNumber || 0;
+            state.relicsMap[state.rogueKey].find((r) => r.id === id)!.layer = layerNumber || 0;
           },
           undefined,
           "setRelicLayer",
@@ -206,14 +209,6 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           "setCharsBuff",
         );
       },
-      setCharsBuffInGame: (charName, buff) =>
-        set(
-          (state) => {
-            state.charsBuffInGame[charName] = buff as never;
-          },
-          undefined,
-          "setCharsBuffInGame",
-        ),
       charsModifier: {} as Record<string, AttributeModifier>,
       setCharsModifier: (charName, modifier) => {
         set(

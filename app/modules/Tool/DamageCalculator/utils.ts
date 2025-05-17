@@ -64,6 +64,14 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   cost: "部署费用",
   hp_recovery_per_sec: "每秒恢复生命",
   sp: "初始技力",
+  damage_scale_mag: "法术增伤",
+  damage_scale_phy: "物理增伤",
+  damage_scale_pure: "真伤增伤",
+  enemy_atk_down: "敌人攻击力",
+  enemy_def_down: "敌人防御力",
+  enemy_damage_scale_phy: "敌人物理易伤",
+  enemy_damage_scale_mag: "敌人法术易伤",
+  enemy_damage_scale_pure: "敌人真伤易伤",
 };
 
 /**
@@ -414,7 +422,6 @@ export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): 
       buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!)),
   );
 
-  const layer = hasLayer ? 1 : 0;
   return {
     id: relicDataExt.id,
     name: relicDataExt.name,
@@ -425,7 +432,7 @@ export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): 
     userActive: true,
     isFavorite: false,
     hasLayer: hasLayer,
-    layer: layer,
+    layer: 1,
     buffs: buffs,
   };
 }

@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Badge } from "@heroui/badge";
 import BuffPanel from "~/modules/Tool/DamageCalculator/RelicSection/BuffPanel";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   StyledClearRelicsButton,
   StyledRelicCount,
@@ -33,32 +33,45 @@ const StyledCollapseButton = styled.div`
   //border-left: 2px solid rgba(255, 255, 255);
 `;
 
-const StyledRelicsContainer = styled.div`
-  height: 4.5rem;
-  padding: 0.5rem;
-  margin-right: auto;
-  display: flex;
-  gap: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-`;
-
-const StyledAttrButton = styled.button``;
-
 export default function FooterPanel() {
-  const {
-    showRelics,
-    activeCharName,
-    rogueKey,
-    toggleShowRelics,
-    selectedIds,
-    setSelectedIds,
-  } = useDamageCalculatorStore();
-  const relicWrappers = useDamageCalculatorStore(
-    useShallow((state) => state.relicsMap[activeCharName]?.[rogueKey]),
-  );
+  const relicsContainerRef = useRef<HTMLDivElement>(null);
+  const { showRelics, rogueKey, toggleShowRelics, selectedIds, setSelectedIds } = useDamageCalculatorStore();
+  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
 
   const [showBuff, setShowBuff] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setStartX(e.pageX - relicsContainerRef.current!.offsetLeft);
+    setScrollLeft(relicsContainerRef.current!.scrollLeft);
+  };
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - relicsContainerRef.current!.offsetLeft;
+      const walk = (x - startX) * 2;
+      relicsContainerRef.current!.scrollLeft = scrollLeft - walk;
+    },
+    [isDragging, startX, scrollLeft],
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp, showRelics]);
 
   return (
     <StyledFooterPanel>
@@ -78,8 +91,7 @@ export default function FooterPanel() {
               content="待选择藏品"
               isInvisible={selectedIds.length > 0}
               classNames={{
-                badge:
-                  "border-none bg-ak-dark-red text-[0.75rem] px-3 font-bold top-[-5%] right-[-50%]",
+                badge: "border-none bg-ak-dark-red text-[0.75rem] px-3 font-bold top-[-5%] right-[-50%]",
               }}
             >
               <StyledRelicCountInner>
@@ -88,24 +100,23 @@ export default function FooterPanel() {
               </StyledRelicCountInner>
             </Badge>
           </StyledRelicCount>
-          <StyledRelicsContainer>
-            {relicWrappers &&
-              selectedIds
-                .map((id) =>
-                  relicWrappers.find((relicWrapper) => relicWrapper.id === id),
-                )
-                .filter((i) => i)
-                .map((relicWrapper) => (
-                  <RelicItem
-                    key={relicWrapper!.id}
-                    relicWrapper={relicWrapper!}
-                  />
-                ))}
-          </StyledRelicsContainer>
+          {/* 底部藏品列表 */}
+          <div className="flex flex-auto h-full overflow-hidden">
+            {/* 底部藏品列表 - 滚动区域 */}
+            <div
+              ref={relicsContainerRef}
+              className="flex gap-2 w-full h-full p-2 overflow-auto flex-nowrap scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+              onMouseDown={handleMouseDown}
+            >
+              {relicWrappers &&
+                selectedIds
+                  .map((id) => relicWrappers.find((relicWrapper) => relicWrapper.id === id))
+                  .filter((i) => i)
+                  .map((relicWrapper) => <RelicItem key={relicWrapper!.id} relicWrapper={relicWrapper!} />)}
+            </div>
+          </div>
           <BuffPanel show={showBuff} setShow={setShowBuff} />
-          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>
-            清空
-          </StyledClearRelicsButton>
+          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>
         </>
       )}
     </StyledFooterPanel>

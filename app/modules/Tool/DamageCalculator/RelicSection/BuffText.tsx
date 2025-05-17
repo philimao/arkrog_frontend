@@ -14,18 +14,10 @@ export default function BuffText({
     `${allowedBlackboardKeyMap[key] || key}：${value > 1 ? value : Math.round(value * 100) + "%"}`;
   return (
     <>
-      {charBuff &&
-        Object.entries(charBuff).map(([key, value]) => (
-          <div key={key}>{parse(key, value)}</div>
-        ))}
+      {charBuff && Object.entries(charBuff).map(([key, value]) => <div key={key}>{parse(key, value)}</div>)}
       {inGameBuff &&
-        Object.entries(inGameBuff).map(([key, value]) => (
-          <div key={key}>{"局内" + parse(key, value)}</div>
-        ))}
-      {enemyBuff &&
-        Object.entries(enemyBuff).map(([key, value]) => (
-          <div key={key}>{parse(key, value)}</div>
-        ))}
+        Object.entries(inGameBuff).map(([key, value]) => <div key={key}>{"局内" + parse(key, value)}</div>)}
+      {enemyBuff && Object.entries(enemyBuff).map(([key, value]) => <div key={key}>{parse(key, value)}</div>)}
     </>
   );
 }

@@ -8,11 +8,11 @@ import type {
   CharAttributeExt,
   CharInput,
   CharAttribute,
-  RelicData,
   BlackboardData,
 } from "~/types/gameData";
 import { isRelicActive, applyAttrModifiers, applyBlackboardData, isBuffActive, isBlackboardActive } from "../utils";
 import { BUFF_KEYS } from "./constant";
+import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 
 /** 藏品分析结果 */
 export interface RelicAnalysisResult {
@@ -37,7 +37,7 @@ export interface RelicAnalysisResult {
     /** 战斗无关 */
     other: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
   };
-  /** 藏品rune 加算 */
+  /** 藏品rune 局外加算 */
   relic_rune_add: {
     /** 最大生命值 */
     max_hp: number;
@@ -51,8 +51,6 @@ export interface RelicAnalysisResult {
     cost: number;
     /** 每秒生命回复 */
     hp_recovery_per_sec: number;
-    /** 每秒技力回复 */
-    sp_recovery_per_sec: number;
     /** 最大生命值来源 */
     max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 攻击力来源 */
@@ -71,16 +69,8 @@ export interface RelicAnalysisResult {
       buff?: RelicBuff;
       relic?: RelicWrapper;
     }>;
-    /** 每秒技力回复来源 */
-    sp_recovery_per_sec_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
   };
-  /** 藏品rune 乘算 */
+  /** 藏品rune 局外乘算 */
   relic_rune_mul: {
     /** 攻击力(百分比) */
     atk: number;
@@ -95,33 +85,97 @@ export interface RelicAnalysisResult {
     /** 最大生命值来源 */
     max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
   };
-  /** 全局Buff 直接加算 */
-  global_buff_add: {
+  /** 局内Buff 直接加算 */
+  in_game_buff_add: {
+    /** 攻击力 */
+    atk: number;
+    /** 攻击速度 */
+    attack_speed: number;
+    /** 每秒技力回复 */
+    sp_recovery_per_sec: number;
+    /** 攻击力来源 */
+    atk_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    /** 攻击速度来源 */
+    attack_speed_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    /** 每秒技力回复来源 */
+    sp_recovery_per_sec_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+  };
+  /** 局内Buff 直接乘算 */
+  in_game_buff_mul: {
     /** 攻击力 */
     atk: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
   };
-  /** 全局Buff 直接乘算 */
-  global_buff_mul: {
-    /** 攻击力 */
-    atk: number;
-    /** 攻击力来源 */
-    atk_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
-  };
-  /** 全局Buff 最终加算 */
-  global_buff_final_add: {
+  /** 局内Buff 最终加算 */
+  in_game_buff_final_add: {
     /** 攻击力 */
     atk: number;
     /** 攻击力来源 */
     atk_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
   };
-  /** 全局Buff 最终乘算 */
-  global_buff_final_mul: {
+  /** 局内Buff 最终乘算 */
+  in_game_buff_final_mul: {
     /** 攻击力 */
     atk: number;
+    /** 敌人攻击力减少 */
+    enemy_atk_down: number;
+    /** 敌人防御力减少 */
+    enemy_def_down: number;
+    /** 敌人物理易伤 */
+    enemy_damage_scale_phy: number;
+    /** 敌人法术易伤 */
+    enemy_damage_scale_mag: number;
+    /** 敌人真实易伤 */
+    enemy_damage_scale_pure: number;
     /** 攻击力来源 */
     atk_source: Array<{ name: string; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    /** 敌人攻击力减少来源 */
+    enemy_atk_down_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人防御力减少来源 */
+    enemy_def_down_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人物理易伤来源 */
+    enemy_damage_scale_phy_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人法术易伤来源 */
+    enemy_damage_scale_mag_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人真实易伤来源 */
+    enemy_damage_scale_pure_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
   };
   /** 全局Buff 堆叠 */
   global_buff_stack: {
@@ -133,10 +187,14 @@ export interface RelicAnalysisResult {
     damage_scale_mag: number;
     /** 真实增伤 */
     damage_scale_pure: number;
-    /** 敌人防御增加 */
-    // enemy_def_add: number;
-    /** 敌人防御增加 */
-    // enemy_def_mul: number;
+    /** 法术增伤来源 */
+    damage_scale_mag_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
   };
 }
 /**
@@ -192,8 +250,6 @@ export class CalculatorHelper {
         cost_source: [],
         hp_recovery_per_sec: 0,
         hp_recovery_per_sec_source: [],
-        sp_recovery_per_sec: 0,
-        sp_recovery_per_sec_source: [],
       },
       relic_rune_mul: {
         atk: 1,
@@ -203,26 +259,41 @@ export class CalculatorHelper {
         def_source: [],
         max_hp_source: [],
       },
-      global_buff_add: {
+      in_game_buff_add: {
         atk: 0,
         atk_source: [],
+        attack_speed: 0,
+        attack_speed_source: [],
+        sp_recovery_per_sec: 0,
+        sp_recovery_per_sec_source: [],
       },
-      global_buff_mul: {
+      in_game_buff_mul: {
         atk: 1,
         atk_source: [],
       },
-      global_buff_final_add: {
+      in_game_buff_final_add: {
         atk: 0,
         atk_source: [],
       },
-      global_buff_final_mul: {
+      in_game_buff_final_mul: {
         atk: 1,
         atk_source: [],
+        enemy_atk_down: 1,
+        enemy_atk_down_source: [],
+        enemy_def_down: 1,
+        enemy_def_down_source: [],
+        enemy_damage_scale_phy: 1,
+        enemy_damage_scale_phy_source: [],
+        enemy_damage_scale_mag: 1,
+        enemy_damage_scale_mag_source: [],
+        enemy_damage_scale_pure: 1,
+        enemy_damage_scale_pure_source: [],
       },
       global_buff_stack: {
         damage_scale: 1,
         damage_scale_phy: 1,
         damage_scale_mag: 1,
+        damage_scale_mag_source: [],
         damage_scale_pure: 1,
       },
     };
@@ -356,10 +427,8 @@ export class CalculatorHelper {
     result.def = Math.round(result.def * context.relic_rune_mul.def);
     result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp);
 
-    /** 局内加算 */
-    /** 局内乘算 */
-    /** 最终加算 */
-    /** 最终乘算 */
+    /** 应用局内加算 */
+    result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec;
 
     return result;
   }
@@ -531,7 +600,7 @@ export class CalculatorHelper {
     const result: RelicAnalysisResult = context
       ? JSON.parse(JSON.stringify(context))
       : CalculatorHelper.createAdditionContext();
-    // 科技树加成
+    /** 科技树加成 */
     const tech = charInput.tech;
     if (tech > 1) {
       result.relic_rune_mul.atk += tech - 1;
@@ -553,6 +622,7 @@ export class CalculatorHelper {
         usage: `科技树加成 +${tech * 100 - 100}%`,
       });
     }
+    /** 用户修正属性 */
     if (charInput.attributeModifier.atkBase) {
       result.relic_rune_add.atk += charInput.attributeModifier.atkBase;
       result.relic_rune_add.atk_source.push({
@@ -570,23 +640,37 @@ export class CalculatorHelper {
       });
     }
     if (charInput.attributeModifier.atkFinal) {
-      result.global_buff_final_add.atk += charInput.attributeModifier.atkFinal;
-      result.global_buff_final_add.atk_source.push({
+      result.in_game_buff_final_add.atk += charInput.attributeModifier.atkFinal;
+      result.in_game_buff_final_add.atk_source.push({
         name: "用户修正属性",
         usage: `用户修正属性 +${charInput.attributeModifier.atkFinal}`,
       });
     }
     /** 筛选藏品 */
     for (const relic of relics) {
-      // 藏品在黑名单中
-      if (!isRelicActive(relic.name)) {
-        result.invalidRelics.push(relic);
-        continue;
-      }
-      // 藏品rune 加算
+      // 遍历藏品buff
       relic.relicData.buffs.forEach((buff) => {
-        if (!CalculatorHelper.isRelicForChar(buff, relic, charData)) {
+        // 是否存在藏品黑板实现
+        if (isRelicBlackboard(buff)) {
           result.categories.other.push({ buff, relic });
+          const blackboard = getRelicBlackboard(buff, relic);
+          // buff是否可以生效
+          if (blackboard.isActive({ charData, charInput })) {
+            // 生效 应用到上下文
+            blackboard.apply(result);
+          } else {
+            // 不生效 无效藏品
+            result.invalidRelics.push(relic);
+          }
+          return;
+        }
+        // 藏品在黑名单中
+        if (!isRelicActive(relic.name)) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+        if (!CalculatorHelper.isRelicForChar(buff, relic, charData)) {
+          result.invalidRelics.push(relic);
           return;
         }
         if (BUFF_KEYS.藏品rune.加算.includes(buff.key)) {
@@ -604,13 +688,13 @@ export class CalculatorHelper {
         } else if (BUFF_KEYS.全局Buff.buff_stack.includes(buff.key)) {
           result.categories.global_buff_stack.push({ buff, relic });
         } else {
-          result.categories.other.push({ buff, relic });
+          result.invalidRelics.push(relic);
         }
       });
     }
-    // 计算藏品rune 加算
+    // 计算藏品rune 局外加算
     result.categories.relic_rune_add.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.key !== "char") {
         return;
       }
@@ -665,9 +749,9 @@ export class CalculatorHelper {
         });
       }
     });
-    // 计算藏品rune 乘算
+    // 计算藏品rune 局外乘算
     result.categories.relic_rune_mul.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
         result.relic_rune_mul.atk += blackboard.atk;
         result.relic_rune_mul.atk_source.push({
@@ -699,43 +783,55 @@ export class CalculatorHelper {
         });
       }
     });
-    // 计算全局Buff 直接加算
+    // 计算局内Buff 直接加算
     result.categories.global_buff_add.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.global_buff_add.atk += blackboard.atk;
-        result.global_buff_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+        result.in_game_buff_add.atk += blackboard.atk;
+        result.in_game_buff_add.atk_source.push({
+          name: relic.name,
+          value: blackboard.atk,
+          usage: relic.relicData.usage,
+          buff,
+          relic,
+        });
       }
     });
-    // 计算全局Buff 直接乘算
+    // 计算局内Buff 局内乘算
     result.categories.global_buff_mul.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.global_buff_mul.atk += blackboard.atk;
-        result.global_buff_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+        result.in_game_buff_mul.atk += blackboard.atk;
+        result.in_game_buff_mul.atk_source.push({
+          buff,
+          value: blackboard.atk,
+          relic: relic,
+          usage: relic.relicData.usage,
+          name: relic.name,
+        });
       }
     });
-    // 计算全局Buff 最终加算
+    // 计算局内Buff 最终加算
     result.categories.global_buff_final_add.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.global_buff_final_add.atk += blackboard.atk;
-        result.global_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+        result.in_game_buff_final_add.atk += blackboard.atk;
+        result.in_game_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
-    // 计算全局Buff 最终乘算
+    // 计算局内Buff 最终乘算
     result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(charData, buff);
+      const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.global_buff_final_mul.atk += blackboard.atk;
-        result.global_buff_final_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+        result.in_game_buff_final_mul.atk += blackboard.atk;
+        result.in_game_buff_final_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
 
     return result;
   }
 
-  static analyzeRelic(charData: CharData, buff: RelicBuff) {
+  static analyzeRelic(buff: RelicBuff) {
     const blackboard: {
       key: "enemy_atk_down" | "char";
       /** 职业: medic|sniper */
@@ -858,20 +954,20 @@ export class CalculatorHelper {
     console.log(result);
     console.log("藏品rune 加算", result.relic_rune_add);
     console.log("藏品rune 乘算", result.relic_rune_mul);
-    console.log("全局Buff 直接加算", result.global_buff_add);
-    console.log("全局Buff 直接乘算", result.global_buff_mul);
-    console.log("全局Buff 最终加算", result.global_buff_final_add);
-    console.log("全局Buff 最终乘算", result.global_buff_final_mul);
+    console.log("局内Buff 直接加算", result.in_game_buff_add);
+    console.log("局内Buff 直接乘算", result.in_game_buff_mul);
+    console.log("局内Buff 最终加算", result.in_game_buff_final_add);
+    console.log("局内Buff 最终乘算", result.in_game_buff_final_mul);
     console.log("全局Buff 堆叠", result.global_buff_stack);
     console.groupEnd();
     console.groupCollapsed("加成表格");
     const btd = [
       { type: "局外加算", buff: result.relic_rune_add },
       { type: "局外乘算", buff: result.relic_rune_mul },
-      { type: "局内直接加算", buff: result.global_buff_add },
-      { type: "局内直接乘算", buff: result.global_buff_mul },
-      { type: "局内最终加算", buff: result.global_buff_final_add },
-      { type: "局内最终乘算", buff: result.global_buff_final_mul },
+      { type: "局内直接加算", buff: result.in_game_buff_add },
+      { type: "局内直接乘算", buff: result.in_game_buff_mul },
+      { type: "局内最终加算", buff: result.in_game_buff_final_add },
+      { type: "局内最终乘算", buff: result.in_game_buff_final_mul },
       { type: "全局Buff 堆叠", buff: result.global_buff_stack },
     ].map((buff: any) => {
       return {
@@ -888,16 +984,26 @@ export class CalculatorHelper {
     console.groupEnd();
   }
 
-  static printRelicKeyMap(relicList: RelicData[]) {
-    const relicBuff: { [key: string]: string[] } = {};
-    relicList.forEach((relic) => {
-      relic.buffs.forEach((buff) => {
+  static printRelicKeyMap(relicList: RelicWrapper[]) {
+    const relicBuff: { [key: string]: Array<[string, string]> } = {};
+
+    const context = CalculatorHelper.createAdditionContext();
+    for (const relic of relicList) {
+      for (const buff of relic.relicData.buffs) {
         if (!relicBuff[buff.key]) {
           relicBuff[buff.key] = [];
         }
-        relicBuff[buff.key].push(relic.name);
-      });
-    });
-    console.log("藏品Buff Key Map", relicBuff);
+        if (isRelicBlackboard(buff)) {
+          const relicBlackboard = getRelicBlackboard(buff, relic);
+          relicBlackboard.apply(context);
+        } else {
+          const blackboard = CalculatorHelper.analyzeRelic(buff);
+          relicBuff[buff.key].push([relic.name, blackboard.key]);
+          context.categories.other.push({ buff, relic });
+        }
+      }
+    }
+    console.log("藏品Buff Key Map", relicBuff.global_buff_normal);
+    console.log(context);
   }
 }

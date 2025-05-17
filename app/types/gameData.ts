@@ -151,7 +151,7 @@ export interface SkillLevelData {
   skillType: "MANUAL";
   durationType: "AMMO";
   spData: {
-    spType: "INCREASE_WITH_TIME";
+    spType: "INCREASE_WITH_TIME" | "INCREASE_WHEN_ATTACK";
     levelUpCost: null;
     maxChargeTime: number;
     spCost: number;

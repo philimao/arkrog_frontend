@@ -372,17 +372,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
-    // CalculatorHelper.printRelicAnalysisResult(CalculatorHelper.analyzeRelics({
-    //   charInput: input.charInput,
-    //   charData: input.charData,
-    //   relics: relicList.map((relic) => {
-    //     return {
-    //       name: relic.name,
-    //       relicData: relic,
-    //       layer: 1,
-    //     } as any;
-    //   }),
-    // }))
+    // CalculatorHelper.printRelicKeyMap(
+    //   relicsMap[activeCharName][rogueKey].map((r) => ({
+    //     relicData: relicList.find((relic) => relic.id === r?.id),
+    //     ...r,
+    //   })),
+    // );
     setCalcOutput(calcResult);
   }, [
     activeCharName,

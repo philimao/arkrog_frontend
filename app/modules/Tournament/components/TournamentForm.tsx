@@ -595,7 +595,7 @@ export default function TournamentForm({
               {formData.players && formData.players.length > 0 && formData.players.map((player, index) => (
                 <div
                   key={index}
-                  className={`px-2 py-1 ${(!player.name || player.name === "请填写选手名字！") ? "bg-ak-dark-red" : "bg-mid-gray"} text-white  rounded-md`}
+                  className={`px-2 py-1 rounded-md ${editingPlayer === player ? "bg-ak-blue text-black" : (!player.name || player.name === "请填写选手名字！") ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
                 >
                   <button
                     onClick={(e) => {
@@ -619,7 +619,7 @@ export default function TournamentForm({
                         players: newPlayers,
                       }));
                     }}
-                    className="ml-1 rounded-md p-1 hover:bg-ak-red"
+                    className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
                   >
                     <CloseIcon width="0.7rem" height="0.7rem" />
                   </button>
@@ -639,7 +639,7 @@ export default function TournamentForm({
                     players: [...(prev.players || []), newPlayer],
                   }));
                 }}
-                className="px-2 py-1 text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md "
+                className="px-2 py-1 text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md"
               >
                 + 添加选手
               </button>
@@ -681,8 +681,24 @@ export default function TournamentForm({
                 <label className="block text-sm font-light mb-1">
                   选手预览
                 </label>
-                <div>
+                <div className="bg-mid-gray p-2">
                   <p>这里放bilibili头像😊</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-light mb-1">
+                  所属队伍
+                </label>
+                <div className="bg-mid-gray p-2">
+                  <p>这里是队伍dropwdown select</p>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-light mb-1">
+                  自定义内容 key
+                </label>
+                <div className="bg-mid-gray p-2">
+                  <p>自定义内容 value</p>
                 </div>
               </div>
             </div>

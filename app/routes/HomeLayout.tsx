@@ -15,8 +15,7 @@ const StyledHomeNavContainer = styled.div`
 const StyledHomeNav = styled.div<{ active: boolean }>`
   margin-bottom: 0.5rem;
   padding: 0.25rem 1rem;
-  background: ${(props) =>
-    props.active ? "var(--ak-blue)" : "black"};
+  background: ${(props) => (props.active ? "var(--ak-blue)" : "black")};
   color: ${(props) => (props.active ? "black" : "white")};
   z-index: -1;
 `;

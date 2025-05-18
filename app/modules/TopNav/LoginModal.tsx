@@ -12,7 +12,7 @@ import React, { type FormEvent } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
-import { EyeClosedIcon, EyeOpenIcon, ModalCloseIcon } from "~/components/Icons";
+import { EyeClosedIcon, EyeOpenIcon, CloseIcon } from "~/components/Icons";
 
 interface LoginModalProps {
   id?: string;
@@ -76,7 +76,7 @@ export default function LoginModal({
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <ModalCloseIcon width="0.7rem" height="0.7rem" />
+            <CloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
       >

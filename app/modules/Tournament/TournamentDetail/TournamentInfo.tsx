@@ -18,17 +18,17 @@ type TournamentComponentProps = {
 const NavButtons = ({
   items,
   activeIndex,
-  onSelect
+  onSelect,
 }: {
-  items: readonly string[],
-  activeIndex: number,
-  onSelect: (index: number) => void
+  items: readonly string[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
 }) => (
   <div className="flex gap-4">
     {items.map((item, index) => (
       <button
         key={item}
-        className={`${activeIndex === index ? 'text-ak-blue' : 'text-light-gray'}`}
+        className={`${activeIndex === index ? "text-ak-blue" : "text-light-gray"}`}
         onClick={() => onSelect(index)}
       >
         {item}
@@ -40,11 +40,11 @@ const NavButtons = ({
 const StageHeader = ({
   stageName,
   playerCount,
-  isFinal
+  isFinal,
 }: {
-  stageName: string,
-  playerCount: number,
-  isFinal: boolean
+  stageName: string;
+  playerCount: number;
+  isFinal: boolean;
 }) => (
   <div className="h-8 bg-dark-gray mb-4 inline-flex gap-3 px-4">
     <div className="font-medium text-xl pt-[2px]">{stageName}</div>
@@ -56,11 +56,7 @@ const StageHeader = ({
   </div>
 );
 
-const SessionHeader = ({
-  sessions
-}: {
-  sessions: Set<string>
-}) => (
+const SessionHeader = ({ sessions }: { sessions: Set<string> }) =>
   sessions.size > 0 && (
     <tr className="bg-black-gray text-center divide-x divide-mid-gray">
       <td className="opacity-0 w-16 sm:w-32">placeholder</td>
@@ -70,20 +66,11 @@ const SessionHeader = ({
         </td>
       ))}
     </tr>
-  )
-);
+  );
 
-const DateCell = ({
-  dateIndex,
-  date
-}: {
-  dateIndex: number,
-  date: Date
-}) => (
+const DateCell = ({ dateIndex, date }: { dateIndex: number; date: Date }) => (
   <td className="text-center w-16 sm:w-32">
-    <div className="text-2xl text-white font-medium">
-      Day{dateIndex + 1}
-    </div>
+    <div className="text-2xl text-white font-medium">Day{dateIndex + 1}</div>
     <div className="text-sm">{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
   </td>
 );
@@ -93,13 +80,13 @@ const ScheduleCell = ({
   date,
   session,
   sessionIndex,
-  renderPlayer
+  renderPlayer,
 }: {
-  schedule: Map<string, TournamentGame>,
-  date: string,
-  session?: string,
-  sessionIndex?: number,
-  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode
+  schedule: Map<string, TournamentGame>;
+  date: string;
+  session?: string;
+  sessionIndex?: number;
+  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
 }) => {
   const sortedSchedule = Array.from(schedule.entries())
     .filter((entry) => new Date(entry[1].date).toDateString() === date)
@@ -118,11 +105,7 @@ const ScheduleCell = ({
 };
 
 // Team components
-const TeamAvatar = ({
-  avatarUrl
-}: {
-  avatarUrl: string
-}) => (
+const TeamAvatar = ({ avatarUrl }: { avatarUrl: string }) => (
   <div className="flex items-center justify-center">
     <img
       src={avatarUrl}
@@ -132,13 +115,7 @@ const TeamAvatar = ({
   </div>
 );
 
-const TeamNameCell = ({
-  name,
-  id
-}: {
-  name: string,
-  id?: string
-}) => (
+const TeamNameCell = ({ name, id }: { name: string; id?: string }) => (
   <div className="p-4 flex flex-col">
     <p className="text-white text-xl">{name}</p>
     <p className="text-xs">{id}</p>
@@ -148,17 +125,20 @@ const TeamNameCell = ({
 const TeamMembersCell = ({
   members,
   leader,
-  renderPlayer
+  renderPlayer,
 }: {
-  members: string[],
-  leader?: string,
-  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode
+  members: string[];
+  leader?: string;
+  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
 }) => (
   <div className="p-4 flex gap-x-12 gap-y-4 justify-center flex-wrap">
     {members.map((member, index) => (
       <div className="relative" key={index}>
         {leader === member && (
-          <StarIcon className="text-ak-blue absolute -left-4 top-6" width="1rem" />
+          <StarIcon
+            className="text-ak-blue absolute -left-4 top-6"
+            width="1rem"
+          />
         )}
         {renderPlayer(member, true)}
       </div>
@@ -210,24 +190,24 @@ export function TournamentSchedule({
               >
                 <DateCell dateIndex={dateIndex} date={date} />
 
-                {sessions.size
-                  ? Array.from(sessions)?.map((session, sessionIndex) => (
-                      <ScheduleCell
-                        key={sessionIndex}
-                        schedule={schedule}
-                        date={date.toDateString()}
-                        session={session}
-                        sessionIndex={sessionIndex}
-                        renderPlayer={renderPlayer}
-                      />
-                    ))
-                  : (
+                {sessions.size ? (
+                  Array.from(sessions)?.map((session, sessionIndex) => (
                     <ScheduleCell
+                      key={sessionIndex}
                       schedule={schedule}
                       date={date.toDateString()}
+                      session={session}
+                      sessionIndex={sessionIndex}
                       renderPlayer={renderPlayer}
                     />
-                  )}
+                  ))
+                ) : (
+                  <ScheduleCell
+                    schedule={schedule}
+                    date={date.toDateString()}
+                    renderPlayer={renderPlayer}
+                  />
+                )}
               </tr>
             ))}
           </tbody>
@@ -282,13 +262,13 @@ export default function TournamentInfoWrapper({
   const [navItem, setNavItem] = useState(0);
 
   const navItems = [
-    tournamentData.type === 'team' ? '参赛队伍' : '参赛选手',
-    '比赛进程'
+    tournamentData.type === "team" ? "参赛队伍" : "参赛选手",
+    "比赛进程",
   ] as const;
 
   const renderContent = () => {
     if (navItem === 0) {
-      return tournamentData.type === 'team' ? (
+      return tournamentData.type === "team" ? (
         <TournamentTeamInfo
           tournamentData={tournamentData}
           renderPlayer={renderPlayer}

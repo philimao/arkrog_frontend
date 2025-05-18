@@ -1,7 +1,7 @@
-import React from 'react';
-import { Svg, type SvgProps } from '../Svg';
+import React from "react";
+import { Svg, type SvgProps } from "../Svg";
 
-export const ModalCloseIcon: React.FC<SvgProps> = (props) => (
+export const CloseIcon: React.FC<SvgProps> = (props) => (
   <Svg {...props} aria-label={props.label} viewBox="0 0 14 14">
     <g clipPath="url(#clip0_113_129)">
       <path

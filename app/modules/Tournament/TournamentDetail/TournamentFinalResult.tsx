@@ -59,9 +59,7 @@ const PlayerAvatar = ({ imageSrc }: { imageSrc: string }) => (
 
 const ResultCardHeader = ({ rank }: { rank: number }) => (
   <div className="flex justify-between relative">
-    <div className="text-ak-blue font-bold text-xl">
-      {rankMap[rank]}
-    </div>
+    <div className="text-ak-blue font-bold text-xl">{rankMap[rank]}</div>
     <StyledFinalResultRank>NO.{rank}</StyledFinalResultRank>
   </div>
 );
@@ -69,15 +67,16 @@ const ResultCardHeader = ({ rank }: { rank: number }) => (
 // Helper functions
 const getTopTiers = <T extends { finalRank?: number }>(
   items: T[] | undefined,
-  maxRank: number
+  maxRank: number,
 ): T[] => {
   return (
     items
       ?.filter(
-        (item) => item.finalRank && 0 < item.finalRank && item.finalRank <= maxRank
+        (item) =>
+          item.finalRank && 0 < item.finalRank && item.finalRank <= maxRank,
       )
       .sort((a, b) =>
-        a.finalRank && b.finalRank ? a.finalRank - b.finalRank : 0
+        a.finalRank && b.finalRank ? a.finalRank - b.finalRank : 0,
       ) || []
   );
 };
@@ -90,14 +89,19 @@ export function TournamentFinalResultIndividual({
 }) {
   const final = tournamentData.stages[tournamentData.stages.length - 1];
   // TODO: replace isFinalOneOnOne with the data from tournament instead of player
-  const finalPlayer = tournamentData.players?.find((player) => player.games.find((g: any) => g.stage === final.name));
-  const isFinalOneOnOne = finalPlayer?.games[finalPlayer.games.length - 1].type === '1on1';
+  const finalPlayer = tournamentData.players?.find((player) =>
+    player.games.find((g: any) => g.stage === final.name),
+  );
+  const isFinalOneOnOne =
+    finalPlayer?.games[finalPlayer.games.length - 1].type === "1on1";
   const topTiers = getTopTiers(tournamentData.players, isFinalOneOnOne ? 2 : 3);
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
 
   return (
-    <div className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}>
+    <div
+      className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}
+    >
       {topTiers.map((player, index) => {
         const lastGame = player.games[player.games.length - 1];
         const rank = index + 1;
@@ -135,7 +139,7 @@ const TeamMemberRow = ({
   isKeyMember,
   keyMemberAlias,
   memberAlias,
-  player
+  player,
 }: {
   isTeamLeader: boolean;
   isKeyMember: boolean;
@@ -153,10 +157,10 @@ const TeamMemberRow = ({
         </span>
       )}
       <div className="w-[25%]">{player?.name}</div>
-      <div className="w-[20%]">{isKeyMember ? keyMemberAlias : memberAlias}</div>
-      <div className="hidden lg:block w-[25%]">
-        {lastGame?.starterSquad}
+      <div className="w-[20%]">
+        {isKeyMember ? keyMemberAlias : memberAlias}
       </div>
+      <div className="hidden lg:block w-[25%]">{lastGame?.starterSquad}</div>
       <div className="flex justify-center items-center w-[15%] lg:hidden">
         <img
           src={`/images/squad/${lastGame?.starterSquad}.png`}
@@ -200,7 +204,7 @@ export function TournamentFinalResultTeam({
             </div>
             {team.members.map((member, memberIndex) => {
               const player = tournamentData.players?.find(
-                (player) => player.name === member
+                (player) => player.name === member,
               );
               const isKeyMember = team.keyMember === member;
               const isTeamLeader = team.leader === member;
@@ -239,7 +243,7 @@ export default function TournamentFinalResultWrapper({
       <SectionContainer
         title="比赛结果"
         content={
-          tournamentData.type === 'team' ? (
+          tournamentData.type === "team" ? (
             <TournamentFinalResultTeam tournamentData={tournamentData} />
           ) : (
             <TournamentFinalResultIndividual tournamentData={tournamentData} />

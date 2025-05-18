@@ -6,7 +6,7 @@ import {
 } from "@heroui/react";
 import React from "react";
 import { StyledModalContent } from "~/modules/TopNav/styled";
-import { ModalCloseIcon } from "../Icons";
+import { CloseIcon } from "../Icons";
 
 interface ModalControl {
   isOpen?: boolean;
@@ -59,7 +59,7 @@ export default function ModalTemplate({
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <ModalCloseIcon width="0.7rem" height="0.7rem" />
+            <CloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
         {...props}

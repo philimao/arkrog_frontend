@@ -12,7 +12,7 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
 import { toast } from "react-toastify";
-import { EyeClosedIcon, EyeOpenIcon, ModalCloseIcon } from "~/components/Icons";
+import { EyeClosedIcon, EyeOpenIcon, CloseIcon } from "~/components/Icons";
 
 interface RegisterModalProps {
   id?: string;
@@ -84,7 +84,7 @@ export default function RegisterModal({ ...props }: RegisterModalProps) {
         backdrop="blur"
         closeButton={
           <button style={{ zIndex: 1000 }}>
-            <ModalCloseIcon width="0.7rem" height="0.7rem" />
+            <CloseIcon width="0.7rem" height="0.7rem" />
           </button>
         }
         onClose={handleClose}

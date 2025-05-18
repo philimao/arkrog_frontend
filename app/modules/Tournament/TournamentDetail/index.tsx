@@ -11,7 +11,12 @@ import TournamentFinalResult from "./TournamentFinalResult";
 import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Markdown from "react-markdown";
-import { StyledBackButton, StyledBackButtonContainer, StyledDivider, StyledEditButton } from "../components/Shared";
+import {
+  StyledBackButton,
+  StyledBackButtonContainer,
+  StyledDivider,
+  StyledEditButton,
+} from "../components/Shared";
 
 export function SectionContainer({
   title,
@@ -147,13 +152,17 @@ export default function TournamentDetail() {
           <div
             className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}
           >
-            <div className="w-16 h-16 aspect-square bg-light-gray">
-              <img
-                src={player.face}
-                alt="avatar"
-                referrerPolicy="no-referrer"
-                crossOrigin="anonymous"
-              />
+            <div className="w-16 h-16 aspect-square bg-mid-gray flex items-center justify-center">
+              {player.face ? (
+                <img
+                  src={player.face}
+                  alt="avatar"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                />
+              ) : (
+                <p className="text-5xl text-white">{player.name[0]}</p>
+              )}
             </div>
             <div
               className={`text-white ${column ? "text-sm text-center" : ""}`}

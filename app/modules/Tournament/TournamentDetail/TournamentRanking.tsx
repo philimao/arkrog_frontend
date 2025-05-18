@@ -1,5 +1,9 @@
 import { useState } from "react";
-import type { TournamentData, TournamentGame, TournamentTeamStage } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentGame,
+  TournamentTeamStage,
+} from "~/types/tournamentsData";
 import { SectionContainer } from ".";
 import { SortIcon, StarIcon } from "~/components/Icons";
 import { styled } from "styled-components";
@@ -51,19 +55,30 @@ const StyledTeamTable = styled.table`
   }
 `;
 
-const StyledTeamName = styled.td<{ $isTopTier: boolean, $sortByRanking: boolean }>`
-  box-shadow: inset -1px 0px ${(props) => props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)"};
+const StyledTeamName = styled.td<{
+  $isTopTier: boolean;
+  $sortByRanking: boolean;
+}>`
+  box-shadow: inset -1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
   position: sticky;
   left: 64px;
-  background-color: ${(props) => props.$isTopTier ? "#1c272c" : "#212121"}
+  background-color: ${(props) => (props.$isTopTier ? "#1c272c" : "#212121")};
 `;
 
 const StyledFinalPoint = styled.td<{ $isTopTier: boolean }>`
-  box-shadow: inset 1px 0px ${(props) => props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)"};
+  box-shadow: inset 1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
 `;
 
 // Helper components
-const StageHeader = ({ stageName, count, nextStageCount, isFinal, isTeam = false }: StageHeaderProps) => (
+const StageHeader = ({
+  stageName,
+  count,
+  nextStageCount,
+  isFinal,
+  isTeam = false,
+}: StageHeaderProps) => (
   <div className="h-8 bg-dark-gray mb-4 inline-flex gap-3 px-4">
     <div className="font-medium text-xl pt-[2px]">{stageName}</div>
     <StyledStageTitleNum
@@ -73,7 +88,10 @@ const StageHeader = ({ stageName, count, nextStageCount, isFinal, isTeam = false
     </StyledStageTitleNum>
     {!isFinal && nextStageCount && (
       <>
-        <p className="font-medium text-xl pt-[2px]"> {isTeam ? "队进" : "进"} </p>
+        <p className="font-medium text-xl pt-[2px]">
+          {" "}
+          {isTeam ? "队进" : "进"}{" "}
+        </p>
         <StyledStageTitleNum className="text-ak-red">
           {nextStageCount}
         </StyledStageTitleNum>
@@ -83,16 +101,22 @@ const StageHeader = ({ stageName, count, nextStageCount, isFinal, isTeam = false
   </div>
 );
 
-const SortableHeader = ({ label, sortType, sortProps }: {
-  label: string,
-  sortType: SortByType,
-  sortProps: SortProps
+const SortableHeader = ({
+  label,
+  sortType,
+  sortProps,
+}: {
+  label: string;
+  sortType: SortByType;
+  sortProps: SortProps;
 }) => {
-  const { sortBy, rankingAscending, dateAscending, handleSort, currentIndex } = sortProps;
+  const { sortBy, rankingAscending, dateAscending, handleSort, currentIndex } =
+    sortProps;
 
   const getOrder = () => {
     if (sortBy[currentIndex] !== sortType) return "null";
-    if (sortType === "point") return rankingAscending[currentIndex] ? "asc" : "desc";
+    if (sortType === "point")
+      return rankingAscending[currentIndex] ? "asc" : "desc";
     return dateAscending[currentIndex] ? "asc" : "desc";
   };
 
@@ -110,9 +134,7 @@ const SortableHeader = ({ label, sortType, sortProps }: {
 
 const SquadDisplay = ({ squadName }: { squadName: string }) => (
   <>
-    <span className="hidden md:block">
-      {squadName}
-    </span>
+    <span className="hidden md:block">{squadName}</span>
     <span className="block md:hidden">
       <img
         src={`/images/squad/${squadName}.png`}
@@ -139,12 +161,12 @@ const useSortingState = (stagesLength: number) => {
     setSortBy((prev) => prev.map((value, i) => (i === index ? type : value)));
     setRankingAscending((prev) =>
       prev.map((value, i) =>
-        i === index ? type === "point" ? !value : false : value
+        i === index ? (type === "point" ? !value : false) : value,
       ),
     );
     setDateAscending((prev) =>
       prev.map((value, i) =>
-        i === index ? type === "date" ? !value : false : value
+        i === index ? (type === "date" ? !value : false) : value,
       ),
     );
   };
@@ -156,7 +178,7 @@ const useSortingState = (stagesLength: number) => {
 const getNextStageCount = (
   tournamentData: TournamentData,
   index: number,
-  isTeam: boolean
+  isTeam: boolean,
 ) => {
   if (index === tournamentData.stages.length - 1) return 0;
 
@@ -167,7 +189,8 @@ const getNextStageCount = (
 
   const filterFn = isTeam
     ? (team: any) => team.stages.find((s: any) => s.name === nextStage.name)
-    : (player: any) => player.games.find((g: any) => g.stage === nextStage.name);
+    : (player: any) =>
+        player.games.find((g: any) => g.stage === nextStage.name);
 
   const filteredItems = items.filter(filterFn);
   return filteredItems.length;
@@ -180,7 +203,7 @@ const createRankingMap = (schedule: Map<string, any>) => {
     .sort((a, b) =>
       a[1].rank && b[1].rank
         ? a[1].rank - b[1].rank
-        : (b[1].point ?? 0) - (a[1].point ?? 0)
+        : (b[1].point ?? 0) - (a[1].point ?? 0),
     )
     .forEach((entry, index) => ranking.set(entry[0], index + 1));
 
@@ -192,7 +215,7 @@ const getSortedRanking = (
   sortBy: SortByType,
   rankingAscending: boolean,
   dateAscending: boolean,
-  playerSchedule?: Map<string, any>
+  playerSchedule?: Map<string, any>,
 ) => {
   if (sortBy === "point") {
     return Array.from(schedule).sort((a, b) =>
@@ -202,13 +225,13 @@ const getSortedRanking = (
           : (b[1].point ?? 0) - (a[1].point ?? 0)
         : a[1].rank && b[1].rank
           ? b[1].rank - a[1].rank
-          : (a[1].point ?? 0) - (b[1].point ?? 0)
+          : (a[1].point ?? 0) - (b[1].point ?? 0),
     );
   } else {
     // For date sorting, use playerSchedule for team mode
     const scheduleToSort = playerSchedule || schedule;
     return Array.from(scheduleToSort).sort((a, b) =>
-      dateAscending ? a[1].date - b[1].date : b[1].date - a[1].date
+      dateAscending ? a[1].date - b[1].date : b[1].date - a[1].date,
     );
   }
 };
@@ -222,7 +245,8 @@ export function TournamentRankingIndividual({
   const players = tournamentData.players;
   if (!players?.length) return <div>暂无排名</div>;
 
-  const { sortBy, rankingAscending, dateAscending, handleSort } = useSortingState(tournamentData.stages.length);
+  const { sortBy, rankingAscending, dateAscending, handleSort } =
+    useSortingState(tournamentData.stages.length);
 
   return tournamentData.stages?.map((stage, index) => {
     // Prepare data for this stage
@@ -241,18 +265,25 @@ export function TournamentRankingIndividual({
 
     const isFinal = index === tournamentData.stages.length - 1;
     const uniquePlayersCount = schedule.size;
-    const uniquePlayersNextStageCount = getNextStageCount(tournamentData, index, false);
+    const uniquePlayersNextStageCount = getNextStageCount(
+      tournamentData,
+      index,
+      false,
+    );
 
     // Create ranking and determine top tiers
     const ranking = createRankingMap(schedule);
-    const topTiers = Array.from(ranking.keys()).slice(0, isFinal ? 3 : uniquePlayersNextStageCount);
+    const topTiers = Array.from(ranking.keys()).slice(
+      0,
+      isFinal ? 3 : uniquePlayersNextStageCount,
+    );
 
     // Sort the ranking based on current sort settings
     const sortedRanking = getSortedRanking(
       schedule,
       sortBy[index],
       rankingAscending[index],
-      dateAscending[index]
+      dateAscending[index],
     );
 
     const sortProps: SortProps = {
@@ -260,7 +291,7 @@ export function TournamentRankingIndividual({
       rankingAscending,
       dateAscending,
       handleSort,
-      currentIndex: index
+      currentIndex: index,
     };
 
     return (
@@ -276,12 +307,20 @@ export function TournamentRankingIndividual({
           <thead className="bg-black-gray">
             <tr>
               <td>
-                <SortableHeader label="排名" sortType="point" sortProps={sortProps} />
+                <SortableHeader
+                  label="排名"
+                  sortType="point"
+                  sortProps={sortProps}
+                />
               </td>
               <td>选手ID</td>
               {showSession && <td>场地</td>}
               <td>
-                <SortableHeader label="日程" sortType="date" sortProps={sortProps} />
+                <SortableHeader
+                  label="日程"
+                  sortType="date"
+                  sortProps={sortProps}
+                />
               </td>
               <td>分队</td>
               <td className="hidden md:table-cell">结局</td>
@@ -294,9 +333,11 @@ export function TournamentRankingIndividual({
                 (player) => player.mid === entry[0],
               );
               const isTopTier = topTiers.indexOf(entry[0]) !== -1;
-              const nextIsTopTier = rankIndex !== sortedRanking.length - 1 &&
+              const nextIsTopTier =
+                rankIndex !== sortedRanking.length - 1 &&
                 topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
-              const prevIsTopTier = rankIndex !== 0 &&
+              const prevIsTopTier =
+                rankIndex !== 0 &&
                 topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
 
               return (
@@ -310,7 +351,7 @@ export function TournamentRankingIndividual({
                   <td
                     className={`w-4 p-4 text-bold text-center ${isTopTier && "text-ak-blue"}`}
                   >
-                    {ranking.get(player?.mid || '')}
+                    {ranking.get(player?.mid || "")}
                   </td>
                   <td>{player?.name}</td>
                   {showSession && <td>{entry[1].session}</td>}
@@ -343,7 +384,8 @@ export function TournamentRankingTeam({
 
   if (!teams?.length || !players?.length) return <div>暂无排名</div>;
 
-  const { sortBy, rankingAscending, dateAscending, handleSort } = useSortingState(tournamentData.stages.length);
+  const { sortBy, rankingAscending, dateAscending, handleSort } =
+    useSortingState(tournamentData.stages.length);
 
   return tournamentData.stages?.map((stage, index) => {
     // Prepare data for this stage
@@ -357,7 +399,9 @@ export function TournamentRankingTeam({
 
     const teamSchedule = new Map<string, TournamentTeamStage>();
     teams.forEach((team) => {
-      const teamStage = team.stages.find((teamStage) => teamStage.name === stage.name);
+      const teamStage = team.stages.find(
+        (teamStage) => teamStage.name === stage.name,
+      );
       if (teamStage) {
         teamSchedule.set(team.name, teamStage);
       }
@@ -365,11 +409,18 @@ export function TournamentRankingTeam({
 
     const isFinal = index === tournamentData.stages.length - 1;
     const uniqueTeamsCount = teamSchedule.size;
-    const uniqueTeamsNextStageCount = getNextStageCount(tournamentData, index, true);
+    const uniqueTeamsNextStageCount = getNextStageCount(
+      tournamentData,
+      index,
+      true,
+    );
 
     // Create ranking and determine top tiers
     const ranking = createRankingMap(teamSchedule);
-    const topTiers = Array.from(ranking.keys()).slice(0, isFinal ? 1 : uniqueTeamsNextStageCount);
+    const topTiers = Array.from(ranking.keys()).slice(
+      0,
+      isFinal ? 1 : uniqueTeamsNextStageCount,
+    );
 
     // Sort the ranking based on current sort settings
     const sortedRanking = getSortedRanking(
@@ -377,7 +428,7 @@ export function TournamentRankingTeam({
       sortBy[index],
       rankingAscending[index],
       dateAscending[index],
-      playerSchedule
+      playerSchedule,
     );
 
     const sortProps: SortProps = {
@@ -385,7 +436,7 @@ export function TournamentRankingTeam({
       rankingAscending,
       dateAscending,
       handleSort,
-      currentIndex: index
+      currentIndex: index,
     };
 
     return (
@@ -403,12 +454,24 @@ export function TournamentRankingTeam({
             <thead className="sticky top-0 bg-black-gray">
               <tr>
                 <td className="sticky left-0 bg-black-gray">
-                  <SortableHeader label="排名" sortType="point" sortProps={sortProps} />
+                  <SortableHeader
+                    label="排名"
+                    sortType="point"
+                    sortProps={sortProps}
+                  />
                 </td>
-                <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">队伍</td>
-                <td className="sticky left-[144px] sm:left-[192px] bg-black-gray player-name">选手ID</td>
+                <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">
+                  队伍
+                </td>
+                <td className="sticky left-[144px] sm:left-[192px] bg-black-gray player-name">
+                  选手ID
+                </td>
                 <td>
-                  <SortableHeader label="日程" sortType="date" sortProps={sortProps} />
+                  <SortableHeader
+                    label="日程"
+                    sortType="date"
+                    sortProps={sortProps}
+                  />
                 </td>
                 <td>位置</td>
                 <td className="min-w-12">分队</td>
@@ -416,40 +479,50 @@ export function TournamentRankingTeam({
                 <td className="min-w-32">"相遇"节点选择</td>
                 <td>结局</td>
                 <td>分数</td>
-                <td className="min-w-20 sticky right-0 bg-black-gray">队伍总分</td>
+                <td className="min-w-20 sticky right-0 bg-black-gray">
+                  队伍总分
+                </td>
               </tr>
             </thead>
             <tbody className="border-collapse">
               {sortedRanking.map((entry, rankIndex) => {
-                const team = sortBy[index] === "point"
-                  ? tournamentData.teams?.find(
-                    (team) => team.name === entry[0],
-                  )
-                  : tournamentData.teams?.find(
-                    (team) => team.members.includes(entry[0]),
-                  );
+                const team =
+                  sortBy[index] === "point"
+                    ? tournamentData.teams?.find(
+                        (team) => team.name === entry[0],
+                      )
+                    : tournamentData.teams?.find((team) =>
+                        team.members.includes(entry[0]),
+                      );
 
-                const players = sortBy[index] === "point"
-                  ? tournamentData.players?.filter(
-                    (player) => team?.members.includes(player.name),
-                  )
-                  : tournamentData.players?.filter(
-                    (player) => player.name === entry[0]
-                  );
+                const players =
+                  sortBy[index] === "point"
+                    ? tournamentData.players?.filter((player) =>
+                        team?.members.includes(player.name),
+                      )
+                    : tournamentData.players?.filter(
+                        (player) => player.name === entry[0],
+                      );
 
                 const isTopTier = topTiers.indexOf(entry[0]) !== -1;
-                const nextIsTopTier = rankIndex !== sortedRanking.length - 1 &&
+                const nextIsTopTier =
+                  rankIndex !== sortedRanking.length - 1 &&
                   topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
-                const prevIsTopTier = rankIndex !== 0 &&
+                const prevIsTopTier =
+                  rankIndex !== 0 &&
                   topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
 
                 return players?.map((player, playerIndex) => {
                   const isFirstPlayer = playerIndex === 0;
                   const isLastPlayer = playerIndex === players.length - 1;
-                  const playerGame = player.games.find((game) => game.stage === stage.name);
+                  const playerGame = player.games.find(
+                    (game) => game.stage === stage.name,
+                  );
                   const isKeyMember = player.name === team?.keyMember;
                   const isTeamLeader = player.name === team?.leader;
-                  const showRank = (sortBy[index] === "point" && isFirstPlayer) || sortBy[index] === "date";
+                  const showRank =
+                    (sortBy[index] === "point" && isFirstPlayer) ||
+                    sortBy[index] === "date";
 
                   return (
                     <tr
@@ -461,36 +534,39 @@ export function TournamentRankingTeam({
                     >
                       {showRank && (
                         <td
-                          rowSpan={sortBy[index] === "point" ? players.length : 1}
+                          rowSpan={
+                            sortBy[index] === "point" ? players.length : 1
+                          }
                           className={`sticky left-0 whitespace-nowrap w-4 p-4 text-bold text-center
                             ${isTopTier ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
                         >
-                          {ranking.get(team?.name || '')}
+                          {ranking.get(team?.name || "")}
                         </td>
                       )}
 
-                      {sortBy[index] === "point"
-                        ? (isFirstPlayer && (
-                            <StyledTeamName
-                              $isTopTier={isTopTier}
-                              $sortByRanking={true}
-                              rowSpan={players.length}
-                            >
-                              {entry[0]}
-                            </StyledTeamName>
-                          ))
-                        : (
-                            <StyledTeamName
-                              $isTopTier={isTopTier}
-                              $sortByRanking={false}
-                              className="max-w-32 truncate"
-                            >
-                              {team?.name}
-                            </StyledTeamName>
-                          )
-                      }
+                      {sortBy[index] === "point" ? (
+                        isFirstPlayer && (
+                          <StyledTeamName
+                            $isTopTier={isTopTier}
+                            $sortByRanking={true}
+                            rowSpan={players.length}
+                          >
+                            {entry[0]}
+                          </StyledTeamName>
+                        )
+                      ) : (
+                        <StyledTeamName
+                          $isTopTier={isTopTier}
+                          $sortByRanking={false}
+                          className="max-w-32 truncate"
+                        >
+                          {team?.name}
+                        </StyledTeamName>
+                      )}
 
-                      <td className={`sticky left-[144px] sm:left-[192px] ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}>
+                      <td
+                        className={`sticky left-[144px] sm:left-[192px] ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}
+                      >
                         {isTeamLeader && (
                           <div className="absolute top-0 left-2 h-full flex items-center">
                             <StarIcon className="text-ak-blue" width="1rem" />
@@ -499,37 +575,52 @@ export function TournamentRankingTeam({
                         {player.name}
                       </td>
 
-                      <td className="whitespace-nowrap">{playerGame?.schedule}</td>
                       <td className="whitespace-nowrap">
-                        {isKeyMember ? tournamentData.keyMemberAlias : tournamentData.memberAlias}
+                        {playerGame?.schedule}
                       </td>
                       <td className="whitespace-nowrap">
-                        <SquadDisplay squadName={playerGame?.starterSquad || ''} />
+                        {isKeyMember
+                          ? tournamentData.keyMemberAlias
+                          : tournamentData.memberAlias}
                       </td>
-                      <td className="whitespace-nowrap">{playerGame?.starterOp}</td>
-                      <td className="whitespace-nowrap">{playerGame?.strategy}</td>
-                      <td className="whitespace-nowrap">{playerGame?.ending}</td>
+                      <td className="whitespace-nowrap">
+                        <SquadDisplay
+                          squadName={playerGame?.starterSquad || ""}
+                        />
+                      </td>
+                      <td className="whitespace-nowrap">
+                        {playerGame?.starterOp}
+                      </td>
+                      <td className="whitespace-nowrap">
+                        {playerGame?.strategy}
+                      </td>
+                      <td className="whitespace-nowrap">
+                        {playerGame?.ending}
+                      </td>
                       <td className="whitespace-nowrap">{playerGame?.point}</td>
 
-                      {sortBy[index] === "point"
-                        ? (isFirstPlayer && (
-                            <StyledFinalPoint
-                              $isTopTier={isTopTier}
-                              rowSpan={players.length}
-                              className={`sticky right-0 whitespace-nowrap text-center ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"}`}
-                            >
-                              {entry[1].point}
-                            </StyledFinalPoint>
-                          ))
-                        : (
-                            <StyledFinalPoint
-                              $isTopTier={isTopTier}
-                              className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
-                            >
-                              {team?.stages.find((teamStage) => teamStage.name === stage.name)?.point}
-                            </StyledFinalPoint>
-                          )
-                      }
+                      {sortBy[index] === "point" ? (
+                        isFirstPlayer && (
+                          <StyledFinalPoint
+                            $isTopTier={isTopTier}
+                            rowSpan={players.length}
+                            className={`sticky right-0 whitespace-nowrap text-center ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"}`}
+                          >
+                            {entry[1].point}
+                          </StyledFinalPoint>
+                        )
+                      ) : (
+                        <StyledFinalPoint
+                          $isTopTier={isTopTier}
+                          className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
+                        >
+                          {
+                            team?.stages.find(
+                              (teamStage) => teamStage.name === stage.name,
+                            )?.point
+                          }
+                        </StyledFinalPoint>
+                      )}
                     </tr>
                   );
                 });
@@ -555,9 +646,11 @@ export default function TournamentRankingWrapper({
       <SectionContainer
         title="排名情况"
         content={
-          tournamentData.type === 'team'
-            ? <TournamentRankingTeam tournamentData={tournamentData} />
-            : <TournamentRankingIndividual tournamentData={tournamentData} />
+          tournamentData.type === "team" ? (
+            <TournamentRankingTeam tournamentData={tournamentData} />
+          ) : (
+            <TournamentRankingIndividual tournamentData={tournamentData} />
+          )
         }
       />
     </div>

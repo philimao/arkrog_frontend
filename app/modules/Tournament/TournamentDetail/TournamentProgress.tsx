@@ -98,10 +98,10 @@ const StageNavigation = ({
 
 const TableHeader = ({
   stageName,
-  session,
+  group,
 }: {
   stageName: string;
-  session?: string;
+  group?: string;
 }) => (
   <thead>
     <tr>
@@ -110,7 +110,7 @@ const TableHeader = ({
         colSpan={7}
       >
         {stageName}
-        {session}
+        {group}
       </td>
     </tr>
   </thead>
@@ -261,12 +261,14 @@ const TeamScheduleRow = ({
           <p>{entry[1].starterOp}</p>
         </div>
       </td>
-      {/* Strategy */}
-      <td className="hidden sm:table-cell p-2 min-w-16">
-        <div className="flex justify-center items-center text-center">
-          {entry[1].strategy}
-        </div>
-      </td>
+      {/* custom fields */}
+      {Object.values(entry[1].customStageValues).map((value, index) => (
+        <td className="hidden sm:table-cell p-2 min-w-16" key={index}>
+          <div className="flex justify-center items-center text-center">
+            {value}
+          </div>
+        </td>
+      ))}
       {/* Ending */}
       <td className="hidden sm:table-cell p-2">
         <div className="flex justify-center items-center text-center">
@@ -295,16 +297,20 @@ const TeamScheduleRow = ({
 // Schedule table components
 const IndividualScheduleTable = ({
   schedule,
-  session,
+  groupSchedule,
+  group,
   renderPlayer,
 }: {
   schedule: Map<string, TournamentGame>;
-  session?: string;
+  groupSchedule?: Map<string, string>;
+  group?: string;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
 }) => {
   const sortedSchedule = Array.from(schedule.entries())
     .sort((a, b) => a[1].date - b[1].date)
-    .filter((entry) => (session ? entry[1].session === session : entry));
+    .filter((entry) =>
+      group ? groupSchedule?.get(entry[0]) === group : entry,
+    );
 
   if (sortedSchedule.length === 0) {
     return <EmptySchedule isTeam={false} />;
@@ -325,18 +331,22 @@ const IndividualScheduleTable = ({
 
 const TeamScheduleTable = ({
   schedule,
-  session,
+  groupSchedule,
+  group,
   renderPlayer,
   tournamentData,
 }: {
   schedule: Map<string, TournamentGame>;
-  session?: string;
+  groupSchedule?: Map<string, string>;
+  group?: string;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
   const sortedSchedule = Array.from(schedule.entries())
     .sort((a, b) => a[1].date - b[1].date)
-    .filter((entry) => (session ? entry[1].session === session : entry));
+    .filter((entry) =>
+      group ? groupSchedule?.get(entry[0]) === group : entry,
+    );
 
   if (sortedSchedule.length === 0) {
     return <EmptySchedule isTeam={true} />;
@@ -364,8 +374,7 @@ export default function TournamentProgress({
   tournamentData: TournamentData;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
 }) {
-  const players = tournamentData.players;
-  if (!players) return <div>暂无比赛进程</div>;
+  const players = tournamentData.players!;
 
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -374,9 +383,31 @@ export default function TournamentProgress({
   const currentStage = tournamentData.stages[currentStageIndex];
   const dates = generateDateArray(currentStage.startTime, currentStage.endTime);
 
-  // Build schedule and sessions
+  // Build schedule and groups
   const schedule = new Map<string, TournamentGame>();
-  const sessions = new Set<string>();
+  const groupSchedule = new Map<string, string>();
+  const groups = new Set<string>();
+
+  if (tournamentData.groupBy) {
+    tournamentData.players?.forEach((player) => {
+      const groupValue = player.customPlayerValues[tournamentData.groupBy];
+      if (groupValue) {
+        groups.add(groupValue);
+        groupSchedule.set(player.mid, groupValue);
+      }
+      const game = player.games.find(
+        (game) =>
+          game.stage === currentStage.name &&
+          new Date(game.date).toLocaleDateString("zh-CN") ===
+            new Date(dates[activeIndex]).toLocaleDateString("zh-CN"),
+      );
+      const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
+      if (stageGroupValue) {
+        groups.add(stageGroupValue);
+        groupSchedule.set(player.mid, stageGroupValue);
+      }
+    });
+  }
 
   players.forEach((player) => {
     const game = player.games.find(
@@ -387,8 +418,8 @@ export default function TournamentProgress({
     );
 
     if (game) {
-      if (game.session) sessions.add(game.session);
-      isTeam ? schedule.set(player.name, game) : schedule.set(player.mid, game);
+      if (isTeam) schedule.set(player.name, game);
+      else schedule.set(player.mid, game);
     }
   });
 
@@ -398,28 +429,30 @@ export default function TournamentProgress({
 
   // Schedule table component
   const ScheduleTable = ({
-    session,
+    group,
     index,
   }: {
-    session?: string;
+    group?: string;
     index?: number;
   }) => (
     <table
       key={index}
       className="w-full bg-black-gray-70 align-top divide-y divide-mid-gray"
     >
-      <TableHeader stageName={currentStage.name} session={session} />
+      <TableHeader stageName={currentStage.name} group={group} />
       {isTeam ? (
         <TeamScheduleTable
           schedule={schedule}
-          session={session}
+          groupSchedule={groupSchedule}
+          group={group}
           renderPlayer={renderPlayer}
           tournamentData={tournamentData}
         />
       ) : (
         <IndividualScheduleTable
           schedule={schedule}
-          session={session}
+          groupSchedule={groupSchedule}
+          group={group}
           renderPlayer={renderPlayer}
         />
       )}
@@ -436,9 +469,9 @@ export default function TournamentProgress({
         />
       </div>
       <div className="relative w-full flex flex-col divide-y divide-mid-gray">
-        {sessions.size ? (
-          Array.from(sessions).map((session, index) => (
-            <ScheduleTable key={index} session={session} index={index} />
+        {groups.size ? (
+          Array.from(groups).map((group, index) => (
+            <ScheduleTable key={index} group={group} index={index} />
           ))
         ) : (
           <>

@@ -242,8 +242,7 @@ export function TournamentRankingIndividual({
 }: {
   tournamentData: TournamentData;
 }) {
-  const players = tournamentData.players;
-  if (!players?.length) return <div>暂无排名</div>;
+  const players = tournamentData.players!;
 
   const { sortBy, rankingAscending, dateAscending, handleSort } =
     useSortingState(tournamentData.stages.length);
@@ -251,15 +250,11 @@ export function TournamentRankingIndividual({
   return tournamentData.stages?.map((stage, index) => {
     // Prepare data for this stage
     const schedule = new Map<string, TournamentGame>();
-    let showSession = false;
 
     players.forEach((player) => {
       const game = player.games.find((game) => game.stage === stage.name);
       if (game) {
         schedule.set(player.mid, game);
-        if (game.session) {
-          showSession = true;
-        }
       }
     });
 
@@ -314,7 +309,12 @@ export function TournamentRankingIndividual({
                 />
               </td>
               <td>选手ID</td>
-              {showSession && <td>场地</td>}
+              {Object.values(tournamentData.customPlayerKeys).map((key) => (
+                <td key={key}>{key}</td>
+              ))}
+              {Object.values(stage.customStageKeys).map((key) => (
+                <td key={key}>{key}</td>
+              ))}
               <td>
                 <SortableHeader
                   label="日程"
@@ -354,7 +354,9 @@ export function TournamentRankingIndividual({
                     {ranking.get(player?.mid || "")}
                   </td>
                   <td>{player?.name}</td>
-                  {showSession && <td>{entry[1].session}</td>}
+                  {Object.values(entry[1].customStageValues).map((value) => (
+                    <td key={value}>{value}</td>
+                  ))}
                   <td>{entry[1].schedule}</td>
                   <td>
                     <SquadDisplay squadName={entry[1].starterSquad} />
@@ -379,10 +381,8 @@ export function TournamentRankingTeam({
 }: {
   tournamentData: TournamentData;
 }) {
-  const teams = tournamentData.teams;
-  const players = tournamentData.players;
-
-  if (!teams?.length || !players?.length) return <div>暂无排名</div>;
+  const teams = tournamentData.teams!;
+  const players = tournamentData.players!;
 
   const { sortBy, rankingAscending, dateAscending, handleSort } =
     useSortingState(tournamentData.stages.length);
@@ -476,7 +476,16 @@ export function TournamentRankingTeam({
                 <td>位置</td>
                 <td className="min-w-12">分队</td>
                 <td>开局干员</td>
-                <td className="min-w-32">"相遇"节点选择</td>
+                {Object.values(tournamentData.customPlayerKeys).map((key) => (
+                  <td className="whitespace-nowrap" key={key}>
+                    {key}
+                  </td>
+                ))}
+                {Object.values(stage.customStageKeys).map((key) => (
+                  <td className="whitespace-nowrap" key={key}>
+                    {key}
+                  </td>
+                ))}
                 <td>结局</td>
                 <td>分数</td>
                 <td className="min-w-20 sticky right-0 bg-black-gray">
@@ -591,9 +600,18 @@ export function TournamentRankingTeam({
                       <td className="whitespace-nowrap">
                         {playerGame?.starterOp}
                       </td>
-                      <td className="whitespace-nowrap">
-                        {playerGame?.strategy}
-                      </td>
+                      {Object.values(player.customPlayerValues).map((value) => (
+                        <td className="whitespace-nowrap" key={value}>
+                          {value}
+                        </td>
+                      ))}
+                      {Object.values(playerGame?.customStageValues).map(
+                        (value) => (
+                          <td className="whitespace-nowrap" key={value}>
+                            {value}
+                          </td>
+                        ),
+                      )}
                       <td className="whitespace-nowrap">
                         {playerGame?.ending}
                       </td>
@@ -641,15 +659,24 @@ export default function TournamentRankingWrapper({
 }: {
   tournamentData: TournamentData;
 }) {
+  const renderTeam =
+    tournamentData.type === "team" &&
+    tournamentData.teams?.length &&
+    tournamentData.players?.length;
+  const renderIndividual =
+    tournamentData.type === "individual" && tournamentData.players?.length;
+
   return (
     <div>
       <SectionContainer
         title="排名情况"
         content={
-          tournamentData.type === "team" ? (
+          renderTeam ? (
             <TournamentRankingTeam tournamentData={tournamentData} />
-          ) : (
+          ) : renderIndividual ? (
             <TournamentRankingIndividual tournamentData={tournamentData} />
+          ) : (
+            <div>暂无排名</div>
           )
         }
       />

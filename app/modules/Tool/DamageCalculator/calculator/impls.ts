@@ -8,6 +8,7 @@ import type {
   CharInput,
 } from "~/types/gameData";
 import type { RelicAnalysisResult } from "./helper";
+import { CalculatorHelper } from "./helper";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
 export type RelicBlackboard = {
@@ -33,7 +34,11 @@ export function registerCalculatorImpl(name: string, impl: CalculatorImpl) {
 export function getCalculatorImpl(name: string): CalculatorImpl {
   const impl = implMap.get(name);
   if (!impl) {
-    throw new Error(`没有干员 ${name} 的计算器实现`);
+    console.warn(`干员 ${name} 的计算器实现为空`);
+    return () => {
+      console.warn(`干员 ${name} 的计算器实现为空`);
+      return CalculatorHelper.createCalculatorOutput();
+    };
   }
   return impl;
 }

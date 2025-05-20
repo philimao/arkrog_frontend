@@ -42,6 +42,7 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation = input.enemyInput.damageHitratePhysical || 0; // 闪避
+  const charge = 1;
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
@@ -96,7 +97,7 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
     case "skchr_archet_2": {
       /*技能好就开,仅计算主目标伤害*/
       /*还没加入模组判断, 目前默认是集模*/
-      const skillBuffIn = 0.5; // 技能加攻
+      let skillBuffIn = 0.5; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.4 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;

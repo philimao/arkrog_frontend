@@ -2,11 +2,10 @@
  * 赛程信息区域
  */
 import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
-import { generateDateArray, SectionContainer } from ".";
+import { SectionContainer } from ".";
 import React, { useState } from "react";
 import { StarIcon } from "~/components/Icons";
 import TournamentProgress from "./TournamentProgress";
-import { StyledDivider, StyledStageTitleNum } from "../components/Shared";
 
 // Common types
 type PlayerRendererProps = {
@@ -39,77 +38,6 @@ const NavButtons = ({
     ))}
   </div>
 );
-
-const StageHeader = ({
-  stageName,
-  playerCount,
-  isFinal,
-}: {
-  stageName: string;
-  playerCount: number;
-  isFinal: boolean;
-}) => (
-  <div className="h-8 bg-dark-gray mb-4 inline-flex gap-3 px-4">
-    <div className="font-medium text-xl pt-[2px]">{stageName}</div>
-    <StyledStageTitleNum
-      className={`${isFinal ? "text-ak-red" : "text-ak-blue"}`}
-    >
-      {playerCount}
-    </StyledStageTitleNum>
-  </div>
-);
-
-const GroupHeader = ({ groups }: { groups: Set<string> }) =>
-  groups.size > 0 && (
-    <tr className="bg-black-gray text-center divide-x divide-mid-gray">
-      <td className="opacity-0 w-16 sm:w-32">placeholder</td>
-      {Array.from(groups).map((group, index) => (
-        <td key={index} className="text-light-gray py-4">
-          {group}
-        </td>
-      ))}
-    </tr>
-  );
-
-const DateCell = ({ dateIndex, date }: { dateIndex: number; date: Date }) => (
-  <td className="text-center w-16 sm:w-32">
-    <div className="text-2xl text-white font-medium">Day{dateIndex + 1}</div>
-    <div className="text-sm">{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
-  </td>
-);
-
-const ScheduleCell = ({
-  schedule,
-  groupSchedule,
-  date,
-  group,
-  groupIndex,
-  renderPlayer,
-}: {
-  schedule: Map<string, TournamentGame>;
-  groupSchedule?: Map<string, string>;
-  date: string;
-  group?: string;
-  groupIndex?: number;
-  renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
-}) => {
-  const sortedSchedule = Array.from(schedule.entries())
-    .filter((entry) => new Date(entry[1].date).toDateString() === date)
-    .sort((a, b) => a[1].date - b[1].date)
-    .filter((entry) =>
-      group ? groupSchedule?.get(entry[0]) === group : entry,
-    );
-
-  return (
-    <td key={groupIndex} className="text-light-gray py-4 align-top">
-      <div className="flex gap-4 px-4 flex-wrap">
-        {sortedSchedule.map((entry, index) => (
-          <span key={index}>{renderPlayer(entry[0], true)}</span>
-        ))}
-      </div>
-    </td>
-  );
-};
 
 // Team components
 const TeamAvatar = ({ avatarUrl }: { avatarUrl: string }) => (
@@ -161,91 +89,88 @@ export function TournamentSchedule({
   const players = tournamentData.players;
   if (!players?.length) return <div>暂无赛程</div>;
 
-  return tournamentData.stages?.map((stage, index) => {
-    // Prepare data for this stage
-    const dates = generateDateArray(stage.startTime, stage.endTime);
-    const schedule = new Map<string, TournamentGame>();
-    const groupSchedule = new Map<string, string>();
-    const groups = new Set<string>();
+  // Prepare data for this stage
+  const schedule = new Map<string, TournamentGame>();
+  const groupSchedule = new Map<string, string>();
+  const groups = new Set<string>();
+  let groupBy:string = "";
 
-    if (tournamentData.groupBy) {
-      tournamentData.players?.forEach((player) => {
-        // groupBy = "server"
-        // player.customPlayerValues = {server: "简中服"}
-        const groupValue = player.customPlayerValues[tournamentData.groupBy];
-        if (groupValue) {
-          groups.add(groupValue);
-          groupSchedule.set(player.mid, groupValue);
-        }
-        // 决赛缺少session域，则不会进行分组
-        // groupBy = "session"
-        // game.customStageValues = {session: "大粽场"}
-        const game = player.games.find((game) => game.stage === stage.name);
-        const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
-        if (stageGroupValue) {
-          groups.add(stageGroupValue);
-          groupSchedule.set(player.mid, stageGroupValue);
-        }
-      });
-    }
-
-    players.forEach((player) => {
-      const game = player.games.find((game) => game.stage === stage.name);
-      if (game) {
-        schedule.set(player.mid, game);
+  if (tournamentData.groupBy) {
+    tournamentData.players?.forEach((player) => {
+      // groupBy = "server"
+      // player.customPlayerValues = {server: "简中服"}
+      const groupValue = player.customPlayerValues[tournamentData.groupBy];
+      if (groupValue) {
+        groupBy = tournamentData.customPlayerKeys[tournamentData.groupBy];
+        groups.add(groupValue);
+        groupSchedule.set(player.mid, groupValue);
+      }
+      // 决赛缺少session域，则不会进行分组
+      // groupBy = "session"
+      // game.customStageValues = {session: "大粽场"}
+      const game = player.games.find((game) => game.stage === tournamentData.stages[0].name);
+      const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
+      if (stageGroupValue) {
+        groupBy = tournamentData.stages[0].customStageKeys[tournamentData.groupBy];
+        groups.add(stageGroupValue);
+        groupSchedule.set(player.mid, stageGroupValue);
       }
     });
+  }
 
-    const uniquePlayersCount = schedule.size;
-    const isFinal = index === tournamentData.stages.length - 1;
-
-    return (
-      <div key={index} className="mb-4">
-        <StageHeader
-          stageName={stage.name}
-          playerCount={uniquePlayersCount}
-          isFinal={isFinal}
-        />
-
-        <table className="w-full border-collapse table-fixed">
-          <tbody className="divide-y divide-mid-gray">
-            <GroupHeader groups={groups} />
-
-            {dates.map((date, dateIndex) => (
-              <tr
-                key={dateIndex}
-                className="bg-black-gray-70 divide-x divide-mid-gray"
-              >
-                <DateCell dateIndex={dateIndex} date={date} />
-
-                {groups.size ? (
-                  Array.from(groups)?.map((group, groupIndex) => (
-                    <ScheduleCell
-                      key={groupIndex}
-                      schedule={schedule}
-                      groupSchedule={groupSchedule}
-                      date={date.toDateString()}
-                      group={group}
-                      groupIndex={groupIndex}
-                      renderPlayer={renderPlayer}
-                    />
-                  ))
-                ) : (
-                  <ScheduleCell
-                    schedule={schedule}
-                    date={date.toDateString()}
-                    renderPlayer={renderPlayer}
-                  />
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {!isFinal && <StyledDivider />}
-      </div>
-    );
+  players.forEach((player) => {
+    const game = player.games.find((game) => game.stage === tournamentData.stages[0].name);
+    if (game) {
+      schedule.set(player.mid, game);
+    }
   });
+
+  return (
+    <table className="w-full border-collapse table-fixed">
+      <thead className="bg-black-gray">
+        <tr className="divide-x divide-mid-gray">
+          {!!groups.size && <td className="p-4 text-center w-40">{groupBy}</td>}
+          <td className="p-4 text-center">选手</td>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-mid-gray">
+        {groups.size ? (
+          Array.from(groups).map((group, groupIndex) => (
+            <tr
+              key={groupIndex}
+              className="bg-black-gray-70 divide-x divide-mid-gray"
+            >
+              <td className="text-center text-light-gray py-4">
+                {group}
+              </td>
+              <td className="text-light-gray py-4 align-top">
+                <div className="flex gap-4 px-4 flex-wrap w-fit max-w-[600px] m-auto">
+                  {Array.from(schedule.entries())
+                    .sort((a, b) => a[1].date - b[1].date)
+                    .filter((entry) => groupSchedule?.get(entry[0]) === group)
+                    .map((entry, idx) => (
+                      <span key={idx}>{renderPlayer(entry[0], true)}</span>
+                    ))}
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr className="bg-black-gray-70 divide-x divide-mid-gray">
+            <td className="text-light-gray py-4 align-top">
+              <div className="flex gap-4 px-4 flex-wrap w-fit max-w-[600px] m-auto">
+                {Array.from(schedule.entries())
+                  .sort((a, b) => a[1].date - b[1].date)
+                  .map((entry, idx) => (
+                    <span key={idx}>{renderPlayer(entry[0], true)}</span>
+                  ))}
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
 }
 
 export function TournamentTeamInfo({

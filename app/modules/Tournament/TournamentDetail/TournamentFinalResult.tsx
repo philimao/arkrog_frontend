@@ -43,16 +43,20 @@ const rankMap: { [key: number]: string } = {
 };
 
 // Helper components
-const PlayerAvatar = ({ imageSrc }: { imageSrc: string }) => (
+const PlayerAvatar = ({ imageSrc, name }: { imageSrc: string, name: string }) => (
   <StyledFinalResultAvatar className="shrink-0 w-20 h-20 sm:min-w-20 sm:min-h-20 aspect-square pt-1 pr-1">
-    <div className="imgWrapper">
-      <img
-        src={imageSrc}
-        className="bg-dark-gray aspect-square"
-        alt="avatar"
-        referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
-      />
+    <div className="imgWrapper w-full h-full">
+      {imageSrc ? (
+        <img
+          src={imageSrc}
+          className="bg-dark-gray aspect-square"
+          alt="avatar"
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
+        />
+      ) : (
+        <p className="bg-mid-gray w-full h-full flex items-center justify-center text-5xl text-white">{name[0]}</p>
+      )}
     </div>
   </StyledFinalResultAvatar>
 );
@@ -88,12 +92,7 @@ export function TournamentFinalResultIndividual({
   tournamentData: TournamentData;
 }) {
   const final = tournamentData.stages[tournamentData.stages.length - 1];
-  // TODO: replace isFinalOneOnOne with the data from tournament instead of player
-  const finalPlayer = tournamentData.players?.find((player) =>
-    player.games.find((g: any) => g.stage === final.name),
-  );
-  const isFinalOneOnOne =
-    finalPlayer?.games[finalPlayer.games.length - 1].type === "1on1";
+  const isFinalOneOnOne = final.type === '1on1';
   const topTiers = getTopTiers(tournamentData.players, isFinalOneOnOne ? 2 : 3);
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
@@ -110,7 +109,7 @@ export function TournamentFinalResultIndividual({
           <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
             <ResultCardHeader rank={rank} />
             <div className="relative flex flex-row sm:flex-col lg:flex-row gap-4">
-              <PlayerAvatar imageSrc={player.face} />
+              <PlayerAvatar imageSrc={player.face} name={player.name} />
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{player.name}</div>
                 <div className="text-ak-blue text-xl pt-2">
@@ -194,7 +193,7 @@ export function TournamentFinalResultTeam({
           <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
             <ResultCardHeader rank={rank} />
             <div className="relative flex flex-row gap-4">
-              <PlayerAvatar imageSrc={team.avatar} />
+              <PlayerAvatar imageSrc={team.avatar} name={team.name} />
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{team.name}</div>
                 <div className="text-ak-blue text-xl pt-2">

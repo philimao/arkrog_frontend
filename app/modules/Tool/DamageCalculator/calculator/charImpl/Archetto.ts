@@ -42,11 +42,11 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation = input.enemyInput.damageHitratePhysical || 0; // 闪避
-  const charge = 1;
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const enemyDef = input.enemyInput.def; // 敌人防御
+  const enemyMagRes = input.enemyInput.magicResistance; // 敌人法抗
   // const enemyRes = input.enemyInput.resistance; // 敌人减伤
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
@@ -55,7 +55,8 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
   result.attack.dph = commonDPH;
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
-  const commonAtkFrame = Math.round(3000.0 / atkSpeed); // 普攻帧数
+  const commonAtkTimeBase = 1.0; // 普攻基础时间
+  const commonAtkFrame = Math.round(commonAtkTimeBase * 3000.0 / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
   if (fire) {
@@ -73,11 +74,17 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-      const skillAtkFrame = Math.round(3000.0 / atkSpeed); // 技能攻击间隔帧
+      const skillAtkTimeBase = 1.0; // 技能基础时间
+      const skillAtkFrame = Math.round(skillAtkTimeBase * 3000.0 / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 3.0 / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
+      
+      const spInitial = 0.0; // 藏品初始技力
+      const skillSp = 3.0; // 技能技力消耗
+      const skillKeepTime = skillAtkTime; // 技能持续时间
+      const spRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
+      
       const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = 1.0 // 技能期望普攻次数
+      const skillHit = skillKeepTime / skillAtkTime // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
@@ -88,8 +95,8 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
-      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (commonAtkTime * commonHit + skillAtkTime * skillHit);
+      result.skill.dps.phy = skillTotalDamage / skillKeepTime;
+      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.phy = skillTotalDamage;
       result.cycle.total_damage.phy = skillTotalDamage + commonTotalDamage;
       break;
@@ -102,11 +109,17 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
+      const skillAtkTimeBase = 1.0; // 技能基础攻击间隔
       const skillAtkFrame = Math.round(3000.0 / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 9.0 / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = 1.0 // 技能期望普攻次数
+      
+      const spInitial = 0.0; // 藏品初始技力
+      const skillSp = 9.0; // 技能技力消耗
+      const skillKeepTime = skillAtkTime; // 技能持续时间
+      const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
+      
+      const commonHit = skillRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
+      const skillHit = skillKeepTime / skillAtkTime // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * 5 * (1 - mitigation);
@@ -117,8 +130,8 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
-      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (commonAtkTime * commonHit + skillAtkTime * skillHit);
+      result.skill.dps.phy = skillTotalDamage / skillKeepTime;
+      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.phy = skillTotalDamage;
       result.cycle.total_damage.phy = skillTotalDamage + commonTotalDamage;
       break;
@@ -130,11 +143,17 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-      const skillAtkFrame = Math.round(3000.0 / atkSpeed); // 技能攻击间隔帧
+      const skillAtkTimeBase  = 1.0; // 技能基础攻击间隔
+      const skillAtkFrame = Math.round(skillAtkTimeBase * 3000.0 / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 30.0 / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = 20.0 / skillAtkTime; // 技能期望普攻次数
+      
+      const spInitial = 0.0; // 藏品初始技力
+      const skillSp = 30.0; // 技能技力消耗
+      const skillKeepTime = 20.0; // 技能持续时间
+      const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
+      
+      const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
+      const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * 3 * (1 - mitigation);
@@ -145,8 +164,8 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
-      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (commonAtkTime * commonHit + skillAtkTime * skillHit);
+      result.skill.dps.phy = skillTotalDamage / skillKeepTime;
+      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.phy = skillTotalDamage;
       result.cycle.total_damage.phy = skillTotalDamage + commonTotalDamage;
       break;

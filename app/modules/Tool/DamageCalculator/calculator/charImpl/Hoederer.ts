@@ -46,7 +46,8 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const enemyDef = input.enemyInput.def; // 敌人防御
-  // const enemyRes = input.enemyInput.resistance; // 敌人减伤
+  const enemyMagRes = input.enemyInput.magicResistance; // 敌人法抗
+  // const enemyRes = input.enemyInput.resistance; // 敌人减伤(未实现)
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
@@ -54,7 +55,8 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
   result.attack.dph = commonDPH;
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
-  const commonAtkFrame = Math.round(2.5 * 3000.0 / atkSpeed); // 普攻帧数
+  const commonAtkTimeBase = 2.5; // 普攻基础时间
+  const commonAtkFrame = Math.round(commonAtkTimeBase * 3000.0 / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
   switch (skillKey) {
@@ -64,11 +66,17 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-      const skillAtkFrame = Math.round(2.5 * 3000.0 / atkSpeed); // 技能攻击间隔帧
+      const skillAtkTimeBase = 2.5; // 技能基础攻击间隔
+      const skillAtkFrame = Math.round(skillAtkTimeBase * 3000.0 / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 2.0 / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = 1.0 // 技能期望普攻次数
+
+      const spInitial = 0; // 藏品初始技力
+      const skillSp = 2
+      const skillKeepTime = skillAtkTime; // 技能持续时间
+      const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
+
+      const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
+      const skillHit = skillKeepTime / skillAtkTime // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
@@ -79,8 +87,8 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       // }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
-      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (commonAtkTime * commonHit + skillAtkTime * skillHit);
+      result.skill.dps.phy = skillTotalDamage / skillKeepTime;
+      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.phy = skillTotalDamage;
       result.cycle.total_damage.phy = skillTotalDamage + commonTotalDamage;
       break;
@@ -91,11 +99,17 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-      const skillAtkFrame = Math.round(3 * 3000.0 / atkSpeed); // 技能攻击间隔帧
-      const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 3.0 / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数
-      const skillHit = 1.0 // 技能期望普攻次数
+      const skillAtkTimeBase = 3.0; // 技能基础攻击间隔
+      const skillAtkFrame = Math.round(skillAtkTimeBase * 3000.0 / atkSpeed); // 技能攻击间隔(帧)
+      const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔(秒) 
+
+      const spInitial = 0; // 藏品初始技力
+      const skillSp = 5.0
+      const skillKeepTime = skillAtkTime; // 技能持续时间
+      const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
+      
+      const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
+      const skillHit = skillKeepTime / skillAtkTime // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
@@ -106,8 +120,8 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       // }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
-      result.cycle.dps.phy = skillTotalDamage / (skillAtkTime * skillHit);
+      result.skill.dps.phy = skillTotalDamage / skillKeepTime;
+      result.cycle.dps.phy = skillTotalDamage / skillKeepTime;
       result.skill.total_damage.phy = skillTotalDamage;
       result.cycle.total_damage.phy = skillTotalDamage;
       break;
@@ -120,14 +134,21 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
       const skillDamagePure = 200 * damage_scale * damage_scale_pure;
 
+      const skillAtkTimeBase = 2.5; // 技能基础攻击间隔
       const skillAtkFrame = Math.round(2.5 * 3000.0 / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间 
-      const spRecoveryTime = 50.0 / (1 + spBuffAdd); // 技能期望回转
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数
+
+      const spInitial = 0; // 藏品初始技力
+      const skillSp = 50.0
+      const skillKeepTime = 70.0; // 技能持续时间
+      const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
+
+      const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
       const skillHit = 68.5 / skillAtkTime // 技能期望攻击次数(前摇1.5s)
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = skillDamage * skillHit * (1 - mitigation) + skillDamagePure * 68;
+      let skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);
+      let skillTotalDamagePure = skillDamagePure * 68;
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
@@ -135,10 +156,13 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
       // }
 
       result.skill.dph = skillDph;
-      result.skill.dps.phy = skillTotalDamage / 70;
-      result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (commonAtkTime * commonHit + 70);
-      result.skill.total_damage.phy = skillTotalDamage;
-      result.cycle.total_damage.phy = skillTotalDamage + commonTotalDamage;
+      result.skill.dps.phy = skillTotalDamagePhy / skillKeepTime;
+      result.skill.dps.pure = skillTotalDamagePure / skillKeepTime;
+      result.cycle.dps.phy = (skillTotalDamagePhy + commonTotalDamage) / (skillRecoveryTime + skillKeepTime);
+      result.skill.total_damage.phy = skillTotalDamagePhy;
+      result.skill.total_damage.pure = skillTotalDamagePure;
+      result.cycle.total_damage.phy = skillTotalDamagePhy + commonTotalDamage;
+      result.cycle.total_damage.pure = skillTotalDamagePure;
       break;
     }
   }

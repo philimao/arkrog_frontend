@@ -130,138 +130,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   // 潜能选择
   const [potential, setPotential] = useState<string>("5");
 
-  /** 面板计算 */
-  // useEffect(() => {
-  //   if (charsBuff?.[charData.name] && charsModifier?.[charData.name] && attribute) {
-  //     // console.log(charData);
-  //     const result = { ...attribute.data, damageScale: 1, damage_scale: 1 };
-  //     console.groupCollapsed("计算局外面板OLD");
-  //     console.log("基础属性", { ...result });
-
-  //     /**
-  //      * 手动修改部分
-  //      */
-  //     const modifier = charsModifier[charData.name];
-
-  //     /**
-  //      * 白值修改
-  //      */
-  //     result.atk += modifier.atkBase;
-
-  //     /**
-  //      * 应用信赖效果
-  //      */
-  //     const favor = charData.favorKeyFrames[1].data;
-  //     Object.keys(favor).forEach((key) => {
-  //       const typedKey = key as keyof CharAttribute;
-  //       if (typeof result[typedKey] === "number") {
-  //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //         // @ts-expect-error
-  //         result[typedKey] += favor[typedKey];
-  //       } else {
-  //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //         // @ts-expect-error
-  //         result[typedKey] = favor[typedKey];
-  //       }
-  //     });
-  //     console.log("应用信赖效果", { ...result });
-
-  //     /**
-  //      * 应用潜能效果
-  //      */
-  //     for (const pot of charData.potentialRanks.slice(0, parseInt(potential))) {
-  //       pot.buff?.attributes.attributeModifiers.forEach((mod) => applyAttrModifiers(mod, result));
-  //     }
-  //     console.log("应用潜能效果", { ...result });
-
-  //     /**
-  //      * 应用模组效果
-  //      */
-  //     if (uniEquip) {
-  //       // 基础值
-  //       for (const bb of uniEquip.attributeBlackboard) {
-  //         applyBlackboardData(bb, result);
-  //       }
-  //       // 天赋与特性效果
-  //       for (const part of uniEquip.parts) {
-  //         for (const candidates of [
-  //           part.overrideTraitDataBundle.candidates, // 特性
-  //           part.addOrOverrideTalentDataBundle.candidates, // 天赋
-  //         ]) {
-  //           if (!candidates) continue;
-  //           // 从多个candidate中选出符合潜能的
-  //           const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= parseInt(potential));
-  //           // console.log(admittedTrait);
-  //           for (const bb of admittedTrait!.blackboard) {
-  //             applyBlackboardData(bb, result);
-  //           }
-  //         }
-  //       }
-  //     }
-  //     console.log("应用模组效果", { ...result });
-
-  //     // 应用局外藏品加成
-  //     Object.entries(charsBuff[charData.name]).map(([buffKey, buffValue]) => {
-  //       const key = snakeToCamel(buffKey);
-  //       let factor = buffValue;
-  //       if (key === "atk") factor += modifier.atkPercent / 100;
-  //       const value = (result[key as never] as number) || 1;
-  //       console.log(key, factor, value);
-  //       if (key === "attackSpeed") {
-  //         (result[key as never] as number) = factor + result[key];
-  //       } else {
-  //         (result[key as never] as number) = factor * value;
-  //       }
-  //     });
-  //     console.log("应用局外藏品加成", { ...result });
-  //     console.groupEnd();
-
-  //     // 应用局内效果
-  //     const inGameBuff: any = {};
-  //     // 天赋
-  //     console.log(charData.talents);
-  //     charData.talents.map((talent) => {
-  //       for (const bb of talent.candidates.slice(-1)[0]!.blackboard) {
-  //         applyBlackboardData(bb, inGameBuff);
-  //       }
-  //     });
-  //     // 模组效果
-  //     uniEquip?.parts.forEach((part) => {
-  //       if (part.addOrOverrideTalentDataBundle?.candidates) {
-  //         for (const bb of part.addOrOverrideTalentDataBundle?.candidates?.slice(-1)[0].blackboard) {
-  //           if (allowedBlackboardKeyMap[bb.key]) {
-  //             inGameBuff[snakeToCamel(bb.key)] = bb.value;
-  //           }
-  //         }
-  //       }
-  //       if (part.overrideTraitDataBundle?.candidates) {
-  //         for (const bb of part.overrideTraitDataBundle?.candidates?.slice(-1)[0].blackboard) {
-  //           console.log(bb);
-  //           if (allowedBlackboardKeyMap[bb.key]) {
-  //             inGameBuff[snakeToCamel(bb.key)] = bb.value;
-  //           }
-  //         }
-  //       }
-  //     });
-  //     setInGameBuff(inGameBuff);
-
-  //     if (modifier.atkFinal) {
-  //       result.atk += modifier.atkFinal;
-  //     }
-
-  //     ["maxHp", "atk", "def"].forEach((key) => {
-  //       (result[key as never] as number) = Math.round(result[key as never] as number);
-  //     });
-
-  //     console.log(result);
-  //     // charsBuff[charData.name].entries((key, value) => {
-  //     //   console.log(key, value);
-  //     // });
-
-  //     setResult(result);
-  //   }
-  // }, [attribute, charData, uniEquip, potential, outBuff, charsBuff, activeCharName, charsModifier]);
-
   /** 计算器干员输入 */
   const charInput: CharInput = useMemo(
     () => ({
@@ -344,6 +212,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         charInput: charInput,
         charData: charData,
         relics: selectedRelics,
+        enemyInput: enemyDataParsed,
       },
       context,
     );
@@ -355,7 +224,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context }),
         charsBuffInGame: charBuffInGame,
       },
-      enemyInput: getEnemyParsedAttributes(enemyDataParsed),
+      enemyInput: enemyDataParsed,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
       skillData: skillObject, // 技能原始解包数据
@@ -365,16 +234,17 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
-    // CalculatorHelper.printRelicKeyMap(
-    //   relicsMap[activeCharName][rogueKey].map((r) => ({
-    //     relicData: relicList.find((relic) => relic.id === r?.id),
-    //     ...r,
-    //   })),
-    // );
+    CalculatorHelper.printRelicKeyMap(
+      relicsMap[rogueKey].map((r) => ({
+        relicData: relicList.find((relic) => relic.id === r?.id),
+        ...r,
+      })),
+    );
     setRelicAnalysisResult(
       CalculatorHelper.analyzeRelics({
         charInput: charInput,
         charData: charData,
+        enemyInput: enemyDataParsed,
         relics: selectedRelics,
       }),
     );
@@ -500,7 +370,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">
         {charInput.attributeModifier && (
-          <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
+          <OperatorAttributes
+            charInput={charInput}
+            charData={charData}
+            relics={selectedRelics}
+            enemyInput={enemyDataParsed}
+          />
         )}
         <OperatorModifier />
       </div>

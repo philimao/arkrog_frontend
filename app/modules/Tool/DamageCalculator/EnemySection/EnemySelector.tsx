@@ -6,7 +6,7 @@ import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisp
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import type { EnemyDataParsed } from "~/types/gameData";
+import type { EnemyInput } from "~/types/gameData";
 
 const StyledEnemySelector = styled.div`
   margin-bottom: 2rem;
@@ -16,11 +16,7 @@ export default function EnemySelector() {
   const [activeMode, setActiveMode] = useState("快速选择");
   return (
     <StyledEnemySelector>
-      <StyledTitle
-        modes={["快速选择", "关卡模式"]}
-        activeMode={activeMode}
-        setActiveMode={setActiveMode}
-      >
+      <StyledTitle modes={["快速选择", "关卡模式"]} activeMode={activeMode} setActiveMode={setActiveMode}>
         选择敌人
       </StyledTitle>
 
@@ -53,7 +49,7 @@ const QuickSelectorEnemy = styled.button`
   }
 `;
 
-const dummy: EnemyDataParsed = {
+const dummy: EnemyInput = {
   id: "dummy",
   level: 0,
   name: "木桩",
@@ -80,17 +76,12 @@ function uniqueByProperty(arr: never[], prop: string) {
 
 function QuickSelector() {
   const { stageEnemies } = useGameDataStore();
-  const { rogueKey, enemyDataParsed, setEnemyDataParsed } =
-    useDamageCalculatorStore();
+  const { rogueKey, enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
 
   const popularEnemies = useMemo(() => {
     return uniqueByProperty(
       Object.values(stageEnemies![rogueKey])
-        .map((enemies) =>
-          enemies.filter(
-            (enemyDataParsed) => enemyDataParsed.levelType === "BOSS",
-          ),
-        )
+        .map((enemies) => enemies.filter((enemyDataParsed) => enemyDataParsed.levelType === "BOSS"))
         .flat() as never,
       "id",
     );
@@ -107,7 +98,10 @@ function QuickSelector() {
           <QuickSelectorEnemy
             key={enemy.id}
             className={enemy.id === enemyDataParsed?.id ? "active" : ""}
-            onClick={() => setEnemyDataParsed(enemy)}
+            onClick={() => {
+              console.log(enemy);
+              setEnemyDataParsed(enemy);
+            }}
           >
             <EnemyAvatar name={enemy.name} />
           </QuickSelectorEnemy>

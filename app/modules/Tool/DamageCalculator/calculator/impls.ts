@@ -6,14 +6,20 @@ import type {
   RelicWrapper,
   CharData,
   CharInput,
+  EnemyInput,
 } from "~/types/gameData";
-import type { RelicAnalysisResult } from "./helper";
+import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
 export type RelicBlackboard = {
-  isActive: (input: { charInput: CharInput; charData: CharData }) => boolean;
-  apply(context: RelicAnalysisResult): void;
+  isActive: (input: {
+    charInput: CharInput;
+    charData: CharData;
+    enemyInput: EnemyInput;
+    relics: RelicWrapper[];
+  }) => boolean;
+  apply(context: BuffContext): void;
 };
 const implMap = new Map<string, CalculatorImpl>();
 const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard>();
@@ -56,7 +62,7 @@ export function getRelicBlackboard(buff: RelicBuff, relic: RelicWrapper): RelicB
     // console.warn(`没有藏品黑板 ${key}`);
     return {
       isActive: () => true,
-      apply(context: RelicAnalysisResult): void {},
+      apply(context: BuffContext): void {},
     };
   }
   return relicBlackboard(buff, relic);

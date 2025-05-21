@@ -5,7 +5,7 @@ import type {
   CharData,
   DefinedData,
   EnemyData,
-  EnemyDataParsed,
+  EnemyInput,
   RelicBuff,
   RelicDataExt,
   RelicWrapper,
@@ -69,9 +69,11 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   damage_scale_pure: "真伤增伤",
   enemy_atk_down: "敌人攻击力",
   enemy_def_down: "敌人防御力",
+  enemy_max_hp_down: "敌人生命上限",
   enemy_damage_scale_phy: "敌人物理易伤",
   enemy_damage_scale_mag: "敌人法术易伤",
   enemy_damage_scale_pure: "敌人真伤易伤",
+  enemy_damage_resistance_inf: "敌人受到物理与法术伤害降低",
 };
 
 /**
@@ -495,7 +497,7 @@ export function finalizeRelicResults(outBuff: number, relicWrappers: RelicWrappe
   return { charResult, inGameResult, enemyResult };
 }
 
-export function getEnemyParsedAttributes(enemyData: EnemyDataParsed): Record<string, number | string | boolean> {
+export function getEnemyParsedAttributes(enemyData: EnemyInput): Record<string, number | string | boolean> {
   const attributes: Record<string, number | string | boolean> = {};
   Object.keys(enemyData.attributes).forEach((key) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -528,7 +530,7 @@ export function parseDefinedData<T>(definedData: DefinedData<T>): T {
   return definedData.m_value;
 }
 
-export function parseEnemyData(enemyData: EnemyData): EnemyDataParsed {
+export function parseEnemyData(enemyData: EnemyData): EnemyInput {
   const attributes = enemyData.attributes;
   return {
     id: enemyData.id,

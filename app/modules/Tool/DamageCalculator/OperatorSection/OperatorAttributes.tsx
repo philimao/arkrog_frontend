@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
-import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
-import { CalculatorHelper, type RelicAnalysisResult } from "../calculator/helper";
+import type { CharAttribute, CharAttributeExt, CharData, CharInput, EnemyInput, RelicWrapper } from "~/types/gameData";
+import { BuffContext, CalculatorHelper } from "../calculator";
 import { Chip, Tooltip } from "@heroui/react";
 
 const StyledAttributeWrapper = styled.div`
@@ -97,7 +97,7 @@ interface AttrCalcToken {
 }
 
 /** 最大生命值属性计算公式 */
-export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
   const { attribute, context } = props;
 
   return [
@@ -119,7 +119,7 @@ export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: Re
 }
 
 /** 攻击力属性计算公式 */
-export function useAtkTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+export function useAtkTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
   const { attribute, context } = props;
 
   return [
@@ -141,7 +141,7 @@ export function useAtkTagGroups(props: { attribute: CharAttribute; context: Reli
 }
 
 /** 防御属性计算公式 */
-export function useDefTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+export function useDefTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
   const { attribute, context } = props;
 
   return [
@@ -163,10 +163,7 @@ export function useDefTagGroups(props: { attribute: CharAttribute; context: Reli
 }
 
 /** 攻击速度属性计算公式 */
-export function useAttackSpeedTagGroups(props: {
-  attribute: CharAttribute;
-  context: RelicAnalysisResult;
-}): AttrCalcToken[] {
+export function useAttackSpeedTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
   const { attribute, context } = props;
 
   const tokens = [
@@ -191,7 +188,7 @@ export function useAttackSpeedTagGroups(props: {
 }
 
 /** 部署费用属性计算公式 */
-export function useCostTagGroups(props: { attribute: CharAttribute; context: RelicAnalysisResult }): AttrCalcToken[] {
+export function useCostTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
   const { attribute, context } = props;
 
   const tokens: AttrCalcToken[] = [
@@ -213,7 +210,7 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Rel
 /** 每秒生命回复属性计算公式 */
 export function useHpRecoveryPerSecTagGroups(props: {
   attribute: CharAttribute;
-  context: RelicAnalysisResult;
+  context: BuffContext;
 }): AttrCalcToken[] {
   const { attribute, context } = props;
 
@@ -237,7 +234,7 @@ export function useHpRecoveryPerSecTagGroups(props: {
 /** 每秒技力回复属性计算公式 */
 export function useSpRecoveryPerSecTagGroups(props: {
   attribute: CharAttribute;
-  context: RelicAnalysisResult;
+  context: BuffContext;
   charInput: CharInput;
 }): AttrCalcToken[] {
   const { attribute, context, charInput } = props;
@@ -264,10 +261,11 @@ export function useSpRecoveryPerSecTagGroups(props: {
 export default function OperatorAttributes(props: {
   charData: CharData;
   charInput: CharInput;
+  enemyInput: EnemyInput;
   relics: RelicWrapper[];
 }) {
   const [result, setResult] = useState<CharAttributeExt | null>(null);
-  const [context, setContext] = useState<RelicAnalysisResult>(CalculatorHelper.createAdditionContext());
+  const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
   const maxHpTagGroups = useMaxHpTagGroups({ attribute: attribute!, context });
   const atkTagGroups = useAtkTagGroups({ attribute: attribute!, context });
@@ -291,6 +289,7 @@ export default function OperatorAttributes(props: {
         charInput: props.charInput,
         charData: props.charData,
         relics: props.relics,
+        enemyInput: props.enemyInput,
       },
       context,
     );

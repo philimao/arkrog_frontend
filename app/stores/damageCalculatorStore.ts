@@ -1,8 +1,8 @@
 import { create } from "zustand/index";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
-import type { CharData, EnemyData, EnemyDataParsed, RogueKey, RelicWrapper, CalculatorOutput } from "~/types/gameData";
-import type { RelicAnalysisResult } from "~/modules/Tool/DamageCalculator/calculator";
+import type { CharData, EnemyData, EnemyInput, RogueKey, RelicWrapper, CalculatorOutput } from "~/types/gameData";
+import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 
 interface AttributeModifier {
   atkBase: number;
@@ -18,7 +18,7 @@ interface DamageCalculatorStore {
   /** 当前选中的角色 */
   activeCharName: string;
   /** 仅有藏品的加成上下文 */
-  relicAnalysisResult?: RelicAnalysisResult;
+  relicAnalysisResult?: BuffContext;
   showRelics: boolean;
   relicsMap: Record<RogueKey, RelicWrapper[]>;
   enemyBuff: Record<string, number>;
@@ -27,7 +27,7 @@ interface DamageCalculatorStore {
   charsModifier: Record<string, AttributeModifier>;
   selectedIds: string[];
   enemyData: EnemyData;
-  enemyDataParsed: EnemyDataParsed;
+  enemyDataParsed: EnemyInput;
   calcOutput: CalculatorOutput;
 }
 
@@ -39,7 +39,7 @@ interface DamageCalculatorAction {
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
   setActiveCharName: (charName: string) => void;
-  setRelicAnalysisResult: (relicAnalysisResult: RelicAnalysisResult) => void;
+  setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   toggleShowRelics: () => void;
   setRelicLayer: (id: string, layer: string) => string;
@@ -48,7 +48,7 @@ interface DamageCalculatorAction {
   setSelectedIds: (ids: string[]) => void;
   toggleRelicSelection: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
-  setEnemyDataParsed: (enemyDataParsed: EnemyDataParsed) => void;
+  setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
   setEnemyBuff: (buff: Record<string, number>) => void;
   setCharsBuff: (charName: string, buff: Record<string, number>) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
@@ -102,7 +102,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       activeCharName: "",
       setActiveCharName: (charName) =>
         set((state) => ({ ...state, activeCharName: charName }), undefined, "setActiveCharName"),
-      setRelicAnalysisResult: (relicAnalysisResult: RelicAnalysisResult) =>
+      setRelicAnalysisResult: (relicAnalysisResult: BuffContext) =>
         set((state) => ({ ...state, relicAnalysisResult }), undefined, "setRelicAnalysisResult"),
       showRelics: false as boolean,
       toggleShowRelics: () =>
@@ -177,7 +177,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         );
       },
       enemyData: undefined as unknown as EnemyData,
-      enemyDataParsed: undefined as unknown as EnemyDataParsed,
+      enemyDataParsed: undefined as unknown as EnemyInput,
       setEnemyData: (enemyData) =>
         set(
           (state) => ({

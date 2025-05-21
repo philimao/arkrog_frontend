@@ -16,7 +16,7 @@ export interface GameData {
   skill_table?: Record<string, SkillData>;
   uniequip_table?: Record<string, UniEquipData>;
   uniequip_basic?: Record<string, UniEquipBasicData>;
-  stageEnemies?: Record<RogueKey, Record<string, EnemyDataParsed[]>>;
+  stageEnemies?: Record<RogueKey, Record<string, EnemyInput[]>>;
 }
 
 // 肉鸽主题数据
@@ -531,23 +531,14 @@ export interface EnemyData {
   spData: null;
 }
 
-export interface EnemyDataParsed {
+/** 敌人输入数据结构 */
+export interface EnemyInput {
   id: string;
   level: 0 | 1 | 2;
   name: string;
   description: string;
-  attributes: {
-    maxHp: number;
-    atk: number;
-    def: number;
-    magicResistance: number;
-    blockCnt: number;
-    moveSpeed: number;
-    attackSpeed: number;
-    baseAttackTime: number;
-    epDamageResistance: number;
-    epResistance: number;
-  };
+  attributes: EnemyAttribute;
+  /** 敌人等级类型 */
   levelType: "BOSS" | "ELITE" | "NORMAL";
   rangedRadius: number | null;
 }
@@ -619,7 +610,7 @@ export interface CalculatorInput {
   /** 技能数据 */
   skillData: SkillData;
   /** 敌人最终面板 */
-  enemyInput: EnemyAttribute;
+  enemyInput: EnemyInput;
   /** 敌人基础数据 */
   enemyData: EnemyData;
   /** 模组数据 */

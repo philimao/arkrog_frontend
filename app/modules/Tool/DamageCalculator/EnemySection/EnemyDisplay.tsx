@@ -2,13 +2,10 @@ import { styled } from "styled-components";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import {
-  allowedBlackboardKeyMap,
-  camelToSnake,
-} from "~/modules/Tool/DamageCalculator/utils";
+import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
 import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
-import type { EnemyDataParsed } from "~/types/gameData";
+import type { EnemyInput } from "~/types/gameData";
 
 const StyledEnemyDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -106,31 +103,16 @@ export default function EnemyDisplay() {
           {Array(2)
             .fill(0)
             .map((_, i) => (
-              <StyledPhaseItem
-                $active={phase === i + 1}
-                onClick={() => setPhase(i + 1)}
-                key={i}
-              >
+              <StyledPhaseItem $active={phase === i + 1} onClick={() => setPhase(i + 1)} key={i}>
                 {i + 1 + "阶段"}
               </StyledPhaseItem>
             ))}
         </StyledPhase>
-        <StyledRestore
-          onClick={() =>
-            setEnemyDataParsed(enemyRef.current as EnemyDataParsed)
-          }
-        >
-          恢复初始
-        </StyledRestore>
+        <StyledRestore onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>恢复初始</StyledRestore>
       </StyledControl>
       <StyledGridContainer>
         {keys.map((key) => {
-          const color =
-            key === "maxHp"
-              ? "text-ak-blue"
-              : key === "atk"
-                ? "text-ak-red"
-                : "";
+          const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
           return (
             <StyledInputWrapper key={key}>
               <div>{allowedBlackboardKeyMap[camelToSnake(key)]}</div>

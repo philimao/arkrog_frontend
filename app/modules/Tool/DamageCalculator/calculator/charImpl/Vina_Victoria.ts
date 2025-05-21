@@ -52,12 +52,14 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
   // const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
-  result.attack.dph = commonDPH;
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
   const commonAtkTimeBase = 1.25; // 普攻基础时间
   const commonAtkFrame = Math.round(commonAtkTimeBase * 3000.0 / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
+
+  result.attack.dps.mag = commonDamage / commonAtkTime;
+  result.attack.total_damage.mag = commonDamage;
 
   switch (skillKey) {
     case "skchr_siege2_1": {
@@ -95,9 +97,11 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
 
       result.skill.dph = skillDph;
       result.skill.dps.pure = skillTotalDamage / skillKeepTime;
-      result.cycle.dps.pure = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
+      result.cycle.dps.pure = skillTotalDamage / (skillKeepTime + skillRecoveryTime);
+      result.cycle.dps.mag = commonTotalDamage / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.pure = skillTotalDamage;
-      result.cycle.total_damage.pure = skillTotalDamage + commonTotalDamage;
+      result.cycle.total_damage.pure = skillTotalDamage ;
+      result.cycle.total_damage.mag = commonTotalDamage
       break;
     }
   }

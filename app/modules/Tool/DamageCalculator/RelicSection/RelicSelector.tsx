@@ -204,10 +204,9 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
           items![rogueKey][relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]
         ) {
           // 代表随等级难度变化的藏品
-          const diff = parseInt(difficulty.slice(1));
-          if (diff >= 9) return relicWrapper.id.endsWith("_c");
-          else if (diff >= 6) return relicWrapper.id.endsWith("_b");
-          else if (diff >= 3) return relicWrapper.id.endsWith("_a");
+          if (difficulty >= 9) return relicWrapper.id.endsWith("_c");
+          else if (difficulty >= 6) return relicWrapper.id.endsWith("_b");
+          else if (difficulty >= 3) return relicWrapper.id.endsWith("_a");
           else return relicWrapper.id[relicWrapper.id.length - 2] !== "_";
         } else {
           // 随难度不变的藏品

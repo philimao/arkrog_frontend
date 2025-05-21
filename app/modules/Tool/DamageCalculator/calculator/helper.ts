@@ -9,8 +9,8 @@ import type {
   CharInput,
   CharAttribute,
   BlackboardData,
-  EnemyData,
   EnemyInput,
+  RogueInput,
 } from "~/types/gameData";
 import {
   isRelicActive,
@@ -664,6 +664,26 @@ export class CalculatorHelper {
       }
     });
     return blackboard;
+  }
+
+  /** 分析肉鸽难度加成 */
+  static analyzeRogueDifficulty(input: { rogueInput: RogueInput }, context: BuffContext): BuffContext {
+    const { rogueInput } = input;
+    if (rogueInput.difficulty === 18) {
+      context.relic_rune_mul.atk -= 0.2;
+      context.relic_rune_mul.atk_source.push({
+        name: "思维混乱",
+        value: -0.2,
+        usage: "思维混乱-20%攻击力",
+      });
+      context.relic_rune_add.cost += 3;
+      context.relic_rune_add.cost_source.push({
+        name: "思维混乱",
+        value: 3,
+        usage: "思维混乱+3部署费用",
+      });
+    }
+    return context;
   }
 
   /** 该藏品Buff对干员是否生效 */

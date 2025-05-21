@@ -2,7 +2,6 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useEffect, useMemo, useState } from "react";
 import type {
   CharBasicData,
-  CharBuffInGame,
   CharData,
   CharInput,
   RelicDataExt,
@@ -14,7 +13,6 @@ import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
-import { getEnemyParsedAttributes } from "~/modules/Tool/DamageCalculator/utils";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
 import { CalculatorHelper } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
@@ -44,8 +42,16 @@ const StyledSelectWrapper = styled.div`
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const { outBuff, activeCharName, charsModifier } = useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
-  const { enemyDataParsed, enemyData, selectedIds, relicsMap, rogueKey, setRelicAnalysisResult, setCalcOutput } =
-    useDamageCalculatorStore();
+  const {
+    enemyDataParsed,
+    enemyData,
+    selectedIds,
+    relicsMap,
+    rogueKey,
+    setRelicAnalysisResult,
+    setCalcOutput,
+    difficulty,
+  } = useDamageCalculatorStore();
 
   // 选择干员后
   useEffect(() => {
@@ -195,12 +201,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     if (!charInput.attributeModifier) {
       return;
     }
-    const charBuffInGame: CharBuffInGame = {
-      atk: 0,
-      maxHp: 0,
-      damageResistance: 0,
-      damageScale: 0,
-    };
     // 干员养成加成
     let context = CalculatorHelper.analyzeChar({
       charInput: charInput,
@@ -216,13 +216,14 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       },
       context,
     );
+    // 肉鸽难度加成
+    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput: { topic: rogueKey, difficulty } }, context);
 
     const input: CalculatorInput = {
       charInput: {
         ...charInput,
         // 局外面板
         attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context }),
-        charsBuffInGame: charBuffInGame,
       },
       enemyInput: enemyDataParsed,
       charData: charData, // 干员解包原始数据
@@ -230,6 +231,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       skillData: skillObject, // 技能原始解包数据
       uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: selectedRelics, // 有效藏品列表
+      rogueInput: {
+        topic: rogueKey,
+        difficulty,
+      },
     };
     const calcResult = calculator(input);
     // 标准打印
@@ -240,14 +245,12 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         ...r,
       })),
     );
-    setRelicAnalysisResult(
-      CalculatorHelper.analyzeRelics({
-        charInput: charInput,
-        charData: charData,
-        enemyInput: enemyDataParsed,
-        relics: selectedRelics,
-      }),
-    );
+
+    /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
+    const buffPanelContext = CalculatorHelper.analyzeRelics(input);
+    CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
+    setRelicAnalysisResult(buffPanelContext);
+    // 计算结果
     setCalcOutput(calcResult);
   }, [
     selectedRelics,
@@ -260,6 +263,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     uniequip_table,
     setRelicAnalysisResult,
     setCalcOutput,
+    difficulty,
   ]);
 
   return (

@@ -601,6 +601,14 @@ export interface EnemyAttribute {
   fearedImmune: boolean;
 }
 
+/** 肉鸽输入数据 */
+export interface RogueInput {
+  /** 肉鸽主题 */
+  topic: string;
+  /** 肉鸽难度 */
+  difficulty: number;
+}
+
 /** 伤害计算器输入参数 */
 export interface CalculatorInput {
   /** 干员输入数据结构 */
@@ -617,6 +625,10 @@ export interface CalculatorInput {
   uniEquipData: UniEquipData;
   /** 藏品 */
   relics: RelicWrapper[];
+  /** 肉鸽输入数据 */
+  rogueInput: RogueInput;
+  /** 关卡基础数据 */
+  // stageInput: StageInput;
 }
 
 /** 伤害计算器输出参数 */

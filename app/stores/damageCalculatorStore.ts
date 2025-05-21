@@ -12,7 +12,8 @@ interface AttributeModifier {
 
 interface DamageCalculatorStore {
   rogueKey: RogueKey;
-  difficulty: string;
+  /** 肉鸽难度 */
+  difficulty: number;
   outBuff: string;
   charList: CharData[];
   /** 当前选中的角色 */
@@ -33,7 +34,7 @@ interface DamageCalculatorStore {
 
 interface DamageCalculatorAction {
   setRogueKey: (key: RogueKey) => void;
-  setDifficulty: (difficulty: string) => void;
+  setDifficulty: (difficulty: number) => void;
   setOutBuff: (outBuff: string) => void;
   addCharData: () => void;
   setCharData: (charData: CharData, i: number) => void;
@@ -60,7 +61,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
     immer((set) => ({
       rogueKey: "rogue_4" as RogueKey,
       setRogueKey: (rogueKey) => set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
-      difficulty: "N18",
+      difficulty: 18,
       setDifficulty: (difficulty) => set((state) => ({ ...state, difficulty }), undefined, "setDifficulty"),
       outBuff: "1.3",
       setOutBuff: (outBuff: string) => set((state) => ({ ...state, outBuff }), undefined, "setOutBuff"),

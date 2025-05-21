@@ -19,10 +19,7 @@ function cal_Wisadel_sim(
   const skillExDamage = Math.max(skillDPH * 0.5 - enemyDef, 0.05 * skillDPH); // 余震伤害
   const skillDPHOL = atk * (1.35 + atkBuffIn) + atkBuffExtra; // 过载
   const skillDamageOL = Math.max(skillDPHOL - enemyDef, 0.05 * skillDPHOL);
-  const skillExDamageOL = Math.max(
-    skillDPHOL * 0.5 - enemyDef,
-    0.05 * skillDPHOL,
-  );
+  const skillExDamageOL = Math.max(skillDPHOL * 0.5 - enemyDef, 0.05 * skillDPHOL);
   const skillTalentDamage = Math.max(
     (atk * (1.35 + atkBuffIn) + atkBuffExtra) * 1.85 - enemyDef,
     (atk * (1.35 + atkBuffIn) + atkBuffExtra) * 1.85 * 0.05,
@@ -31,12 +28,8 @@ function cal_Wisadel_sim(
   const skillHit = Math.floor(365.0 / skillAtkTime);
   const skillHitOL = Math.floor(370.0 / skillAtkTime);
 
-  let damage =
-    skillDamage * skillHit +
-    skillExDamage * 2 * skillHit * (1 + vulnD) * (1 - mitigation);
-  let damageOL =
-    skillDamageOL * skillHitOL * 4 +
-    skillExDamageOL * 8 * skillHitOL * (1 + vulnD) * (1 - mitigation);
+  let damage = skillDamage * skillHit + skillExDamage * 2 * skillHit * (1 + vulnD) * (1 - mitigation);
+  let damageOL = skillDamageOL * skillHitOL * 4 + skillExDamageOL * 8 * skillHitOL * (1 + vulnD) * (1 - mitigation);
 
   for (let i = 0; i < skillHit; ++i) {
     let hit = true;
@@ -76,8 +69,8 @@ export function Wisdel(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute.atk;
   const atkSpeed = input.charInput.attribute.attackSpeed;
   const skillKey = input.charInput.skillKey;
-  const enemyDef = input.enemyInput.def;
-  const mitigation = input.enemyInput.damageHitratePhysical || 0;
+  const enemyDef = input.enemyInput.attributes.def;
+  const mitigation = input.enemyInput.attributes.damageHitratePhysical || 0;
   const vulnD = 0;
   const charge = 1;
 
@@ -90,11 +83,7 @@ export function Wisdel(input: CalculatorInput): CalculatorOutput {
   ); // 普攻天赋伤害
   const atkTime = Math.round(6300 / atkSpeed);
   result.attack.dps.phy =
-    ((commonDamage + 2 * commonExDamage + 0.15 * talentDamage) *
-      (1 + vulnD) *
-      (1 - mitigation) *
-      30) /
-    atkTime;
+    ((commonDamage + 2 * commonExDamage + 0.15 * talentDamage) * (1 + vulnD) * (1 - mitigation) * 30) / atkTime;
 
   switch (skillKey) {
     case "skchr_wisdel_1": {
@@ -110,16 +99,7 @@ export function Wisdel(input: CalculatorInput): CalculatorOutput {
       const chargeTime = Math.round(750.0 / charge);
 
       for (let i = 0; i < iterations; ++i) {
-        const simDamage = cal_Wisadel_sim(
-          atkBuffIn,
-          atkBuffExtra,
-          atk,
-          atkSpeed,
-          enemyDef,
-          mitigation,
-          vulnD,
-          charge,
-        );
+        const simDamage = cal_Wisadel_sim(atkBuffIn, atkBuffExtra, atk, atkSpeed, enemyDef, mitigation, vulnD, charge);
 
         totalDamage += simDamage;
         if (simDamage < min_damage) {
@@ -132,10 +112,8 @@ export function Wisdel(input: CalculatorInput): CalculatorOutput {
       result.skill.total_damage.phy = totalDamage / iterations;
       result.skill.dps.phy = result.skill.total_damage.phy / 25;
       result.cycle.total_damage.phy =
-        commonDamage * commonHit * (1 + vulnD) * (1 - mitigation) +
-        totalDamage / iterations;
-      result.cycle.dps.phy =
-        (result.cycle.total_damage.phy * 30) / (chargeTime + 750);
+        commonDamage * commonHit * (1 + vulnD) * (1 - mitigation) + totalDamage / iterations;
+      result.cycle.dps.phy = (result.cycle.total_damage.phy * 30) / (chargeTime + 750);
       break;
     }
     case "skchr_wisdel_3": {

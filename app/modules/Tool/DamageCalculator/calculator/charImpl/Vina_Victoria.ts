@@ -16,6 +16,7 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
       charInput: input.charInput,
       charData: input.charData,
       relics: input.relics,
+      enemyInput: input.enemyInput,
     },
     context,
   );
@@ -41,21 +42,22 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation = input.enemyInput.damageHitratePhysical || 0; // 闪避
+  const mitigation = input.enemyInput.attributes.damageHitratePhysical || 0; // 闪避
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
-  const enemyDef = input.enemyInput.def; // 敌人防御
-  const enemyMagRes = input.enemyInput.magicResistance; // 敌人法抗
-  // const enemyRes = input.enemyInput.resistance; // 敌人减伤(未实现)
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
+  const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
+  // const enemyRes = input.enemyInput.attributes.resistance; // 敌人减伤(未实现)
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
-  const commonDamage = Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
+  const commonDamage =
+    Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
   // const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
   const commonAtkTimeBase = 1.25; // 普攻基础时间
-  const commonAtkFrame = Math.round(commonAtkTimeBase * 3000.0 / atkSpeed); // 普攻间隔(帧)
+  const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
 
   result.attack.dps.mag = commonDamage / commonAtkTime;
@@ -76,11 +78,11 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
       const skillAtkTimeBase = 1.0; // 技能基础攻击间隔
-      const skillAtkFrame = Math.round(skillAtkTimeBase * 3000.0 / atkSpeed); // 技能攻击间隔(帧)
+      const skillAtkFrame = Math.round((skillAtkTimeBase * 3000.0) / atkSpeed); // 技能攻击间隔(帧)
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔(秒)
 
       const spInitial = 0; // 藏品初始技力
-      const skillSp = 50.0  // 技能技力消耗
+      const skillSp = 50.0; // 技能技力消耗
       const skillKeepTime = 25.0; // 技能持续时间
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
@@ -100,8 +102,8 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
       result.cycle.dps.pure = skillTotalDamage / (skillKeepTime + skillRecoveryTime);
       result.cycle.dps.mag = commonTotalDamage / (skillKeepTime + skillRecoveryTime);
       result.skill.total_damage.pure = skillTotalDamage;
-      result.cycle.total_damage.pure = skillTotalDamage ;
-      result.cycle.total_damage.mag = commonTotalDamage
+      result.cycle.total_damage.pure = skillTotalDamage;
+      result.cycle.total_damage.mag = commonTotalDamage;
       break;
     }
   }

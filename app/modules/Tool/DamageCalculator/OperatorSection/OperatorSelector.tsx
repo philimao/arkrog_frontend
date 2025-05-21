@@ -18,16 +18,27 @@ const StyledSelectorWrapper = styled.div`
   margin-bottom: 1rem;
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 export default function OperatorSelectorWrapper() {
   const { character_table } = useGameDataStore();
   const { charList, setCharData } = useDamageCalculatorStore();
-  const allowCharNames = ["赫德雷", "Mon3tr", "维娜·维多利亚", "维什戴尔", "空弦", "玛恩纳", "安洁莉娜", "新约能天使"];
+  const allowCharNames = [
+    "赫德雷",
+    "Mon3tr",
+    "维娜·维多利亚",
+    "维什戴尔",
+    "空弦",
+    "玛恩纳",
+    "安洁莉娜",
+    "新约能天使",
+    "逻各斯",
+  ];
   useEffect(() => {
     Object.values(character_table!)
-      .filter((CharData) => {
-        return !["TOKEN", "TRAP"].includes(CharData.profession) && allowCharNames.includes(CharData.name);
+      .filter((charData) => {
+        return !["TOKEN", "TRAP"].includes(charData.profession) && allowCharNames.includes(charData.name);
       })
       .sort((char1, char2) => {
         return allowCharNames.indexOf(char1.name) - allowCharNames.indexOf(char2.name);
@@ -37,30 +48,27 @@ export default function OperatorSelectorWrapper() {
       });
   }, [character_table, setCharData]);
 
+  // function addCharData() {
+  //   setCharData(undefined, charList.length);
+  // }
+
   return (
     <StyledOperatorSelectorWrapper>
-      <div>
-        当前仍在数据对接中，主要体验交互逻辑，反馈建议请加入影语集反馈群
-        909687635
-      </div>
+      <div>当前仍在数据对接中，主要体验交互逻辑，反馈建议请加入影语集反馈群 909687635</div>
       <StyledTitle>选择干员</StyledTitle>
       <StyledSelectorWrapper>
         {charList.length > 0 ? (
           charList.map((charData, i) =>
-            charData ? (
-              <OperatorButton charData={charData} i={i} key={i} />
-            ) : (
-              <OperatorSelector i={i} key={i} />
-            ),
+            charData ? <OperatorButton charData={charData} i={i} key={i} /> : <OperatorSelector i={i} key={i} />,
           )
         ) : (
           <OperatorSelector i={0} />
         )}
-        {/*{charList.length < 5 && charList[charList.length - 1] && (*/}
-        {/*  <div>*/}
-        {/*    <button onClick={() => addCharData()}>+</button>*/}
-        {/*  </div>*/}
-        {/*)}*/}
+        {/* {charList.length < 5 && charList[charList.length - 1] && (
+          <div>
+            <button onClick={() => addCharData()}>+</button>
+          </div>
+        )} */}
       </StyledSelectorWrapper>
     </StyledOperatorSelectorWrapper>
   );
@@ -77,8 +85,7 @@ const StyledOperatorButton = styled.button<{ $active: boolean }>`
   text-align: start;
   padding: 0 0.75rem;
   font-weight: bold;
-  background: ${(props) =>
-    props.$active ? "var(--ak-blue)" : "var(--dark-gray)"};
+  background: ${(props) => (props.$active ? "var(--ak-blue)" : "var(--dark-gray)")};
 `;
 
 const StyledRemoveButton = styled.button`
@@ -88,22 +95,12 @@ const StyledRemoveButton = styled.button`
   top: 0;
 `;
 
-export function OperatorButton({
-  charData,
-  i,
-}: {
-  charData: CharData;
-  i: number;
-}) {
-  const { activeCharName, setActiveCharName, removeCharData } =
-    useDamageCalculatorStore();
+export function OperatorButton({ charData, i }: { charData: CharData; i: number }) {
+  const { activeCharName, setActiveCharName, removeCharData } = useDamageCalculatorStore();
   const active = activeCharName === charData.name;
   return (
     <StyledOperatorButtonWrapper $active={active}>
-      <StyledOperatorButton
-        $active={active}
-        onClick={() => setActiveCharName(charData.name)}
-      >
+      <StyledOperatorButton $active={active} onClick={() => setActiveCharName(charData.name)}>
         {charData.name}
       </StyledOperatorButton>
       {/*<StyledRemoveButton onClick={() => removeCharData(i)}>*/}
@@ -120,7 +117,6 @@ export function OperatorSelector({ i }: { i: number }) {
   const [value, setValue] = useState("");
 
   const [candidates, setCandidates] = useState<CharData[]>();
-
   useEffect(() => {
     debounce(
       () =>
@@ -138,10 +134,7 @@ export function OperatorSelector({ i }: { i: number }) {
   }, [character_table, value]);
 
   return (
-    <div
-      className="w-40 relative me-4"
-      onBlur={() => setTimeout(() => setShowListBox(false), 300)}
-    >
+    <div className="w-40 relative me-4" onBlur={() => setTimeout(() => setShowListBox(false), 300)}>
       <ToolInput
         value={value}
         setValue={setValue}
@@ -158,11 +151,7 @@ export function OperatorSelector({ i }: { i: number }) {
       />
       <div className="absolute z-50" style={{ top: "110%", left: 0 }}>
         {showListBox && candidates && (
-          <Listbox
-            aria-label="listbox"
-            emptyContent=""
-            classNames={{ base: "w-96 bg-black-gray" }}
-          >
+          <Listbox aria-label="listbox" emptyContent="" classNames={{ base: "w-96 bg-black-gray" }}>
             {candidates.map((charData) => (
               <ListboxItem
                 key={charData.name}
@@ -178,17 +167,12 @@ export function OperatorSelector({ i }: { i: number }) {
                     className="w-12 h-12 me-2 border border-light-gray overflow-hidden flex-shrink-0"
                     style={{ borderRadius: "50%" }}
                   >
-                    <OperatorAvatar
-                      name={charData.name}
-                      className="w-full h-full"
-                    />
+                    <OperatorAvatar name={charData.name} className="w-full h-full" />
                   </div>
                   <div className="flex items-center">
                     <div>
                       <div className="font-bold">{charData.name}</div>
-                      <div className="text-[0.75rem] text-gray font-light">
-                        {charData.itemDesc}
-                      </div>
+                      <div className="text-[0.75rem] text-gray font-light">{charData.itemDesc}</div>
                     </div>
                   </div>
                 </div>

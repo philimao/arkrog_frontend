@@ -723,10 +723,10 @@ export class CalculatorHelper {
         return;
       }
       if (blackboard.atk) {
-        result.relic_rune_add.atk += blackboard.atk;
+        result.relic_rune_add.atk += blackboard.atk * relic.layer;
         result.relic_rune_add.atk_source.push({
           buff,
-          value: blackboard.atk,
+          value: blackboard.atk * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
@@ -743,30 +743,30 @@ export class CalculatorHelper {
         });
       }
       if (blackboard.def) {
-        result.relic_rune_add.def += blackboard.def;
+        result.relic_rune_add.def += blackboard.def * relic.layer;
         result.relic_rune_add.def_source.push({
           buff,
-          value: blackboard.def,
+          value: blackboard.def * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
         });
       }
       if (blackboard.cost) {
-        result.relic_rune_add.cost += blackboard.cost;
+        result.relic_rune_add.cost += blackboard.cost * relic.layer;
         result.relic_rune_add.cost_source.push({
           buff,
-          value: blackboard.cost,
+          value: blackboard.cost * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
         });
       }
       if (blackboard.hp_recovery_per_sec) {
-        result.relic_rune_add.hp_recovery_per_sec += blackboard.hp_recovery_per_sec;
+        result.relic_rune_add.hp_recovery_per_sec += blackboard.hp_recovery_per_sec * relic.layer;
         result.relic_rune_add.hp_recovery_per_sec_source.push({
           buff,
-          value: blackboard.hp_recovery_per_sec,
+          value: blackboard.hp_recovery_per_sec * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
@@ -777,30 +777,30 @@ export class CalculatorHelper {
     result.categories.relic_rune_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.relic_rune_mul.atk += blackboard.atk;
+        result.relic_rune_mul.atk += blackboard.atk * relic.layer;
         result.relic_rune_mul.atk_source.push({
           buff,
-          value: blackboard.atk,
+          value: blackboard.atk * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
         });
       }
       if (blackboard.def) {
-        result.relic_rune_mul.def += blackboard.def;
+        result.relic_rune_mul.def += blackboard.def * relic.layer;
         result.relic_rune_mul.def_source.push({
           buff,
-          value: blackboard.def,
+          value: blackboard.def * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
         });
       }
       if (blackboard.max_hp) {
-        result.relic_rune_mul.max_hp += blackboard.max_hp;
+        result.relic_rune_mul.max_hp += blackboard.max_hp * relic.layer;
         result.relic_rune_mul.max_hp_source.push({
           buff,
-          value: blackboard.max_hp,
+          value: blackboard.max_hp * relic.layer,
           usage: relic.relicData.usage,
           name: relic.name,
           relic,
@@ -811,10 +811,10 @@ export class CalculatorHelper {
     result.categories.global_buff_add.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.in_game_buff_add.atk += blackboard.atk;
+        result.in_game_buff_add.atk += blackboard.atk * relic.layer;
         result.in_game_buff_add.atk_source.push({
           name: relic.name,
-          value: blackboard.atk,
+          value: blackboard.atk * relic.layer,
           usage: relic.relicData.usage,
           buff,
           relic,
@@ -825,10 +825,10 @@ export class CalculatorHelper {
     result.categories.global_buff_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.in_game_buff_mul.atk += blackboard.atk;
+        result.in_game_buff_mul.atk += blackboard.atk * relic.layer;
         result.in_game_buff_mul.atk_source.push({
           buff,
-          value: blackboard.atk,
+          value: blackboard.atk * relic.layer,
           relic: relic,
           usage: relic.relicData.usage,
           name: relic.name,
@@ -839,7 +839,7 @@ export class CalculatorHelper {
     result.categories.global_buff_final_add.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.in_game_buff_final_add.atk += blackboard.atk;
+        result.in_game_buff_final_add.atk += blackboard.atk * relic.layer;
         result.in_game_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });
@@ -847,7 +847,7 @@ export class CalculatorHelper {
     result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
-        result.in_game_buff_final_mul.atk += blackboard.atk;
+        result.in_game_buff_final_mul.atk += blackboard.atk * relic.layer;
         result.in_game_buff_final_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
       }
     });

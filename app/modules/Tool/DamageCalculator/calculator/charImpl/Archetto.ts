@@ -81,9 +81,9 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
       const spInitial = 0.0; // 藏品初始技力
       const skillSp = 3.0; // 技能技力消耗
       const skillKeepTime = skillAtkTime; // 技能持续时间
-      const spRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
+      const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
       
-      const commonHit = spRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
+      const commonHit = skillRecoveryTime / skillAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
       const skillHit = skillKeepTime / skillAtkTime // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);

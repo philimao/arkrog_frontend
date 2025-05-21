@@ -52,12 +52,14 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
   //const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
-  result.attack.dph = commonDPH;
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
   const commonAtkTimeBase = 2.5; // 普攻基础时间
   const commonAtkFrame = Math.round(commonAtkTimeBase * 3000.0 / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
+
+  result.attack.dps.phy = commonDamage / commonAtkTime;
+  result.attack.total_damage.phy = commonDamage;
 
   switch (skillKey) {
     case "skchr_hodrer_1": {

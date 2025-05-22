@@ -112,6 +112,24 @@ registerRelicBlackboard("enemy_damage_scale[pure]", (buff: RelicBuff, relic: Rel
   };
 });
 
+/** 敌人元素损伤 */
+registerRelicBlackboard("enemy_damage_scale[ep]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const ep_damage_scale = getByKeySafe(buff.blackboard, "ep_damage_scale");
+  return {
+    isActive: () => true,
+    apply(context: BuffContext): void {
+      context.in_game_buff_final_mul.enemy_damage_scale_ep *= ep_damage_scale.value;
+      context.in_game_buff_final_mul.enemy_damage_scale_ep_source.push({
+        name: relic.name,
+        value: ep_damage_scale.value,
+        usage: relic.usage,
+        buff,
+        relic,
+      });
+    },
+  };
+});
+
 /** 敌人减伤 */
 registerRelicBlackboard("enemy_damage_resistance[inf]", (buff: RelicBuff, relic: RelicWrapper) => {
   const damage_resistance = getByKeySafe(buff.blackboard, "damage_resistance");

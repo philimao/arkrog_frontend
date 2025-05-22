@@ -123,6 +123,8 @@ export interface IBuffContext {
     enemy_damage_scale_mag: number;
     /** 敌人真实易伤 */
     enemy_damage_scale_pure: number;
+    /** 敌人元素损伤 */
+    enemy_damage_scale_ep: number;
     /** 敌人物理与法术减伤 */
     enemy_damage_resistance_inf: number;
     /** 攻击力来源 */
@@ -169,6 +171,14 @@ export interface IBuffContext {
     }>;
     /** 敌人真实易伤来源 */
     enemy_damage_scale_pure_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人元素损伤来源 */
+    enemy_damage_scale_ep_source: Array<{
       name: string;
       value: number;
       usage: string;
@@ -268,6 +278,8 @@ export class BuffContext implements IBuffContext {
     enemy_damage_scale_mag_source: [],
     enemy_damage_scale_pure: 1,
     enemy_damage_scale_pure_source: [],
+    enemy_damage_scale_ep: 1,
+    enemy_damage_scale_ep_source: [],
     enemy_max_hp_down: 1,
     enemy_max_hp_down_source: [],
     enemy_damage_resistance_inf: 1,

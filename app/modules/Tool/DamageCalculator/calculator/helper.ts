@@ -771,6 +771,7 @@ export class CalculatorHelper {
         "enemy_damage_scale_phy",
         "enemy_damage_scale_mag",
         "enemy_damage_scale_pure",
+        "enemy_damage_scale_ep",
         "enemy_damage_resistance_inf",
       ].includes(key);
       if (!isEnemy && typeof value === "number" && value !== 1) {

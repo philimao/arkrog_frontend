@@ -13,7 +13,7 @@ const StyledTopicSelector = styled.div`
 
 export default function TopicSelector() {
   const { topics } = useGameDataStore();
-  const { rogueKey, setRogueKey, difficulty, setDifficulty, outBuff, setOutBuff } = useDamageCalculatorStore();
+  const { rogueKey, setRogueKey, setRogueDifficulty, outBuff, setOutBuff, rogueInput } = useDamageCalculatorStore();
 
   // 难度选择
   const difficulties = useMemo(() => {
@@ -36,10 +36,6 @@ export default function TopicSelector() {
         .map((_, i) => ({ label: "N" + i, value: i }));
     return array;
   }, [rogueKey]);
-
-  useEffect(() => {
-    setDifficulty(difficulties[difficulties.length - 1].value);
-  }, [difficulties, setDifficulty]);
 
   useEffect(() => {
     const outBuffs = outBuffMap[rogueKey];
@@ -65,8 +61,8 @@ export default function TopicSelector() {
           array={difficulties}
           getKey={(levelItem) => levelItem.value.toString()}
           getValue={(levelItem) => levelItem.label}
-          selectedKeys={[difficulty.toString()]}
-          onChange={(evt) => setDifficulty(parseInt(evt.target.value))}
+          selectedKeys={[rogueInput.rogue_4.difficulty.toString()]}
+          onChange={(evt) => setRogueDifficulty(parseInt(evt.target.value))}
         />
         <ToolSelect
           disallowEmptySelection={true}

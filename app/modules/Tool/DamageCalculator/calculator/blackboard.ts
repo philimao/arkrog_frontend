@@ -15,8 +15,8 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
       return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
     },
     apply(context: BuffContext): void {
-      const value = Math.sign(atk.value) === 1 ? atk.value - 1 : atk.value;
-      context.add_in_game_buff_final_mul_enemy_atk_down(value, buff, relic);
+      const value = Math.sign(atk.value) === 1 ? atk.value : 1 - atk.value;
+      context.mut_in_game_buff_final_mul_enemy_atk_down(value, buff, relic);
     },
   };
 });
@@ -33,8 +33,8 @@ registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper)
       return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
     },
     apply(context: BuffContext): void {
-      const value = Math.sign(def.value) === 1 ? def.value - 1 : def.value;
-      context.add_in_game_buff_final_mul_enemy_def_down(value, buff, relic);
+      const value = Math.sign(def.value) === 1 ? def.value : 1 - def.value;
+      context.mul_in_game_buff_final_mul_enemy_def_down(value, buff, relic);
     },
   };
 });
@@ -52,8 +52,8 @@ registerRelicBlackboard("enemy_max_hp_down", (buff: RelicBuff, relic: RelicWrapp
       return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
     },
     apply(context: BuffContext): void {
-      const value = Math.sign(max_hp.value) === 1 ? max_hp.value - 1 : max_hp.value;
-      context.add_in_game_buff_final_mul_enemy_max_hp_down(value, buff, relic);
+      const value = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 - max_hp.value;
+      context.mul_in_game_buff_final_mul_enemy_max_hp_down(value, buff, relic);
     },
   };
 });

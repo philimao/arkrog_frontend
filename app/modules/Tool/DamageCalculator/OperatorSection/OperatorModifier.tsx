@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Checkbox, CheckboxGroup, cn, Input, Radio, RadioGroup, Tooltip } from "@heroui/react";
+import Show from "~/components/Show";
 
 function MyInput({ value, setValue, label, onBlur }) {
   return (
@@ -40,11 +41,10 @@ export const CustomRadio = (props) => {
 };
 
 export default function OperatorModifier() {
-  const { setCharsModifier, activeCharName } = useDamageCalculatorStore();
+  const { setCharsModifier, activeCharName, rogueInput, setRogueThoughtLoad } = useDamageCalculatorStore();
   const [atkBase, setAtkBase] = React.useState<string>("0");
   const [atkPercent, setAtkPercent] = React.useState<string>("0");
   const [atkFinal, setAtkFinal] = React.useState<string>("0");
-  const [mindLoad, setMindLoad] = React.useState<string>("清晰");
 
   function handleBlur() {
     const charModifier = {
@@ -66,31 +66,38 @@ export default function OperatorModifier() {
         <MyInput value={atkPercent} setValue={setAtkPercent} label="百分比攻击力（藏品）" onBlur={handleBlur} />
         <MyInput value={atkFinal} setValue={setAtkFinal} label="最终攻击力（鼓舞）" onBlur={handleBlur} />
       </div>
-      <div className="flex flex-col gap-2">
-        <RadioGroup className="w-[400px]" label="思维负荷" value={mindLoad} onValueChange={setMindLoad}>
-          <CustomRadio
-            color="success"
-            value="清晰"
-            className={mindLoad === "清晰" ? "border-success" : ""}
-            description="思维清晰，一切正常"
+      <Show when={rogueInput.topic === "rogue_4" && rogueInput.rogue_4.difficulty === 18}>
+        <div className="flex flex-col gap-2">
+          <RadioGroup
+            className="w-[400px]"
+            label="思维负荷"
+            value={rogueInput.rogue_4.thoughtLoad}
+            onValueChange={(value) => setRogueThoughtLoad(value as "NORMAL" | "CONFUSION" | "STAGNATION")}
           >
-            清晰
-          </CustomRadio>
-          <CustomRadio
-            color="warning"
-            value="混乱"
-            className={`w-[400px] ${mindLoad === "混乱" ? "border-warning" : ""}`}
-            description="每前进一步，失去1点目标生命（不会使目标生命低于1），进入战斗时，所有单位部署费用+3，攻击力-20%，技力自然回复速度-20%"
-          >
-            混乱
-          </CustomRadio>
-          {/* <Tooltip content="负荷超过阻滞点，思维已阻滞" delay={500} closeDelay={150}>
+            <CustomRadio
+              color="success"
+              value="NORMAL"
+              className={rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "border-success" : ""}
+              description="思维清晰，一切正常"
+            >
+              清晰
+            </CustomRadio>
+            <CustomRadio
+              color="warning"
+              value="CONFUSION"
+              className={`w-[400px] ${rogueInput.rogue_4.thoughtLoad === "CONFUSION" ? "border-warning" : ""}`}
+              description="每前进一步，失去1点目标生命（不会使目标生命低于1），进入战斗时，所有单位部署费用+3，攻击力-20%，技力自然回复速度-20%"
+            >
+              混乱
+            </CustomRadio>
+            {/* <Tooltip content="负荷超过阻滞点，思维已阻滞" delay={500} closeDelay={150}>
             <CustomRadio color="danger" value="阻滞" className={mindLoad === "阻滞" ? "border-danger" : ""}>
               <span>阻滞</span>
             </CustomRadio>
           </Tooltip> */}
-        </RadioGroup>
-      </div>
+          </RadioGroup>
+        </div>
+      </Show>
     </>
   );
 }

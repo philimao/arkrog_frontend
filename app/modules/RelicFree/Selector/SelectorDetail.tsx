@@ -1,8 +1,7 @@
 import { Tooltip } from "@heroui/react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import React from "react";
 import { styled } from "styled-components";
-import type { StageData, StageOfRogue } from "~/types/gameData";
+import type { StageOfRogue } from "~/types/gameData";
 import { useAppDataStore } from "~/stores/appDataStore";
 import { navOfZone } from "~/utils/stageSelector";
 
@@ -32,11 +31,7 @@ const StyledCardTitleText = styled.div<{ type: string }>`
   min-width: 2rem;
   user-select: none;
   color: ${(props) =>
-    props.type === "normal"
-      ? "var(--ak-blue)"
-      : props.type === "elite"
-        ? "var(--ak-red)"
-        : "var(--ak-purple)"};
+    props.type === "normal" ? "var(--ak-blue)" : props.type === "elite" ? "var(--ak-red)" : "var(--ak-purple)"};
 `;
 const StyledCardTitleNum = styled.div`
   font-size: 2rem;
@@ -126,9 +121,7 @@ export default function SelectorDetail({
           .filter((zone) => zoneFilterId === "all" || zoneFilterId === zone.id)
           .map((zone) => {
             const renderedStageIds: string[] = [];
-            const renderStages = Object.values(stageOfRogue).filter((stage) =>
-              zone.filter(stage, renderedStageIds),
-            );
+            const renderStages = Object.values(stageOfRogue).filter((stage) => zone.filter(stage, renderedStageIds));
             return (
               <div className="flex mb-16" key={zone.id}>
                 <div className="w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8">
@@ -136,8 +129,7 @@ export default function SelectorDetail({
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 grow">
                   {renderStages.map((stage, i) => {
-                    if (stage.id === "ghost")
-                      return <StyledStageCard className="" key={"ghost" + i} />;
+                    if (stage.id === "ghost") return <StyledStageCard className="" key={"ghost" + i} />;
                     const stagePreviewData = stagePreview?.[stage.id];
                     const maxLevel = ["??", "N18", "N15"].reduce((a, b) =>
                       [
@@ -149,38 +141,24 @@ export default function SelectorDetail({
                         : a,
                     );
                     return (
-                      <StyledStageCard
-                        role="button"
-                        key={stage.id}
-                        onClick={() => navigate(stage.id)}
-                      >
+                      <StyledStageCard role="button" key={stage.id} onClick={() => navigate(stage.id)}>
                         <div className="h-6 bg-black-gray flex">
                           <div className="w-1/2 flex justify-center">
                             {stagePreviewData?.normalNum && (
                               <>
-                                <StyledCardTitleText type="normal">
-                                  普通
-                                </StyledCardTitleText>
-                                <StyledCardTitleNum>
-                                  {stagePreviewData.normalNum}
-                                </StyledCardTitleNum>
+                                <StyledCardTitleText type="normal">普通</StyledCardTitleText>
+                                <StyledCardTitleNum>{stagePreviewData.normalNum}</StyledCardTitleNum>
                               </>
                             )}
                           </div>
                           <div className="w-1/2 flex justify-center">
-                            {(stagePreviewData?.eliteNum ||
-                              stagePreviewData?.boatNum) && (
+                            {(stagePreviewData?.eliteNum || stagePreviewData?.boatNum) && (
                               <>
-                                <StyledCardTitleText
-                                  type={
-                                    stagePreviewData.eliteNum ? "elite" : "boss"
-                                  }
-                                >
+                                <StyledCardTitleText type={stagePreviewData.eliteNum ? "elite" : "boss"}>
                                   {stagePreviewData.eliteNum ? "紧急" : "带船"}
                                 </StyledCardTitleText>
                                 <StyledCardTitleNum>
-                                  {stagePreviewData.eliteNum ||
-                                    stagePreviewData.boatNum}
+                                  {stagePreviewData.eliteNum || stagePreviewData.boatNum}
                                 </StyledCardTitleNum>
                               </>
                             )}
@@ -188,9 +166,7 @@ export default function SelectorDetail({
                         </div>
                         <StyledCardBody>
                           <StyledDifficulty>{maxLevel}</StyledDifficulty>
-                          <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">
-                            {stage.name}
-                          </StyledStageName>
+                          <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">{stage.name}</StyledStageName>
                         </StyledCardBody>
                       </StyledStageCard>
                     );

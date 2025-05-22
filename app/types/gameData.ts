@@ -349,6 +349,8 @@ export interface RelicData {
   usage: string;
   /** 藏品名称 */
   name: string;
+  /** 藏品层数 */
+  layer: number;
 }
 
 export interface RelicWrapperBuff {
@@ -604,9 +606,15 @@ export interface EnemyAttribute {
 /** 肉鸽输入数据 */
 export interface RogueInput {
   /** 肉鸽主题 */
-  topic: string;
-  /** 肉鸽难度 */
-  difficulty: number;
+  topic: "rogue_4";
+  rogue_4: {
+    /** 肉鸽难度 */
+    difficulty: number;
+    /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
+    thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
+    /** 当前生效灵感 */
+    inspiration?: string;
+  };
 }
 
 /** 伤害计算器输入参数 */

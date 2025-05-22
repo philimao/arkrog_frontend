@@ -163,7 +163,7 @@ export default function RelicSelectorWrapper({ charData }: { charData?: CharData
 
   useEffect(() => {
     setRelicWrapper(rogueKey, relicsByChar2);
-  }, [relicsByChar2, rogueKey, setRelicWrapper]);
+  }, []);
 
   const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
 
@@ -176,7 +176,6 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
   const { items } = useGameDataStore();
   const {
     rogueKey,
-    difficulty,
     showRelics,
     updateRelics,
     toggleShowRelics,
@@ -185,6 +184,7 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
     setCharsBuff,
     setEnemyBuff,
     outBuff,
+    rogueInput,
   } = useDamageCalculatorStore();
 
   // Tag筛选
@@ -193,7 +193,7 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
   // 藏品价值与关键字筛选
   const [searchValue, setSearchValue] = useState("");
   const relicValues = ["16", "12", "8", "1"];
-  const [valueFilter, setValueFilter] = useState<Set<string>>(new Set(["16"]));
+  const [valueFilter, setValueFilter] = useState<Set<string>>(new Set(["16", "12", "8"]));
 
   useEffect(() => {
     const showIds = relicWrappers
@@ -204,9 +204,9 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
           items![rogueKey][relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]
         ) {
           // 代表随等级难度变化的藏品
-          if (difficulty >= 9) return relicWrapper.id.endsWith("_c");
-          else if (difficulty >= 6) return relicWrapper.id.endsWith("_b");
-          else if (difficulty >= 3) return relicWrapper.id.endsWith("_a");
+          if (rogueInput[rogueInput.topic].difficulty >= 9) return relicWrapper.id.endsWith("_c");
+          else if (rogueInput[rogueInput.topic].difficulty >= 6) return relicWrapper.id.endsWith("_b");
+          else if (rogueInput[rogueInput.topic].difficulty >= 3) return relicWrapper.id.endsWith("_a");
           else return relicWrapper.id[relicWrapper.id.length - 2] !== "_";
         } else {
           // 随难度不变的藏品
@@ -235,7 +235,7 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
       .map((relicWrapper) => relicWrapper.id);
     updateRelics(showIds, "show", true);
     updateRelics(hideIds, "show", false);
-  }, [difficulty, items, relicWrappers, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
+  }, [rogueInput, items, relicWrappers, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
   // const selectRelicsByIds = (ids: string[]) => {

@@ -1,7 +1,15 @@
 import { create } from "zustand/index";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
-import type { CharData, EnemyData, EnemyInput, RogueKey, RelicWrapper, CalculatorOutput } from "~/types/gameData";
+import type {
+  CharData,
+  EnemyData,
+  EnemyInput,
+  RogueKey,
+  RelicWrapper,
+  CalculatorOutput,
+  RogueInput,
+} from "~/types/gameData";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 
 interface AttributeModifier {
@@ -13,6 +21,7 @@ interface AttributeModifier {
 interface DamageCalculatorStore {
   rogueKey: RogueKey;
   /** 肉鸽难度 */
+  rogueInput: RogueInput;
   difficulty: number;
   outBuff: string;
   charList: CharData[];
@@ -34,7 +43,9 @@ interface DamageCalculatorStore {
 
 interface DamageCalculatorAction {
   setRogueKey: (key: RogueKey) => void;
-  setDifficulty: (difficulty: number) => void;
+  setRogueInput: (rogueInput: RogueInput) => void;
+  setRogueDifficulty: (difficulty: number) => void;
+  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   setOutBuff: (outBuff: string) => void;
   addCharData: () => void;
   setCharData: (charData: CharData, i: number) => void;
@@ -61,8 +72,32 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
     immer((set) => ({
       rogueKey: "rogue_4" as RogueKey,
       setRogueKey: (rogueKey) => set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
+      rogueInput: {
+        topic: "rogue_4",
+        rogue_4: {
+          difficulty: 18,
+          thoughtLoad: "NORMAL",
+        },
+      } as RogueInput,
+      setRogueInput: (rogueInput: RogueInput) => set((state) => ({ ...state, rogueInput }), undefined, "setRogueInput"),
       difficulty: 18,
-      setDifficulty: (difficulty) => set((state) => ({ ...state, difficulty }), undefined, "setDifficulty"),
+      setRogueDifficulty: (difficulty) => {
+        return set(
+          (state) => {
+            state.rogueInput[state.rogueInput.topic].difficulty = difficulty;
+          },
+          undefined,
+          "setRogueDifficulty",
+        );
+      },
+      setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) =>
+        set(
+          (state) => {
+            state.rogueInput.rogue_4.thoughtLoad = thoughtLoad;
+          },
+          undefined,
+          "setRogueThoughtLoad",
+        ),
       outBuff: "1.3",
       setOutBuff: (outBuff: string) => set((state) => ({ ...state, outBuff }), undefined, "setOutBuff"),
       charList: [] as CharData[],

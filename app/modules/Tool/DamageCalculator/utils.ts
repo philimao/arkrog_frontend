@@ -434,7 +434,7 @@ export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): 
     userActive: true,
     isFavorite: false,
     hasLayer: hasLayer,
-    layer: 1,
+    layer: relicDataExt.layer || 1,
     buffs: buffs,
   };
 }

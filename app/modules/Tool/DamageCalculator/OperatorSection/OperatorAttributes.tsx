@@ -265,7 +265,7 @@ export default function OperatorAttributes(props: {
   enemyInput: EnemyInput;
   relics: RelicWrapper[];
 }) {
-  const { rogueKey, difficulty } = useDamageCalculatorStore();
+  const { rogueInput } = useDamageCalculatorStore();
   const [result, setResult] = useState<CharAttributeExt | null>(null);
   const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
@@ -297,10 +297,10 @@ export default function OperatorAttributes(props: {
       context,
     );
     // 肉鸽难度加成
-    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput: { topic: rogueKey, difficulty } }, context);
+    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: props.enemyInput }, context);
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);
-  }, [props.charData, props.charInput, props.relics]);
+  }, [props.charData, props.charInput, props.relics, rogueInput]);
   return (
     <StyledAttributeWrapper>
       {result && (

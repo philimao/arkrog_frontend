@@ -1,13 +1,6 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useEffect, useMemo, useState } from "react";
-import type {
-  CharBasicData,
-  CharData,
-  CharInput,
-  RelicDataExt,
-  CalculatorInput,
-  RelicWrapper,
-} from "~/types/gameData";
+import type { CharBasicData, CharData, CharInput, RelicDataExt, CalculatorInput, RelicWrapper } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
@@ -50,7 +43,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     rogueKey,
     setRelicAnalysisResult,
     setCalcOutput,
-    difficulty,
+    rogueInput,
   } = useDamageCalculatorStore();
 
   // 选择干员后
@@ -217,7 +210,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       context,
     );
     // 肉鸽难度加成
-    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput: { topic: rogueKey, difficulty } }, context);
+    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: enemyDataParsed }, context);
 
     const input: CalculatorInput = {
       charInput: {
@@ -231,10 +224,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       skillData: skillObject, // 技能原始解包数据
       uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: selectedRelics, // 有效藏品列表
-      rogueInput: {
-        topic: rogueKey,
-        difficulty,
-      },
+      rogueInput,
     };
     const calcResult = calculator(input);
     // 标准打印
@@ -263,7 +253,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     uniequip_table,
     setRelicAnalysisResult,
     setCalcOutput,
-    difficulty,
+    rogueInput,
   ]);
 
   return (

@@ -667,21 +667,63 @@ export class CalculatorHelper {
   }
 
   /** 分析肉鸽难度加成 */
-  static analyzeRogueDifficulty(input: { rogueInput: RogueInput }, context: BuffContext): BuffContext {
-    const { rogueInput } = input;
-    if (rogueInput.difficulty === 18) {
-      context.relic_rune_mul.atk -= 0.2;
-      context.relic_rune_mul.atk_source.push({
-        name: "思维混乱",
-        value: -0.2,
-        usage: "思维混乱-20%攻击力",
-      });
-      context.relic_rune_add.cost += 3;
-      context.relic_rune_add.cost_source.push({
-        name: "思维混乱",
-        value: 3,
-        usage: "思维混乱+3部署费用",
-      });
+  static analyzeRogueDifficulty(
+    input: { rogueInput: RogueInput; enemyInput: EnemyInput },
+    context: BuffContext,
+  ): BuffContext {
+    const { rogueInput, enemyInput } = input;
+    if (rogueInput.topic === "rogue_4") {
+      const { difficulty, thoughtLoad, inspiration } = rogueInput.rogue_4;
+      if (difficulty === 18 && thoughtLoad === "CONFUSION") {
+        context.relic_rune_mul.atk -= 0.2;
+        context.relic_rune_mul.atk_source.push({
+          name: "思维混乱",
+          value: -0.2,
+          usage: "思维混乱-20%攻击力",
+        });
+        context.relic_rune_add.cost += 3;
+        context.relic_rune_add.cost_source.push({
+          name: "思维混乱",
+          value: 3,
+          usage: "思维混乱+3部署费用",
+        });
+      }
+      /** 肉鸽难度加成 */
+      const bossValues = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
+      const bossValue = bossValues[difficulty];
+      if (bossValue) {
+        const value = Math.pow(bossValue / 100 + 1, 6);
+        context.in_game_buff_final_mul.enemy_atk_down *= value;
+        context.in_game_buff_final_mul.enemy_atk_down_source.push({
+          name: `直面魂灵·${difficulty} | 层数6`,
+          value,
+          usage: `每进入一层, 敌人攻击力+${bossValue}%`,
+        });
+        context.in_game_buff_final_mul.enemy_max_hp_down *= value;
+        context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
+          name: `直面魂灵·${difficulty} | 层数6`,
+          value,
+          usage: `每进入一层, 敌人最大生命值+${bossValue}%`,
+        });
+      }
+      /** 难度部分词条 精英和领袖敌人生命值+20% */
+      if (difficulty >= 4 && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
+        context.in_game_buff_final_mul.enemy_max_hp_down *= 1.2;
+        context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
+          name: `直面魂灵·${difficulty} | 精英和领袖敌人生命值+20%`,
+          value: 0.2,
+          usage: `精英和领袖敌人生命值+20%`,
+        });
+      }
+      /** 难度部分词条 精英和领袖敌人攻击力+10% */
+      if (difficulty >= 7 && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
+        context.in_game_buff_final_mul.enemy_atk_down *= 1.1;
+        context.in_game_buff_final_mul.enemy_atk_down_source.push({
+          name: `直面魂灵·${difficulty} | 精英和领袖敌人攻击力+10%`,
+          value: 0.1,
+          usage: `精英和领袖敌人攻击力+10%`,
+        });
+      }
     }
     return context;
   }

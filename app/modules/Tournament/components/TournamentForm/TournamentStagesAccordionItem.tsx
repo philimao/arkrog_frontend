@@ -1,4 +1,3 @@
-import { AccordionItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
 
@@ -18,10 +17,7 @@ export default function TournamentStagesAccordionItem({
       {formData.stages.length > 0 && (
         <div className="mb-4">
           {formData.stages.map((stage, index) => (
-            <div
-              key={index}
-              className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4"
-            >
+            <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
                   <label className="block text-sm font-light mb-1">
@@ -49,9 +45,7 @@ export default function TournamentStagesAccordionItem({
                   </label>
                   <input
                     type="datetime-local"
-                    value={new Date(stage.startTime)
-                      .toLocaleDateString()
-                      .slice(0, 16)}
+                    value={new Date(stage.startTime).toLocaleDateString().slice(0, 16)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
                       const newStages = [...formData.stages];
@@ -71,9 +65,7 @@ export default function TournamentStagesAccordionItem({
                   </label>
                   <input
                     type="datetime-local"
-                    value={new Date(stage.endTime)
-                      .toLocaleDateString()
-                      .slice(0, 16)}
+                    value={new Date(stage.endTime).toLocaleDateString().slice(0, 16)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
                       const newStages = [...formData.stages];
@@ -92,9 +84,7 @@ export default function TournamentStagesAccordionItem({
                 <button
                   type="button"
                   onClick={() => {
-                    const newStages = formData.stages.filter(
-                      (_, i) => i !== index,
-                    );
+                    const newStages = formData.stages.filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, stages: newStages }));
                   }}
                   className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"
@@ -115,6 +105,7 @@ export default function TournamentStagesAccordionItem({
             startTime: now,
             endTime: now + 86400000, // +1 day
             type: "rank" as const,
+            customStageKeys: {},
           };
           setFormData((prev) => ({
             ...prev,

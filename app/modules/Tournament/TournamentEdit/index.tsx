@@ -7,9 +7,7 @@ import { StyledDivider } from "../components/Shared";
 export default function TournamentEdit() {
   const { tournamentId } = useParams();
   const { tournamentsData } = useTournamentDataStore();
-  const tournamentData =
-    tournamentsData &&
-    tournamentsData.find((tournament) => tournament.id === tournamentId);
+  const tournamentData = tournamentsData && tournamentsData.find((tournament) => tournament.id === tournamentId);
 
   if (!tournamentData) {
     return <div className="text-2xl font-bold">暂未收录此比赛</div>;

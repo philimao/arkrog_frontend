@@ -1,4 +1,3 @@
-import { AccordionItem } from "@heroui/react";
 import { CloseIcon, LinkIcon } from "~/components/Icons";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 
@@ -21,39 +20,38 @@ export default function TournamentPlayersAccordionItem({
     <>
       <div className="mb-4">
         <div className="flex flex-wrap gap-2">
-          {formData.players && formData.players.length > 0 && formData.players.map((player, index) => (
-            <div
-              key={index}
-              className={`px-2 py-1 rounded-md ${editingPlayer === player ? "bg-ak-blue text-black" : (!player.name || player.name === "请点击填写选手") ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
-            >
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
-                }}
+          {formData.players &&
+            formData.players.length > 0 &&
+            formData.players.map((player, index) => (
+              <div
+                key={index}
+                className={`px-2 py-1 rounded-md ${editingPlayer === player ? "bg-ak-blue text-black" : !player.name || player.name === "请点击填写选手" ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
               >
-                {player.name}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (player === editingPlayer)
-                    setEditingPlayer(undefined);
-                  const newPlayers = formData.players!.filter(
-                    (_, i) => i !== index,
-                  );
-                  setFormData((prev) => ({
-                    ...prev,
-                    players: newPlayers,
-                  }));
-                }}
-                className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
-              >
-                <CloseIcon width="0.7rem" height="0.7rem" />
-              </button>
-            </div>
-          ))}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
+                  }}
+                >
+                  {player.name}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (player === editingPlayer) setEditingPlayer(undefined);
+                    const newPlayers = formData.players!.filter((_, i) => i !== index);
+                    setFormData((prev) => ({
+                      ...prev,
+                      players: newPlayers,
+                    }));
+                  }}
+                  className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
+                >
+                  <CloseIcon width="0.7rem" height="0.7rem" />
+                </button>
+              </div>
+            ))}
           <button
             type="button"
             onClick={() => {
@@ -62,6 +60,7 @@ export default function TournamentPlayersAccordionItem({
                 name: "请点击填写选手",
                 face: "",
                 games: [],
+                customPlayerValues: {},
               };
               setFormData((prev) => ({
                 ...prev,
@@ -87,8 +86,7 @@ export default function TournamentPlayersAccordionItem({
                 placeholder="选手名字"
                 onChange={(e) => {
                   const newPlayers = [...formData.players!];
-                  newPlayers.find((p) => p === editingPlayer)!.name =
-                    e.target.value;
+                  newPlayers.find((p) => p === editingPlayer)!.name = e.target.value;
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
                 onKeyDown={handleKeyDown}
@@ -108,25 +106,19 @@ export default function TournamentPlayersAccordionItem({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-light mb-1">
-              选手预览
-            </label>
+            <label className="block text-sm font-light mb-1">选手预览</label>
             <div className="bg-mid-gray p-2">
               <p>这里放bilibili头像😊</p>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-light mb-1">
-              所属队伍
-            </label>
+            <label className="block text-sm font-light mb-1">所属队伍</label>
             <div className="bg-mid-gray p-2">
               <p>这里是队伍dropwdown select</p>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-light mb-1">
-              自定义内容 key
-            </label>
+            <label className="block text-sm font-light mb-1">自定义内容 key</label>
             <div className="bg-mid-gray p-2">
               <p>自定义内容 value</p>
             </div>

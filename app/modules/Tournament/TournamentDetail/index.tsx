@@ -11,12 +11,7 @@ import TournamentFinalResult from "./TournamentFinalResult";
 import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Markdown from "react-markdown";
-import {
-  StyledBackButton,
-  StyledBackButtonContainer,
-  StyledDivider,
-  StyledEditButton,
-} from "../components/Shared";
+import { StyledBackButton, StyledBackButtonContainer, StyledDivider, StyledEditButton } from "../components/Shared";
 
 export function SectionContainer({
   title,
@@ -37,11 +32,7 @@ export function SectionContainer({
         <div className="flex items-center gap-4">
           <div className="text-2xl font-bold">{title}</div>
           {showArrowButton && (
-            <ArrowRightIcon
-              className="w-4 h-4 text-light-gray"
-              role="button"
-              onClick={arrowButtonOnClick}
-            />
+            <ArrowRightIcon className="w-4 h-4 text-light-gray" role="button" onClick={arrowButtonOnClick} />
           )}
         </div>
         {navItems}
@@ -71,9 +62,7 @@ export default function TournamentDetail() {
   const { tournamentsData, fetchTournamentPlayer } = useTournamentDataStore();
   const { topics } = useGameDataStore();
   const [isLoading, setIsLoading] = useState(false);
-  const tournamentData =
-    tournamentsData &&
-    tournamentsData.find((tournament) => tournament.id === tournamentId);
+  const tournamentData = tournamentsData && tournamentsData.find((tournament) => tournament.id === tournamentId);
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -112,21 +101,13 @@ export default function TournamentDetail() {
         </div>
         <div className="flex flex-col gap-4 pr-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
-            <div className="text-4xl lg:text-6xl font-bold">
-              {tournamentData.name}
-            </div>
+            <div className="text-4xl lg:text-6xl font-bold">{tournamentData.name}</div>
             <div className="flex items-center gap-6">
-              {tournamentData.ongoing && (
-                <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
-              )}
+              {tournamentData.ongoing && <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>}
             </div>
           </div>
           <div className="text-ak-blue">
-            {topicData.name +
-              " // " +
-              tournamentData.edition +
-              " // " +
-              tournamentData.level}
+            {topicData.name + " // " + tournamentData.edition + " // " + tournamentData.level}
           </div>
           {tournamentData.labels && (
             <div className="flex gap-2 flex-wrap">
@@ -143,32 +124,19 @@ export default function TournamentDetail() {
   };
 
   const renderPlayer = (playerInfo: string, column?: boolean) => {
-    const player = tournamentData.players?.find(
-      (player) => player.mid === playerInfo || player.name === playerInfo,
-    );
+    const player = tournamentData.players?.find((player) => player.mid === playerInfo || player.name === playerInfo);
     return (
       <>
         {player && (
-          <div
-            className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}
-          >
+          <div className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}>
             <div className="w-16 h-16 aspect-square bg-mid-gray flex items-center justify-center">
               {player.face ? (
-                <img
-                  src={player.face}
-                  alt="avatar"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                />
+                <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
               ) : (
                 <p className="text-5xl text-white">{player.name[0]}</p>
               )}
             </div>
-            <div
-              className={`text-white ${column ? "text-sm text-center" : ""}`}
-            >
-              {player.name}
-            </div>
+            <div className={`text-white ${column ? "text-sm text-center" : ""}`}>{player.name}</div>
           </div>
         )}
       </>
@@ -180,9 +148,7 @@ export default function TournamentDetail() {
       <StyledBackButtonContainer>
         <div className="relative">
           <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-          <StyledEditButton onClick={() => navigate("edit")}>
-            编辑
-          </StyledEditButton>
+          <StyledEditButton onClick={() => navigate("edit")}>编辑</StyledEditButton>
         </div>
       </StyledBackButtonContainer>
       {renderHeader()}
@@ -196,14 +162,8 @@ export default function TournamentDetail() {
       </div>
 
       <div className="my-16 grid sm:grid-cols-3 gap-8">
-        <SectionContainer
-          title="主办方"
-          content={tournamentData.organizerName}
-        />
-        <SectionContainer
-          title="观赛直播间"
-          content={<Markdown>{tournamentData.room}</Markdown>}
-        />
+        <SectionContainer title="主办方" content={tournamentData.organizerName} />
+        <SectionContainer title="观赛直播间" content={<Markdown>{tournamentData.room}</Markdown>} />
         <SectionContainer
           title="比赛时间"
           content={tournamentData.stages.map((stage, index) => (
@@ -217,10 +177,7 @@ export default function TournamentDetail() {
 
       <TournamentFinalResult tournamentData={tournamentData} />
 
-      <TournamentInfo
-        tournamentData={tournamentData}
-        renderPlayer={renderPlayer}
-      />
+      <TournamentInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
 
       <TournamentRanking tournamentData={tournamentData} />
     </div>

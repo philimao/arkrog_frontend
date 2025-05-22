@@ -17,13 +17,7 @@ export default function TournamentsWrapper() {
   }
 }
 
-function RougeSelector({
-  topics,
-  tournamentsData,
-}: {
-  topics: Topics;
-  tournamentsData: TournamentData[];
-}) {
+function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournamentsData: TournamentData[] }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const topicsData = Object.values(topics);
@@ -40,17 +34,13 @@ function RougeSelector({
   const tournaments = tournamentsData
     .filter((tournament) => tournament.rogue === currentTopic.id)
     .sort((a, b) => b.stages[0].startTime - a.stages[0].startTime);
-  const ongoingTournaments = tournaments.filter(
-    (tournament) => tournament.ongoing,
-  );
+  const ongoingTournaments = tournaments.filter((tournament) => tournament.ongoing);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     if (!ongoingTournaments) return;
     const interval = setInterval(() => {
-      setActiveIndex(
-        (prevIndex) => (prevIndex + 1) % ongoingTournaments.length,
-      );
+      setActiveIndex((prevIndex) => (prevIndex + 1) % ongoingTournaments.length);
     }, 5000); // 每5秒切换一次比赛
 
     return () => clearInterval(interval);
@@ -59,9 +49,7 @@ function RougeSelector({
   const renderOngoingTournaments = () => {
     return (
       <div className="bg-black-gray w-full mt-4 mb-12 grid grid-cols-1 md:grid-cols-3 p-4">
-        <div className="text-4xl font-bold flex items-center justify-center col-span-3 md:col-span-1">
-          进行中：
-        </div>
+        <div className="text-4xl font-bold flex items-center justify-center col-span-3 md:col-span-1">进行中：</div>
         <div className="col-span-2">
           {ongoingTournaments.map((tournament, index) => (
             <div
@@ -105,19 +93,11 @@ function RougeSelector({
 
   const renderTournaments = () => {
     if (!tournaments.length) {
-      return (
-        <div className="text-white text-2xl">
-          该肉鸽暂时没有比赛，或仍未完成相关比赛的收录
-        </div>
-      );
+      return <div className="text-white text-2xl">该肉鸽暂时没有比赛，或仍未完成相关比赛的收录</div>;
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
     tournaments
-      .sort(
-        (a, b) =>
-          new Date(b.stages[0].startTime).getTime() -
-          new Date(a.stages[0].startTime).getTime(),
-      )
+      .sort((a, b) => new Date(b.stages[0].startTime).getTime() - new Date(a.stages[0].startTime).getTime())
       .map((tournament) => {
         const edition = tournament.edition;
         if (!tournamentsByEdition.has(edition)) {
@@ -133,17 +113,12 @@ function RougeSelector({
           <div className="mb-16 last-of-type:mb-0" key={edition}>
             <div className="flex items-end">
               <div className="text-white font-bold text-3xl">{edition}</div>
-              <div className="text-light-mid-gray text-2xl ml-6">
-                {tournamentsByEdition.get(edition)?.length}
-              </div>
+              <div className="text-light-mid-gray text-2xl ml-6">{tournamentsByEdition.get(edition)?.length}</div>
             </div>
             <div className="w-full border-b-ak-blue border-b-1 my-4 opacity-50" />
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4 grow">
               {tournamentsByEdition.get(edition)?.map((tournament) => (
-                <div
-                  className="flex flex-col items-center gap-2"
-                  key={tournament.id}
-                >
+                <div className="flex flex-col items-center gap-2" key={tournament.id}>
                   <div
                     role="button"
                     className="w-full aspect-square relative"
@@ -159,9 +134,7 @@ function RougeSelector({
                       crossOrigin="anonymous"
                     />
                     {ongoingTournaments.includes(tournament) && (
-                      <div className="absolute bg-ak-dark-red top-6 -right-2 px-2 rounded-sm">
-                        进行中
-                      </div>
+                      <div className="absolute bg-ak-dark-red top-6 -right-2 px-2 rounded-sm">进行中</div>
                     )}
                   </div>
                   <div className="text-white text-xl">{tournament.name}</div>

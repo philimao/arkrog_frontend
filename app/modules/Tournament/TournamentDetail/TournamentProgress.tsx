@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type {
-  TournamentData,
-  TournamentGame,
-  TournamentStage,
-} from "~/types/tournamentsData";
+import type { TournamentData, TournamentGame, TournamentStage } from "~/types/tournamentsData";
 import { styled } from "styled-components";
 import { ArrowLeftIcon, ArrowRightIcon } from "~/components/Icons";
 import { generateDateArray } from "./index";
@@ -41,8 +37,7 @@ const DateNavigation = ({
       <StyledNav
         key={index}
         className={
-          "flex justify-center items-center gap-x-2 p-1 flex-wrap " +
-          `${activeIndex === index && "bg-ak-blue"}`
+          "flex justify-center items-center gap-x-2 p-1 flex-wrap " + `${activeIndex === index && "bg-ak-blue"}`
         }
         role="button"
         onClick={() => setActiveIndex(index)}
@@ -50,11 +45,7 @@ const DateNavigation = ({
           minWidth: `calc(${Math.max(100 / dates.length, 18)}% - 1px)`,
         }}
       >
-        <div
-          className={`font-bold ${activeIndex === index ? "text-black" : "text-white"}`}
-        >
-          Day{index + 1}
-        </div>
+        <div className={`font-bold ${activeIndex === index ? "text-black" : "text-white"}`}>Day{index + 1}</div>
         <div
           className={`${activeIndex === index ? "text-black" : "text-light-mid-gray"}`}
         >{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
@@ -96,19 +87,10 @@ const StageNavigation = ({
   </>
 );
 
-const TableHeader = ({
-  stageName,
-  group,
-}: {
-  stageName: string;
-  group?: string;
-}) => (
+const TableHeader = ({ stageName, group }: { stageName: string; group?: string }) => (
   <thead>
     <tr>
-      <td
-        className="text-center bg-black-gray text-light-gray py-4"
-        colSpan={7}
-      >
+      <td className="text-center bg-black-gray text-light-gray py-4" colSpan={7}>
         {stageName}
         {group}
       </td>
@@ -127,31 +109,19 @@ const EmptySchedule = ({ isTeam }: { isTeam: boolean }) =>
     </tbody>
   );
 
-const SquadDisplay = ({
-  squadName,
-  showIcon = false,
-}: {
-  squadName: string;
-  showIcon?: boolean;
-}) =>
+const SquadDisplay = ({ squadName, showIcon = false }: { squadName: string; showIcon?: boolean }) =>
   showIcon ? (
     <div className="flex flex-col justify-center items-center text-center">
       <p>{squadName}</p>
     </div>
   ) : (
     <div className="flex justify-center items-center">
-      <img
-        src={`/images/squad/${squadName}.png`}
-        alt="squad"
-        className="h-10 aspect-square object-contain"
-      />
+      <img src={`/images/squad/${squadName}.png`} alt="squad" className="h-10 aspect-square object-contain" />
     </div>
   );
 
 const TimeDisplay = ({ date }: { date: number }) => (
-  <div className="flex justify-center items-center p-2">
-    {new Date(date).toLocaleTimeString("zh-CN").slice(0, -3)}
-  </div>
+  <div className="flex justify-center items-center p-2">{new Date(date).toLocaleTimeString("zh-CN").slice(0, -3)}</div>
 );
 
 const PointDisplay = ({ point }: { point?: number }) => (
@@ -164,34 +134,32 @@ const PointDisplay = ({ point }: { point?: number }) => (
 const IndividualScheduleRow = ({
   entry,
   renderPlayer,
-  tournamentData
+  tournamentData,
 }: {
   entry: [string, TournamentGame];
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
-  const player = tournamentData.players?.find((player) =>
-    player.mid === entry[0],
-  );
+  const player = tournamentData.players?.find((player) => player.mid === entry[0]);
 
   return (
     <tr className="divide-x divide-mid-gray table-auto">
-      {player && Object.keys(player.customPlayerValues).length > 0 &&
+      {player && Object.keys(player.customPlayerValues).length > 0 && (
         <td>
           <div className="flex flex-col justify-center items-center text-center px-2">
-            {Object.keys(player.customPlayerValues).map((value) => player.customPlayerValues[value])}
+            {Object.keys(player.customPlayerValues).map((key) => (
+              <p>{player.customPlayerValues[key]}</p>
+            ))}
           </div>
         </td>
-      }
+      )}
       {/* Player - Desktop */}
       <td className="hidden md:table-cell p-4">
         <div className="flex items-center">{renderPlayer(entry[0])}</div>
       </td>
       {/* Player - Mobile */}
       <td className="table-cell md:hidden py-4">
-        <div className="flex justify-center items-center">
-          {renderPlayer(entry[0], true)}
-        </div>
+        <div className="flex justify-center items-center">{renderPlayer(entry[0], true)}</div>
       </td>
       {/* Squad */}
       {entry[1].starterSquad && (
@@ -206,14 +174,14 @@ const IndividualScheduleRow = ({
       )}
       {/* Ending */}
       <td className="hidden sm:table-cell p-4">
-        <div className="flex justify-center items-center text-center">
-          {entry[1].ending}
-        </div>
+        <div className="flex justify-center items-center text-center">{entry[1].ending}</div>
       </td>
       {/* Points */}
       <td>
         <div className="flex flex-col justify-center items-center text-center">
-          {Object.keys(entry[1].customStageValues).map((value) => entry[1].customStageValues[value])}
+          {Object.keys(entry[1].customStageValues).map((key) => (
+            <p>{entry[1].customStageValues[key]}</p>
+          ))}
           <PointDisplay point={entry[1].point} />
         </div>
       </td>
@@ -235,9 +203,7 @@ const TeamScheduleRow = ({
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
-  const team = tournamentData.teams?.find((team) =>
-    team.members.includes(entry[0]),
-  );
+  const team = tournamentData.teams?.find((team) => team.members.includes(entry[0]));
 
   return (
     <tr className="divide-x divide-mid-gray">
@@ -258,9 +224,7 @@ const TeamScheduleRow = ({
         <div className="flex items-center">{renderPlayer(entry[0])}</div>
       </td>
       <td className="table-cell lg:hidden p-4">
-        <div className="flex justify-center items-center">
-          {renderPlayer(entry[0], true)}
-        </div>
+        <div className="flex justify-center items-center">{renderPlayer(entry[0], true)}</div>
       </td>
       {/* Squad & OP */}
       <td className="hidden md:table-cell p-2 w-48">
@@ -282,25 +246,17 @@ const TeamScheduleRow = ({
       {/* custom fields */}
       {Object.values(entry[1].customStageValues).map((value, index) => (
         <td className="hidden sm:table-cell p-2 min-w-16" key={index}>
-          <div className="flex justify-center items-center text-center">
-            {value}
-          </div>
+          <div className="flex justify-center items-center text-center">{value}</div>
         </td>
       ))}
       {/* Ending */}
       <td className="hidden sm:table-cell p-2">
-        <div className="flex justify-center items-center text-center">
-          {entry[1].ending}
-        </div>
+        <div className="flex justify-center items-center text-center">{entry[1].ending}</div>
       </td>
       {/* Role & Points */}
       <td>
         <div className="flex flex-col justify-center items-center p-2 text-center min-w-16">
-          <p>
-            {entry[0] === team?.keyMember
-              ? tournamentData.keyMemberAlias
-              : tournamentData.memberAlias}
-          </p>
+          <p>{entry[0] === team?.keyMember ? tournamentData.keyMemberAlias : tournamentData.memberAlias}</p>
           <p className="text-ak-blue text-xl">{entry[1].point}</p>
         </div>
       </td>
@@ -322,8 +278,7 @@ const IndividualScheduleTable = ({
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
-  const sortedSchedule = Array.from(schedule.entries())
-    .sort((a, b) => a[1].date - b[1].date)
+  const sortedSchedule = Array.from(schedule.entries()).sort((a, b) => a[1].date - b[1].date);
 
   if (sortedSchedule.length === 0) {
     return <EmptySchedule isTeam={false} />;
@@ -332,12 +287,7 @@ const IndividualScheduleTable = ({
   return (
     <tbody className="divide-y divide-mid-gray">
       {sortedSchedule.map((entry, index) => (
-        <IndividualScheduleRow
-          key={index}
-          entry={entry}
-          renderPlayer={renderPlayer}
-          tournamentData={tournamentData}
-        />
+        <IndividualScheduleRow key={index} entry={entry} renderPlayer={renderPlayer} tournamentData={tournamentData} />
       ))}
     </tbody>
   );
@@ -352,8 +302,7 @@ const TeamScheduleTable = ({
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
-  const sortedSchedule = Array.from(schedule.entries())
-    .sort((a, b) => a[1].date - b[1].date)
+  const sortedSchedule = Array.from(schedule.entries()).sort((a, b) => a[1].date - b[1].date);
 
   if (sortedSchedule.length === 0) {
     return <EmptySchedule isTeam={true} />;
@@ -362,12 +311,7 @@ const TeamScheduleTable = ({
   return (
     <tbody className="divide-y divide-mid-gray">
       {sortedSchedule.map((entry, index) => (
-        <TeamScheduleRow
-          key={index}
-          entry={entry}
-          renderPlayer={renderPlayer}
-          tournamentData={tournamentData}
-        />
+        <TeamScheduleRow key={index} entry={entry} renderPlayer={renderPlayer} tournamentData={tournamentData} />
       ))}
     </tbody>
   );
@@ -396,8 +340,7 @@ export default function TournamentProgress({
     const game = player.games.find(
       (game) =>
         game.stage === currentStage.name &&
-        new Date(game.date).toLocaleDateString("zh-CN") ===
-          new Date(dates[activeIndex]).toLocaleDateString("zh-CN"),
+        new Date(game.date).toLocaleDateString("zh-CN") === new Date(dates[activeIndex]).toLocaleDateString("zh-CN"),
     );
 
     if (game) {
@@ -412,22 +355,12 @@ export default function TournamentProgress({
 
   // Schedule table component
   const ScheduleTable = () => (
-    <table
-      className="w-full bg-black-gray-70 align-top divide-y divide-mid-gray"
-    >
+    <table className="w-full bg-black-gray-70 align-top divide-y divide-mid-gray">
       <TableHeader stageName={currentStage.name} />
       {isTeam ? (
-        <TeamScheduleTable
-          schedule={schedule}
-          renderPlayer={renderPlayer}
-          tournamentData={tournamentData}
-        />
+        <TeamScheduleTable schedule={schedule} renderPlayer={renderPlayer} tournamentData={tournamentData} />
       ) : (
-        <IndividualScheduleTable
-          schedule={schedule}
-          renderPlayer={renderPlayer}
-          tournamentData={tournamentData}
-        />
+        <IndividualScheduleTable schedule={schedule} renderPlayer={renderPlayer} tournamentData={tournamentData} />
       )}
     </table>
   );
@@ -435,19 +368,15 @@ export default function TournamentProgress({
   return (
     <>
       <div>
-        <DateNavigation
-          dates={dates}
-          activeIndex={activeIndex}
-          setActiveIndex={setActiveIndex}
-        />
+        <DateNavigation dates={dates} activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
       </div>
       <div className="relative w-full flex flex-col divide-y divide-mid-gray">
-          <StageNavigation
-            currentStageIndex={currentStageIndex}
-            setCurrentStageIndex={setCurrentStageIndex}
-            stages={tournamentData.stages}
-          />
-          <ScheduleTable />
+        <StageNavigation
+          currentStageIndex={currentStageIndex}
+          setCurrentStageIndex={setCurrentStageIndex}
+          stages={tournamentData.stages}
+        />
+        <ScheduleTable />
       </div>
     </>
   );

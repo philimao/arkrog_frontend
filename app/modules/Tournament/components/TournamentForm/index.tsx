@@ -24,10 +24,10 @@ export default function TournamentForm({
       : {
           id: "",
           name: "",
-          seasons: [],
+          groupId: "",
           avatar: "",
           rogue: "",
-          edition: "",
+          edition: "初始版本",
           type: "individual",
           memberAlias: "",
           keyMemberAlias: "",
@@ -39,19 +39,15 @@ export default function TournamentForm({
           organizerName: "",
           room: "",
           stages: [],
+          customPlayerKeys: {},
+          groupBy: ""
         },
   );
-  const [editingPlayer, setEditingPlayer] = useState<
-    TournamentPlayer | undefined
-  >(formData.players?.[0]);
+  const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -60,7 +56,7 @@ export default function TournamentForm({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
       e.preventDefault();
     }
   };
@@ -81,7 +77,7 @@ export default function TournamentForm({
   };
 
   const handleFormKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
       e.preventDefault();
     }
   };
@@ -113,23 +109,16 @@ export default function TournamentForm({
         </AccordionItem>
 
         <AccordionItem key="赛事阶段" aria-label="赛事阶段" title="赛事阶段">
-          <TournamentStagesAccordionItem
-            formData={formData}
-            setFormData={setFormData}
-            handleKeyDown={handleKeyDown}
-          />
+          <TournamentStagesAccordionItem formData={formData} setFormData={setFormData} handleKeyDown={handleKeyDown} />
         </AccordionItem>
 
-        {formData.type === "team"
-          ? <AccordionItem key="参赛队伍" aria-label="参赛队伍" title="参赛队伍">
-            <TournamentTeamsAccordionItem
-              formData={formData}
-              setFormData={setFormData}
-              handleKeyDown={handleKeyDown}
-            />
+        {formData.type === "team" ? (
+          <AccordionItem key="参赛队伍" aria-label="参赛队伍" title="参赛队伍">
+            <TournamentTeamsAccordionItem formData={formData} setFormData={setFormData} handleKeyDown={handleKeyDown} />
           </AccordionItem>
-          : <></>
-        }
+        ) : (
+          <></>
+        )}
 
         <AccordionItem key="参赛选手" aria-label="参赛选手" title="参赛选手">
           <TournamentPlayersAccordionItem
@@ -155,11 +144,7 @@ export default function TournamentForm({
         >
           取消
         </button>
-        <button
-          type="submit"
-          className="px-4 py-2 rounded-md text-black bg-ak-blue"
-          disabled={isSubmitting}
-        >
+        <button type="submit" className="px-4 py-2 rounded-md text-black bg-ak-blue" disabled={isSubmitting}>
           {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
         </button>
       </div>

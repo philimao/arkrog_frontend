@@ -1,4 +1,3 @@
-import { AccordionItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
 
@@ -147,9 +146,7 @@ export default function TournamentInfoAccordionItem({
 
         {formData.type === "team" && (
           <div>
-            <label className="block text-sm font-light mb-1">
-              Member Alias
-            </label>
+            <label className="block text-sm font-light mb-1">Member Alias</label>
             <input
               type="text"
               name="memberAlias"
@@ -163,9 +160,7 @@ export default function TournamentInfoAccordionItem({
 
         {formData.type === "team" && (
           <div>
-            <label className="block text-sm font-light mb-1">
-              Key Member Alias
-            </label>
+            <label className="block text-sm font-light mb-1">Key Member Alias</label>
             <input
               type="text"
               name="keyMemberAlias"
@@ -181,7 +176,7 @@ export default function TournamentInfoAccordionItem({
       <div className="mb-4">
         <label className="block text-sm font-light mb-1">标签</label>
         <div className="flex flex-wrap gap-2">
-          {formData.labels.map((label, index) => (
+          {formData.labels.map((label, index) =>
             editingLabelIndex === index ? (
               <input
                 key={index}
@@ -190,7 +185,7 @@ export default function TournamentInfoAccordionItem({
                 autoFocus
                 defaultValue={label}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                     const value = e.currentTarget.value.trim();
                     if (value) {
@@ -198,11 +193,11 @@ export default function TournamentInfoAccordionItem({
                       newLabels[index] = value;
                       setFormData((prev) => ({
                         ...prev,
-                        labels: newLabels
+                        labels: newLabels,
                       }));
                     }
                     setEditingLabelIndex(null);
-                  } else if (e.key === 'Escape') {
+                  } else if (e.key === "Escape") {
                     setEditingLabelIndex(null);
                   }
                 }}
@@ -213,7 +208,7 @@ export default function TournamentInfoAccordionItem({
                     newLabels[index] = value;
                     setFormData((prev) => ({
                       ...prev,
-                      labels: newLabels
+                      labels: newLabels,
                     }));
                   }
                   setEditingLabelIndex(null);
@@ -221,12 +216,7 @@ export default function TournamentInfoAccordionItem({
               />
             ) : (
               <div className="px-2 py-1 rounded-md bg-mid-gray">
-                <button
-                  key={index}
-                  type="button"
-                  className=""
-                  onClick={() => setEditingLabelIndex(index)}
-                >
+                <button key={index} type="button" className="" onClick={() => setEditingLabelIndex(index)}>
                   {label}
                 </button>
                 <button
@@ -235,7 +225,7 @@ export default function TournamentInfoAccordionItem({
                     e.stopPropagation();
                     setFormData((prev) => ({
                       ...prev,
-                      labels: formData.labels.filter((_, i) => i !== index)
+                      labels: formData.labels.filter((_, i) => i !== index),
                     }));
                   }}
                   className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
@@ -243,25 +233,25 @@ export default function TournamentInfoAccordionItem({
                   <CloseIcon width="0.7rem" height="0.7rem" />
                 </button>
               </div>
-            )
-          ))}
+            ),
+          )}
           {addingLabel && (
             <input
               type="text"
               className="px-2 rounded-md border border-mid-gray focus:outline-ak-blue min-h-8"
               autoFocus
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   e.preventDefault();
                   const value = e.currentTarget.value.trim();
                   if (value) {
                     setFormData((prev) => ({
                       ...prev,
-                      labels: [...prev.labels, value]
+                      labels: [...prev.labels, value],
                     }));
                     setAddingLabel(false);
                   }
-                } else if (e.key === 'Escape') {
+                } else if (e.key === "Escape") {
                   setAddingLabel(false);
                 }
               }}
@@ -270,23 +260,25 @@ export default function TournamentInfoAccordionItem({
                 if (value) {
                   setFormData((prev) => ({
                     ...prev,
-                    labels: [...prev.labels, value]
+                    labels: [...prev.labels, value],
                   }));
                 }
                 setAddingLabel(false);
               }}
             />
           )}
-          {formData.labels.length < (addingLabel ? 9 : 10) && <button
-            type="button"
-            onClick={() => {
-              if (addingLabel) return;
-              setAddingLabel(true);
-            }}
-            className="px-2 py-1 text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md"
-          >
-            + 添加标签
-          </button>}
+          {formData.labels.length < (addingLabel ? 9 : 10) && (
+            <button
+              type="button"
+              onClick={() => {
+                if (addingLabel) return;
+                setAddingLabel(true);
+              }}
+              className="px-2 py-1 text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md"
+            >
+              + 添加标签
+            </button>
+          )}
         </div>
       </div>
 

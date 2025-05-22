@@ -1,4 +1,3 @@
-import { AccordionItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
 
@@ -22,10 +21,7 @@ export default function TournamentTeamsAccordionItem({
       {formData.teams && formData.teams.length > 0 && (
         <div className="mb-4">
           {formData.teams.map((team, index) => (
-            <div
-              key={index}
-              className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4"
-            >
+            <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
                   <label className="block text-sm font-light mb-1">
@@ -48,9 +44,7 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    队伍ID
-                  </label>
+                  <label className="block text-sm font-light mb-1">队伍ID</label>
                   <input
                     type="text"
                     value={team.id}
@@ -67,9 +61,7 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    队伍头像
-                  </label>
+                  <label className="block text-sm font-light mb-1">队伍头像</label>
                   <input
                     type="text"
                     value={team.avatar}
@@ -86,9 +78,7 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    队长
-                  </label>
+                  <label className="block text-sm font-light mb-1">队长</label>
                   <input
                     type="text"
                     value={team.leader}
@@ -105,9 +95,7 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    核心成员
-                  </label>
+                  <label className="block text-sm font-light mb-1">核心成员</label>
                   <input
                     type="text"
                     value={team.keyMember}
@@ -124,16 +112,12 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    成员 (用逗号隔开)
-                  </label>
+                  <label className="block text-sm font-light mb-1">成员 (用逗号隔开)</label>
                   <input
                     type="text"
                     value={team.members.join(", ")}
                     onChange={(e) => {
-                      const members = e.target.value
-                        .split(/[,，]+/)
-                        .map((m) => m.trim());
+                      const members = e.target.value.split(/[,，]+/).map((m) => m.trim());
                       const newTeams = [...formData.teams!];
                       newTeams[index].members = members;
                       setFormData((prev) => ({
@@ -146,17 +130,13 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
-                    最终排名
-                  </label>
+                  <label className="block text-sm font-light mb-1">最终排名</label>
                   <input
                     type="number"
                     value={team.finalRank || ""}
                     onChange={(e) => {
                       const newTeams = [...formData.teams!];
-                      newTeams[index].finalRank = e.target.value
-                        ? parseInt(e.target.value)
-                        : undefined;
+                      newTeams[index].finalRank = e.target.value ? parseInt(e.target.value) : undefined;
                       setFormData((prev) => ({
                         ...prev,
                         teams: newTeams,
@@ -170,9 +150,7 @@ export default function TournamentTeamsAccordionItem({
                 <button
                   type="button"
                   onClick={() => {
-                    const newTeams = formData.teams!.filter(
-                      (_, i) => i !== index,
-                    );
+                    const newTeams = formData.teams!.filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, teams: newTeams }));
                   }}
                   className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"

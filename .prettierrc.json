@@ -5,5 +5,5 @@
   "arrowParens": "always",
   "prettier.bracketSpacing": true,
   "tabWidth": 2,
-  "printWidth": 80
+  "printWidth": 120
 }

@@ -32,7 +32,9 @@ interface DamageCalculatorStore {
   showRelics: boolean;
   relicsMap: Record<RogueKey, RelicWrapper[]>;
   enemyBuff: Record<string, number>;
+  /** @deprecated 请使用BuffContext中的relicBuff */
   charsBuff: Record<string, Record<string, number>>;
+  /** @deprecated 请使用BuffContext中的in_game_buff */
   charsBuffInGame: Record<string, Record<string, number>>;
   charsModifier: Record<string, AttributeModifier>;
   selectedIds: string[];

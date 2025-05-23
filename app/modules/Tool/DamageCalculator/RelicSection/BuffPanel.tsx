@@ -75,14 +75,26 @@ const StyledBuffTriggerInfoInner = styled.div`
 `;
 
 function BuffTrigger({ type, onClick }: { type: string; onClick: () => void }) {
-  const { enemyBuff, activeCharName: charName } = useDamageCalculatorStore();
-  const charBuff = useDamageCalculatorStore(useShallow((state) => state.charsBuff[charName]));
+  const { relicAnalysisResult } = useDamageCalculatorStore();
+
+  let additionEntry: AdditionEntry = {
+    in_game_char: [],
+    out_game_char: [],
+    enemy: [],
+  };
+  if (relicAnalysisResult) {
+    additionEntry = CalculatorHelper.outputAdditionEntry(relicAnalysisResult);
+  }
 
   return (
     <StyledBuffTrigger onClick={onClick}>
       <StyledBuffTriggerInfo $type={type}>
         <StyledBuffTriggerInfoInner>
-          <div>{type === "operator" ? Object.keys(charBuff || {}).length : Object.keys(enemyBuff || {}).length}</div>
+          <div>
+            {type === "operator"
+              ? additionEntry.out_game_char.length + additionEntry.in_game_char.length
+              : additionEntry.enemy.length}
+          </div>
           <div>{typeMap[type as never] + "加成"}</div>
         </StyledBuffTriggerInfoInner>
       </StyledBuffTriggerInfo>

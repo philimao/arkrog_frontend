@@ -1,7 +1,11 @@
-/** 提供一个计算公式AST结构树(显性化计算公共部分) */
-export type ASTNode = NumberNode | ExpressionNode | ExpressionGroupNode;
+import type { RelicBuff } from "~/types/gameData";
 
-export interface BaseNode {
+import type { RelicWrapper } from "~/types/gameData";
+
+/** 提供一个计算公式AST结构树(显性化计算公共部分) */
+export type ASTNode = NumericLiteral | ExpressionGroup;
+
+export interface Base {
   /** 节点类型 */
   type: "number" | "expression" | "expression-group";
   /** 节点提示 */
@@ -10,50 +14,199 @@ export interface BaseNode {
   value: number;
 }
 
-export interface NumberNode extends BaseNode {
+export interface NumericLiteral extends Base {
   type: "number";
   value: number;
 }
 
-export interface ExpressionNode extends BaseNode {
+export interface ExpressionNode extends Base {
   type: "expression";
   operator: "+" | "-" | "*" | "/";
-  left: BaseNode;
-  right: BaseNode;
+  left: Base;
+  right: Base;
 }
 
-export interface ExpressionGroupNode extends BaseNode {
+export interface ExpressionGroup extends Base {
   type: "expression-group";
   operator: "+" | "*";
-  children: BaseNode[];
+  children: Base[];
 }
 
 const mock: ASTNode = {
   type: "expression-group",
   operator: "*",
-  tooltip: "养成",
+  tooltip: "攻击力",
+  value: 1,
   children: [
     {
       type: "expression-group",
-      operator: "+",
-      tooltip: "养成",
-      children: [
-        { type: "number", value: 1, tooltip: "等级" },
-        { type: "number", value: 2, tooltip: "信赖" },
-        { type: "number", value: 2, tooltip: "潜能" },
-        { type: "number", value: 2, tooltip: "模组" },
-      ],
-    } as ExpressionGroupNode,
-    {
-      type: "expression-group",
-      operator: "+",
+      operator: "*",
       tooltip: "局外加成",
       children: [
-        { type: "number", value: 1, tooltip: "科技树" },
-        { type: "number", value: 2, tooltip: "加攻藏品1" },
-        { type: "number", value: 2, tooltip: "加攻藏品2" },
-        { type: "number", value: 2, tooltip: "加攻藏品3" },
+        {
+          type: "expression-group",
+          operator: "+",
+          tooltip: "养成",
+          children: [
+            { type: "number", value: 1, tooltip: "等级" },
+            { type: "number", value: 2, tooltip: "信赖" },
+            { type: "number", value: 2, tooltip: "潜能" },
+            { type: "number", value: 2, tooltip: "模组" },
+          ],
+        } as ExpressionGroup,
+        {
+          type: "expression-group",
+          operator: "+",
+          tooltip: "局外buff",
+          children: [
+            { type: "number", value: 1, tooltip: "科技树" },
+            { type: "number", value: 2, tooltip: "加攻藏品1" },
+            { type: "number", value: 2, tooltip: "加攻藏品2" },
+            { type: "number", value: 2, tooltip: "加攻藏品3" },
+          ],
+        } as ExpressionGroup,
       ],
-    } as ExpressionGroupNode,
+      value: 1,
+    } as ExpressionGroup,
   ],
 };
+export enum Kind {}
+
+export interface ExpressionGroup {
+  type: "expression-group";
+  operator: "+" | "*";
+  children: Base[];
+}
+
+export class BaseNode {
+  type: "number" | "expression" | "expression-group";
+  tooltip: string;
+
+  constructor(type: "number" | "expression" | "expression-group", tooltip: string) {
+    this.type = type;
+    this.tooltip = tooltip;
+  }
+
+  calculate(): number {
+    return 0;
+  }
+
+  printExpression() {
+    return "";
+  }
+
+  printDebug() {
+    return "";
+  }
+
+  structure(): Base {
+    return {
+      type: this.type,
+      tooltip: this.tooltip,
+      value: this.calculate(),
+    };
+  }
+}
+
+export class NumericLiteralNode extends BaseNode {
+  constructor(
+    public value: number,
+    tooltip: string,
+    public source?: {
+      relic: RelicWrapper;
+      buff: RelicBuff;
+    },
+  ) {
+    super("number", tooltip);
+  }
+
+  calculate(): number {
+    return this.value;
+  }
+
+  printExpression(): string {
+    return this.value.toString();
+  }
+
+  printDebug(): string {
+    return this.tooltip;
+  }
+
+  structure(): NumericLiteral {
+    return {
+      type: this.type,
+      tooltip: this.tooltip,
+      value: this.value,
+    } as NumericLiteral;
+  }
+}
+
+export class ExpressionGroupNode extends BaseNode {
+  operator: "+" | "*";
+  children: BaseNode[] = [];
+
+  constructor(operator: "+" | "*", tooltip: string) {
+    super("expression-group", tooltip);
+    this.operator = operator;
+  }
+
+  addChild(...child: BaseNode[]) {
+    this.children.push(...child);
+    return this;
+  }
+
+  calculate(): number {
+    return this.children.reduce((acc, child) => {
+      return acc * child.calculate();
+    }, 1);
+  }
+
+  printExpression() {
+    // 有效子节点
+    const validChildren = this.children.filter((child) => {
+      if (this.operator === "+" && child.calculate() === 0) {
+        return false;
+      }
+      if (this.operator === "*" && child.calculate() === 1) {
+        return false;
+      }
+      return true;
+    });
+    const childrenStr = validChildren.map((child) => child.printExpression()).join(` ${this.operator} `);
+    if (validChildren.length > 1) {
+      return `(${childrenStr})`;
+    }
+    return childrenStr;
+  }
+
+  printDebug() {
+    // 有效子节点
+    const validChildren = this.children.filter((child) => {
+      if (this.operator === "+" && child.calculate() === 0) {
+        return false;
+      }
+      if (this.operator === "*" && child.calculate() === 1) {
+        return false;
+      }
+      return true;
+    });
+    const childrenStr = validChildren.map((child) => child.printDebug()).join(` ${this.operator} `);
+    if (validChildren.length > 1) {
+      return `(${childrenStr})`;
+    }
+    return childrenStr;
+  }
+
+  toString() {
+    return this.printExpression();
+  }
+
+  /** 输出结构 */
+  structure(): ExpressionGroup {
+    return {
+      type: this.type,
+      operator: this.operator,
+      children: this.children.map((child) => child.structure()),
+    } as ExpressionGroup;
+  }
+}

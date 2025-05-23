@@ -128,14 +128,17 @@ export function useAtkTagGroups(props: { attribute: CharAttribute; context: Buff
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.atk}</AttrTag>,
-        ...context.relic_rune_add.atk_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_add.atk_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
     {
       tooltip: "局外乘区",
       tags: [
-        <AttrTag tooltip="基数">1</AttrTag>,
-        ...context.relic_rune_mul.atk_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_mul.atk_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
   ];

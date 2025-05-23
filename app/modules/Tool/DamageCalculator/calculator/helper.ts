@@ -23,6 +23,7 @@ import {
 import { BUFF_KEYS } from "./constant";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
+import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 
 /** 加成词条 */
 export interface AdditionEntry {
@@ -221,11 +222,7 @@ export class CalculatorHelper {
       const typedKey = key as keyof CharAttribute;
       if (typedKey === "atk" && favor.atk) {
         result.relic_rune_add.atk += favor.atk;
-        result.relic_rune_add.atk_source.push({
-          name: "信赖效果",
-          value: favor.atk,
-          usage: `信赖效果 +${favor.atk}`,
-        });
+        result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(favor.atk, "信赖加成"));
       }
       if (typedKey === "attackSpeed" && favor.attackSpeed) {
         result.relic_rune_add.attack_speed += favor.attackSpeed;
@@ -277,11 +274,7 @@ export class CalculatorHelper {
           }
           case "ATK": {
             result.relic_rune_add.atk += mod.value;
-            result.relic_rune_add.atk_source.push({
-              name: "潜能效果",
-              value: mod.value,
-              usage: `潜能效果 +${mod.value}`,
-            });
+            result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(mod.value, "潜能加成"));
             break;
           }
           case "DEF": {
@@ -350,11 +343,7 @@ export class CalculatorHelper {
       }
       case "atk": {
         result.relic_rune_add.atk += bb.value;
-        result.relic_rune_add.atk_source.push({
-          name: "模组效果",
-          value: bb.value,
-          usage: `模组效果 +${bb.value}`,
-        });
+        result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(bb.value, "模组加成"));
         break;
       }
     }
@@ -378,11 +367,7 @@ export class CalculatorHelper {
     const tech = charInput.tech;
     if (tech > 1) {
       result.relic_rune_mul.atk += tech - 1;
-      result.relic_rune_mul.atk_source.push({
-        name: "科技树",
-        value: (tech * 100 - 100) / 100,
-        usage: `科技树加成 +${tech * 100 - 100}%`,
-      });
+      result.relic_rune_mul.atk_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树加成"));
       result.relic_rune_mul.def += tech - 1;
       result.relic_rune_mul.def_source.push({
         name: "科技树",
@@ -399,26 +384,21 @@ export class CalculatorHelper {
     /** 用户修正属性 */
     if (charInput.attributeModifier.atkBase) {
       result.relic_rune_add.atk += charInput.attributeModifier.atkBase;
-      result.relic_rune_add.atk_source.push({
-        name: "用户修正属性",
-        value: charInput.attributeModifier.atkBase,
-        usage: `用户修正属性 +${charInput.attributeModifier.atkBase}`,
-      });
+      result.relic_rune_add.atk_source.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkBase, "属性修正"),
+      );
     }
     if (charInput.attributeModifier.atkPercent) {
       result.relic_rune_mul.atk += charInput.attributeModifier.atkPercent / 100;
-      result.relic_rune_mul.atk_source.push({
-        name: "用户修正属性",
-        value: charInput.attributeModifier.atkPercent / 100,
-        usage: `用户修正属性 +${charInput.attributeModifier.atkPercent}%`,
-      });
+      result.relic_rune_mul.atk_source.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkPercent / 100, "属性修正"),
+      );
     }
     if (charInput.attributeModifier.atkFinal) {
       result.in_game_buff_final_add.atk += charInput.attributeModifier.atkFinal;
-      result.in_game_buff_final_add.atk_source.push({
-        name: "用户修正属性",
-        usage: `用户修正属性 +${charInput.attributeModifier.atkFinal}`,
-      });
+      result.in_game_buff_final_add.atk_source.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkFinal, "属性修正"),
+      );
     }
     /** 筛选藏品 */
     for (const relic of relics) {
@@ -469,18 +449,13 @@ export class CalculatorHelper {
     // 计算藏品rune 局外加算
     result.categories.relic_rune_add.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
+      console.log("有不是char的buff", buff, relic);
       if (blackboard.key !== "char") {
         return;
       }
       if (blackboard.atk) {
         result.relic_rune_add.atk += blackboard.atk * relic.layer;
-        result.relic_rune_add.atk_source.push({
-          buff,
-          value: blackboard.atk * relic.layer,
-          usage: relic.relicData.usage,
-          name: relic.name,
-          relic,
-        });
+        result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, "藏品加成"));
       }
       if (blackboard.attack_speed) {
         result.relic_rune_add.attack_speed += blackboard.attack_speed * relic.layer;
@@ -528,13 +503,7 @@ export class CalculatorHelper {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
         result.relic_rune_mul.atk += blackboard.atk * relic.layer;
-        result.relic_rune_mul.atk_source.push({
-          buff,
-          value: blackboard.atk * relic.layer,
-          usage: relic.relicData.usage,
-          name: relic.name,
-          relic,
-        });
+        result.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, relic.name));
       }
       if (blackboard.def) {
         result.relic_rune_mul.def += blackboard.def * relic.layer;
@@ -562,13 +531,7 @@ export class CalculatorHelper {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
         result.in_game_buff_add.atk += blackboard.atk * relic.layer;
-        result.in_game_buff_add.atk_source.push({
-          name: relic.name,
-          value: blackboard.atk * relic.layer,
-          usage: relic.relicData.usage,
-          buff,
-          relic,
-        });
+        result.in_game_buff_add.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, relic.name));
       }
     });
     // 计算局内Buff 局内乘算
@@ -576,31 +539,31 @@ export class CalculatorHelper {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
       if (blackboard.atk) {
         result.in_game_buff_mul.atk += blackboard.atk * relic.layer;
-        result.in_game_buff_mul.atk_source.push({
-          buff,
-          value: blackboard.atk * relic.layer,
-          relic: relic,
-          usage: relic.relicData.usage,
-          name: relic.name,
-        });
+        result.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, relic.name));
       }
     });
     // 计算局内Buff 最终加算
-    result.categories.global_buff_final_add.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(buff);
-      if (blackboard.atk) {
-        result.in_game_buff_final_add.atk += blackboard.atk * relic.layer;
-        result.in_game_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
-      }
-    });
+    // result.categories.global_buff_final_add.forEach(({ buff, relic }) => {
+    //   const blackboard = CalculatorHelper.analyzeRelic(buff);
+    //   if (blackboard.atk) {
+    //     result.in_game_buff_final_add.atk += blackboard.atk * relic.layer;
+    //     result.in_game_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
+    //   }
+    // });
     // 计算局内Buff 最终乘算
-    result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
-      const blackboard = CalculatorHelper.analyzeRelic(buff);
-      if (blackboard.atk) {
-        result.in_game_buff_final_mul.atk += blackboard.atk * relic.layer;
-        result.in_game_buff_final_mul.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
-      }
-    });
+    // result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
+    //   const blackboard = CalculatorHelper.analyzeRelic(buff);
+    //   if (blackboard.atk) {
+    //     result.in_game_buff_final_mul.atk += blackboard.atk * relic.layer;
+    //     result.in_game_buff_final_mul.atk_source.push({
+    //       buff,
+    //       value: blackboard.atk * relic.layer,
+    //       relic,
+    //       usage: relic.relicData.usage,
+    //       name: relic.name,
+    //     });
+    //   }
+    // });
 
     return result;
   }
@@ -673,14 +636,10 @@ export class CalculatorHelper {
   ): BuffContext {
     const { rogueInput, enemyInput } = input;
     if (rogueInput.topic === "rogue_4") {
-      const { difficulty, thoughtLoad, inspiration } = rogueInput.rogue_4;
+      const { difficulty, thoughtLoad } = rogueInput.rogue_4;
       if (difficulty === 18 && thoughtLoad === "CONFUSION") {
         context.relic_rune_mul.atk -= 0.2;
-        context.relic_rune_mul.atk_source.push({
-          name: "思维混乱",
-          value: -0.2,
-          usage: "思维混乱-20%攻击力",
-        });
+        context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
         context.relic_rune_add.cost += 3;
         context.relic_rune_add.cost_source.push({
           name: "思维混乱",
@@ -778,7 +737,12 @@ export class CalculatorHelper {
         result.in_game_char.push(`最终乘算${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
       }
       if (isEnemy && typeof value === "number" && value !== 1) {
-        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+        // 减伤描述特殊
+        if (key === "enemy_damage_resistance_inf") {
+          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(100 - value * 100)}%`);
+        } else {
+          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+        }
       }
     });
     Object.entries(context.global_buff_stack).forEach(([key, value]) => {
@@ -902,4 +866,36 @@ export class CalculatorHelper {
     console.log("藏品Buff Key Map", relicBuff.global_buff_normal);
     console.log(context);
   }
+}
+
+/** 局外攻击力公式 */
+export function getOutAtkExpression(baseAtk: number, context: BuffContext) {
+  return new ExpressionGroupNode("*", "局外攻击力")
+    .addChild(
+      new ExpressionGroupNode("+", "局外加成")
+        .addChild(new NumericLiteralNode(baseAtk, "基础攻击力"))
+        .addChild(...context.relic_rune_add.atk_source.children),
+    )
+    .addChild(context.relic_rune_mul.atk_source);
+}
+
+/** 局内攻击力公式 */
+export function getInGameAtkExpression(baseAtk: number, context: BuffContext) {
+  const outAtkExpression = getOutAtkExpression(baseAtk, context);
+
+  const atk = new ExpressionGroupNode("*", "直接乘算")
+    .addChild(
+      new ExpressionGroupNode("+", "直接加算")
+        .addChild(outAtkExpression)
+        .addChild(...context.in_game_buff_add.atk_source.children),
+    )
+    .addChild(context.in_game_buff_mul.atk_source);
+
+  return new ExpressionGroupNode("*", "最终乘算")
+    .addChild(
+      new ExpressionGroupNode("+", "最终加算")
+        .addChild(atk)
+        .addChild(...context.in_game_buff_final_add.atk_source.children),
+    )
+    .addChild(...context.in_game_buff_final_mul.atk_source.children);
 }

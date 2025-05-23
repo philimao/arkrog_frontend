@@ -7,7 +7,7 @@ import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
-import { CalculatorHelper } from "../calculator/helper";
+import { CalculatorHelper, getInGameAtkExpression, getOutAtkExpression } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
 
 const StyledOperatorDisplayWrapper = styled.div`
@@ -195,28 +195,28 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       return;
     }
     // 干员养成加成
-    let context = CalculatorHelper.analyzeChar({
+    let buffContext = CalculatorHelper.analyzeChar({
       charInput: charInput,
       charData: charData,
     });
     // 藏品加成
-    context = CalculatorHelper.analyzeRelics(
+    buffContext = CalculatorHelper.analyzeRelics(
       {
         charInput: charInput,
         charData: charData,
         relics: selectedRelics,
         enemyInput: enemyDataParsed,
       },
-      context,
+      buffContext,
     );
     // 肉鸽难度加成
-    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: enemyDataParsed }, context);
+    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: enemyDataParsed }, buffContext);
 
     const input: CalculatorInput = {
       charInput: {
         ...charInput,
         // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context }),
+        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
       },
       enemyInput: enemyDataParsed,
       charData: charData, // 干员解包原始数据
@@ -225,6 +225,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: selectedRelics, // 有效藏品列表
       rogueInput,
+      buffContext,
     };
     const calcResult = calculator(input);
     // 标准打印
@@ -240,6 +241,14 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const buffPanelContext = CalculatorHelper.analyzeRelics(input);
     CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
     setRelicAnalysisResult(buffPanelContext);
+    // 获取精英化等级属性
+    const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
+    const outAtkExpression = getOutAtkExpression(attribute?.atk ?? 0, buffContext);
+    const inGameAtkExpression = getInGameAtkExpression(attribute?.atk ?? 0, buffContext);
+    console.log(outAtkExpression.printExpression());
+    console.log(outAtkExpression.printDebug());
+    console.log(inGameAtkExpression.printExpression());
+    console.log(inGameAtkExpression.printDebug());
     // 计算结果
     setCalcOutput(calcResult);
   }, [

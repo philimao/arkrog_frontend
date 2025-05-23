@@ -1,3 +1,4 @@
+import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
 import type { BasicObject } from "~/types/core";
 
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
@@ -619,6 +620,8 @@ export interface RogueInput {
 
 /** 伤害计算器输入参数 */
 export interface CalculatorInput {
+  /** buff加成上下文 */
+  buffContext: BuffContext;
   /** 干员输入数据结构 */
   charInput: CharInput;
   /** 干员基础数据 */

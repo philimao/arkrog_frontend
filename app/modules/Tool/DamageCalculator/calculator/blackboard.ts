@@ -2,6 +2,7 @@ import type { RelicWrapper } from "~/types/gameData";
 import type { RelicBuff } from "~/types/gameData";
 import { BuffContext } from "./buff-context";
 import { getByKey, getByKeySafe, registerRelicBlackboard } from "./impls";
+import { NumericLiteralNode } from "./ast";
 
 /** 敌人攻击力减少 */
 registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper) => {
@@ -214,18 +215,12 @@ registerRelicBlackboard("rogue_2_attack_speed_up[life_point]", (buff: RelicBuff,
 });
 
 /** 诸王的冠冕 */
-registerRelicBlackboard("rogue_2_atk_up[life_point][king_suit]", (buff: RelicBuff, relic: RelicWrapper) => {
+registerRelicBlackboard("rogue_2_atk_up[life_point][king_suit]", () => {
   return {
     isActive: () => true, // 默认生效
     apply(context: BuffContext): void {
       context.in_game_buff_mul.atk += 1.5;
-      context.in_game_buff_mul.atk_source.push({
-        name: relic.name,
-        value: 1.5,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(1.5, "诸王的冠冕"));
     },
   };
 });

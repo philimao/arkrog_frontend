@@ -1,5 +1,6 @@
 import type { RelicBuff } from "~/types/gameData";
 import type { RelicWrapper } from "~/types/gameData";
+import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 
 /** 藏品分析结果 */
 export interface IBuffContext {
@@ -41,7 +42,7 @@ export interface IBuffContext {
     /** 最大生命值来源 */
     max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
     /** 攻击速度来源 */
     attack_speed_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 防御力来源 */
@@ -66,7 +67,7 @@ export interface IBuffContext {
     /** 最大生命值(百分比) */
     max_hp: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
     /** 防御力来源 */
     def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 最大生命值来源 */
@@ -81,7 +82,7 @@ export interface IBuffContext {
     /** 每秒技力回复 */
     sp_recovery_per_sec: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
     /** 攻击速度来源 */
     attack_speed_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
     /** 每秒技力回复来源 */
@@ -98,14 +99,14 @@ export interface IBuffContext {
     /** 攻击力 */
     atk: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
   };
   /** 局内Buff 最终加算 */
   in_game_buff_final_add: {
     /** 攻击力 */
     atk: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
   };
   /** 局内Buff 最终乘算 */
   in_game_buff_final_mul: {
@@ -128,7 +129,7 @@ export interface IBuffContext {
     /** 敌人物理与法术减伤 */
     enemy_damage_resistance_inf: number;
     /** 攻击力来源 */
-    atk_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    atk_source: ExpressionGroupNode;
     /** 敌人攻击力减少来源 */
     enemy_atk_down_source: Array<{
       name: string;
@@ -231,7 +232,7 @@ export class BuffContext implements IBuffContext {
     max_hp: 0,
     max_hp_source: [],
     atk: 0,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局外直接加攻"),
     attack_speed: 0,
     attack_speed_source: [],
     def: 0,
@@ -245,13 +246,13 @@ export class BuffContext implements IBuffContext {
     atk: 1,
     def: 1,
     max_hp: 1,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局外加成").addChild(new NumericLiteralNode(1, "基数")),
     def_source: [],
     max_hp_source: [],
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: 0,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局内直接加成"),
     attack_speed: 0,
     attack_speed_source: [],
     sp_recovery_per_sec: 0,
@@ -259,15 +260,15 @@ export class BuffContext implements IBuffContext {
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: 1,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局内直接加成").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_final_add: IBuffContext["in_game_buff_final_add"] = {
     atk: 0,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局内最终加成"),
   };
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: 1,
-    atk_source: [],
+    atk_source: new ExpressionGroupNode("+", "局内最终加成").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk_down: 1,
     enemy_atk_down_source: [],
     enemy_def_down: 1,

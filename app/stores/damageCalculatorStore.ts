@@ -47,6 +47,7 @@ interface DamageCalculatorAction {
   setRogueKey: (key: RogueKey) => void;
   setRogueInput: (rogueInput: RogueInput) => void;
   setRogueDifficulty: (difficulty: number) => void;
+  setRogueZone: (zone: string) => void;
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   setOutBuff: (outBuff: string) => void;
   addCharData: () => void;
@@ -69,6 +70,27 @@ interface DamageCalculatorAction {
   setCalcOutput: (output: CalculatorOutput) => void;
 }
 
+const dummy: EnemyInput = {
+  id: "dummy",
+  level: 0,
+  name: "木桩",
+  description: "请任意调整木桩数值",
+  attributes: {
+    maxHp: 0,
+    atk: 0,
+    def: 0,
+    magicResistance: 0,
+    blockCnt: 0,
+    moveSpeed: 0,
+    attackSpeed: 0,
+    baseAttackTime: 0,
+    epDamageResistance: 0,
+    epResistance: 0,
+  },
+  levelType: "NORMAL",
+  rangedRadius: 0,
+};
+
 export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCalculatorAction>()(
   devtools(
     immer((set) => ({
@@ -77,6 +99,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       rogueInput: {
         topic: "rogue_4",
         rogue_4: {
+          zone: "zone_7",
           difficulty: 18,
           thoughtLoad: "NORMAL",
         },
@@ -92,6 +115,14 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           "setRogueDifficulty",
         );
       },
+      setRogueZone: (zone) =>
+        set(
+          (state) => {
+            state.rogueInput[state.rogueInput.topic].zone = zone;
+          },
+          undefined,
+          "setRogueZone",
+        ),
       setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) =>
         set(
           (state) => {
@@ -215,7 +246,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         );
       },
       enemyData: undefined as unknown as EnemyData,
-      enemyDataParsed: undefined as unknown as EnemyInput,
+      enemyDataParsed: dummy as unknown as EnemyInput,
       setEnemyData: (enemyData) =>
         set(
           (state) => ({

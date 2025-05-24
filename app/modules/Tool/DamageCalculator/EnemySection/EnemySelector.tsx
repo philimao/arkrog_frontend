@@ -13,10 +13,11 @@ const StyledEnemySelector = styled.div`
 `;
 
 export default function EnemySelector() {
-  const [activeMode, setActiveMode] = useState("快速选择");
+  const [activeMode, setActiveMode] = useState("关卡模式");
   return (
     <StyledEnemySelector>
-      <StyledTitle modes={["快速选择", "关卡模式"]} activeMode={activeMode} setActiveMode={setActiveMode}>
+      <StyledTitle modes={["关卡模式"]} activeMode={activeMode} setActiveMode={setActiveMode}>
+        {/* <StyledTitle modes={["快速选择", "关卡模式"]} activeMode={activeMode} setActiveMode={setActiveMode}> */}
         选择敌人
       </StyledTitle>
 

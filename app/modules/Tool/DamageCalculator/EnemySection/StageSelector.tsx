@@ -2,7 +2,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState } from "react";
 import { navOfZone } from "~/utils/stageSelector";
 import { Button } from "@heroui/react";
-import type { LevelData } from "~/types/gameData";
+import type { LevelData, StageData } from "~/types/gameData";
 import { _post } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
@@ -73,11 +73,7 @@ const StyledEnemies = styled.div`
     bottom: 0;
     width: 100%;
     height: 4rem;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(36, 36, 36, 0.8) 100%
-    );
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(36, 36, 36, 0.8) 100%);
     background-blend-mode: darken;
   }
 `;
@@ -95,28 +91,40 @@ const StyledEnemyName = styled.div`
 
 export default function StageSelector() {
   const { stages } = useGameDataStore();
-  const { rogueKey, enemyData, setEnemyData, setEnemyDataParsed } =
+  const { rogueKey, enemyData, rogueInput, setEnemyData, setEnemyDataParsed, setRogueZone } =
     useDamageCalculatorStore();
-  const [zoneFilterId, setZoneFilterId] = useState<string>("boss");
+  const [stageId, setStageId] = useState<string>("ro4_b_8");
+  const [stageData, setStageData] = useState<StageData>();
 
   const renderStages = useMemo(() => {
     const stageOfRogue = stages![rogueKey];
-    const zone = navOfZone.find((zone) => zoneFilterId === zone.id);
-    const renderedStageIds: string[] = [];
-    return Object.values(stageOfRogue).filter((stage) =>
-      zone!.filter(stage!, renderedStageIds),
-    );
-  }, [rogueKey, stages, zoneFilterId]);
-
-  const [stageId, setStageId] = useState<string>("ro4_b_8");
+    const zone = navOfZone.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+    const result = Object.values(stageOfRogue)
+      // 过滤区域关卡
+      .filter((stage) => zone!.filter(stage))
+      // 排序 BOSS > 普通+紧急
+      .sort((a, b) => {
+        const argsA = a.id.split("_");
+        const argsB = b.id.split("_");
+        if (argsA[1] === "b" && argsB[1] !== "b") return -1;
+        if (argsA[1] !== "b" && argsB[1] === "b") return 1;
+        return parseInt(argsA[3]) - parseInt(argsB[3]);
+      });
+    console.log("result", result);
+    setStageId(result[0].id);
+    return result;
+  }, [rogueKey, stages, rogueInput]);
 
   const [levelData, setLevelData] = useState<LevelData>();
 
   async function handleLoadLevelData() {
     const stageData = stages![rogueKey][stageId];
+    setStageData(stageData);
+    console.log("stageData", stageData);
     const stageRawData = await _post<LevelData>("/gamedata/level", {
       levelId: stageData.levelId.toLowerCase(),
     });
+    console.log("stageRawData", stageRawData);
     setLevelData(stageRawData);
   }
 
@@ -129,15 +137,18 @@ export default function StageSelector() {
           array={navOfZone}
           getKey={(zone) => zone.id}
           getValue={(zone) => zone.name}
-          selectedKeys={[zoneFilterId]}
-          onChange={(evt) => setZoneFilterId(evt.target.value)}
+          selectedKeys={[rogueInput[rogueInput.topic].zone]}
+          onChange={(evt) => setRogueZone(evt.target.value)}
         />
         <ToolSelect
           disallowEmptySelection={true}
           label="选择关卡"
           array={renderStages}
           getKey={(stage) => stage.id}
-          getValue={(stage) => stage.name}
+          getValue={(stage) => {
+            if (stage.isBoss) return `BOSS · ${stage.name}`;
+            return `${stage.isElite ? "紧急 · " : ""}${stage.name}`;
+          }}
           selectedKeys={[stageId]}
           onChange={(evt) => setStageId(evt.target.value)}
         />
@@ -168,7 +179,7 @@ export default function StageSelector() {
                     key={enemyData.id}
                     onClick={() => {
                       setEnemyData(enemyData);
-                      setEnemyDataParsed(parseEnemyData(enemyData));
+                      setEnemyDataParsed(parseEnemyData(enemyData, stageData!, levelData));
                     }}
                   >
                     <EnemyAvatar name={enemyData.name.m_value} />

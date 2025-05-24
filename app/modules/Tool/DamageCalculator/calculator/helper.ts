@@ -631,12 +631,12 @@ export class CalculatorHelper {
 
   /** 分析肉鸽难度加成 */
   static analyzeRogueDifficulty(
-    input: { rogueInput: RogueInput; enemyInput: EnemyInput },
+    input: { rogueInput: RogueInput; enemyInput?: EnemyInput },
     context: BuffContext,
   ): BuffContext {
     const { rogueInput, enemyInput } = input;
     if (rogueInput.topic === "rogue_4") {
-      const { difficulty, thoughtLoad } = rogueInput.rogue_4;
+      const { difficulty, thoughtLoad, zone } = rogueInput.rogue_4;
       if (difficulty === 18 && thoughtLoad === "CONFUSION") {
         context.relic_rune_mul.atk -= 0.2;
         context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
@@ -649,24 +649,36 @@ export class CalculatorHelper {
       }
       /** 肉鸽难度加成 */
       const bossValues = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
+      /** 肉鸽层数 */
+      const zoneLayerMap: Record<string, number> = {
+        zone_1: 1,
+        zone_2: 2,
+        zone_3: 3,
+        zone_4: 4,
+        zone_5: 5,
+        zone_6: 6,
+        zone_7: 6,
+        zone_8: 7,
+      };
       const bossValue = bossValues[difficulty];
+      const zoneValue = zoneLayerMap[zone]!;
       if (bossValue) {
-        const value = Math.pow(bossValue / 100 + 1, 6);
+        const value = Math.pow(bossValue / 100 + 1, zoneValue);
         context.in_game_buff_final_mul.enemy_atk_down *= value;
         context.in_game_buff_final_mul.enemy_atk_down_source.push({
-          name: `直面魂灵·${difficulty} | 层数6`,
+          name: `直面魂灵·${difficulty} | 层数${zoneValue}`,
           value,
           usage: `每进入一层, 敌人攻击力+${bossValue}%`,
         });
         context.in_game_buff_final_mul.enemy_max_hp_down *= value;
         context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
-          name: `直面魂灵·${difficulty} | 层数6`,
+          name: `直面魂灵·${difficulty} | 层数${zoneValue}`,
           value,
           usage: `每进入一层, 敌人最大生命值+${bossValue}%`,
         });
       }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
-      if (difficulty >= 4 && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
+      if (difficulty >= 4 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
         context.in_game_buff_final_mul.enemy_max_hp_down *= 1.2;
         context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
           name: `直面魂灵·${difficulty} | 精英和领袖敌人生命值+20%`,
@@ -675,7 +687,7 @@ export class CalculatorHelper {
         });
       }
       /** 难度部分词条 精英和领袖敌人攻击力+10% */
-      if (difficulty >= 7 && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
+      if (difficulty >= 7 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
         context.in_game_buff_final_mul.enemy_atk_down *= 1.1;
         context.in_game_buff_final_mul.enemy_atk_down_source.push({
           name: `直面魂灵·${difficulty} | 精英和领袖敌人攻击力+10%`,

@@ -6,10 +6,12 @@ import type {
   DefinedData,
   EnemyData,
   EnemyInput,
+  LevelData,
   RelicBuff,
   RelicDataExt,
   RelicWrapper,
   RogueKey,
+  StageData,
 } from "~/types/gameData";
 
 /**
@@ -531,7 +533,17 @@ export function parseDefinedData<T>(definedData: DefinedData<T>): T {
   return definedData.m_value;
 }
 
-export function parseEnemyData(enemyData: EnemyData): EnemyInput {
+export function parseEnemyData(enemyData: EnemyData, stageData: StageData, levelData: LevelData): EnemyInput {
+  const stageDifficulty = stageData.difficulty;
+  const runes = levelData.runes;
+  const rune = runes.find(
+    (rune) =>
+      rune.key === "enemy_attribute_mul" && (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),
+  )?.blackboard;
+  const atk_mul = rune?.find((bb) => bb.key === "atk")?.value || 1;
+  const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
+  const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
+
   const attributes = enemyData.attributes;
   return {
     id: enemyData.id,
@@ -539,9 +551,9 @@ export function parseEnemyData(enemyData: EnemyData): EnemyInput {
     name: parseDefinedData(enemyData.name),
     description: parseDefinedData(enemyData.description),
     attributes: {
-      maxHp: parseDefinedData(attributes.maxHp),
-      atk: parseDefinedData(attributes.atk),
-      def: parseDefinedData(attributes.def),
+      maxHp: parseDefinedData(attributes.maxHp) * hp_mul,
+      atk: parseDefinedData(attributes.atk) * atk_mul,
+      def: parseDefinedData(attributes.def) * def_mul,
       magicResistance: parseDefinedData(attributes.magicResistance),
       blockCnt: parseDefinedData(attributes.blockCnt),
       moveSpeed: parseDefinedData(attributes.moveSpeed),

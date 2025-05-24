@@ -69,7 +69,7 @@ export interface LevelData {
   environmentSe: string | null;
   mapData: { map: number[][]; tiles: object[] };
   tilesDisallowToLocate: string[];
-  runes: null;
+  runes: LevelDataRune[];
   optionalRunes: null;
   globalBuffs: null;
   routes: object[];
@@ -84,6 +84,13 @@ export interface LevelData {
   randomSeed: number;
   operaConfig: null;
   cameraPlugin: null;
+}
+
+export interface LevelDataRune {
+  blackboard: BlackboardData[];
+  difficultyMask: "ALL";
+  key: "enemy_attribute_mul";
+  professionMask: number;
 }
 
 export type StagePreview = Record<string, StagePreviewData>;
@@ -609,6 +616,8 @@ export interface RogueInput {
   /** 肉鸽主题 */
   topic: "rogue_4";
   rogue_4: {
+    /** 层数 */
+    zone: string;
     /** 肉鸽难度 */
     difficulty: number;
     /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */

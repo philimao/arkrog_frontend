@@ -23,15 +23,15 @@ export default function BuffPanel({ show, setShow }: { show: boolean; setShow: D
           type={type}
           key={type}
           onClick={() => {
-            if (show) return;
-            const listener = (evt: MouseEvent) => {
-              if (!(tooltip.current! as HTMLDivElement)?.contains(evt.target as HTMLElement)) {
-                document.removeEventListener("click", listener);
-                setShow(false);
-              }
-            };
-            setShow(true);
-            document.addEventListener("click", listener);
+            // if (show) return;
+            // const listener = (evt: MouseEvent) => {
+            //   if (!(tooltip.current! as HTMLDivElement)?.contains(evt.target as HTMLElement)) {
+            //     document.removeEventListener("click", listener);
+            //     setShow(false);
+            //   }
+            // };
+            setShow(!show);
+            // document.addEventListener("click", listener);
           }}
         />
       ))}

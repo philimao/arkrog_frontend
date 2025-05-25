@@ -9,6 +9,7 @@ import type {
   RelicWrapper,
   CalculatorOutput,
   RogueInput,
+  StageData,
 } from "~/types/gameData";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 
@@ -40,6 +41,8 @@ interface DamageCalculatorStore {
   selectedIds: string[];
   enemyData: EnemyData;
   enemyDataParsed: EnemyInput;
+  /** 关卡 */
+  stageData?: StageData;
   calcOutput: CalculatorOutput;
 }
 
@@ -67,6 +70,7 @@ interface DamageCalculatorAction {
   setEnemyBuff: (buff: Record<string, number>) => void;
   setCharsBuff: (charName: string, buff: Record<string, number>) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
+  setStageData: (stageData: StageData) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
 }
 
@@ -288,6 +292,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           "setCharsModifier",
         );
       },
+      setStageData: (stageData) => set((state) => ({ ...state, stageData }), undefined, "setStageData"),
       calcOutput: undefined as unknown as CalculatorOutput,
       setCalcOutput: (output) => {
         set(

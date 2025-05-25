@@ -535,7 +535,7 @@ export function parseDefinedData<T>(definedData: DefinedData<T>): T {
 
 export function parseEnemyData(enemyData: EnemyData, stageData: StageData, levelData: LevelData): EnemyInput {
   const stageDifficulty = stageData.difficulty;
-  const runes = levelData.runes;
+  const runes = levelData.runes || [];
   const rune = runes.find(
     (rune) =>
       rune.key === "enemy_attribute_mul" && (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),

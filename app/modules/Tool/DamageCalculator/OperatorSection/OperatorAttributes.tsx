@@ -268,7 +268,7 @@ export default function OperatorAttributes(props: {
   enemyInput: EnemyInput;
   relics: RelicWrapper[];
 }) {
-  const { rogueInput } = useDamageCalculatorStore();
+  const { stageData, rogueInput } = useDamageCalculatorStore();
   const [result, setResult] = useState<CharAttributeExt | null>(null);
   const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
@@ -296,6 +296,7 @@ export default function OperatorAttributes(props: {
         charData: props.charData,
         relics: props.relics,
         enemyInput: props.enemyInput,
+        stageData,
       },
       context,
     );
@@ -303,7 +304,7 @@ export default function OperatorAttributes(props: {
     context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: props.enemyInput }, context);
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);
-  }, [props.charData, props.charInput, props.relics, rogueInput]);
+  }, [props.charData, props.charInput, props.relics, rogueInput, stageData]);
   return (
     <StyledAttributeWrapper>
       {result && (

@@ -1,17 +1,10 @@
 import { styled } from "styled-components";
-import {
-  allowedBlackboardKeyMap,
-  relicAlterToBasic,
-} from "~/modules/Tool/DamageCalculator/utils";
+import { allowedBlackboardKeyMap, relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
 import React, { type FormEvent, useEffect, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
 import { Divider } from "@heroui/react";
-import {
-  StyledModeOption,
-  StyledModeSelector,
-  StyledTitle,
-} from "~/modules/Tool/components/Shared";
+import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
@@ -28,38 +21,24 @@ const StyledRelicsInner = styled.div`
   gap: 1rem;
 `;
 
-export default function RelicsContainer({
-  relicsWrappers,
-}: {
-  relicsWrappers: RelicWrapper[];
-}) {
+export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: RelicWrapper[] }) {
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
   return (
     <StyledRelicsContainer>
-      <StyledTitle
-        modes={["列表模式", "集中模式"]}
-        activeMode={mode}
-        setActiveMode={setMode}
-      >
+      <StyledTitle modes={["列表模式", "集中模式"]} activeMode={mode} setActiveMode={setMode}>
         <StyledModeSelector>
           <StyledModeOption $active={showAll} onClick={() => setShowAll(true)}>
             显示全部
           </StyledModeOption>
-          <StyledModeOption
-            $active={!showAll}
-            onClick={() => setShowAll(false)}
-          >
+          <StyledModeOption $active={!showAll} onClick={() => setShowAll(false)}>
             隐藏无关
           </StyledModeOption>
         </StyledModeSelector>
       </StyledTitle>
       <StyledRelicsInner>
         {relicsWrappers
-          .filter(
-            (relicWrapper) =>
-              relicWrapper.show && (showAll || relicWrapper.isActive),
-          )
+          .filter((relicWrapper) => relicWrapper.show && (showAll || relicWrapper.isActive))
           .map((relicWrapper) => (
             <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} />
           ))}
@@ -73,12 +52,9 @@ const StyledRelicBlock = styled.div<{ $selected: boolean }>`
   gap: 1rem;
   position: relative;
   padding: 1rem 0.75rem;
-  background: ${(props) =>
-    props.$selected ? "black" : "rgba(24, 24, 24, 0.70)"};
-  border: 1px solid
-    ${(props) => (props.$selected ? "var(--ak-blue)" : "transparent")};
-  box-shadow: ${(props) =>
-    props.$selected ? "0 0 4px 0 var(--ak-blue)" : "none"};
+  background: ${(props) => (props.$selected ? "black" : "rgba(24, 24, 24, 0.70)")};
+  border: 1px solid ${(props) => (props.$selected ? "var(--ak-blue)" : "transparent")};
+  box-shadow: ${(props) => (props.$selected ? "0 0 4px 0 var(--ak-blue)" : "none")};
   user-select: none;
   cursor: pointer;
 `;
@@ -110,8 +86,7 @@ const StyledLayerWrapper = styled.div`
 `;
 
 function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
-  const { setRelicLayer, toggleRelicSelection, selectedIds } =
-    useDamageCalculatorStore();
+  const { setRelicLayer, toggleRelicSelection, selectedIds } = useDamageCalculatorStore();
   const DEBUG = false;
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
@@ -131,18 +106,9 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
   const selected = selectedIds.includes(relicWrapper.id);
 
   return (
-    <StyledRelicBlock
-      $selected={selected}
-      key={relicWrapper.id}
-      onClick={() => toggleRelicSelection(relicWrapper.id)}
-    >
+    <StyledRelicBlock $selected={selected} key={relicWrapper.id} onClick={() => toggleRelicSelection(relicWrapper.id)}>
       <StyledImageWrapper>
-        <LazyImage
-          src={
-            assetsHost +
-            `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`
-          }
-        />
+        <LazyImage src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`} />
       </StyledImageWrapper>
       {relicWrapper.hasLayer && (
         <StyledLayerWrapper>
@@ -155,6 +121,7 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
             onClick={(evt) => evt.stopPropagation()}
             onEnter={updateRelicLayer}
             onBlur={updateRelicLayer}
+            changeOnWheel
           />
         </StyledLayerWrapper>
       )}
@@ -164,9 +131,7 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
         {DEBUG && (
           <>
             <Divider className="my-1" />
-            <div className="whitespace-pre-wrap text-xs font-light">
-              {relicWrapper.id}
-            </div>
+            <div className="whitespace-pre-wrap text-xs font-light">{relicWrapper.id}</div>
             {/*<div className="whitespace-pre-wrap text-xs font-light">*/}
             {/*  {JSON.stringify(relicWrapper.buffs, null, 2)}*/}
             {/*</div>*/}

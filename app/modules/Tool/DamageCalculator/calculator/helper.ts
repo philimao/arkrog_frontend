@@ -11,15 +11,9 @@ import type {
   BlackboardData,
   EnemyInput,
   RogueInput,
+  StageData,
 } from "~/types/gameData";
-import {
-  isRelicActive,
-  applyAttrModifiers,
-  applyBlackboardData,
-  isBuffActive,
-  isBlackboardActive,
-  allowedBlackboardKeyMap,
-} from "../utils";
+import { isRelicActive, isBuffActive, isBlackboardActive, allowedBlackboardKeyMap } from "../utils";
 import { BUFF_KEYS } from "./constant";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
@@ -64,120 +58,6 @@ export class CalculatorHelper {
   /** 创建加成上下文 */
   static createAdditionContext(): BuffContext {
     return new BuffContext();
-  }
-
-  /** 计算面板 @deprecated */
-  static calculatePanel(input: {
-    charInput: CharInput;
-    charData: CharData;
-    enemyInput: EnemyInput;
-    relics: RelicWrapper[];
-  }): CharAttributeExt {
-    const { charInput, charData, enemyInput, relics } = input;
-    const analysisResult = CalculatorHelper.analyzeRelics({ charInput, charData, enemyInput, relics });
-    // 获取精英化等级属性
-    const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
-
-    const result = { ...attribute, damageScale: 1 } as CharAttributeExt;
-    const consoleData = [];
-    consoleData.push({
-      type: "基础属性",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    /** 应用信赖效果 */
-    const favor = charData.favorKeyFrames[1].data;
-    for (const key in favor) {
-      const typedKey = key as keyof CharAttribute;
-      if (typeof result[typedKey] === "number") {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        result[typedKey] += favor[typedKey];
-      } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        result[typedKey] = favor[typedKey];
-      }
-    }
-    consoleData.push({
-      type: "信赖效果",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    /** 应用潜能效果 */
-    for (const pot of charData.potentialRanks.slice(0, charInput.potential)) {
-      pot.buff?.attributes.attributeModifiers.forEach((mod) => applyAttrModifiers(mod, result));
-    }
-    consoleData.push({
-      type: "潜能效果",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    /** 应用模组效果 */
-    const uniEquip = charInput.uniEquip;
-    if (uniEquip) {
-      // 基础值
-      for (const bb of uniEquip.attributeBlackboard) {
-        applyBlackboardData(bb, result);
-      }
-      // 天赋与特性效果
-      for (const part of uniEquip.parts) {
-        for (const candidates of [
-          part.overrideTraitDataBundle.candidates, // 特性
-          part.addOrOverrideTalentDataBundle.candidates, // 天赋
-        ]) {
-          if (!candidates) continue;
-          // 从多个candidate中选出符合潜能的
-          const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= charInput.potential);
-          for (const bb of admittedTrait!.blackboard) {
-            applyBlackboardData(bb, result);
-          }
-        }
-      }
-    }
-    consoleData.push({
-      type: "模组效果",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    /** 应用局外加成(加算) */
-    result.atk += analysisResult.relic_rune_add.atk;
-    result.attackSpeed += analysisResult.relic_rune_add.attack_speed;
-    result.def += analysisResult.relic_rune_add.def;
-    consoleData.push({
-      type: "局外加成(加算)",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    /** 应用局外加成(乘算) */
-    result.atk = Math.round(result.atk * analysisResult.relic_rune_mul.atk);
-    result.def = Math.round(result.def * analysisResult.relic_rune_mul.def);
-    result.maxHp = Math.round(result.maxHp * analysisResult.relic_rune_mul.max_hp);
-    consoleData.push({
-      type: "局外加成(乘算)",
-      攻击力: result.atk,
-      攻击速度: result.attackSpeed,
-      防御力: result.def,
-      最大生命值: result.maxHp,
-    });
-
-    console.table(consoleData);
-    return result;
   }
 
   /** 计算局外面板 */
@@ -358,7 +238,13 @@ export class CalculatorHelper {
    * @param input.relics 藏品
    */
   static analyzeRelics(
-    input: { charInput: CharInput; charData: CharData; enemyInput: EnemyInput; relics: RelicWrapper[] },
+    input: {
+      charInput: CharInput;
+      charData: CharData;
+      enemyInput: EnemyInput;
+      relics: RelicWrapper[];
+      stageData?: StageData;
+    },
     context?: BuffContext,
   ) {
     const { charInput, charData, enemyInput, relics } = input;
@@ -501,6 +387,22 @@ export class CalculatorHelper {
     // 计算藏品rune 局外乘算
     result.categories.relic_rune_mul.forEach(({ buff, relic }) => {
       const blackboard = CalculatorHelper.analyzeRelic(buff);
+      // 藏品仅在部分关卡类型中生效
+      if (blackboard.validator_roguelike_event_type) {
+        let validator = false;
+        // 是否为BOSS关
+        if (blackboard.validator_roguelike_event_type === "BATTLE_BOSS" && input.stageData?.isBoss) {
+          validator = true;
+        }
+        // 是否为狭路相逢（判断关卡ID是否包含duel）
+        if (blackboard.validator_roguelike_event_type === "DUEL" && input.stageData?.id.includes("duel")) {
+          validator = true;
+        }
+        // 不满足条件 无效藏品
+        if (!validator) {
+          return;
+        }
+      }
       if (blackboard.atk) {
         result.relic_rune_mul.atk += blackboard.atk * relic.layer;
         result.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, relic.name));
@@ -587,6 +489,12 @@ export class CalculatorHelper {
       hp_recovery_per_sec: number;
       /** 每秒技力回复 */
       sp_recovery_per_sec: number;
+      /**
+       * 肉鸽事件类型 满足条件才生效的
+       * 统帅肖像、小方块
+       * BATTLE_BOSS：BOSS战斗关 DUEL：狭路相逢
+       */
+      validator_roguelike_event_type?: "BATTLE_BOSS" | "DUEL";
     } = {
       key: "char",
       atk: 0,
@@ -596,6 +504,7 @@ export class CalculatorHelper {
       cost: 0,
       hp_recovery_per_sec: 0,
       sp_recovery_per_sec: 0,
+      validator_roguelike_event_type: undefined,
     };
     buff.blackboard.forEach((item) => {
       if (item.key === "key") {
@@ -624,6 +533,9 @@ export class CalculatorHelper {
       }
       if (item.key === "sp_recovery_per_sec") {
         blackboard.sp_recovery_per_sec = item.value;
+      }
+      if (item.key === "validator.roguelike_event_type") {
+        blackboard.validator_roguelike_event_type = item.valueStr as "BATTLE_BOSS" | "DUEL";
       }
     });
     return blackboard;
@@ -785,14 +697,7 @@ export class CalculatorHelper {
     );
     console.log(output);
     console.groupEnd();
-    CalculatorHelper.printRelicAnalysisResult(
-      CalculatorHelper.analyzeRelics({
-        charInput: input.charInput,
-        charData: input.charData,
-        enemyInput: input.enemyInput,
-        relics: input.relics,
-      }),
-    );
+    CalculatorHelper.printRelicAnalysisResult(input.buffContext);
     console.groupEnd();
     console.groupCollapsed("查看结构化输出");
     const tableData = [];

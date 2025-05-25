@@ -267,3 +267,40 @@ registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicWr
     },
   };
 });
+
+/** 未叙魔王残片 */
+registerRelicBlackboard("modify_fragment_carry_char_attribute[atk]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+  const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
+  return {
+    isActive(input) {
+      if (selector_profession) {
+        return selector_profession.includes(input.charData.profession.toLowerCase());
+      }
+      return true;
+    },
+    apply(context: BuffContext): void {
+      context.relic_rune_mul.atk += atk.value * relic.layer;
+      context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    },
+  };
+});
+
+/** 生命越高，攻击越高 （古乔治营养原浆） */
+registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, relic: RelicWrapper) => {
+  // 默认使用按最大生命值计算
+  const atk = getByKeySafe(buff.blackboard, "max_atk");
+  const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
+  return {
+    isActive(input) {
+      if (selector_profession) {
+        return selector_profession.includes(input.charData.profession.toLowerCase());
+      }
+      return true;
+    },
+    apply(context: BuffContext): void {
+      context.relic_rune_mul.atk += atk.value;
+      context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(atk.value, relic.name));
+    },
+  };
+});

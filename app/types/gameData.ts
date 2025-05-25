@@ -648,7 +648,7 @@ export interface CalculatorInput {
   /** 肉鸽输入数据 */
   rogueInput: RogueInput;
   /** 关卡基础数据 */
-  // stageInput: StageInput;
+  stageData?: StageData;
 }
 
 /** 伤害计算器输出参数 */

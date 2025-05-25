@@ -91,10 +91,9 @@ const StyledEnemyName = styled.div`
 
 export default function StageSelector() {
   const { stages } = useGameDataStore();
-  const { rogueKey, enemyData, rogueInput, setEnemyData, setEnemyDataParsed, setRogueZone } =
+  const { stageData, rogueKey, enemyData, rogueInput, setEnemyData, setEnemyDataParsed, setRogueZone, setStageData } =
     useDamageCalculatorStore();
   const [stageId, setStageId] = useState<string>("ro4_b_8");
-  const [stageData, setStageData] = useState<StageData>();
 
   const renderStages = useMemo(() => {
     const stageOfRogue = stages![rogueKey];
@@ -112,15 +111,17 @@ export default function StageSelector() {
       });
     console.log("result", result);
     setStageId(result[0].id);
+    setStageData(result[0]);
     return result;
   }, [rogueKey, stages, rogueInput]);
 
   const [levelData, setLevelData] = useState<LevelData>();
 
   async function handleLoadLevelData() {
-    const stageData = stages![rogueKey][stageId];
-    setStageData(stageData);
-    console.log("stageData", stageData);
+    if (!stageData) {
+      setLevelData(undefined);
+      return;
+    }
     const stageRawData = await _post<LevelData>("/gamedata/level", {
       levelId: stageData.levelId.toLowerCase(),
     });
@@ -150,7 +151,10 @@ export default function StageSelector() {
             return `${stage.isElite ? "紧急 · " : ""}${stage.name}`;
           }}
           selectedKeys={[stageId]}
-          onChange={(evt) => setStageId(evt.target.value)}
+          onChange={(evt) => {
+            setStageId(evt.target.value);
+            setStageData(stages![rogueKey][evt.target.value]);
+          }}
         />
 
         {stageId && (

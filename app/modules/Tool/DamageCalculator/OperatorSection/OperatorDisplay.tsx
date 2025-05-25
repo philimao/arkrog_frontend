@@ -36,6 +36,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const { outBuff, activeCharName, charsModifier } = useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
   const {
+    stageData,
+    rogueInput,
     enemyDataParsed,
     enemyData,
     selectedIds,
@@ -43,7 +45,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     rogueKey,
     setRelicAnalysisResult,
     setCalcOutput,
-    rogueInput,
   } = useDamageCalculatorStore();
 
   // 选择干员后
@@ -202,10 +203,11 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     // 藏品加成
     buffContext = CalculatorHelper.analyzeRelics(
       {
-        charInput: charInput,
-        charData: charData,
+        charInput,
+        charData,
         relics: selectedRelics,
         enemyInput: enemyDataParsed,
+        stageData,
       },
       buffContext,
     );
@@ -226,6 +228,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       relics: selectedRelics, // 有效藏品列表
       rogueInput,
       buffContext,
+      stageData,
     };
     const calcResult = calculator(input);
     // 标准打印
@@ -263,6 +266,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setRelicAnalysisResult,
     setCalcOutput,
     rogueInput,
+    stageData,
   ]);
 
   return (

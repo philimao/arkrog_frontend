@@ -106,14 +106,17 @@ export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: Bu
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.maxHp}</AttrTag>,
-        ...context.relic_rune_add.max_hp_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_add.max_hp_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
     {
       tooltip: "局外乘区",
       tags: [
-        <AttrTag tooltip="基数">1</AttrTag>,
-        ...context.relic_rune_mul.max_hp_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_mul.max_hp_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
   ];

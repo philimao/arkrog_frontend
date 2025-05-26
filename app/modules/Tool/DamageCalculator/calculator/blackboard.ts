@@ -252,7 +252,7 @@ registerRelicBlackboard("damage_scale[caster]", (buff: RelicBuff, relic: RelicWr
       return input.charData.profession === "CASTER";
     },
     apply(context: BuffContext): void {
-      context.stack_global_buff_stack_damage_scale_mag(damage_scale.value - 1, buff, relic);
+      context.stack_global_buff_stack_damage_scale_mag(damage_scale.value, buff, relic);
     },
   };
 });
@@ -263,7 +263,7 @@ registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicWr
   return {
     isActive: () => true,
     apply(context: BuffContext): void {
-      context.stack_global_buff_stack_damage_scale_mag(damage_scale.value * relic.layer, buff, relic);
+      context.stack_global_buff_stack_damage_scale_mag(1 + damage_scale.value * relic.layer, buff, relic);
     },
   };
 });

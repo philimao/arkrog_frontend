@@ -40,7 +40,7 @@ export interface IBuffContext {
     /** 每秒生命回复 */
     hp_recovery_per_sec: number;
     /** 最大生命值来源 */
-    max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    max_hp_source: ExpressionGroupNode;
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
     /** 攻击速度来源 */
@@ -71,7 +71,7 @@ export interface IBuffContext {
     /** 防御力来源 */
     def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
     /** 最大生命值来源 */
-    max_hp_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    max_hp_source: ExpressionGroupNode;
   };
   /** 局内Buff 直接加算 */
   in_game_buff_add: {
@@ -205,8 +205,24 @@ export interface IBuffContext {
     damage_scale_mag: number;
     /** 真实增伤 */
     damage_scale_pure: number;
+    /** 物理增伤来源 */
+    damage_scale_phy_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
     /** 法术增伤来源 */
     damage_scale_mag_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 真实增伤来源 */
+    damage_scale_pure_source: Array<{
       name: string;
       value: number;
       usage: string;
@@ -230,9 +246,9 @@ export class BuffContext implements IBuffContext {
   };
   relic_rune_add: IBuffContext["relic_rune_add"] = {
     max_hp: 0,
-    max_hp_source: [],
+    max_hp_source: new ExpressionGroupNode("+", "局外直接加成"),
     atk: 0,
-    atk_source: new ExpressionGroupNode("+", "局外直接加攻"),
+    atk_source: new ExpressionGroupNode("+", "局外直接加成"),
     attack_speed: 0,
     attack_speed_source: [],
     def: 0,
@@ -246,9 +262,9 @@ export class BuffContext implements IBuffContext {
     atk: 1,
     def: 1,
     max_hp: 1,
-    atk_source: new ExpressionGroupNode("+", "局外加成").addChild(new NumericLiteralNode(1, "基数")),
+    atk_source: new ExpressionGroupNode("+", "局外乘算加成").addChild(new NumericLiteralNode(1, "基数")),
     def_source: [],
-    max_hp_source: [],
+    max_hp_source: new ExpressionGroupNode("+", "局外乘算加成").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: 0,
@@ -292,6 +308,8 @@ export class BuffContext implements IBuffContext {
     damage_scale_mag: 1,
     damage_scale_mag_source: [],
     damage_scale_pure: 1,
+    damage_scale_pure_source: [],
+    damage_scale_phy_source: [],
   };
   constructor() {}
 

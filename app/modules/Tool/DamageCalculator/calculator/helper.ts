@@ -102,7 +102,7 @@ export class CalculatorHelper {
       const typedKey = key as keyof CharAttribute;
       if (typedKey === "atk" && favor.atk) {
         result.relic_rune_add.atk += favor.atk;
-        result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(favor.atk, "信赖加成"));
+        result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(favor.atk, "信赖"));
       }
       if (typedKey === "attackSpeed" && favor.attackSpeed) {
         result.relic_rune_add.attack_speed += favor.attackSpeed;
@@ -122,11 +122,7 @@ export class CalculatorHelper {
       }
       if (typedKey === "maxHp" && favor.maxHp) {
         result.relic_rune_add.max_hp += favor.maxHp;
-        result.relic_rune_add.max_hp_source.push({
-          name: "信赖效果",
-          value: favor.maxHp,
-          usage: `信赖效果 +${favor.maxHp}`,
-        });
+        result.relic_rune_add.max_hp_source.addChild(new NumericLiteralNode(favor.maxHp, "信赖"));
       }
     }
 
@@ -145,16 +141,12 @@ export class CalculatorHelper {
           }
           case "MAX_HP": {
             result.relic_rune_add.max_hp += mod.value;
-            result.relic_rune_add.max_hp_source.push({
-              name: "潜能效果",
-              value: mod.value,
-              usage: `潜能效果 +${mod.value}`,
-            });
+            result.relic_rune_add.max_hp_source.addChild(new NumericLiteralNode(mod.value, "潜能"));
             break;
           }
           case "ATK": {
             result.relic_rune_add.atk += mod.value;
-            result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(mod.value, "潜能加成"));
+            result.relic_rune_add.atk_source.addChild(new NumericLiteralNode(mod.value, "潜能"));
             break;
           }
           case "DEF": {
@@ -214,11 +206,7 @@ export class CalculatorHelper {
       // }
       case "max_hp": {
         result.relic_rune_add.max_hp += bb.value;
-        result.relic_rune_add.max_hp_source.push({
-          name: "模组效果",
-          value: bb.value,
-          usage: `模组效果 +${bb.value}`,
-        });
+        result.relic_rune_add.max_hp_source.addChild(new NumericLiteralNode(bb.value, "模组加成"));
         break;
       }
       case "atk": {
@@ -253,7 +241,7 @@ export class CalculatorHelper {
     const tech = charInput.tech;
     if (tech > 1) {
       result.relic_rune_mul.atk += tech - 1;
-      result.relic_rune_mul.atk_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树加成"));
+      result.relic_rune_mul.atk_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
       result.relic_rune_mul.def += tech - 1;
       result.relic_rune_mul.def_source.push({
         name: "科技树",
@@ -261,11 +249,7 @@ export class CalculatorHelper {
         usage: `科技树加成 +${tech * 100 - 100}%`,
       });
       result.relic_rune_mul.max_hp += tech - 1;
-      result.relic_rune_mul.max_hp_source.push({
-        name: "科技树",
-        value: (tech * 100 - 100) / 100,
-        usage: `科技树加成 +${tech * 100 - 100}%`,
-      });
+      result.relic_rune_mul.max_hp_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
     }
     /** 用户修正属性 */
     if (charInput.attributeModifier.atkBase) {
@@ -419,13 +403,9 @@ export class CalculatorHelper {
       }
       if (blackboard.max_hp) {
         result.relic_rune_mul.max_hp += blackboard.max_hp * relic.layer;
-        result.relic_rune_mul.max_hp_source.push({
-          buff,
-          value: blackboard.max_hp * relic.layer,
-          usage: relic.relicData.usage,
-          name: relic.name,
-          relic,
-        });
+        result.relic_rune_mul.max_hp_source.addChild(
+          new NumericLiteralNode(blackboard.max_hp * relic.layer, relic.name),
+        );
       }
     });
     // 计算局内Buff 直接加算
@@ -444,28 +424,27 @@ export class CalculatorHelper {
         result.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(blackboard.atk * relic.layer, relic.name));
       }
     });
-    // 计算局内Buff 最终加算
-    // result.categories.global_buff_final_add.forEach(({ buff, relic }) => {
-    //   const blackboard = CalculatorHelper.analyzeRelic(buff);
-    //   if (blackboard.atk) {
-    //     result.in_game_buff_final_add.atk += blackboard.atk * relic.layer;
-    //     result.in_game_buff_final_add.atk_source.push({ buff, relic, usage: relic.relicData.usage, name: relic.name });
-    //   }
-    // });
-    // 计算局内Buff 最终乘算
-    // result.categories.global_buff_final_mul.forEach(({ buff, relic }) => {
-    //   const blackboard = CalculatorHelper.analyzeRelic(buff);
-    //   if (blackboard.atk) {
-    //     result.in_game_buff_final_mul.atk += blackboard.atk * relic.layer;
-    //     result.in_game_buff_final_mul.atk_source.push({
-    //       buff,
-    //       value: blackboard.atk * relic.layer,
-    //       relic,
-    //       usage: relic.relicData.usage,
-    //       name: relic.name,
-    //     });
-    //   }
-    // });
+
+    result.global_buff_stack.damage_scale_phy *= result.in_game_buff_final_mul.enemy_damage_scale_phy;
+    result.global_buff_stack.damage_scale_phy_source.push({
+      name: "敌人物理易伤",
+      value: result.in_game_buff_final_mul.enemy_damage_scale_phy,
+      usage: "敌人物理易伤",
+    });
+
+    result.global_buff_stack.damage_scale_mag *= result.in_game_buff_final_mul.enemy_damage_scale_mag;
+    result.global_buff_stack.damage_scale_mag_source.push({
+      name: "敌人法术易伤",
+      value: result.in_game_buff_final_mul.enemy_damage_scale_mag,
+      usage: "敌人法术易伤",
+    });
+
+    result.global_buff_stack.damage_scale_pure *= result.in_game_buff_final_mul.enemy_damage_scale_pure;
+    result.global_buff_stack.damage_scale_pure_source.push({
+      name: "敌人真伤易伤",
+      value: result.in_game_buff_final_mul.enemy_damage_scale_pure,
+      usage: "敌人真伤易伤",
+    });
 
     return result;
   }

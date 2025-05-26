@@ -3,7 +3,7 @@ import { CalculatorHelper } from "../helper";
 import { registerCalculatorImpl } from "../impls";
 
 /** 莱伊伤害计算器 */
-export function Hoederer(input: CalculatorInput): CalculatorOutput {
+export function Ray(input: CalculatorInput): CalculatorOutput {
   // 干员养成加成
   let context = CalculatorHelper.analyzeChar({
     charInput: input.charInput,
@@ -112,4 +112,4 @@ export function Hoederer(input: CalculatorInput): CalculatorOutput {
 }
 
 // 注册赫德雷伤害计算器
-registerCalculatorImpl("Hoederer", Hoederer);
+registerCalculatorImpl("Ray", Ray);

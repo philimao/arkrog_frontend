@@ -31,7 +31,7 @@ export function Mon3tr(input: CalculatorInput): CalculatorOutput {
   const damage_scale_mag = context.global_buff_stack.damage_scale_mag; // 法术增伤总倍率
   const damage_scale_pure = context.global_buff_stack.damage_scale_pure; // 真伤增伤总倍率
 
-  const atkSpeedBuff = context.in_game_buff_add.attack_speed; // 额外攻击速度
+  const atkSpeedBuff = context.in_game_buff_add.attack_speed + context.relic_rune_add.attack_speed; // 额外攻击速度
   const spBuffAdd = context.in_game_buff_add.sp_recovery_per_sec; // 额外技力回复速度
 
   // 通过 calculateOutsidePanel 获取面板属性
@@ -42,12 +42,12 @@ export function Mon3tr(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation = input.enemyInput.attributes.damageHitratePhysical || 0; // 闪避
+  const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
-  // const enemyRes = input.enemyInput.attributes.resistance; // 敌人减伤
+
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   // const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;

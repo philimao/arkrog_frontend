@@ -219,9 +219,10 @@ registerRelicBlackboard("rogue_2_atk_up[life_point][king_suit]", () => {
   return {
     isActive: () => true, // 默认生效
     apply(context: BuffContext): void {
-      context.in_game_buff_mul.atk += 1.5;
-      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(1.5, "诸王的冠冕"));
+      context.in_game_buff_mul.atk += 0.5;
+      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(0.5, "诸王的冠冕"));
     },
+    //需要增加逻辑判定存在其他两件国王时，三件套效果生效
   };
 });
 
@@ -280,8 +281,8 @@ registerRelicBlackboard("modify_fragment_carry_char_attribute[atk]", (buff: Reli
       return true;
     },
     apply(context: BuffContext): void {
-      context.relic_rune_mul.atk += atk.value * relic.layer;
-      context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      context.in_game_buff_mul.atk += atk.value * relic.layer;
+      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
     },
   };
 });
@@ -299,8 +300,19 @@ registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, r
       return true;
     },
     apply(context: BuffContext): void {
-      context.relic_rune_mul.atk += atk.value;
-      context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(atk.value, relic.name));
+      context.in_game_buff_mul.atk += atk.value;
+      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(atk.value, relic.name));
+    },
+  };
+});
+
+/** 岩角号 */
+registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicWrapper) => {
+  return {
+    isActive: () => true,
+    apply(context: BuffContext): void {
+      context.in_game_buff_mul.atk += 0.2 * relic.layer;
+      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(0.2 * relic.layer, relic.name))
     },
   };
 });

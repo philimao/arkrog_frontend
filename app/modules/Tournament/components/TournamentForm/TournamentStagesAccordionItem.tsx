@@ -44,8 +44,8 @@ export default function TournamentStagesAccordionItem({
                     开始时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
-                    type="datetime-local"
-                    value={new Date(stage.startTime).toLocaleDateString().slice(0, 16)}
+                    type="date"
+                    value={new Date(stage.startTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
                       const newStages = [...formData.stages];
@@ -64,8 +64,8 @@ export default function TournamentStagesAccordionItem({
                     结束时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
-                    type="datetime-local"
-                    value={new Date(stage.endTime).toLocaleDateString().slice(0, 16)}
+                    type="date"
+                    value={new Date(stage.endTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
                       const newStages = [...formData.stages];

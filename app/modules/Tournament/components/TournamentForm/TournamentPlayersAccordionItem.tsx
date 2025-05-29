@@ -25,16 +25,20 @@ export default function TournamentPlayersAccordionItem({
             formData.players.map((player, index) => (
               <div
                 key={index}
-                className={`px-2 py-1 rounded-md ${editingPlayer === player ? "bg-ak-blue text-black" : !player.name || player.name === "请点击填写选手" ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
+                className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer === player ? "bg-ak-blue text-black" : !player.name || player.name === "点击填写选手" ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
+                }}
               >
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
-                  }}
-                >
-                  {player.name}
-                </button>
+                <div className={`w-16 h-16 aspect-square flex items-center justify-center ${editingPlayer === player ? "bg-mid-gray text-white": "bg-light-gray text-black"}`}>
+                  {player.face ? (
+                    <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                  ) : (
+                    <p className="text-5xl">{player.name[0]}</p>
+                  )}
+                </div>
+                <div className="pt-1 break-all">{player.name}</div>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -46,7 +50,7 @@ export default function TournamentPlayersAccordionItem({
                       players: newPlayers,
                     }));
                   }}
-                  className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
+                  className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red absolute top-1 right-1"
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />
                 </button>
@@ -57,7 +61,7 @@ export default function TournamentPlayersAccordionItem({
             onClick={() => {
               const newPlayer = {
                 mid: "invalid",
-                name: "请点击填写选手",
+                name: "点击填写选手",
                 face: "",
                 games: [],
                 customPlayerValues: {},
@@ -67,7 +71,7 @@ export default function TournamentPlayersAccordionItem({
                 players: [...(prev.players || []), newPlayer],
               }));
             }}
-            className="px-2 py-1 text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md"
+            className="p-2 w-[117px] text-ak-blue bg-mid-gray hover:text-black hover:bg-ak-blue rounded-md"
           >
             + 添加选手
           </button>

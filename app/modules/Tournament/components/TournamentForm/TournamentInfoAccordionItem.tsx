@@ -1,4 +1,6 @@
 import { CloseIcon } from "~/components/Icons";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
 
 interface TournamentInfoAccordionItemProps {
@@ -22,6 +24,7 @@ export default function TournamentInfoAccordionItem({
   editingLabelIndex,
   setEditingLabelIndex,
 }: TournamentInfoAccordionItemProps) {
+  const { topics } = useGameDataStore();
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
@@ -48,7 +51,7 @@ export default function TournamentInfoAccordionItem({
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
             required
           >
             <option value="individual">个人赛</option>
@@ -68,35 +71,40 @@ export default function TournamentInfoAccordionItem({
           />
         </div>
 
-        <div>
+        {topics && <div>
           <label className="block text-sm font-light mb-1">
             肉鸽 <span className="text-ak-red">*</span>
           </label>
-          <input
-            type="text"
+          <select
             name="rogue"
-            value={formData.rogue}
+            value={topics[formData.rogue as RogueKey].name}
             onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
             required
-          />
-        </div>
+          >
+            {Object.values(topics).reverse().map((topic) => (
+              <option key={topic.id} value={topic.name}>
+                {topic.name}
+              </option>
+            ))}
+          </select>
+        </div>}
 
         <div>
           <label className="block text-sm font-light mb-1">
             肉鸽版本 <span className="text-ak-red">*</span>
           </label>
-          <input
-            type="text"
+          <select
             name="edition"
             value={formData.edition}
             onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
-            placeholder="N18"
+            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
             required
-          />
+          >
+            <option value="初始版本">初始版本</option>
+            <option value="DLC_1">DLC_1</option>
+            <option value="DLC_2">DLC_2</option>
+          </select>
         </div>
 
         <div>

@@ -77,7 +77,7 @@ export default function TournamentInfoAccordionItem({
           </label>
           <select
             name="rogue"
-            value={topics[formData.rogue as RogueKey].name}
+            value={formData.rogue ? topics[formData.rogue as RogueKey].name : Object.values(topics).reverse()[0].name}
             onChange={handleChange}
             className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
             required

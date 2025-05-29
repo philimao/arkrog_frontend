@@ -12,14 +12,19 @@ import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
+export type RelicBlackboardInput = {
+  charInput: CharInput;
+  charData: CharData;
+  enemyInput: EnemyInput;
+  relics: RelicWrapper[];
+};
+export type RelicBlackboardApplyInput = {
+  context: BuffContext;
+  relics: RelicWrapper[];
+};
 export type RelicBlackboard = {
-  isActive: (input: {
-    charInput: CharInput;
-    charData: CharData;
-    enemyInput: EnemyInput;
-    relics: RelicWrapper[];
-  }) => boolean;
-  apply(context: BuffContext): void;
+  isActive: (input: RelicBlackboardInput) => boolean;
+  apply(input: RelicBlackboardApplyInput): void;
 };
 const implMap = new Map<string, CalculatorImpl>();
 const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard>();
@@ -62,7 +67,7 @@ export function getRelicBlackboard(buff: RelicBuff, relic: RelicWrapper): RelicB
     // console.warn(`没有藏品黑板 ${key}`);
     return {
       isActive: () => true,
-      apply(context: BuffContext): void {},
+      apply(): void {},
     };
   }
   return relicBlackboard(buff, relic);

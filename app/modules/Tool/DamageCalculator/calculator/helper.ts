@@ -281,7 +281,7 @@ export class CalculatorHelper {
           // buff是否可以生效
           if (blackboard.isActive({ charData, charInput, enemyInput, relics })) {
             // 生效 应用到上下文
-            blackboard.apply(result);
+            blackboard.apply({ context: result, relics });
           } else {
             // 不生效 无效藏品
             result.invalidRelics.push(relic);
@@ -751,7 +751,7 @@ export class CalculatorHelper {
         }
         if (isRelicBlackboard(buff)) {
           const relicBlackboard = getRelicBlackboard(buff, relic);
-          relicBlackboard.apply(context);
+          relicBlackboard.apply({ context, relics: relicList });
         } else {
           const blackboard = CalculatorHelper.analyzeRelic(buff);
           relicBuff[buff.key].push([relic.name, blackboard.key]);

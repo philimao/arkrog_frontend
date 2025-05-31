@@ -52,10 +52,10 @@ export function Logos(input: CalculatorInput): CalculatorOutput {
 
     const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul + 165;
     const commonDamage =
-        Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
+        Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag * (1 - mitigation);
     const commonTalentDPH = (commonDPH - 165) * 0.65 + 165;//硬编码天赋倍率，待对接
     const commonTalentDamage =
-        Math.max(commonTalentDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
+        Math.max(commonTalentDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag * (1 - mitigation);
     const commonTalentDPH_ep = (commonDPH - 165) * 0.6;//元素伤害
     const commonTalentDamage_ep = commonTalentDPH_ep;//暂未考虑元素抗性
 
@@ -68,7 +68,7 @@ export function Logos(input: CalculatorInput): CalculatorOutput {
     const commonEPTime = commonAtkTime * Math.ceil(enemyEP / commonDamage_EP);//在伤害较高时偏差较大
     const commonepHit = Math.round(450 / commonAtkFrame) * 0.6;//爆条期间命中数
 
-    result.attack.dps.mag = (commonDamage + commonTalentDamage * 0.6) * (1 - mitigation) / commonAtkTime;
+    result.attack.dps.mag = (commonDamage + commonTalentDamage * 0.6) / commonAtkTime;
     result.attack.dps.ep = (commonepHit * commonTalentDamage_ep + 12000) / (commonEPTime + 15.0);
 
     switch (skillKey) {
@@ -81,8 +81,8 @@ export function Logos(input: CalculatorInput): CalculatorOutput {
         case "skchr_logos_3": {
             const skillBuffIn = 3; // 技能加攻
             const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul + 165;
-            const skillDamage = Math.max(skillDph * (1 - enemyMagRes / 100), skillDph * 0.05) * damage_scale * damage_scale_mag;
-            const skillTalentDamage = Math.max(((skillDph - 165) * 0.65 + 165) * (1 - enemyMagRes / 100), ((skillDph - 165) * 0.65 + 165) * 0.05) * damage_scale * damage_scale_mag;
+            const skillDamage = Math.max(skillDph * (1 - enemyMagRes / 100), skillDph * 0.05) * damage_scale * damage_scale_mag * (1 - mitigation);
+            const skillTalentDamage = Math.max(((skillDph - 165) * 0.65 + 165) * (1 - enemyMagRes / 100), ((skillDph - 165) * 0.65 + 165) * 0.05) * damage_scale * damage_scale_mag * (1 - mitigation);
             const skillTalentDamage_ep = (skillDph - 165) * 0.6;
 
             const skillAtkTimeBase = 1.6; // 技能基础攻击间隔
@@ -99,16 +99,20 @@ export function Logos(input: CalculatorInput): CalculatorOutput {
 
             const skillDamage_EP = (skillDamage + skillTalentDamage * 0.6) * 0.08 * damage_scale_EP;//元素损伤期望
             const skillEPTime = skillAtkTime * Math.ceil(enemyEP / skillDamage_EP);//在伤害较高时偏差较大
-            const skillepHit = Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6;//爆条期间命中数
+            const skillepHit = Math.max(Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6, 0);//爆条期间命中数
 
-            let commonTotalDamage = (commonDamage + commonTalentDamage * 0.6) * commonHit * (1 - mitigation);
-            let skillTotalDamage = (skillDamage + skillTalentDamage * 0.6) * skillHit * (1 - mitigation);
+            let commonTotalDamage = (commonDamage + commonTalentDamage * 0.6) * commonHit;
+            let skillTotalDamage = (skillDamage + skillTalentDamage * 0.6) * skillHit;
+            let skillTotalDamage_ep = skillTalentDamage_ep * skillepHit;
+            if (skillepHit) {
+                skillTotalDamage_ep += 12000;
+            }
 
             result.skill.dph = skillDph;
             result.skill.dps.mag = skillTotalDamage / 30;
             result.skill.total_damage.mag = skillTotalDamage;
-            result.skill.dps.ep = (skillTalentDamage_ep * skillepHit + 12000) / 30;
-            result.skill.total_damage.ep = (skillTalentDamage_ep * skillepHit + 12000);
+            result.skill.dps.ep = skillTotalDamage_ep / 30;
+            result.skill.total_damage.ep = skillTotalDamage_ep;
             result.cycle.dps.mag = (commonTotalDamage + skillTotalDamage) / (skillKeepTime + skillRecoveryTime);
             result.cycle.total_damage.mag = commonTotalDamage + skillTotalDamage;
 

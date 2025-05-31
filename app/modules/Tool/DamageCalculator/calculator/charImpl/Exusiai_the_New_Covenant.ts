@@ -3,7 +3,7 @@ import { CalculatorHelper } from "../helper";
 import { registerCalculatorImpl } from "../impls";
 
 /** 新能伤害计算器 */
-export function Exusial_the_New_Covenant(input: CalculatorInput): CalculatorOutput {
+export function Exusiai_the_New_Covenant(input: CalculatorInput): CalculatorOutput {
   // 干员养成加成
   let context = CalculatorHelper.analyzeChar({
     charInput: input.charInput,
@@ -61,10 +61,10 @@ export function Exusial_the_New_Covenant(input: CalculatorInput): CalculatorOutp
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
   switch (skillKey) {
-    case "skchr_exusial_1": {
+    case "skchr_angel2_1": {
       break;
     }
-    case "skchr_exuaial_2": {
+    case "skchr_angel2_2": {
       let skillBuffIn = 0.0; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 3.0 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
@@ -102,7 +102,7 @@ export function Exusial_the_New_Covenant(input: CalculatorInput): CalculatorOutp
       break;
     }
 
-    case "skchr_exusial_3": {
+    case "skchr_angel2_3": {
       // 不计算投递伤害
       let skillBuffIn = 0.3; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.6 * atkBuffFinalMul;
@@ -145,5 +145,5 @@ export function Exusial_the_New_Covenant(input: CalculatorInput): CalculatorOutp
   return result;
 }
 
-// 注册赫德雷伤害计算器
-registerCalculatorImpl("Exusial_the_New_Covenant", Exusial_the_New_Covenant);
+// 注册新能伤害计算器
+registerCalculatorImpl("Exusiai the New Covenant", Exusiai_the_New_Covenant);

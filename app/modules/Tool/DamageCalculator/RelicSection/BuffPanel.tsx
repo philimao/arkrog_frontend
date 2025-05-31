@@ -1,7 +1,6 @@
 import { styled } from "styled-components";
 import { type Dispatch, type SetStateAction, useRef } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { useShallow } from "zustand/react/shallow";
 import { type AdditionEntry, CalculatorHelper } from "../calculator";
 
 const StyledBuffPanel = styled.div`
@@ -111,6 +110,7 @@ const StyledBuffTooltip = styled.div<{ $show: boolean }>`
   width: 40rem;
   height: 15rem;
   padding: 1rem 2rem;
+  z-index: 1;
   & > div:first-child {
     width: 63%;
   }

@@ -114,6 +114,8 @@ export interface IBuffContext {
     atk: number;
     /** 敌人攻击力减少 */
     enemy_atk_down: number;
+    /** 敌人攻击力增加 */
+    enemy_atk_up: number;
     /** 敌人防御力减少 */
     enemy_def_down: number;
     /** 敌人最大生命值减少 */
@@ -132,6 +134,14 @@ export interface IBuffContext {
     atk_source: ExpressionGroupNode;
     /** 敌人攻击力减少来源 */
     enemy_atk_down_source: Array<{
+      name: string;
+      value: number;
+      usage: string;
+      buff?: RelicBuff;
+      relic?: RelicWrapper;
+    }>;
+    /** 敌人攻击力增加来源 */
+    enemy_atk_up_source: Array<{
       name: string;
       value: number;
       usage: string;
@@ -287,6 +297,8 @@ export class BuffContext implements IBuffContext {
     atk_source: new ExpressionGroupNode("+", "局内最终加成").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk_down: 1,
     enemy_atk_down_source: [],
+    enemy_atk_up: 1,
+    enemy_atk_up_source: [],
     enemy_def_down: 1,
     enemy_def_down_source: [],
     enemy_damage_scale_phy: 1,
@@ -317,6 +329,18 @@ export class BuffContext implements IBuffContext {
   mut_in_game_buff_final_mul_enemy_atk_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_atk_down *= value;
     this.in_game_buff_final_mul.enemy_atk_down_source.push({
+      name: relic.name,
+      value,
+      usage: relic.usage,
+      buff,
+      relic,
+    });
+  }
+
+  /** 敌人攻击力增加 最终乘区 */
+  mut_in_game_buff_final_mul_enemy_atk_up(value: number, buff: RelicBuff, relic: RelicWrapper) {
+    this.in_game_buff_final_mul.enemy_atk_up *= value;
+    this.in_game_buff_final_mul.enemy_atk_up_source.push({
       name: relic.name,
       value,
       usage: relic.usage,

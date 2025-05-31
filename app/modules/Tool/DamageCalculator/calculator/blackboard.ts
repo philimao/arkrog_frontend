@@ -23,6 +23,25 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
   };
 });
 
+/** 敌人攻击力增加 */
+registerRelicBlackboard("enemy_atk_up", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+  const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
+    | "BOSS"
+    | "ELITE"
+    | "NORMAL";
+  return {
+    isActive(input) {
+      return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
+    },
+    apply(input): void {
+      const { context } = input;
+      const value = Math.sign(atk.value) === 1 ? atk.value : 1 - atk.value;
+      context.mut_in_game_buff_final_mul_enemy_atk_up(value, buff, relic);
+    },
+  };
+});
+
 /** 敌人防御力减少 */
 registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper) => {
   const def = getByKeySafe(buff.blackboard, "def");

@@ -1,3 +1,4 @@
+import { Fragment } from "react/jsx-runtime";
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 
@@ -13,7 +14,7 @@ const StyledResultDisplay = styled.div`
 const type = {
   phy: "物理",
   pure: "真实",
-  mag: "法术"
+  mag: "法术",
 };
 
 const map = {
@@ -91,43 +92,31 @@ export function ResultDisplay() {
         return (
           <StyledResultRow key={key}>
             {["dps", "total_damage"].map((colKey) => {
-              const collected = (
-                Object.values(calcOutput[key as never][colKey]) as number[]
-              ).reduce((a, b) => a + b, 0);
-              const collectedStr = Number.isInteger(collected)
-                ? collected.toString()
-                : collected.toFixed(2);
+              const collected = (Object.values(calcOutput[key as never][colKey]) as number[]).reduce(
+                (a, b) => a + b,
+                0,
+              );
+              const collectedStr = Number.isInteger(collected) ? collected.toString() : collected.toFixed(2);
               return (
                 <StyledResultColumn key={colKey}>
                   <StyledNumberTotal>
-                    <label>
-                      {map[key as never] + (colKey === "dps" ? "DPS" : "总伤")}
-                    </label>
+                    <label>{map[key as never] + (colKey === "dps" ? "DPS" : "总伤")}</label>
                     <div>{collectedStr}</div>
                   </StyledNumberTotal>
                   <StyledOperator>=</StyledOperator>
                   {Object.keys(calcOutput[key as never][colKey])
-                    .filter(
-                      (damageType) =>
-                        calcOutput[key as never][colKey][damageType],
-                    )
+                    .filter((damageType) => calcOutput[key as never][colKey][damageType])
                     .map((damageType, i, array) => {
-                      const num = calcOutput[key as never][colKey][
-                        damageType
-                      ] as number;
-                      const numStr = Number.isInteger(num)
-                        ? num.toString()
-                        : num.toFixed(2);
+                      const num = calcOutput[key as never][colKey][damageType] as number;
+                      const numStr = Number.isInteger(num) ? num.toString() : num.toFixed(2);
                       return (
-                        <>
+                        <Fragment key={damageType}>
                           <StyledNumberPart $type={damageType} key={i}>
                             <label>{type[damageType as never] || damageType}</label>
                             <div>{numStr}</div>
                           </StyledNumberPart>
-                          {i < array.length - 1 && (
-                            <StyledOperator key={"add" + i}>+</StyledOperator>
-                          )}
-                        </>
+                          {i < array.length - 1 && <StyledOperator key={"add" + i}>+</StyledOperator>}
+                        </Fragment>
                       );
                     })}
                 </StyledResultColumn>

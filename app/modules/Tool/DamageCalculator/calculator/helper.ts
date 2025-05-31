@@ -18,6 +18,7 @@ import { BUFF_KEYS } from "./constant";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
+import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
 
 /** 加成词条 */
 export interface AdditionEntry {
@@ -587,6 +588,70 @@ export class CalculatorHelper {
         });
       }
     }
+    return context;
+  }
+
+  static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[] }, context: BuffContext) {
+    const { topicSpecItems } = input;
+    topicSpecItems
+      .filter((item) => item)
+      .forEach((item) => {
+        item.buffs.forEach((buff) => {
+          const { key, value } = buff;
+          switch (key) {
+            case "atk":
+              context.relic_rune_mul.atk += value;
+              context.relic_rune_mul.atk_source.addChild(new NumericLiteralNode(value, item.name));
+              break;
+            case "attack_speed":
+              context.in_game_buff_add.attack_speed += value;
+              context.in_game_buff_add.attack_speed_source.push({
+                name: item.name,
+                value: value,
+                usage: item.desc,
+                buff: { key: "", blackboard: [] },
+                relic: undefined as never,
+              });
+              break;
+            case "max_hp":
+              context.relic_rune_mul.max_hp += value;
+              context.relic_rune_mul.max_hp_source.addChild(new NumericLiteralNode(value, item.name));
+              break;
+            case "enemy_max_hp_up":
+              context.in_game_buff_final_mul.enemy_max_hp_down += value;
+              context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
+                name: item.name,
+                value: value,
+                usage: item.desc,
+                buff: { key: "", blackboard: [] },
+                relic: undefined as never,
+              });
+              break;
+            case "enemy_atk_up":
+              context.in_game_buff_final_mul.enemy_atk_down += value;
+              context.in_game_buff_final_mul.enemy_atk_down_source.push({
+                name: item.name,
+                value: value,
+                usage: item.desc,
+                buff: { key: "", blackboard: [] },
+                relic: undefined as never,
+              });
+              break;
+            case "enemy_max_hp_down":
+              context.in_game_buff_final_mul.enemy_max_hp_down += value;
+              context.in_game_buff_final_mul.enemy_max_hp_down_source.push({
+                name: item.name,
+                value: value,
+                usage: item.desc,
+                buff: { key: "", blackboard: [] },
+                relic: undefined as never,
+              });
+              break;
+            default:
+              break;
+          }
+        });
+      });
     return context;
   }
 

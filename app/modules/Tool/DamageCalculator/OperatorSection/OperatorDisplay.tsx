@@ -33,7 +33,7 @@ const StyledSelectWrapper = styled.div`
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { outBuff, activeCharName, charsModifier } = useDamageCalculatorStore();
+  const { outBuff, activeCharName, charsModifier, topicSpecItems } = useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
   const {
     stageData,
@@ -213,6 +213,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     );
     // 肉鸽难度加成
     buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: enemyDataParsed }, buffContext);
+    // 肉鸽主题加成（年代、灵感、密文板）
+    buffContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffContext);
 
     const input: CalculatorInput = {
       charInput: {
@@ -241,8 +243,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     );
 
     /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
-    const buffPanelContext = CalculatorHelper.analyzeRelics(input);
-    CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
+    let buffPanelContext = CalculatorHelper.analyzeRelics(input);
+    buffPanelContext = CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
+    buffPanelContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffPanelContext);
+
     setRelicAnalysisResult(buffPanelContext);
     // 获取精英化等级属性
     const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
@@ -267,6 +271,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setCalcOutput,
     rogueInput,
     stageData,
+    topicSpecItems,
   ]);
 
   return (

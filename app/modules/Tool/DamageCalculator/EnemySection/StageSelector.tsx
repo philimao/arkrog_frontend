@@ -1,8 +1,8 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { navOfZone } from "~/utils/stageSelector";
 import { Button } from "@heroui/react";
-import type { LevelData, StageData } from "~/types/gameData";
+import type { LevelData } from "~/types/gameData";
 import { _post } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
@@ -110,10 +110,16 @@ export default function StageSelector() {
         return parseInt(argsA[3]) - parseInt(argsB[3]);
       });
     console.log("result", result);
-    setStageId(result[0].id);
-    setStageData(result[0]);
     return result;
   }, [rogueKey, stages, rogueInput]);
+
+  // 使用 useEffect 来处理副作用操作
+  useEffect(() => {
+    if (renderStages.length > 0) {
+      setStageId(renderStages[0].id);
+      setStageData(renderStages[0]);
+    }
+  }, [renderStages, setStageData]);
 
   const [levelData, setLevelData] = useState<LevelData>();
 

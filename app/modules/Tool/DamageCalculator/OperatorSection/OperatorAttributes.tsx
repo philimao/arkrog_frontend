@@ -271,7 +271,7 @@ export default function OperatorAttributes(props: {
   enemyInput: EnemyInput;
   relics: RelicWrapper[];
 }) {
-  const { stageData, rogueInput } = useDamageCalculatorStore();
+  const { stageData, rogueInput, topicSpecItems } = useDamageCalculatorStore();
   const [result, setResult] = useState<CharAttributeExt | null>(null);
   const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
@@ -305,9 +305,13 @@ export default function OperatorAttributes(props: {
     );
     // 肉鸽难度加成
     context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: props.enemyInput }, context);
+    // 肉鸽主题加成（年代、灵感、密文板）
+    context = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, context);
+
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);
-  }, [props.charData, props.charInput, props.relics, rogueInput, stageData]);
+  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems]);
+
   return (
     <StyledAttributeWrapper>
       {result && (
@@ -385,10 +389,8 @@ function AttrDisplay(props: { calcTokens: AttrCalcToken[]; children: React.React
             <span key={group.tooltip}>
               {"( "}
               {group.tags.map((tag, i) => {
-                if (i < group.tags.length - 1) {
-                  return <span key={i}>{tag} + </span>;
-                }
-                return tag;
+                if (i < group.tags.length - 1) return <span key={i}>{tag} + </span>;
+                return <span key={i}>{tag}</span>;
               })}
               {index < calcTokens.length - 1 ? " ) * " : " )"}
             </span>

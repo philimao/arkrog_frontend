@@ -10,6 +10,7 @@ import {
 } from "~/modules/Tool/DamageCalculator/RelicSection/Shared";
 import { useShallow } from "zustand/react/shallow";
 import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
+import TopicSpecTrigger from "../TopicSpecSection/TopicSpecTrigger";
 
 const StyledFooterPanel = styled.footer`
   width: 100vw;
@@ -23,7 +24,7 @@ const StyledFooterPanel = styled.footer`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  z-index: 100;
+  z-index: 105;
 `;
 
 const StyledCollapseButton = styled.div`
@@ -115,6 +116,7 @@ export default function FooterPanel() {
                   .map((relicWrapper) => <RelicItem key={relicWrapper!.id} relicWrapper={relicWrapper!} />)}
             </div>
           </div>
+          <TopicSpecTrigger />
           <BuffPanel show={showBuff} setShow={setShowBuff} />
           <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>
         </>

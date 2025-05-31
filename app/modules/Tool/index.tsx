@@ -9,6 +9,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import FooterPanel from "~/modules/Tool/DamageCalculator/RelicSection/FooterPanel";
 import { ResultDisplay } from "~/modules/Tool/DamageCalculator/OperatorSection/ResultDisplay";
 import EnemySelector from "~/modules/Tool/DamageCalculator/EnemySection/EnemySelector";
+import TopicSpecSelector from "./DamageCalculator/TopicSpecSection/TopicSpecSelector";
 
 export default function ToolIndex() {
   const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();
@@ -20,9 +21,7 @@ export default function ToolIndex() {
   }, [activeCharName, charList]);
 
   useEffect(() => {
-    Promise.all([fetchCharacterRaw(), fetchGameDataExt()]).then(() =>
-      setLoading(false),
-    );
+    Promise.all([fetchCharacterRaw(), fetchGameDataExt()]).then(() => setLoading(false));
   }, [fetchCharacterRaw, fetchGameDataExt]);
 
   if (loading) return <Loading />;
@@ -40,6 +39,7 @@ export default function ToolIndex() {
       <EnemySelector />
       <FooterPanel />
       <RelicSelector charData={activeCharData} />
+      <TopicSpecSelector />
     </div>
   );
 }

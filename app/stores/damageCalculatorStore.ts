@@ -12,6 +12,7 @@ import type {
   StageData,
 } from "~/types/gameData";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
+import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
 
 interface AttributeModifier {
   atkBase: number;
@@ -31,6 +32,8 @@ interface DamageCalculatorStore {
   /** 仅有藏品的加成上下文 */
   relicAnalysisResult?: BuffContext;
   showRelics: boolean;
+  showTopicSpec: boolean;
+  topicSpecItems: ITopicSpecItem[];
   relicsMap: Record<RogueKey, RelicWrapper[]>;
   enemyBuff: Record<string, number>;
   /** @deprecated 请使用BuffContext中的relicBuff */
@@ -60,6 +63,8 @@ interface DamageCalculatorAction {
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   toggleShowRelics: () => void;
+  toggleShowTopicSpec: () => void;
+  setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
   setRelicLayer: (id: string, layer: string) => string;
   updateRelic: (id: string, key: string, value: number | string | boolean) => void;
   updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
@@ -113,6 +118,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       setRogueDifficulty: (difficulty) => {
         return set(
           (state) => {
+            state.difficulty = difficulty;
             state.rogueInput[state.rogueInput.topic].difficulty = difficulty;
           },
           undefined,
@@ -176,7 +182,13 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       setActiveCharName: (charName) =>
         set((state) => ({ ...state, activeCharName: charName }), undefined, "setActiveCharName"),
       setRelicAnalysisResult: (relicAnalysisResult: BuffContext) =>
-        set((state) => ({ ...state, relicAnalysisResult }), undefined, "setRelicAnalysisResult"),
+        set(
+          (state) => {
+            state.relicAnalysisResult = relicAnalysisResult;
+          },
+          undefined,
+          "setRelicAnalysisResult",
+        ),
       showRelics: false as boolean,
       toggleShowRelics: () =>
         set(
@@ -186,6 +198,25 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           }),
           undefined,
           "toggleShowRelics",
+        ),
+      showTopicSpec: false as boolean,
+      toggleShowTopicSpec: () =>
+        set(
+          (state) => ({
+            ...state,
+            showTopicSpec: !state.showTopicSpec,
+          }),
+          undefined,
+          "toggleShowTopicSpec",
+        ),
+      topicSpecItems: [] as ITopicSpecItem[],
+      setTopicSpecItems: (callback) =>
+        set(
+          (state) => {
+            state.topicSpecItems = callback(state.topicSpecItems);
+          },
+          undefined,
+          "setTopicSpecItems",
         ),
       relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
       setRelicWrapper: (rogueKey, relics) =>

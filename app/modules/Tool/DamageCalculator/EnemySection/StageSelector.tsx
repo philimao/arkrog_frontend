@@ -105,11 +105,15 @@ export default function StageSelector() {
       .sort((a, b) => {
         const argsA = a.id.split("_");
         const argsB = b.id.split("_");
-        if (argsA[1] === "b" && argsB[1] !== "b") return -1;
-        if (argsA[1] !== "b" && argsB[1] === "b") return 1;
+        const softMap: Record<string, number> = {
+          b: 1,
+          duel: 2,
+          e: 4,
+          n: 4,
+        };
+        if (softMap[argsA[1]] !== softMap[argsB[1]]) return softMap[argsA[1]] - softMap[argsB[1]];
         return parseInt(argsA[3]) - parseInt(argsB[3]);
       });
-    console.log("result", result);
     return result;
   }, [rogueKey, stages, rogueInput]);
 
@@ -131,7 +135,6 @@ export default function StageSelector() {
     const stageRawData = await _post<LevelData>("/gamedata/level", {
       levelId: stageData.levelId.toLowerCase(),
     });
-    console.log("stageRawData", stageRawData);
     setLevelData(stageRawData);
   }
 
@@ -154,7 +157,8 @@ export default function StageSelector() {
           getKey={(stage) => stage.id}
           getValue={(stage) => {
             if (stage.isBoss) return `BOSS · ${stage.name}`;
-            return `${stage.isElite ? "紧急 · " : ""}${stage.name}`;
+            if (stage.id.includes("duel")) return `狭路 · ${stage.name}`;
+            return `${stage.isElite ? "紧急 · " : "普通 · "}${stage.name}`;
           }}
           selectedKeys={[stageId]}
           onChange={(evt) => {

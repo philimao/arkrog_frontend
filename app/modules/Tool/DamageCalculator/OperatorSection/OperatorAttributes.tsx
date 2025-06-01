@@ -156,14 +156,18 @@ export function useDefTagGroups(props: { attribute: CharAttribute; context: Buff
       tooltip: "基础",
       tags: [
         <AttrTag tooltip="基础">{attribute?.def}</AttrTag>,
-        ...context.relic_rune_add.def_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_add.def_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
     {
       tooltip: "局外乘区",
       tags: [
         <AttrTag tooltip="基数">1</AttrTag>,
-        ...context.relic_rune_mul.def_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_mul.def_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
   ];
@@ -178,8 +182,8 @@ export function useAttackSpeedTagGroups(props: { attribute: CharAttribute; conte
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.attackSpeed}</AttrTag>,
-        ...context.relic_rune_add.attack_speed_source.map((item) => (
-          <AttrTag tooltip={item.name}>{item.value}</AttrTag>
+        ...context.relic_rune_add.attack_speed_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
         // ...context.in_game_buff_add.attack_speed_source.map((item) => (
         //   <AttrTag tooltip={item.name}>{item.value}</AttrTag>
@@ -203,7 +207,9 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Buf
       tooltip: "局外",
       tags: [
         <AttrTag tooltip="基础">{attribute?.cost}</AttrTag>,
-        ...context.relic_rune_add.cost_source.map((item) => <AttrTag tooltip={item.name}>{item.value}</AttrTag>),
+        ...context.relic_rune_add.cost_source.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
+        )),
       ],
     },
   ];
@@ -228,8 +234,8 @@ export function useHpRecoveryPerSecTagGroups(props: {
     },
   ];
   if (attribute.hpRecoveryPerSec) tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.hpRecoveryPerSec}</AttrTag>);
-  for (const item of context.relic_rune_add.hp_recovery_per_sec_source) {
-    tokens[0].tags.push(<AttrTag tooltip={item.name}>{item.value}</AttrTag>);
+  for (const item of context.relic_rune_add.hp_recovery_per_sec_source.children) {
+    tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
   }
 
   if (tokens[0].tags.length < 2) {
@@ -255,8 +261,8 @@ export function useSpRecoveryPerSecTagGroups(props: {
   /** 攻回技能不会自动回复技力 */
   if (charInput.skill.spData.spType === "INCREASE_WITH_TIME" && attribute.spRecoveryPerSec)
     tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.spRecoveryPerSec}</AttrTag>);
-  for (const item of context.in_game_buff_add.sp_recovery_per_sec_source) {
-    tokens[0].tags.push(<AttrTag tooltip={item.name}>{item.value}</AttrTag>);
+  for (const item of context.in_game_buff_add.sp_recovery_per_sec_source.children) {
+    tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
   }
 
   if (tokens[0].tags.length < 1) {

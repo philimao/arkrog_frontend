@@ -89,13 +89,9 @@ registerRelicBlackboard("enemy_damage_scale[phy]", (buff: RelicBuff, relic: Reli
     apply(input): void {
       const { context } = input;
       context.in_game_buff_final_mul.enemy_damage_scale_phy += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_phy_source.push({
-        name: relic.name,
-        value: damage_scale.value,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_final_mul.enemy_damage_scale_phy_source.addChild(
+        new NumericLiteralNode(damage_scale.value - 1, relic.name),
+      );
     },
   };
 });
@@ -108,13 +104,9 @@ registerRelicBlackboard("enemy_damage_scale[mag]", (buff: RelicBuff, relic: Reli
     apply(input): void {
       const { context } = input;
       context.in_game_buff_final_mul.enemy_damage_scale_mag += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_mag_source.push({
-        name: relic.name,
-        value: damage_scale.value,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_final_mul.enemy_damage_scale_mag_source.addChild(
+        new NumericLiteralNode(damage_scale.value - 1, relic.name),
+      );
     },
   };
 });
@@ -127,13 +119,9 @@ registerRelicBlackboard("enemy_damage_scale[pure]", (buff: RelicBuff, relic: Rel
     apply(input): void {
       const { context } = input;
       context.in_game_buff_final_mul.enemy_damage_scale_pure += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_pure_source.push({
-        name: relic.name,
-        value: damage_scale.value,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_final_mul.enemy_damage_scale_pure_source.addChild(
+        new NumericLiteralNode(damage_scale.value - 1, relic.name),
+      );
     },
   };
 });
@@ -146,13 +134,9 @@ registerRelicBlackboard("enemy_damage_scale[ep]", (buff: RelicBuff, relic: Relic
     apply(input): void {
       const { context } = input;
       context.in_game_buff_final_mul.enemy_damage_scale_ep *= ep_damage_scale.value;
-      context.in_game_buff_final_mul.enemy_damage_scale_ep_source.push({
-        name: relic.name,
-        value: ep_damage_scale.value,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_final_mul.enemy_damage_scale_ep_source.addChild(
+        new NumericLiteralNode(ep_damage_scale.value, relic.name),
+      );
     },
   };
 });
@@ -167,15 +151,9 @@ registerRelicBlackboard("enemy_damage_resistance[inf]", (buff: RelicBuff, relic:
       const value = 1 - damage_resistance.value;
       if (context.in_game_buff_final_mul.enemy_damage_resistance_inf > value) {
         context.in_game_buff_final_mul.enemy_damage_resistance_inf = value;
-        context.in_game_buff_final_mul.enemy_damage_resistance_inf_source = [
-          {
-            name: relic.name,
-            value: damage_resistance.value,
-            usage: relic.usage,
-            buff,
-            relic,
-          },
-        ];
+        context.in_game_buff_final_mul.enemy_damage_resistance_inf_source.addChild(
+          new NumericLiteralNode(value, relic.name),
+        );
       }
     },
   };
@@ -194,13 +172,9 @@ registerRelicBlackboard("modify_sp[attack_or_damage]", (buff: RelicBuff, relic: 
       const { context } = input;
       // 保留两位小数
       context.in_game_buff_add.sp_recovery_per_sec += Math.round((sp.value / interval.value) * 100) / 100;
-      context.in_game_buff_add.sp_recovery_per_sec_source.push({
-        name: relic.name,
-        value: Math.round((sp.value / interval.value) * 100) / 100,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+        new NumericLiteralNode(Math.round((sp.value / interval.value) * 100) / 100, relic.name),
+      );
     },
   };
 });
@@ -215,13 +189,9 @@ registerRelicBlackboard("modify_sp_recover[normal]", (buff: RelicBuff, relic: Re
     apply(input): void {
       const { context } = input;
       context.in_game_buff_add.sp_recovery_per_sec += sp_recovery_per_sec.value;
-      context.in_game_buff_add.sp_recovery_per_sec_source.push({
-        name: relic.name,
-        value: sp_recovery_per_sec.value,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+        new NumericLiteralNode(sp_recovery_per_sec.value, relic.name),
+      );
     },
   };
 });
@@ -233,13 +203,7 @@ registerRelicBlackboard("rogue_2_attack_speed_up[life_point]", (buff: RelicBuff,
     apply(input): void {
       const { context } = input;
       context.in_game_buff_add.attack_speed += 50;
-      context.in_game_buff_add.attack_speed_source.push({
-        name: relic.name,
-        value: 50,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_add.attack_speed_source.addChild(new NumericLiteralNode(50, relic.name));
     },
   };
 });
@@ -279,13 +243,9 @@ registerRelicBlackboard("rogue_2_block_cnt[life_point]", (buff: RelicBuff, relic
     apply(input): void {
       const { context } = input;
       context.in_game_buff_add.sp_recovery_per_sec += Math.round((sp.value / interval.value) * 100) / 100;
-      context.in_game_buff_add.sp_recovery_per_sec_source.push({
-        name: relic.name,
-        value: Math.round((sp.value / interval.value) * 100) / 100,
-        usage: relic.usage,
-        buff,
-        relic,
-      });
+      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+        new NumericLiteralNode(Math.round((sp.value / interval.value) * 100) / 100, relic.name),
+      );
     },
   };
 });

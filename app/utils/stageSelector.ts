@@ -34,6 +34,7 @@ export const navOfZone = [
       const args = stage.id.split("_");
       if ((args[1] === "n" || args[1] === "e") && args[2] === "3") return true;
       if (args[1] === "b" && ["1", "2", "3"].includes(args[2])) return true;
+      if (args[1] === "duel") return true;
       return false;
     },
   },
@@ -42,8 +43,9 @@ export const navOfZone = [
     name: "第四层",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
-      if (args[1] !== "n" && args[1] !== "e") return false;
-      return args[2] === "4";
+      if ((args[1] === "n" || args[1] === "e") && args[2] === "4") return true;
+      if (args[1] === "duel") return true;
+      return false;
     },
   },
   {
@@ -53,6 +55,7 @@ export const navOfZone = [
       const args = stage.id.split("_");
       if ((args[1] === "n" || args[1] === "e") && args[2] === "5") return true;
       if (args[1] === "b" && ["4", "5"].includes(args[2])) return true;
+      if (args[1] === "duel") return true;
       return false;
     },
   },

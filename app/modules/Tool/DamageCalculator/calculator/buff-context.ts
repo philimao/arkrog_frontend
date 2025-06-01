@@ -44,19 +44,13 @@ export interface IBuffContext {
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
     /** 攻击速度来源 */
-    attack_speed_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    attack_speed_source: ExpressionGroupNode;
     /** 防御力来源 */
-    def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    def_source: ExpressionGroupNode;
     /** 部署费用来源 */
-    cost_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    cost_source: ExpressionGroupNode;
     /** 每秒生命回复来源 */
-    hp_recovery_per_sec_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    hp_recovery_per_sec_source: ExpressionGroupNode;
   };
   /** 藏品rune 局外乘算 */
   relic_rune_mul: {
@@ -69,7 +63,7 @@ export interface IBuffContext {
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
     /** 防御力来源 */
-    def_source: Array<{ name: string; value: number; usage: string; buff?: RelicBuff; relic?: RelicWrapper }>;
+    def_source: ExpressionGroupNode;
     /** 最大生命值来源 */
     max_hp_source: ExpressionGroupNode;
   };
@@ -84,15 +78,9 @@ export interface IBuffContext {
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
     /** 攻击速度来源 */
-    attack_speed_source: Array<{ name: string; value: number; usage: string; buff: RelicBuff; relic: RelicWrapper }>;
+    attack_speed_source: ExpressionGroupNode;
     /** 每秒技力回复来源 */
-    sp_recovery_per_sec_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    sp_recovery_per_sec_source: ExpressionGroupNode;
   };
   /** 局内Buff 直接乘算 */
   in_game_buff_mul: {
@@ -133,77 +121,23 @@ export interface IBuffContext {
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
     /** 敌人攻击力减少来源 */
-    enemy_atk_down_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_atk_down_source: ExpressionGroupNode;
     /** 敌人攻击力增加来源 */
-    enemy_atk_up_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_atk_up_source: ExpressionGroupNode;
     /** 敌人防御力减少来源 */
-    enemy_def_down_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_def_down_source: ExpressionGroupNode;
     /** 敌人最大生命值减少来源 */
-    enemy_max_hp_down_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_max_hp_down_source: ExpressionGroupNode;
     /** 敌人物理易伤来源 */
-    enemy_damage_scale_phy_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_damage_scale_phy_source: ExpressionGroupNode;
     /** 敌人法术易伤来源 */
-    enemy_damage_scale_mag_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_damage_scale_mag_source: ExpressionGroupNode;
     /** 敌人真实易伤来源 */
-    enemy_damage_scale_pure_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_damage_scale_pure_source: ExpressionGroupNode;
     /** 敌人元素损伤来源 */
-    enemy_damage_scale_ep_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_damage_scale_ep_source: ExpressionGroupNode;
     /** 敌人减伤来源 */
-    enemy_damage_resistance_inf_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    enemy_damage_resistance_inf_source: ExpressionGroupNode;
   };
   /** 全局Buff 堆叠 */
   global_buff_stack: {
@@ -216,29 +150,11 @@ export interface IBuffContext {
     /** 真实增伤 */
     damage_scale_pure: number;
     /** 物理增伤来源 */
-    damage_scale_phy_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    damage_scale_phy_source: ExpressionGroupNode;
     /** 法术增伤来源 */
-    damage_scale_mag_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    damage_scale_mag_source: ExpressionGroupNode;
     /** 真实增伤来源 */
-    damage_scale_pure_source: Array<{
-      name: string;
-      value: number;
-      usage: string;
-      buff?: RelicBuff;
-      relic?: RelicWrapper;
-    }>;
+    damage_scale_pure_source: ExpressionGroupNode;
   };
 }
 
@@ -256,133 +172,103 @@ export class BuffContext implements IBuffContext {
   };
   relic_rune_add: IBuffContext["relic_rune_add"] = {
     max_hp: 0,
-    max_hp_source: new ExpressionGroupNode("+", "局外直接加成"),
+    max_hp_source: new ExpressionGroupNode("+", "局外加算"),
     atk: 0,
-    atk_source: new ExpressionGroupNode("+", "局外直接加成"),
+    atk_source: new ExpressionGroupNode("+", "局外加算"),
     attack_speed: 0,
-    attack_speed_source: [],
+    attack_speed_source: new ExpressionGroupNode("+", "局外加算"),
     def: 0,
-    def_source: [],
+    def_source: new ExpressionGroupNode("+", "局外加算"),
     cost: 0,
-    cost_source: [],
+    cost_source: new ExpressionGroupNode("+", "局外加算"),
     hp_recovery_per_sec: 0,
-    hp_recovery_per_sec_source: [],
+    hp_recovery_per_sec_source: new ExpressionGroupNode("+", "局外加算"),
   };
   relic_rune_mul: IBuffContext["relic_rune_mul"] = {
     atk: 1,
     def: 1,
     max_hp: 1,
-    atk_source: new ExpressionGroupNode("+", "局外乘算加成").addChild(new NumericLiteralNode(1, "基数")),
-    def_source: [],
-    max_hp_source: new ExpressionGroupNode("+", "局外乘算加成").addChild(new NumericLiteralNode(1, "基数")),
+    atk_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    def_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    max_hp_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: 0,
-    atk_source: new ExpressionGroupNode("+", "局内直接加成"),
+    atk_source: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: 0,
-    attack_speed_source: [],
+    attack_speed_source: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: 0,
-    sp_recovery_per_sec_source: [],
+    sp_recovery_per_sec_source: new ExpressionGroupNode("+", "局内直接加算"),
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: 1,
-    atk_source: new ExpressionGroupNode("+", "局内直接加成").addChild(new NumericLiteralNode(1, "基数")),
+    atk_source: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_final_add: IBuffContext["in_game_buff_final_add"] = {
     atk: 0,
-    atk_source: new ExpressionGroupNode("+", "局内最终加成"),
+    atk_source: new ExpressionGroupNode("+", "局内最终加算"),
   };
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: 1,
-    atk_source: new ExpressionGroupNode("+", "局内最终加成").addChild(new NumericLiteralNode(1, "基数")),
+    atk_source: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk_down: 1,
-    enemy_atk_down_source: [],
+    enemy_atk_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
     enemy_atk_up: 1,
-    enemy_atk_up_source: [],
+    enemy_atk_up_source: new ExpressionGroupNode("*", "局内最终乘算"),
     enemy_def_down: 1,
-    enemy_def_down_source: [],
+    enemy_def_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
     enemy_damage_scale_phy: 1,
-    enemy_damage_scale_phy_source: [],
+    enemy_damage_scale_phy_source: new ExpressionGroupNode("+", "局内最终乘算"),
     enemy_damage_scale_mag: 1,
-    enemy_damage_scale_mag_source: [],
+    enemy_damage_scale_mag_source: new ExpressionGroupNode("+", "局内最终乘算"),
     enemy_damage_scale_pure: 1,
-    enemy_damage_scale_pure_source: [],
+    enemy_damage_scale_pure_source: new ExpressionGroupNode("+", "局内最终乘算"),
     enemy_damage_scale_ep: 1,
-    enemy_damage_scale_ep_source: [],
+    enemy_damage_scale_ep_source: new ExpressionGroupNode("*", "局内最终乘算"),
     enemy_max_hp_down: 1,
-    enemy_max_hp_down_source: [],
+    enemy_max_hp_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
     enemy_damage_resistance_inf: 1,
-    enemy_damage_resistance_inf_source: [],
+    enemy_damage_resistance_inf_source: new ExpressionGroupNode("*", "局内最终乘算"),
   };
   global_buff_stack: IBuffContext["global_buff_stack"] = {
     damage_scale: 1,
     damage_scale_phy: 1,
     damage_scale_mag: 1,
-    damage_scale_mag_source: [],
     damage_scale_pure: 1,
-    damage_scale_pure_source: [],
-    damage_scale_phy_source: [],
+    damage_scale_mag_source: new ExpressionGroupNode("*", "堆叠"),
+    damage_scale_pure_source: new ExpressionGroupNode("*", "堆叠"),
+    damage_scale_phy_source: new ExpressionGroupNode("*", "堆叠"),
   };
   constructor() {}
 
   /** 敌人攻击力减少 最终乘区 */
   mut_in_game_buff_final_mul_enemy_atk_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_atk_down *= value;
-    this.in_game_buff_final_mul.enemy_atk_down_source.push({
-      name: relic.name,
-      value,
-      usage: relic.usage,
-      buff,
-      relic,
-    });
+    this.in_game_buff_final_mul.enemy_atk_down_source.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人攻击力增加 最终乘区 */
   mut_in_game_buff_final_mul_enemy_atk_up(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_atk_up *= value;
-    this.in_game_buff_final_mul.enemy_atk_up_source.push({
-      name: relic.name,
-      value,
-      usage: relic.usage,
-      buff,
-      relic,
-    });
+    this.in_game_buff_final_mul.enemy_atk_up_source.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人防御力减少 最终乘区 */
   mul_in_game_buff_final_mul_enemy_def_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_def_down *= value;
-    this.in_game_buff_final_mul.enemy_def_down_source.push({
-      name: relic.name,
-      value,
-      usage: relic.usage,
-      buff,
-      relic,
-    });
+    this.in_game_buff_final_mul.enemy_def_down_source.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人最大生命值减少 最终乘区 */
   mul_in_game_buff_final_mul_enemy_max_hp_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_max_hp_down *= value;
-    this.in_game_buff_final_mul.enemy_max_hp_down_source.push({
-      name: relic.name,
-      value,
-      usage: relic.usage,
-      buff,
-      relic,
-    });
+    this.in_game_buff_final_mul.enemy_max_hp_down_source.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 法术增伤 堆叠 */
   stack_global_buff_stack_damage_scale_mag(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.global_buff_stack.damage_scale_mag *= value;
-    this.global_buff_stack.damage_scale_mag_source.push({
-      name: relic.name,
-      value,
-      usage: relic.usage,
-      buff,
-      relic,
-    });
+    this.global_buff_stack.damage_scale_mag_source.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 克隆 */

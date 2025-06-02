@@ -4,32 +4,26 @@ import { registerCalculatorImpl } from "../impls";
 
 /** 维娜·维多利亚伤害计算器 */
 export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
-  // 干员养成加成
-  let context = CalculatorHelper.analyzeChar({
-    charInput: input.charInput,
-    charData: input.charData,
-  });
-
-  // 生成藏品加成
-  context = CalculatorHelper.analyzeRelics(
-    {
-      charInput: input.charInput,
-      charData: input.charData,
-      relics: input.relics,
-      enemyInput: input.enemyInput,
-    },
-    context,
-  );
-
+  const context = input.buffContext;
   // 获取局内buff
-  const atkBuffInAdd = context.in_game_buff_final_add.atk; // 攻击力直接加算
-  const atkBuffInMul = context.in_game_buff_mul.atk - 1; // 攻击力直接乘算
-  const atkBuffFinalAdd = context.in_game_buff_final_add.atk; // 攻击最终加算
-  const atkBuffFinalMul = context.in_game_buff_final_mul.atk; // 攻击最终乘算
-  const damage_scale = context.global_buff_stack.damage_scale; // 通用增伤总倍率
-  const damage_scale_phy = context.global_buff_stack.damage_scale_phy; // 物理增伤总倍率
-  const damage_scale_mag = context.global_buff_stack.damage_scale_mag; // 法术增伤总倍率
-  const damage_scale_pure = context.global_buff_stack.damage_scale_pure; // 真伤增伤总倍率
+  /** 攻击力直接加算 */
+  const atkBuffInAdd = context.in_game_buff_add.atk_source.calculate();
+  /** 攻击力直接乘算 */
+  const atkBuffInMul = context.in_game_buff_mul.atk_source.calculate() - 1;
+  /** 攻击最终加算 */
+  const atkBuffFinalAdd = context.in_game_buff_final_add.atk_source.calculate();
+  /** 攻击最终乘算 */
+  const atkBuffFinalMul = context.in_game_buff_final_mul.atk_source.calculate();
+  /** 通用增伤总倍率 */
+  const damage_scale = context.global_buff_stack.damage_scale;
+  /** 物理增伤总倍率 */
+  const damage_scale_phy = context.global_buff_stack.damage_scale_phy_source.calculate();
+  /** 法术增伤总倍率 */
+  const damage_scale_mag = context.global_buff_stack.damage_scale_mag_source.calculate();
+  /** 真伤增伤总倍率 */
+  const damage_scale_pure = context.global_buff_stack.damage_scale_pure_source.calculate();
+  /** 元素损伤易伤 */
+  const damage_scale_EP = context.in_game_buff_final_mul.enemy_damage_scale_ep_source.calculate();
 
   const atkSpeedBuff = context.in_game_buff_add.attack_speed + context.relic_rune_add.attack_speed; // 额外攻击速度
   const spBuffAdd = context.in_game_buff_add.sp_recovery_per_sec; // 额外技力回复速度
@@ -48,7 +42,6 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
-
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage =

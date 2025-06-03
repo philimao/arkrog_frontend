@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
@@ -46,6 +46,12 @@ export default function TournamentForm({
   const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (tournamentData) {
+      setFormData(tournamentData);
+    }
+  }, [tournamentData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

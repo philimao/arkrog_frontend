@@ -31,7 +31,9 @@ export default function TournamentPlayersAccordionItem({
                   editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
                 }}
               >
-                <div className={`w-16 h-16 aspect-square flex items-center justify-center ${editingPlayer === player ? "bg-mid-gray text-white": "bg-light-gray text-black"}`}>
+                <div
+                  className={`w-16 h-16 aspect-square flex items-center justify-center ${editingPlayer === player ? "bg-mid-gray text-white" : "bg-light-gray text-black"}`}
+                >
                   {player.face ? (
                     <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                   ) : (
@@ -115,12 +117,44 @@ export default function TournamentPlayersAccordionItem({
               <p>这里放bilibili头像😊</p>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-light mb-1">所属队伍</label>
-            <div className="bg-mid-gray p-2">
-              <p>这里是队伍dropwdown select</p>
+
+          {formData.type === "team" && (
+            <div>
+              <label className="block text-sm font-light mb-1">
+                所属队伍 <span className="text-ak-red">*</span>
+              </label>
+              <select
+                name="playerTeam"
+                value={formData.teams?.find((team) => team.members.includes(editingPlayer.name))?.name}
+                onChange={(e) => {
+                  const newTeams = [...formData.teams!];
+                  newTeams
+                    .find((t) => t.members.includes(editingPlayer.name))
+                    ?.members.splice(
+                      newTeams
+                        .find((t) => t.members.includes(editingPlayer.name))
+                        ?.members.indexOf(editingPlayer.name)!,
+                      1,
+                    );
+                  newTeams.find((t) => t.name === e.target.value)?.members.push(editingPlayer.name);
+                  setFormData((prev) => ({
+                    ...prev,
+                    teams: newTeams,
+                  }));
+                }}
+                className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
+                required
+              >
+                {formData.teams?.map((team) => {
+                  return (
+                    <option key={team.id} value={team.name}>
+                      {team.name}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
-          </div>
+          )}
           <div>
             <label className="block text-sm font-light mb-1">自定义内容 key</label>
             <div className="bg-mid-gray p-2">

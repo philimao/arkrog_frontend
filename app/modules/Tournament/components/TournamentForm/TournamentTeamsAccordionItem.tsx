@@ -112,24 +112,6 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">成员 (用逗号隔开)</label>
-                  <input
-                    type="text"
-                    value={team.members.join(", ")}
-                    onChange={(e) => {
-                      const members = e.target.value.split(/[,，]+/).map((m) => m.trim());
-                      const newTeams = [...formData.teams!];
-                      newTeams[index].members = members;
-                      setFormData((prev) => ({
-                        ...prev,
-                        teams: newTeams,
-                      }));
-                    }}
-                    onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-light mb-1">最终排名</label>
                   <input
                     type="number"

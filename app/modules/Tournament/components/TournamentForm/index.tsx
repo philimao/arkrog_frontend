@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
@@ -46,9 +46,34 @@ export default function TournamentForm({
   const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
+  const formDataRef = useRef<TournamentData>(formData);
+  const saveToStorageRef = useRef<boolean>(true);
 
   useEffect(() => {
-    if (tournamentData) {
+    const saveFormData = () => {
+      if (saveToStorageRef.current) {
+        localStorage.setItem(`tournamentForm-${tournamentData?.id}`, JSON.stringify(formDataRef.current));
+      }
+    };
+
+    window.addEventListener('beforeunload', saveFormData);
+    window.addEventListener('popstate', saveFormData);
+
+    return () => {
+      window.removeEventListener('beforeunload', saveFormData);
+      window.removeEventListener('popstate', saveFormData);
+    };
+  }, []);
+
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem(`tournamentForm-${tournamentData?.id}`);
+    if (storedData) {
+      setFormData(JSON.parse(storedData));
+    } else if (tournamentData) {
       setFormData(tournamentData);
     }
   }, [tournamentData]);
@@ -75,11 +100,18 @@ export default function TournamentForm({
       // Here you would typically send the updated data to your API
       // await _post("/tournament/update", { tournament: formData });
       toast.success("已成功保存");
+      returnToPrevPage();
     } catch (error) {
       toast.error(`保存失败: ${(error as Error).message}`);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const returnToPrevPage = () => {
+    saveToStorageRef.current = false;
+    localStorage.removeItem(`tournamentForm-${tournamentData?.id}`);
+    navigate(-1);
   };
 
   const handleFormKeyDown = (e: React.KeyboardEvent) => {
@@ -88,8 +120,21 @@ export default function TournamentForm({
     }
   };
 
+  const handleAccordionClick = (e: React.MouseEvent) => {
+    // If the click is on an input, select, or textarea, force focus
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLSelectElement ||
+      e.target instanceof HTMLTextAreaElement
+    ) {
+      setTimeout(() => {
+        (e.target as HTMLElement).focus();
+      }, 0);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown}>
+    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} onClick={handleAccordionClick}>
       <Accordion
         className="px-0"
         defaultExpandedKeys={["赛事信息"]}
@@ -144,7 +189,7 @@ export default function TournamentForm({
       <div className="flex justify-end space-x-4 mt-6">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={returnToPrevPage}
           className="px-4 py-2 rounded-md text-black bg-light-gray"
           disabled={isSubmitting}
         >

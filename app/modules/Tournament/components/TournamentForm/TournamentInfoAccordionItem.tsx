@@ -223,8 +223,8 @@ export default function TournamentInfoAccordionItem({
                 }}
               />
             ) : (
-              <div className="px-2 py-1 rounded-md bg-mid-gray">
-                <button key={index} type="button" className="" onClick={() => setEditingLabelIndex(index)}>
+              <div key={index} className="px-2 py-1 rounded-md bg-mid-gray">
+                <button type="button" className="" onClick={() => setEditingLabelIndex(index)}>
                   {label}
                 </button>
                 <button

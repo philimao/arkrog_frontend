@@ -16,6 +16,8 @@ import type { CharData, RelicWrapper } from "~/types/gameData";
 import { useShallow } from "zustand/react/shallow";
 import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
 import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
+import type { AdditionEntry } from "../calculator/helper";
+import { CalculatorHelper } from "../calculator/helper";
 
 const StyledRelicSelector = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "block" : "none")};
@@ -172,7 +174,7 @@ export default function RelicSelectorWrapper({ charData }: { charData?: CharData
   return <RelicSelector charData={charData} relicWrappers={relicWrappers} />;
 }
 
-function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relicWrappers: RelicWrapper[] }) {
+function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: RelicWrapper[] }) {
   const { items } = useGameDataStore();
   const {
     rogueKey,
@@ -181,10 +183,8 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
     toggleShowRelics,
     selectedIds,
     setSelectedIds,
-    setCharsBuff,
-    setEnemyBuff,
-    outBuff,
     rogueInput,
+    relicAnalysisResult,
   } = useDamageCalculatorStore();
 
   // Tag筛选
@@ -261,17 +261,14 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
   //   }
   // };
 
-  // 应用藏品效果
-  const charName = charData?.name || "";
-  useEffect(() => {
-    const { charResult, enemyResult } = finalizeRelicResults(parseFloat(outBuff), relicWrappers, selectedIds);
-    setCharsBuff(charName, charResult);
-    setEnemyBuff(enemyResult);
-  }, [charName, outBuff, relicWrappers, selectedIds, setCharsBuff, setEnemyBuff]);
-
-  const { enemyBuff } = useDamageCalculatorStore();
-  const charBuff = useDamageCalculatorStore(useShallow((state) => state.charsBuff[charName]));
-  const charBuffInGame = useDamageCalculatorStore(useShallow((state) => state.charsBuffInGame[charName]));
+  let additionEntry: AdditionEntry = {
+    in_game_char: [],
+    out_game_char: [],
+    enemy: [],
+  };
+  if (relicAnalysisResult) {
+    additionEntry = CalculatorHelper.outputAdditionEntry(relicAnalysisResult);
+  }
 
   return (
     <StyledRelicSelector $active={showRelics}>
@@ -363,17 +360,17 @@ function RelicSelector({ charData, relicWrappers }: { charData?: CharData; relic
                 <StyledBuffInfoInner>
                   <div className="text-xl">
                     {type === "operator"
-                      ? Object.keys(charBuff || {}).length + Object.keys(charBuffInGame || {}).length
-                      : Object.keys(enemyBuff || {}).length}
+                      ? additionEntry.out_game_char.length + additionEntry.in_game_char.length
+                      : additionEntry.enemy.length}
                   </div>
                   <div>{typeMap[type as never] + "加成"}</div>
                 </StyledBuffInfoInner>
               </StyledBuffInfo>
               <StyledBuffText>
                 {type === "operator" ? (
-                  <BuffText charBuff={charBuff} inGameBuff={charBuffInGame} />
+                  <BuffText additions={additionEntry.out_game_char.concat(additionEntry.in_game_char)} />
                 ) : (
-                  <BuffText enemyBuff={enemyBuff} />
+                  <BuffText additions={additionEntry.enemy} />
                 )}
               </StyledBuffText>
             </StyledBuffColumn>

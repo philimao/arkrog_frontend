@@ -36,10 +36,6 @@ interface DamageCalculatorStore {
   topicSpecItems: ITopicSpecItem[];
   relicsMap: Record<RogueKey, RelicWrapper[]>;
   enemyBuff: Record<string, number>;
-  /** @deprecated 请使用BuffContext中的relicBuff */
-  charsBuff: Record<string, Record<string, number>>;
-  /** @deprecated 请使用BuffContext中的in_game_buff */
-  charsBuffInGame: Record<string, Record<string, number>>;
   charsModifier: Record<string, AttributeModifier>;
   selectedIds: string[];
   enemyData: EnemyData;
@@ -72,8 +68,6 @@ interface DamageCalculatorAction {
   toggleRelicSelection: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
-  setEnemyBuff: (buff: Record<string, number>) => void;
-  setCharsBuff: (charName: string, buff: Record<string, number>) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setStageData: (stageData: StageData) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
@@ -301,18 +295,6 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           "setEnemyDataParsed",
         ),
       enemyBuff: {} as Record<string, number>,
-      charsBuff: {} as Record<string, Record<string, number>>,
-      charsBuffInGame: {} as Record<string, Record<string, number>>,
-      setEnemyBuff: (buff) => set((state) => ({ ...state, enemyBuff: buff }), undefined, "setEnemyBuff"),
-      setCharsBuff: (charName, buff) => {
-        set(
-          (state) => {
-            state.charsBuff[charName] = buff as never;
-          },
-          undefined,
-          "setCharsBuff",
-        );
-      },
       charsModifier: {} as Record<string, AttributeModifier>,
       setCharsModifier: (charName, modifier) => {
         set(

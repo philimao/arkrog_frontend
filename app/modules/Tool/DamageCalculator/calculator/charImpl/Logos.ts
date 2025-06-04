@@ -1,10 +1,12 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
+import { ExpressionUtil } from "../expression-util";
 import { registerCalculatorImpl } from "../impls";
 
 /** 逻各斯伤害计算器 */
 export function Logos(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
+  const expression_util = new ExpressionUtil(input, context);
 
   // 获取局内buff
   /** 攻击力直接加算 */
@@ -40,7 +42,7 @@ export function Logos(input: CalculatorInput): CalculatorOutput {
   const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
+  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
   const enemyMagRes = Math.max(input.enemyInput.attributes.magicResistance - 10, 0); // 敌人法抗
   const enemyEP = input.enemyInput.levelType == "NORMAL" ? 1000 : 2000;
 

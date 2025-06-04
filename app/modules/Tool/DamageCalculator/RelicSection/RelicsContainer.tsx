@@ -87,7 +87,6 @@ const StyledLayerWrapper = styled.div`
 
 function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
   const { setRelicLayer, toggleRelicSelection, selectedIds } = useDamageCalculatorStore();
-  const DEBUG = false;
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
   useEffect(() => {
@@ -128,36 +127,6 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
       <div>
         <div className="font-bold mb-1">{relicWrapper.name}</div>
         <div className="text-xs font-light">{relicWrapper.usage}</div>
-        {DEBUG && (
-          <>
-            <Divider className="my-1" />
-            <div className="whitespace-pre-wrap text-xs font-light">{relicWrapper.id}</div>
-            {/*<div className="whitespace-pre-wrap text-xs font-light">*/}
-            {/*  {JSON.stringify(relicWrapper.buffs, null, 2)}*/}
-            {/*</div>*/}
-            <Divider className="my-1" />
-            {relicWrapper.buffs
-              .map((buff) => buff.charResult)
-              .flat()
-              .map((bb, i) => {
-                return Object.keys(bb).map((key) => (
-                  <div className="text-xs font-light" key={i + key}>
-                    {"干员" + allowedBlackboardKeyMap[key] + ": " + bb[key]}
-                  </div>
-                ));
-              })}
-            {relicWrapper.buffs
-              .map((buff) => buff.enemyResult)
-              .flat()
-              .map((bb, i) => {
-                return Object.keys(bb).map((key) => (
-                  <div className="text-xs font-light" key={i + key}>
-                    {"敌方" + allowedBlackboardKeyMap[key] + ": " + bb[key]}
-                  </div>
-                ));
-              })}
-          </>
-        )}
       </div>
     </StyledRelicBlock>
   );

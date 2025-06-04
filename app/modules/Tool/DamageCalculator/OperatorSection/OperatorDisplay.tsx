@@ -9,6 +9,7 @@ import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
 import { CalculatorHelper, getInGameAtkExpression, getOutAtkExpression } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
+import { DamageCalculatorBlackList } from "../black-list";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -288,6 +289,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               getValue={(_, i) => "精英" + i}
               selectedKeys={[phaseLevel]}
               onChange={(evt) => setPhaseLevel(evt.target.value)}
+              isDisabled
             />
           )}
           {keyFrames && (
@@ -299,6 +301,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               getKey={(_, i) => i.toString()}
               getValue={(frame) => frame.level + "级"}
               onChange={(evt) => setFrameIndex(evt.target.value)}
+              isDisabled
             />
           )}
           {charData && (
@@ -322,6 +325,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 getValue={(skillItem) => skillItem.name}
                 selectedKeys={[skillKey]}
                 onChange={(evt) => setSkillKey(evt.target.value)}
+                disabledKeys={DamageCalculatorBlackList.operator[activeCharName]?.skill}
               />
               <ToolSelect
                 disallowEmptySelection={true}
@@ -331,6 +335,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 getValue={(levelItem) => levelItem.name}
                 selectedKeys={[skillLevel]}
                 onChange={(evt) => setSkillLevel(evt.target.value)}
+                isDisabled
               />
             </>
           )}

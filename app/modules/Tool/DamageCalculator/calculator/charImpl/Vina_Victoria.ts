@@ -1,10 +1,12 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
+import { ExpressionUtil } from "../expression-util";
 import { registerCalculatorImpl } from "../impls";
 
 /** 维娜·维多利亚伤害计算器 */
 export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
+  const expression_util = new ExpressionUtil(input, context);
   // 获取局内buff
   /** 攻击力直接加算 */
   const atkBuffInAdd = context.in_game_buff_add.atk_source.calculate();
@@ -40,7 +42,7 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
-  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
+  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;

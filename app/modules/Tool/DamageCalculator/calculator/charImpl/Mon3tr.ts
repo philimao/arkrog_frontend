@@ -1,10 +1,12 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
+import { ExpressionUtil } from "../expression-util";
 import { registerCalculatorImpl } from "../impls";
 
 /** Mon3tr伤害计算器 */
 export function Mon3tr(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
+  const expression_util = new ExpressionUtil(input, context);
 
   // 获取局内buff
   /** 攻击力直接加算 */
@@ -40,8 +42,6 @@ export function Mon3tr(input: CalculatorInput): CalculatorOutput {
   const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
-
-  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   // const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;

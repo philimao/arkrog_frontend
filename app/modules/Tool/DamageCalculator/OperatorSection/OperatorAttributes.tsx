@@ -106,7 +106,7 @@ export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: Bu
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.maxHp}</AttrTag>,
-        ...context.relic_rune_add.max_hp_source.children.map((item) => (
+        ...context.relic_rune_add.max_hp.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -131,7 +131,7 @@ export function useAtkTagGroups(props: { attribute: CharAttribute; context: Buff
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.atk}</AttrTag>,
-        ...context.relic_rune_add.atk_source.children.map((item) => (
+        ...context.relic_rune_add.atk.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -139,7 +139,7 @@ export function useAtkTagGroups(props: { attribute: CharAttribute; context: Buff
     {
       tooltip: "局外乘区",
       tags: [
-        ...context.relic_rune_mul.atk_source.children.map((item) => (
+        ...context.relic_rune_mul.atk.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -182,7 +182,7 @@ export function useAttackSpeedTagGroups(props: { attribute: CharAttribute; conte
       tooltip: "局内",
       tags: [
         <AttrTag tooltip="基础">{attribute?.attackSpeed}</AttrTag>,
-        ...context.relic_rune_add.attack_speed_source.children.map((item) => (
+        ...context.relic_rune_add.attack_speed.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
         // ...context.in_game_buff_add.attack_speed_source.map((item) => (

@@ -7,9 +7,10 @@ import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
-import { CalculatorHelper, getInGameAtkExpression, getOutAtkExpression } from "../calculator/helper";
+import { CalculatorHelper } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
 import { DamageCalculatorBlackList } from "../black-list";
+import { printRelicsInfo } from "../calculator/debug/print-relics-info";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -34,7 +35,7 @@ const StyledSelectWrapper = styled.div`
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { outBuff, activeCharName, charsModifier, topicSpecItems } = useDamageCalculatorStore();
+  const { activeCharName, charsModifier, topicSpecItems } = useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
   const {
     stageData,
@@ -150,7 +151,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         damageResistance: 0,
         damageScale: 0,
       },
-      tech: parseFloat(outBuff),
       attributeModifier: charsModifier[activeCharName],
     }),
     [
@@ -164,7 +164,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       uniEquip,
       uniEquipId,
       uniEquipLevel,
-      outBuff,
       charsModifier,
       activeCharName,
     ],
@@ -236,12 +235,25 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
-    CalculatorHelper.printRelicKeyMap(
-      relicsMap[rogueKey].map((r) => ({
+    printRelicsInfo({
+      charInput: {
+        ...charInput,
+        // 局外面板
+        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
+      },
+      enemyInput: enemyDataParsed,
+      charData: charData, // 干员解包原始数据
+      enemyData: enemyData, // 敌人解包原始数据
+      skillData: skillObject, // 技能原始解包数据
+      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
+      relics: relicsMap[rogueKey].map((r) => ({
         relicData: relicList.find((relic) => relic.id === r?.id),
         ...r,
-      })),
-    );
+      })), // 有效藏品列表
+      rogueInput,
+      buffContext,
+      stageData,
+    });
 
     /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
     let buffPanelContext = CalculatorHelper.analyzeRelics(input);
@@ -249,14 +261,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     buffPanelContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffPanelContext);
 
     setRelicAnalysisResult(buffPanelContext);
-    // 获取精英化等级属性
-    const attribute = charInput.phase?.attributesKeyFrames[charInput.level].data; // TODO 去掉?
-    const outAtkExpression = getOutAtkExpression(attribute?.atk ?? 0, buffContext);
-    const inGameAtkExpression = getInGameAtkExpression(attribute?.atk ?? 0, buffContext);
-    console.log(outAtkExpression.printExpression());
-    console.log(outAtkExpression.printDebug());
-    console.log(inGameAtkExpression.printExpression());
-    console.log(inGameAtkExpression.printDebug());
     // 计算结果
     setCalcOutput(calcResult);
   }, [

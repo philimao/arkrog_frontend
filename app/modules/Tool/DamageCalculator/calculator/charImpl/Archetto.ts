@@ -27,7 +27,8 @@ export function Archetto(input: CalculatorInput): CalculatorOutput {
   /** 元素损伤易伤 */
   const damage_scale_EP = context.in_game_buff_final_mul.enemy_damage_scale_ep_source.calculate();
 
-  const atkSpeedBuff = context.in_game_buff_add.attack_speed + context.relic_rune_add.attack_speed; // 额外攻击速度
+  const atkSpeedBuff =
+    context.in_game_buff_add.attack_speed.calculate() + context.relic_rune_add.attack_speed.calculate(); // 额外攻击速度
   const spBuffAdd = context.in_game_buff_add.sp_recovery_per_sec; // 额外技力回复速度
 
   // 通过 calculateOutsidePanel 获取面板属性

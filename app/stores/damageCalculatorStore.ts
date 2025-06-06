@@ -25,7 +25,6 @@ interface DamageCalculatorStore {
   /** 肉鸽难度 */
   rogueInput: RogueInput;
   difficulty: number;
-  outBuff: string;
   charList: CharData[];
   /** 当前选中的角色 */
   activeCharName: string;
@@ -51,7 +50,7 @@ interface DamageCalculatorAction {
   setRogueDifficulty: (difficulty: number) => void;
   setRogueZone: (zone: string) => void;
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
-  setOutBuff: (outBuff: string) => void;
+  setRougeTech: (tech: string) => void;
   addCharData: () => void;
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
@@ -135,8 +134,14 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setRogueThoughtLoad",
         ),
-      outBuff: "1.3",
-      setOutBuff: (outBuff: string) => set((state) => ({ ...state, outBuff }), undefined, "setOutBuff"),
+      setRougeTech: (tech) =>
+        set(
+          (state) => {
+            state.rogueInput.rogue_4.tech = tech;
+          },
+          undefined,
+          "setRogueThoughtLoad",
+        ),
       charList: [] as CharData[],
       addCharData: () =>
         set(

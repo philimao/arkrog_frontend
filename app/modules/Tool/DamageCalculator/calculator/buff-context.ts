@@ -6,45 +6,20 @@ import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 export interface IBuffContext {
   /** 不生效的藏品 */
   invalidRelics: RelicWrapper[];
-  /** 藏品分类 */
-  categories: {
-    /** 藏品rune 加算 */
-    relic_rune_add: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 藏品rune 乘算 */
-    relic_rune_mul: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 全局Buff 直接加算 */
-    global_buff_add: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 全局Buff 直接乘算 */
-    global_buff_mul: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 全局Buff 最终加算 */
-    global_buff_final_add: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 全局Buff 最终乘算 */
-    global_buff_final_mul: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 全局Buff 堆叠 */
-    global_buff_stack: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-    /** 战斗无关 */
-    other: Array<{ buff: RelicBuff; relic: RelicWrapper }>;
-  };
   /** 藏品rune 局外加算 */
   relic_rune_add: {
-    /** 最大生命值 */
-    max_hp: number;
-    /** 攻击力 */
-    atk: number;
-    /** 攻击速度 */
-    attack_speed: number;
     /** 防御力 */
     def: number;
     /** 部署费用 */
     cost: number;
     /** 每秒生命回复 */
     hp_recovery_per_sec: number;
-    /** 最大生命值来源 */
-    max_hp_source: ExpressionGroupNode;
-    /** 攻击力来源 */
-    atk_source: ExpressionGroupNode;
-    /** 攻击速度来源 */
-    attack_speed_source: ExpressionGroupNode;
+    /** 最大生命值 */
+    max_hp: ExpressionGroupNode;
+    /** 攻击力 */
+    atk: ExpressionGroupNode;
+    /** 攻击速度 */
+    attack_speed: ExpressionGroupNode;
     /** 防御力来源 */
     def_source: ExpressionGroupNode;
     /** 部署费用来源 */
@@ -54,14 +29,12 @@ export interface IBuffContext {
   };
   /** 藏品rune 局外乘算 */
   relic_rune_mul: {
-    /** 攻击力(百分比) */
-    atk: number;
     /** 防御力(百分比) */
     def: number;
     /** 最大生命值(百分比) */
     max_hp: number;
-    /** 攻击力来源 */
-    atk_source: ExpressionGroupNode;
+    /** 攻击力(百分比) */
+    atk: ExpressionGroupNode;
     /** 防御力来源 */
     def_source: ExpressionGroupNode;
     /** 最大生命值来源 */
@@ -71,14 +44,12 @@ export interface IBuffContext {
   in_game_buff_add: {
     /** 攻击力 */
     atk: number;
-    /** 攻击速度 */
-    attack_speed: number;
     /** 每秒技力回复 */
     sp_recovery_per_sec: number;
     /** 攻击力来源 */
     atk_source: ExpressionGroupNode;
-    /** 攻击速度来源 */
-    attack_speed_source: ExpressionGroupNode;
+    /** 攻击速度 */
+    attack_speed: ExpressionGroupNode;
     /** 每秒技力回复来源 */
     sp_recovery_per_sec_source: ExpressionGroupNode;
   };
@@ -160,23 +131,10 @@ export interface IBuffContext {
 
 export class BuffContext implements IBuffContext {
   invalidRelics: RelicWrapper[] = [];
-  categories: IBuffContext["categories"] = {
-    relic_rune_add: [],
-    relic_rune_mul: [],
-    global_buff_add: [],
-    global_buff_mul: [],
-    global_buff_final_add: [],
-    global_buff_final_mul: [],
-    global_buff_stack: [],
-    other: [],
-  };
   relic_rune_add: IBuffContext["relic_rune_add"] = {
-    max_hp: 0,
-    max_hp_source: new ExpressionGroupNode("+", "局外加算"),
-    atk: 0,
-    atk_source: new ExpressionGroupNode("+", "局外加算"),
-    attack_speed: 0,
-    attack_speed_source: new ExpressionGroupNode("+", "局外加算"),
+    max_hp: new ExpressionGroupNode("+", "局外加算"),
+    atk: new ExpressionGroupNode("+", "局外加算"),
+    attack_speed: new ExpressionGroupNode("+", "局外加算"),
     def: 0,
     def_source: new ExpressionGroupNode("+", "局外加算"),
     cost: 0,
@@ -185,18 +143,16 @@ export class BuffContext implements IBuffContext {
     hp_recovery_per_sec_source: new ExpressionGroupNode("+", "局外加算"),
   };
   relic_rune_mul: IBuffContext["relic_rune_mul"] = {
-    atk: 1,
     def: 1,
     max_hp: 1,
-    atk_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    atk: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     def_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     max_hp_source: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: 0,
     atk_source: new ExpressionGroupNode("+", "局内直接加算"),
-    attack_speed: 0,
-    attack_speed_source: new ExpressionGroupNode("+", "局内直接加算"),
+    attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: 0,
     sp_recovery_per_sec_source: new ExpressionGroupNode("+", "局内直接加算"),
   };
@@ -212,32 +168,42 @@ export class BuffContext implements IBuffContext {
     atk: 1,
     atk_source: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk_down: 1,
-    enemy_atk_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_atk_down_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk_up: 1,
-    enemy_atk_up_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_atk_up_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def_down: 1,
-    enemy_def_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_def_down_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_phy: 1,
-    enemy_damage_scale_phy_source: new ExpressionGroupNode("+", "局内最终乘算"),
+    enemy_damage_scale_phy_source: new ExpressionGroupNode("+", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
     enemy_damage_scale_mag: 1,
-    enemy_damage_scale_mag_source: new ExpressionGroupNode("+", "局内最终乘算"),
+    enemy_damage_scale_mag_source: new ExpressionGroupNode("+", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
     enemy_damage_scale_pure: 1,
-    enemy_damage_scale_pure_source: new ExpressionGroupNode("+", "局内最终乘算"),
+    enemy_damage_scale_pure_source: new ExpressionGroupNode("+", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
     enemy_damage_scale_ep: 1,
-    enemy_damage_scale_ep_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_damage_scale_ep_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
     enemy_max_hp_down: 1,
-    enemy_max_hp_down_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_max_hp_down_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_resistance_inf: 1,
-    enemy_damage_resistance_inf_source: new ExpressionGroupNode("*", "局内最终乘算"),
+    enemy_damage_resistance_inf_source: new ExpressionGroupNode("*", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
   };
   global_buff_stack: IBuffContext["global_buff_stack"] = {
     damage_scale: 1,
     damage_scale_phy: 1,
     damage_scale_mag: 1,
     damage_scale_pure: 1,
-    damage_scale_mag_source: new ExpressionGroupNode("*", "堆叠"),
-    damage_scale_pure_source: new ExpressionGroupNode("*", "堆叠"),
-    damage_scale_phy_source: new ExpressionGroupNode("*", "堆叠"),
+    damage_scale_mag_source: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),
+    damage_scale_pure_source: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),
+    damage_scale_phy_source: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),
   };
   constructor() {}
 
@@ -275,7 +241,6 @@ export class BuffContext implements IBuffContext {
   clone() {
     const clone = new BuffContext();
     clone.invalidRelics = this.invalidRelics;
-    clone.categories = this.categories;
     clone.relic_rune_add = { ...this.relic_rune_add };
     clone.relic_rune_mul = { ...this.relic_rune_mul };
     clone.in_game_buff_add = { ...this.in_game_buff_add };

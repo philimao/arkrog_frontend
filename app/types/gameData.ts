@@ -412,8 +412,6 @@ export interface CharInput {
   potential: number;
   /** 干员在游戏中的增益 @deprecated */
   charsBuffInGame: CharBuffInGame;
-  /** 科技加成(百分比) */
-  tech: number;
   /** 属性修正 */
   attributeModifier: {
     /** 攻击力 藏品rune加算 */
@@ -618,6 +616,8 @@ export interface RogueInput {
   rogue_4: {
     /** 层数 */
     zone: string;
+    /** 科技树 */
+    tech: string;
     /** 肉鸽难度 */
     difficulty: number;
     /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */

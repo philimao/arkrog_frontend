@@ -13,7 +13,7 @@ const StyledTopicSelector = styled.div`
 
 export default function TopicSelector() {
   const { topics } = useGameDataStore();
-  const { rogueKey, setRogueKey, setRogueDifficulty, outBuff, setOutBuff, rogueInput } = useDamageCalculatorStore();
+  const { rogueKey, setRogueKey, setRogueDifficulty, setRougeTech, rogueInput } = useDamageCalculatorStore();
 
   // 难度选择
   const difficulties = useMemo(() => {
@@ -39,8 +39,8 @@ export default function TopicSelector() {
 
   useEffect(() => {
     const outBuffs = outBuffMap[rogueKey];
-    setOutBuff(outBuffs![outBuffs!.length - 1]);
-  }, [rogueKey, setOutBuff]);
+    setRougeTech(outBuffs![outBuffs!.length - 1]);
+  }, [rogueKey, setRougeTech]);
 
   return (
     <StyledTopicSelector>
@@ -54,6 +54,7 @@ export default function TopicSelector() {
           getValue={(item) => item.name}
           selectedKeys={[rogueKey]}
           onChange={(evt) => setRogueKey(evt.target.value as RogueKey)}
+          isDisabled
         />
         <ToolSelect
           disallowEmptySelection={true}
@@ -68,8 +69,8 @@ export default function TopicSelector() {
           disallowEmptySelection={true}
           label="科技树加成"
           array={outBuffMap[rogueKey]!}
-          selectedKeys={[outBuff]}
-          onChange={(evt) => setOutBuff(evt.target.value)}
+          selectedKeys={[rogueInput.rogue_4.tech]}
+          onChange={(evt) => setRougeTech(evt.target.value)}
         />
       </div>
     </StyledTopicSelector>

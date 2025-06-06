@@ -7,24 +7,35 @@ import type {
   CharData,
   CharInput,
   EnemyInput,
+  StageData,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
 export type RelicBlackboardInput = {
+  buff: RelicBuff;
+  relic: RelicWrapper;
   charInput: CharInput;
   charData: CharData;
   enemyInput: EnemyInput;
   relics: RelicWrapper[];
+  stageData?: StageData;
 };
 export type RelicBlackboardApplyInput = {
+  buff: RelicBuff;
+  relic: RelicWrapper;
   context: BuffContext;
   relics: RelicWrapper[];
 };
 export type RelicBlackboard = {
-  isActive: (input: RelicBlackboardInput) => boolean;
-  apply(input: RelicBlackboardApplyInput): void;
+  isActive: (input: {
+    charInput: CharInput;
+    charData: CharData;
+    enemyInput: EnemyInput;
+    relics: RelicWrapper[];
+  }) => boolean;
+  apply(input: { context: BuffContext; relics: RelicWrapper[] }): void;
 };
 const implMap = new Map<string, CalculatorImpl>();
 const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard>();

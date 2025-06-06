@@ -22,9 +22,9 @@ export class ExpressionUtil {
       .addChild(
         new ExpressionGroupNode("+", "局外加成")
           .addChild(new NumericLiteralNode(baseAtk, "基础攻击力"))
-          .addChild(...context.relic_rune_add.atk_source.children),
+          .addChild(...context.relic_rune_add.atk.children),
       )
-      .addChild(context.relic_rune_mul.atk_source);
+      .addChild(context.relic_rune_mul.atk);
 
     const atk = new ExpressionGroupNode("*", "直接乘算")
       .addChild(

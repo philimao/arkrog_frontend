@@ -156,6 +156,11 @@ export class ExpressionGroupNode extends BaseNode {
   }
 
   calculate(): number {
+    if (this.operator === "+") {
+      return this.children.reduce((acc, child) => {
+        return acc + child.calculate();
+      }, 0);
+    }
     return this.children.reduce((acc, child) => {
       return acc * child.calculate();
     }, 1);

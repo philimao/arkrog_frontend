@@ -106,8 +106,7 @@ registerRelicBlackboard("enemy_damage_scale[phy]", (buff: RelicBuff, relic: Reli
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_final_mul.enemy_damage_scale_phy += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_phy_source.addChild(
+      context.in_game_buff_final_mul.enemy_damage_scale_phy.addChild(
         new NumericLiteralNode(damage_scale.value - 1, relic.name),
       );
     },
@@ -121,8 +120,7 @@ registerRelicBlackboard("enemy_damage_scale[mag]", (buff: RelicBuff, relic: Reli
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_final_mul.enemy_damage_scale_mag += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_mag_source.addChild(
+      context.in_game_buff_final_mul.enemy_damage_scale_mag.addChild(
         new NumericLiteralNode(damage_scale.value - 1, relic.name),
       );
     },
@@ -136,8 +134,7 @@ registerRelicBlackboard("enemy_damage_scale[pure]", (buff: RelicBuff, relic: Rel
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_final_mul.enemy_damage_scale_pure += damage_scale.value - 1;
-      context.in_game_buff_final_mul.enemy_damage_scale_pure_source.addChild(
+      context.in_game_buff_final_mul.enemy_damage_scale_pure.addChild(
         new NumericLiteralNode(damage_scale.value - 1, relic.name),
       );
     },
@@ -151,8 +148,7 @@ registerRelicBlackboard("enemy_damage_scale[ep]", (buff: RelicBuff, relic: Relic
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_final_mul.enemy_damage_scale_ep *= ep_damage_scale.value;
-      context.in_game_buff_final_mul.enemy_damage_scale_ep_source.addChild(
+      context.in_game_buff_final_mul.enemy_damage_scale_ep.addChild(
         new NumericLiteralNode(ep_damage_scale.value, relic.name),
       );
     },
@@ -167,11 +163,8 @@ registerRelicBlackboard("enemy_damage_resistance[inf]", (buff: RelicBuff, relic:
     apply(input): void {
       const { context } = input;
       const value = 1 - damage_resistance.value;
-      if (context.in_game_buff_final_mul.enemy_damage_resistance_inf > value) {
-        context.in_game_buff_final_mul.enemy_damage_resistance_inf = value;
-        context.in_game_buff_final_mul.enemy_damage_resistance_inf_source.addChild(
-          new NumericLiteralNode(value, relic.name),
-        );
+      if (context.in_game_buff_final_mul.enemy_damage_resistance_inf.calculate() > value) {
+        context.in_game_buff_final_mul.enemy_damage_resistance_inf.addChild(new NumericLiteralNode(value, relic.name));
       }
     },
   };
@@ -189,8 +182,7 @@ registerRelicBlackboard("modify_sp[attack_or_damage]", (buff: RelicBuff, relic: 
     apply(input): void {
       const { context } = input;
       // 保留两位小数
-      context.in_game_buff_add.sp_recovery_per_sec += Math.round((sp.value / interval.value) * 100) / 100;
-      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+      context.in_game_buff_add.sp_recovery_per_sec.addChild(
         new NumericLiteralNode(Math.round((sp.value / interval.value) * 100) / 100, relic.name),
       );
     },
@@ -206,8 +198,7 @@ registerRelicBlackboard("modify_sp_recover[normal]", (buff: RelicBuff, relic: Re
     },
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_add.sp_recovery_per_sec += sp_recovery_per_sec.value;
-      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+      context.in_game_buff_add.sp_recovery_per_sec.addChild(
         new NumericLiteralNode(sp_recovery_per_sec.value, relic.name),
       );
     },
@@ -241,11 +232,9 @@ registerRelicBlackboard("rogue_2_atk_up[life_point][king_suit]", () => {
           );
         }).length > 2;
       if (isUp) {
-        context.in_game_buff_mul.atk += 1.5;
-        context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(1.5, "诸王的冠冕"));
+        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(1.5, "诸王的冠冕"));
       } else {
-        context.in_game_buff_mul.atk += 0.5;
-        context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(0.5, "诸王的冠冕"));
+        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(0.5, "诸王的冠冕"));
       }
     },
   };
@@ -259,8 +248,7 @@ registerRelicBlackboard("rogue_2_block_cnt[life_point]", (buff: RelicBuff, relic
     isActive: () => true, // 默认生效
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_add.sp_recovery_per_sec += Math.round((sp.value / interval.value) * 100) / 100;
-      context.in_game_buff_add.sp_recovery_per_sec_source.addChild(
+      context.in_game_buff_add.sp_recovery_per_sec.addChild(
         new NumericLiteralNode(Math.round((sp.value / interval.value) * 100) / 100, relic.name),
       );
     },
@@ -306,8 +294,7 @@ registerRelicBlackboard("modify_fragment_carry_char_attribute[atk]", (buff: Reli
     },
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_mul.atk += atk.value * relic.layer;
-      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
     },
   };
 });
@@ -326,8 +313,7 @@ registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, r
     },
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_mul.atk += atk.value;
-      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(atk.value, relic.name));
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
     },
   };
 });
@@ -345,8 +331,7 @@ registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicWra
     },
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_mul.atk += atk.value * relic.layer;
-      context.in_game_buff_mul.atk_source.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
     },
   };
 });
@@ -382,7 +367,7 @@ export const commonRelicBlackboard = {
     const attack_speed = getByKey(buff.blackboard, "attack_speed");
     /** 最大生命值 */
     if (max_hp) {
-      context.relic_rune_mul.max_hp_source.addChild(
+      context.relic_rune_mul.max_hp.addChild(
         new NumericLiteralNode(max_hp.value * relic.layer, relic.name, { relic, buff }),
       );
       is_invalid = false;
@@ -398,9 +383,9 @@ export const commonRelicBlackboard = {
       const is_add = ["char_attribute_add"].includes(buff.key);
       const node = new NumericLiteralNode(def.value * relic.layer, relic.name, { relic, buff });
       if (is_add) {
-        context.relic_rune_add.def_source.addChild(node);
+        context.relic_rune_add.def.addChild(node);
       } else {
-        context.relic_rune_mul.def_source.addChild(node);
+        context.relic_rune_mul.def.addChild(node);
       }
       is_invalid = false;
     }

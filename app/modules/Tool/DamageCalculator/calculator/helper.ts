@@ -76,18 +76,18 @@ export class CalculatorHelper {
     /** 应用局外加成(加算) */
     result.atk += context.relic_rune_add.atk.calculate();
     result.attackSpeed += context.relic_rune_add.attack_speed.calculate();
-    result.def += context.relic_rune_add.def_source.calculate();
+    result.def += context.relic_rune_add.def.calculate();
     result.maxHp += context.relic_rune_add.max_hp.calculate();
-    result.cost += context.relic_rune_add.cost_source.calculate();
-    result.hpRecoveryPerSec += context.relic_rune_add.hp_recovery_per_sec_source.calculate();
+    result.cost += context.relic_rune_add.cost.calculate();
+    result.hpRecoveryPerSec += context.relic_rune_add.hp_recovery_per_sec.calculate();
 
     /** 应用局外加成(乘算) */
     result.atk = Math.round(result.atk * context.relic_rune_mul.atk.calculate());
-    result.def = Math.round(result.def * context.relic_rune_mul.def_source.calculate());
-    result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp_source.calculate());
+    result.def = Math.round(result.def * context.relic_rune_mul.def.calculate());
+    result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp.calculate());
 
     /** 应用局内加算 */
-    result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec_source.calculate();
+    result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec.calculate();
 
     return result;
   }
@@ -108,7 +108,7 @@ export class CalculatorHelper {
         result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(favor.attackSpeed, "信赖"));
       }
       if (typedKey === "def" && favor.def) {
-        result.relic_rune_add.def_source.addChild(new NumericLiteralNode(favor.def, "信赖"));
+        result.relic_rune_add.def.addChild(new NumericLiteralNode(favor.def, "信赖"));
       }
       if (typedKey === "maxHp" && favor.maxHp) {
         result.relic_rune_add.max_hp.addChild(new NumericLiteralNode(favor.maxHp, "信赖"));
@@ -120,7 +120,7 @@ export class CalculatorHelper {
       pot.buff?.attributes.attributeModifiers.forEach((mod) => {
         switch (mod.attributeType) {
           case "COST": {
-            result.relic_rune_add.cost_source.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            result.relic_rune_add.cost.addChild(new NumericLiteralNode(mod.value, "潜能"));
             break;
           }
           case "MAX_HP": {
@@ -132,7 +132,7 @@ export class CalculatorHelper {
             break;
           }
           case "DEF": {
-            result.relic_rune_add.def_source.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            result.relic_rune_add.def.addChild(new NumericLiteralNode(mod.value, "潜能"));
             break;
           }
           case "ATTACK_SPEED": {
@@ -217,7 +217,7 @@ export class CalculatorHelper {
       );
     }
     if (charInput && charInput.attributeModifier.atkFinal) {
-      result.in_game_buff_final_add.atk_source.addChild(
+      result.in_game_buff_final_add.atk.addChild(
         new NumericLiteralNode(charInput.attributeModifier.atkFinal, "属性修正"),
       );
     }
@@ -251,20 +251,11 @@ export class CalculatorHelper {
       });
     }
 
-    result.global_buff_stack.damage_scale_phy *= result.in_game_buff_final_mul.enemy_damage_scale_phy;
-    result.global_buff_stack.damage_scale_phy_source.addChild(
-      new NumericLiteralNode(result.in_game_buff_final_mul.enemy_damage_scale_phy, "敌人物理易伤"),
-    );
+    result.global_buff_stack.damage_scale_phy.addChild(result.in_game_buff_final_mul.enemy_damage_scale_phy);
 
-    result.global_buff_stack.damage_scale_mag *= result.in_game_buff_final_mul.enemy_damage_scale_mag;
-    result.global_buff_stack.damage_scale_mag_source.addChild(
-      new NumericLiteralNode(result.in_game_buff_final_mul.enemy_damage_scale_mag, "敌人法术易伤"),
-    );
+    result.global_buff_stack.damage_scale_mag.addChild(result.in_game_buff_final_mul.enemy_damage_scale_mag);
 
-    result.global_buff_stack.damage_scale_pure *= result.in_game_buff_final_mul.enemy_damage_scale_pure;
-    result.global_buff_stack.damage_scale_pure_source.addChild(
-      new NumericLiteralNode(result.in_game_buff_final_mul.enemy_damage_scale_pure, "敌人真伤易伤"),
-    );
+    result.global_buff_stack.damage_scale_pure.addChild(result.in_game_buff_final_mul.enemy_damage_scale_pure);
 
     return result;
   }
@@ -280,13 +271,13 @@ export class CalculatorHelper {
       const tech = parseFloat(rogueInput.rogue_4.tech);
       if (tech > 1) {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.def_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.max_hp_source.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.def.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
       }
       const { difficulty, thoughtLoad, zone } = rogueInput.rogue_4;
       if (difficulty === 18 && thoughtLoad === "CONFUSION") {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
-        context.relic_rune_add.cost_source.addChild(new NumericLiteralNode(3, "思绪混乱"));
+        context.relic_rune_add.cost.addChild(new NumericLiteralNode(3, "思绪混乱"));
       }
       /** 肉鸽难度加成 */
       const bossValues = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
@@ -305,27 +296,23 @@ export class CalculatorHelper {
       const zoneValue = zoneLayerMap[zone]!;
       if (bossValue) {
         const value = Math.pow(bossValue / 100 + 1, zoneValue);
-        context.in_game_buff_final_mul.enemy_atk_down *= value;
-        context.in_game_buff_final_mul.enemy_atk_down_source.addChild(
+        context.in_game_buff_final_mul.enemy_atk_down.addChild(
           new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
         );
 
-        context.in_game_buff_final_mul.enemy_max_hp_down *= value;
-        context.in_game_buff_final_mul.enemy_max_hp_down_source.addChild(
+        context.in_game_buff_final_mul.enemy_max_hp_down.addChild(
           new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
         );
       }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
       if (difficulty >= 4 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
-        context.in_game_buff_final_mul.enemy_max_hp_down *= 1.2;
-        context.in_game_buff_final_mul.enemy_max_hp_down_source.addChild(
+        context.in_game_buff_final_mul.enemy_max_hp_down.addChild(
           new NumericLiteralNode(1.2, `直面魂灵·${difficulty} | 精英和领袖敌人生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人攻击力+10% */
       if (difficulty >= 7 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
-        context.in_game_buff_final_mul.enemy_atk_down *= 1.1;
-        context.in_game_buff_final_mul.enemy_atk_down_source.addChild(
+        context.in_game_buff_final_mul.enemy_atk_down.addChild(
           new NumericLiteralNode(1.1, `直面魂灵·${difficulty} | 精英和领袖敌人攻击力+10%`),
         );
       }
@@ -348,24 +335,16 @@ export class CalculatorHelper {
               context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "max_hp":
-              context.relic_rune_mul.max_hp += value;
-              context.relic_rune_mul.max_hp_source.addChild(new NumericLiteralNode(value, item.name));
+              context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_max_hp_up":
-              context.in_game_buff_final_mul.enemy_max_hp_down *= value;
-              context.in_game_buff_final_mul.enemy_max_hp_down_source.addChild(
-                new NumericLiteralNode(value, item.name),
-              );
+              context.in_game_buff_final_mul.enemy_max_hp_down.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_atk_up":
-              context.in_game_buff_final_mul.enemy_atk_down *= value;
-              context.in_game_buff_final_mul.enemy_atk_down_source.addChild(new NumericLiteralNode(value, item.name));
+              context.in_game_buff_final_mul.enemy_atk_down.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_max_hp_down":
-              context.in_game_buff_final_mul.enemy_max_hp_down *= value;
-              context.in_game_buff_final_mul.enemy_max_hp_down_source.addChild(
-                new NumericLiteralNode(value, item.name),
-              );
+              context.in_game_buff_final_mul.enemy_max_hp_down.addChild(new NumericLiteralNode(value, item.name));
               break;
             default:
               break;
@@ -391,23 +370,25 @@ export class CalculatorHelper {
     const parse = (key: string, value: number) =>
       `${allowedBlackboardKeyMap[key] || key}: ${value > 1 ? value : Math.round(value * 100) + "%"}`;
     Object.entries(context.relic_rune_add).forEach(([key, value]) => {
-      if (typeof value === "number" && value > 0) {
-        result.out_game_char.push(parse(key, value));
+      if (value.calculate() > 0) {
+        result.out_game_char.push(parse(key, value.calculate()));
       }
     });
     Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
-      if (typeof value === "number" && value !== 1) {
-        result.out_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100) + "%"}`);
+      if (value.calculate() !== 1) {
+        result.out_game_char.push(
+          `${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100) + "%"}`,
+        );
       }
     });
     Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
-      if (typeof value === "number" && value > 0) {
-        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value}`);
+      if (value.calculate() > 0) {
+        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value.calculate()}`);
       }
     });
     Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
-      if (typeof value === "number" && value !== 1) {
-        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      if (value.calculate() !== 1) {
+        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
       }
     });
     Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
@@ -421,21 +402,23 @@ export class CalculatorHelper {
         "enemy_damage_scale_ep",
         "enemy_damage_resistance_inf",
       ].includes(key);
-      if (!isEnemy && typeof value === "number" && value !== 1) {
-        result.in_game_char.push(`最终乘算${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      if (!isEnemy && value.calculate() !== 1) {
+        result.in_game_char.push(
+          `最终乘算${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`,
+        );
       }
-      if (isEnemy && typeof value === "number" && value !== 1) {
+      if (isEnemy && value.calculate() !== 1) {
         // 减伤描述特殊
         if (key === "enemy_damage_resistance_inf") {
-          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(100 - value * 100)}%`);
+          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(100 - value.calculate() * 100)}%`);
         } else {
-          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
         }
       }
     });
     Object.entries(context.global_buff_stack).forEach(([key, value]) => {
-      if (typeof value === "number" && value !== 1) {
-        result.in_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value * 100)}%`);
+      if (value.calculate() !== 1) {
+        result.in_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
       }
     });
     return result;
@@ -517,18 +500,18 @@ export class CalculatorHelper {
     console.log(flagLogMap);
     console.log(objectLogMap);
 
-    context.relic_rune_add.def_source.children.forEach((node) => set_row("rune_add", `防御+${node.calculate()}`, node));
+    context.relic_rune_add.def.children.forEach((node) => set_row("rune_add", `防御+${node.calculate()}`, node));
     context.relic_rune_add.attack_speed.children.forEach((node) =>
       set_row("rune_add", `攻速+${node.calculate()}`, node),
     );
 
-    context.relic_rune_mul.max_hp_source.children.forEach((node) =>
+    context.relic_rune_mul.max_hp.children.forEach((node) =>
       set_row("rune_mul", `血量*${toPercent(node.calculate())}`, node),
     );
     context.relic_rune_mul.atk.children.forEach((node) =>
       set_row("rune_mul", `攻击*${toPercent(node.calculate())}`, node),
     );
-    context.relic_rune_mul.def_source.children.forEach((node) =>
+    context.relic_rune_mul.def.children.forEach((node) =>
       set_row("rune_mul", `防御*${toPercent(node.calculate())}`, node),
     );
 
@@ -536,45 +519,45 @@ export class CalculatorHelper {
       set_row("in_game_add", `攻速+${node.calculate()}`, node),
     );
 
-    context.in_game_buff_mul.atk_source.children.forEach((node) =>
+    context.in_game_buff_mul.atk.children.forEach((node) =>
       set_row("in_game_mul", `攻击*${toPercent(node.calculate())}`, node),
     );
 
     // 最终乘算
-    context.in_game_buff_final_mul.enemy_max_hp_down_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_max_hp_down.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方血量*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_atk_down_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_atk_down.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方攻击*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_def_down_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_def_down.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方防御*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_scale_phy_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_scale_phy.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方物理易伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_scale_mag_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_scale_mag.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方法术易伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_scale_pure_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_scale_pure.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方真伤易伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_scale_pure_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_scale_pure.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方真伤易伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_scale_ep_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_scale_ep.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方元素损伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_resistance_inf_source.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_resistance_inf.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方减伤*${toPercent(node.calculate())}`, node),
     );
-    context.global_buff_stack.damage_scale_phy_source.children.forEach((node) =>
+    context.global_buff_stack.damage_scale_phy.children.forEach((node) =>
       set_row("in_game_final_mul", `物理增伤*${toPercent(node.calculate())}`, node),
     );
-    context.global_buff_stack.damage_scale_mag_source.children.forEach((node) =>
+    context.global_buff_stack.damage_scale_mag.children.forEach((node) =>
       set_row("in_game_final_mul", `法术增伤*${toPercent(node.calculate())}`, node),
     );
-    context.global_buff_stack.damage_scale_pure_source.children.forEach((node) =>
+    context.global_buff_stack.damage_scale_pure.children.forEach((node) =>
       set_row("in_game_final_mul", `真伤增伤*${toPercent(node.calculate())}`, node),
     );
 
@@ -656,15 +639,13 @@ export function getInGameAtkExpression(baseAtk: number, context: BuffContext) {
     .addChild(
       new ExpressionGroupNode("+", "直接加算")
         .addChild(outAtkExpression)
-        .addChild(...context.in_game_buff_add.atk_source.children),
+        .addChild(...context.in_game_buff_add.atk.children),
     )
-    .addChild(context.in_game_buff_mul.atk_source);
+    .addChild(context.in_game_buff_mul.atk);
 
   return new ExpressionGroupNode("*", "最终乘算")
     .addChild(
-      new ExpressionGroupNode("+", "最终加算")
-        .addChild(atk)
-        .addChild(...context.in_game_buff_final_add.atk_source.children),
+      new ExpressionGroupNode("+", "最终加算").addChild(atk).addChild(...context.in_game_buff_final_add.atk.children),
     )
-    .addChild(...context.in_game_buff_final_mul.atk_source.children);
+    .addChild(...context.in_game_buff_final_mul.atk.children);
 }

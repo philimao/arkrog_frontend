@@ -114,7 +114,7 @@ export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: Bu
     {
       tooltip: "局外乘区",
       tags: [
-        ...context.relic_rune_mul.max_hp_source.children.map((item) => (
+        ...context.relic_rune_mul.max_hp.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -156,7 +156,7 @@ export function useDefTagGroups(props: { attribute: CharAttribute; context: Buff
       tooltip: "基础",
       tags: [
         <AttrTag tooltip="基础">{attribute?.def}</AttrTag>,
-        ...context.relic_rune_add.def_source.children.map((item) => (
+        ...context.relic_rune_add.def.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -165,7 +165,7 @@ export function useDefTagGroups(props: { attribute: CharAttribute; context: Buff
       tooltip: "局外乘区",
       tags: [
         <AttrTag tooltip="基数">1</AttrTag>,
-        ...context.relic_rune_mul.def_source.children.map((item) => (
+        ...context.relic_rune_mul.def.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -207,7 +207,7 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Buf
       tooltip: "局外",
       tags: [
         <AttrTag tooltip="基础">{attribute?.cost}</AttrTag>,
-        ...context.relic_rune_add.cost_source.children.map((item) => (
+        ...context.relic_rune_add.cost.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),
       ],
@@ -234,7 +234,7 @@ export function useHpRecoveryPerSecTagGroups(props: {
     },
   ];
   if (attribute.hpRecoveryPerSec) tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.hpRecoveryPerSec}</AttrTag>);
-  for (const item of context.relic_rune_add.hp_recovery_per_sec_source.children) {
+  for (const item of context.relic_rune_add.hp_recovery_per_sec.children) {
     tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
   }
 
@@ -261,7 +261,7 @@ export function useSpRecoveryPerSecTagGroups(props: {
   /** 攻回技能不会自动回复技力 */
   if (charInput.skill.spData.spType === "INCREASE_WITH_TIME" && attribute.spRecoveryPerSec)
     tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.spRecoveryPerSec}</AttrTag>);
-  for (const item of context.in_game_buff_add.sp_recovery_per_sec_source.children) {
+  for (const item of context.in_game_buff_add.sp_recovery_per_sec.children) {
     tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
   }
 
@@ -316,7 +316,7 @@ export default function OperatorAttributes(props: {
 
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);
-  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems]);
+  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems, props.enemyInput]);
 
   return (
     <StyledAttributeWrapper>

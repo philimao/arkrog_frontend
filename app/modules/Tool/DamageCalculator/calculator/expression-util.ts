@@ -30,24 +30,22 @@ export class ExpressionUtil {
       .addChild(
         new ExpressionGroupNode("+", "直接加算")
           .addChild(outAtkExpression)
-          .addChild(...context.in_game_buff_add.atk_source.children),
+          .addChild(...context.in_game_buff_add.atk.children),
       )
-      .addChild(context.in_game_buff_mul.atk_source);
+      .addChild(context.in_game_buff_mul.atk);
 
     return new ExpressionGroupNode("*", "最终乘算")
       .addChild(
-        new ExpressionGroupNode("+", "最终加算")
-          .addChild(atk)
-          .addChild(...context.in_game_buff_final_add.atk_source.children),
+        new ExpressionGroupNode("+", "最终加算").addChild(atk).addChild(...context.in_game_buff_final_add.atk.children),
       )
-      .addChild(...context.in_game_buff_final_mul.atk_source.children);
+      .addChild(...context.in_game_buff_final_mul.atk.children);
   }
 
   /** 敌人局内防御力 */
   enemy_in_game_def() {
     return new ExpressionGroupNode("*", "最终乘算")
       .addChild(new NumericLiteralNode(this.input.enemyInput.attributes.def, "局外防御力"))
-      .addChild(...this.context.in_game_buff_final_mul.enemy_def_down_source.children);
+      .addChild(...this.context.in_game_buff_final_mul.enemy_def_down.children);
   }
 
   /** 敌人法术抗性 */

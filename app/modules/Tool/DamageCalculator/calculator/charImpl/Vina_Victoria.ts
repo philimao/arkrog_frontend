@@ -9,27 +9,27 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
   const expression_util = new ExpressionUtil(input, context);
   // 获取局内buff
   /** 攻击力直接加算 */
-  const atkBuffInAdd = context.in_game_buff_add.atk_source.calculate();
+  const atkBuffInAdd = context.in_game_buff_add.atk.calculate();
   /** 攻击力直接乘算 */
-  const atkBuffInMul = context.in_game_buff_mul.atk_source.calculate() - 1;
+  const atkBuffInMul = context.in_game_buff_mul.atk.calculate() - 1;
   /** 攻击最终加算 */
-  const atkBuffFinalAdd = context.in_game_buff_final_add.atk_source.calculate();
+  const atkBuffFinalAdd = context.in_game_buff_final_add.atk.calculate();
   /** 攻击最终乘算 */
-  const atkBuffFinalMul = context.in_game_buff_final_mul.atk_source.calculate();
+  const atkBuffFinalMul = context.in_game_buff_final_mul.atk.calculate();
   /** 通用增伤总倍率 */
-  const damage_scale = context.global_buff_stack.damage_scale;
+  const damage_scale = context.global_buff_stack.damage_scale.calculate();
   /** 物理增伤总倍率 */
-  const damage_scale_phy = context.global_buff_stack.damage_scale_phy_source.calculate();
+  const damage_scale_phy = context.global_buff_stack.damage_scale_phy.calculate();
   /** 法术增伤总倍率 */
-  const damage_scale_mag = context.global_buff_stack.damage_scale_mag_source.calculate();
+  const damage_scale_mag = context.global_buff_stack.damage_scale_mag.calculate();
   /** 真伤增伤总倍率 */
-  const damage_scale_pure = context.global_buff_stack.damage_scale_pure_source.calculate();
+  const damage_scale_pure = context.global_buff_stack.damage_scale_pure.calculate();
   /** 元素损伤易伤 */
-  const damage_scale_EP = context.in_game_buff_final_mul.enemy_damage_scale_ep_source.calculate();
+  const damage_scale_EP = context.in_game_buff_final_mul.enemy_damage_scale_ep.calculate();
 
   const atkSpeedBuff =
     context.in_game_buff_add.attack_speed.calculate() + context.relic_rune_add.attack_speed.calculate(); // 额外攻击速度
-  const spBuffAdd = context.in_game_buff_add.sp_recovery_per_sec; // 额外技力回复速度
+  const spBuffAdd = context.in_game_buff_add.sp_recovery_per_sec.calculate(); // 额外技力回复速度
 
   // 通过 calculateOutsidePanel 获取面板属性
   const outsidePanel = CalculatorHelper.calculateOutsidePanel({
@@ -39,7 +39,7 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf; // 敌人减伤
+  const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf.calculate(); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 

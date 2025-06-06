@@ -277,6 +277,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     rogueInput,
     stageData,
     topicSpecItems,
+    rogueKey,
   ]);
 
   return (

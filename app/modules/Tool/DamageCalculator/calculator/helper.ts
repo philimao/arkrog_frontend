@@ -444,7 +444,7 @@ export class CalculatorHelper {
     );
     console.log(output);
     console.groupEnd();
-    CalculatorHelper.printRelicAnalysisResult(input.buffContext, input.relics);
+    CalculatorHelper.printAdditionContext(input.buffContext, input.relics);
     console.groupEnd();
     console.groupCollapsed("查看结构化输出");
     const tableData = [];
@@ -473,7 +473,12 @@ export class CalculatorHelper {
     console.groupEnd();
   }
 
-  static printRelicAnalysisResult(context: BuffContext, relics: RelicWrapper[]) {
+  /**
+   * 打印加成上下文
+   * @param context
+   * @param relics
+   */
+  static printAdditionContext(context: BuffContext, relics: RelicWrapper[]) {
     interface StringRow {
       藏品名称: string;
       rune_add?: string;
@@ -494,7 +499,7 @@ export class CalculatorHelper {
     }
     const flagLogMap: { [name: string]: StringRow } = {};
     const objectLogMap: { [name: string]: ObjectRow } = {};
-    console.groupCollapsed("加成详细数据");
+    console.groupCollapsed("加成详细打印");
 
     console.log(context);
     console.log(flagLogMap);

@@ -34,6 +34,7 @@ export default function OperatorSelectorWrapper() {
     "安洁莉娜",
     "新约能天使",
     "逻各斯",
+    "银灰",
   ];
   useEffect(() => {
     Object.values(character_table!)

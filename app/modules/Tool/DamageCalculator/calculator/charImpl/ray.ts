@@ -108,5 +108,5 @@ export function Ray(input: CalculatorInput): CalculatorOutput {
   return result;
 }
 
-// 注册赫德雷伤害计算器
+// 注册莱伊伤害计算器
 registerCalculatorImpl("Ray", Ray);

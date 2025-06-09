@@ -128,7 +128,7 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
                   >
                     <img
                       src={tournament.avatar}
-                      className="rounded-xl aspect-square"
+                      className="w-full rounded-xl aspect-square"
                       alt="avatar"
                       referrerPolicy="no-referrer"
                       crossOrigin="anonymous"

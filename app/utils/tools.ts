@@ -71,7 +71,7 @@ function generateID(len: number = 32): string {
  * @param [len]
  * @returns {Promise<string>}
  */
-async function hashString(password: string, len: number = 16): Promise<string> {
+async function hashString(password: string, len: number = 64): Promise<string> {
   // 将密码转换为ArrayBuffer
   const passwordBuffer = new TextEncoder().encode(password);
   // 使用SHA-256哈希函数计算密码的哈希值

@@ -8,7 +8,7 @@ import { getCalculatorImpl } from "./impls";
  */
 export function calculator(input: CalculatorInput): CalculatorOutput {
   // 获取干员计算器实现
-  const impl = getCalculatorImpl(input.charData.appellation);
+  const impl = getCalculatorImpl(input.charData.name);
   return impl(input);
 }
 

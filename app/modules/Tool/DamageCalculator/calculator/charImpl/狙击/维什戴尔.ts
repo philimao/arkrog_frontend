@@ -1,6 +1,6 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
-import { CalculatorHelper } from "../helper";
-import { registerCalculatorImpl } from "../impls";
+import { CalculatorHelper } from "../../helper";
+import { registerCalculatorImpl } from "../../impls";
 
 // 二技能的单次总伤模拟
 function cal_Wisadel_sim(
@@ -61,7 +61,7 @@ function cal_Wisadel_sim(
 }
 
 /** 维什戴尔伤害计算器 */
-export function Wisdel(input: CalculatorInput): CalculatorOutput {
+export default function Wisdel(input: CalculatorInput): CalculatorOutput {
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const atkBuffIn = input.charInput.charsBuffInGame.atk;
@@ -123,6 +123,3 @@ export function Wisdel(input: CalculatorInput): CalculatorOutput {
 
   return result;
 }
-
-// 注册维什戴尔伤害计算器
-registerCalculatorImpl("Wiš'adel", Wisdel);

@@ -1,10 +1,10 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
-import { CalculatorHelper } from "../helper";
-import { ExpressionUtil } from "../expression-util";
-import { registerCalculatorImpl } from "../impls";
+import { CalculatorHelper } from "../../helper";
+import { ExpressionUtil } from "../../expression-util";
+import { registerCalculatorImpl } from "../../impls";
 
 /** 玛恩纳伤害计算器 */
-export function Młynar(input: CalculatorInput): CalculatorOutput {
+export default function Młynar(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
   const expression_util = new ExpressionUtil(input, context);
 
@@ -93,6 +93,3 @@ export function Młynar(input: CalculatorInput): CalculatorOutput {
 
   return result;
 }
-
-// 注册玛恩纳伤害计算器
-registerCalculatorImpl("Młynar", Młynar);

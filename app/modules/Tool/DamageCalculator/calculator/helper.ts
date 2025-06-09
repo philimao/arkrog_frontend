@@ -377,7 +377,7 @@ export class CalculatorHelper {
     Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
       if (value.calculate() !== 1) {
         result.out_game_char.push(
-          `${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100) + "%"}`,
+          `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
         );
       }
     });
@@ -388,7 +388,9 @@ export class CalculatorHelper {
     });
     Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
       if (value.calculate() !== 1) {
-        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+        result.in_game_char.push(
+          `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+        );
       }
     });
     Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
@@ -404,24 +406,37 @@ export class CalculatorHelper {
       ].includes(key);
       if (!isEnemy && value.calculate() !== 1) {
         result.in_game_char.push(
-          `最终乘算${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`,
+          `最终乘算${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
         );
       }
       if (isEnemy && value.calculate() !== 1) {
         // 减伤描述特殊
         if (key === "enemy_damage_resistance_inf") {
-          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(100 - value.calculate() * 100)}%`);
+          result.enemy.push(
+            `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+          );
         } else {
-          result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+          result.enemy.push(
+            `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+          );
         }
       }
     });
     Object.entries(context.global_buff_stack).forEach(([key, value]) => {
       if (value.calculate() !== 1) {
-        result.in_game_char.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+        result.in_game_char.push(
+          `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+        );
       }
     });
     return result;
+  }
+
+  /** 百分比数值显示 */
+  static formatPercent(value: number): string {
+    const percent = value * 100 - 100;
+    const textValue = Math.sign(percent) === 1 ? percent : percent;
+    return `${Math.round(textValue)}%`;
   }
 
   /** 标准打印 */

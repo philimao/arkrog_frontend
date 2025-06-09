@@ -9,7 +9,7 @@ import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
 import { CalculatorHelper } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
-import { DamageCalculatorBlackList } from "../black-list";
+import { DamageCalculatorSettings } from "../black-list";
 import { printRelicsInfo } from "../calculator/debug/print-relics-info";
 
 const StyledOperatorDisplayWrapper = styled.div`
@@ -330,7 +330,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 getValue={(skillItem) => skillItem.name}
                 selectedKeys={[skillKey]}
                 onChange={(evt) => setSkillKey(evt.target.value)}
-                disabledKeys={DamageCalculatorBlackList.operator[activeCharName]?.skill}
+                disabledKeys={DamageCalculatorSettings.operator[activeCharName]?.disabled_skills}
               />
               <ToolSelect
                 disallowEmptySelection={true}

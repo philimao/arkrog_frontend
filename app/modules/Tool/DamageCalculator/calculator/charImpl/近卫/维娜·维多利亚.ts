@@ -1,10 +1,10 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
-import { CalculatorHelper } from "../helper";
-import { ExpressionUtil } from "../expression-util";
-import { registerCalculatorImpl } from "../impls";
+import { CalculatorHelper } from "../../helper";
+import { ExpressionUtil } from "../../expression-util";
+import { registerCalculatorImpl } from "../../impls";
 
 /** 维娜·维多利亚伤害计算器 */
-export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
+export default function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
   const expression_util = new ExpressionUtil(input, context);
   // 获取局内buff
@@ -106,6 +106,3 @@ export function Vina_Victoria(input: CalculatorInput): CalculatorOutput {
 
   return result;
 }
-
-// 注册维娜·维多利亚伤害计算器
-registerCalculatorImpl("Vina Victoria", Vina_Victoria);

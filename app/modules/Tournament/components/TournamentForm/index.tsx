@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
+import { _post } from "~/utils/tools";
 import { Accordion, AccordionItem } from "@heroui/react";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
 import TournamentStagesAccordionItem from "./TournamentStagesAccordionItem";
 import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
@@ -17,6 +19,7 @@ export default function TournamentForm({
   tournamentData?: TournamentData;
 }) {
   const navigate = useNavigate();
+  const { userInfo } = useUserInfoStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<TournamentData>(
     tournamentData
@@ -40,7 +43,7 @@ export default function TournamentForm({
           room: "",
           stages: [],
           customPlayerKeys: {},
-          groupBy: ""
+          groupBy: "",
         },
   );
   const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
@@ -48,6 +51,7 @@ export default function TournamentForm({
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
   const formDataRef = useRef<TournamentData>(formData);
   const saveToStorageRef = useRef<boolean>(true);
+  const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
 
   useEffect(() => {
     const saveFormData = () => {
@@ -56,12 +60,12 @@ export default function TournamentForm({
       }
     };
 
-    window.addEventListener('beforeunload', saveFormData);
-    window.addEventListener('popstate', saveFormData);
+    window.addEventListener("beforeunload", saveFormData);
+    window.addEventListener("popstate", saveFormData);
 
     return () => {
-      window.removeEventListener('beforeunload', saveFormData);
-      window.removeEventListener('popstate', saveFormData);
+      window.removeEventListener("beforeunload", saveFormData);
+      window.removeEventListener("popstate", saveFormData);
     };
   }, []);
 
@@ -75,6 +79,11 @@ export default function TournamentForm({
       setFormData(JSON.parse(storedData));
     } else if (tournamentData) {
       setFormData(tournamentData);
+    }
+
+    // 每次组件重新挂载时重置编辑开始时间
+    if (tournamentData) {
+      editStartTimeRef.current = Date.now();
     }
   }, [tournamentData]);
 
@@ -96,13 +105,50 @@ export default function TournamentForm({
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (!userInfo?.username) {
+      toast.error("请先登录");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      // Here you would typically send the updated data to your API
-      // await _post("/tournament/update", { tournament: formData });
-      toast.success("已成功保存");
-      returnToPrevPage();
+      // 提交赛事数据
+      const response = await _post<{
+        success: boolean;
+        message: string;
+        data?: TournamentData;
+        needSync?: boolean;
+        latestData?: TournamentData;
+        lockedBy?: string;
+      }>("/tournament/save", {
+        tournament: formData,
+        editStartTime: tournamentData ? editStartTimeRef.current : undefined, // 记录进入编辑的时间
+        username: userInfo.username,
+      });
+
+      if (response.success) {
+        toast.success(response.message);
+        returnToPrevPage();
+      } else {
+        toast.error(response.message);
+      }
     } catch (error) {
-      toast.error(`保存失败: ${(error as Error).message}`);
+      const errorMessage = (error as Error).message;
+
+      // 尝试解析错误响应
+      try {
+        const errorData = JSON.parse(errorMessage);
+        if (errorData.needSync && errorData.latestData) {
+          toast.error("数据已被其他用户更新，需要同步本地编辑数据");
+          // 这里可以添加数据同步的逻辑
+        } else if (errorData.lockedBy) {
+          toast.error(`赛事正在被用户 ${errorData.lockedBy} 编辑中`);
+        } else {
+          toast.error(errorData.message || "保存失败");
+        }
+      } catch {
+        toast.error(`保存失败: ${errorMessage}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

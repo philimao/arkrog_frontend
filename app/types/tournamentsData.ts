@@ -28,6 +28,7 @@ export interface TournamentData {
   stages: TournamentStage[];
   teams?: TournamentTeam[];
   players?: TournamentPlayer[];
+  lastEditTime?: number; // 最后编辑时间戳
 }
 
 export interface TournamentStage {

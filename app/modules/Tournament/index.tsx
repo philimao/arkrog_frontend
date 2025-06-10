@@ -5,6 +5,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import type { RogueKey, TopicData, Topics } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
+import { StyledBackButton, StyledBackButtonContainer } from "./components/Shared";
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -33,7 +34,7 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
 
   const tournaments = tournamentsData
     .filter((tournament) => tournament.rogue === currentTopic.id)
-    .sort((a, b) => b.stages[0].startTime - a.stages[0].startTime);
+    .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime);
   const ongoingTournaments = tournaments.filter((tournament) => tournament.ongoing);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -97,7 +98,7 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
     tournaments
-      .sort((a, b) => new Date(b.stages[0].startTime).getTime() - new Date(a.stages[0].startTime).getTime())
+      .sort((a, b) => new Date(b.stages[0]?.startTime || 0).getTime() - new Date(a.stages[0]?.startTime || 0).getTime())
       .map((tournament) => {
         const edition = tournament.edition;
         if (!tournamentsByEdition.has(edition)) {
@@ -150,7 +151,12 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
   return (
     <div>
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
-      <div className="flex mb-12">
+      <div className="relative flex mb-12">
+        <StyledBackButtonContainer>
+          <div className="relative">
+            <StyledBackButton onClick={() => navigate("create")}>新建赛事</StyledBackButton>
+          </div>
+        </StyledBackButtonContainer>
         {topicsData.reverse().map((topic) => (
           <div
             key={topic.id}

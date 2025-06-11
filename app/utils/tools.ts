@@ -118,4 +118,4 @@ export function getPath(filename: string): string {
   return md5.slice(0, 1) + "/" + md5.slice(0, 2) + "/" + filename;
 }
 
-export { _get, _post, generateID, hashString, findDuplicates, mergeArray };
+export { _get, _getLevel, _post, generateID, hashString, findDuplicates, mergeArray };

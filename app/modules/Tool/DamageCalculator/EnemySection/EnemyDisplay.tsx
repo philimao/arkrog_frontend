@@ -32,17 +32,17 @@ const StyledControl = styled.div`
   align-items: end;
 `;
 
-const StyledPhase = styled.div`
-  display: flex;
-  gap: 1rem;
-`;
+// const StyledPhase = styled.div`
+//   display: flex;
+//   gap: 1rem;
+// `;
 
-const StyledPhaseItem = styled.button<{ $active: boolean }>`
-  color: ${(props) => (props.$active ? "var(--ak-blue)" : "white")};
-  font-weight: bold;
-`;
+// const StyledPhaseItem = styled.button<{ $active: boolean }>`
+//   color: ${(props) => (props.$active ? "var(--ak-blue)" : "white")};
+//   font-weight: bold;
+// `;
 
-const StyledRestore = styled.button`
+const StyledAttrFuncButton = styled.button`
   margin-left: auto;
   padding: 0 0.5rem;
   background: var(--dark-gray);
@@ -64,7 +64,7 @@ const StyledInputWrapper = styled.div`
     padding-left: 0.75rem;
     color: var(--light-mid-gray);
   }
-  & > div:last-child {
+  & > *:last-child {
     font-family: "NovecentoWide", sans-serif;
   }
 `;
@@ -80,9 +80,9 @@ const keys = [
   "epResistance",
 ];
 
-export default function EnemyDisplay() {
+export default function EnemyDisplay({ assignToDummy }: { assignToDummy: (parsedEnemyData: EnemyInput) => void }) {
   const { enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
-  const [phase, setPhase] = useState<number>(1);
+  // const [phase, setPhase] = useState<number>(1);
   const [_enemyDataParsed, _setEnemyDataParsed] = useState(enemyDataParsed);
   const enemyRef = useRef(enemyDataParsed);
 
@@ -99,7 +99,7 @@ export default function EnemyDisplay() {
       <StyledName>{_enemyDataParsed.name}</StyledName>
       <StyledEnemyAvatar name={_enemyDataParsed.name} />
       <StyledControl>
-        <StyledPhase>
+        {/* <StyledPhase>
           {Array(2)
             .fill(0)
             .map((_, i) => (
@@ -107,8 +107,14 @@ export default function EnemyDisplay() {
                 {i + 1 + "阶段"}
               </StyledPhaseItem>
             ))}
-        </StyledPhase>
-        <StyledRestore onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>恢复初始</StyledRestore>
+        </StyledPhase> */}
+        {_enemyDataParsed.name !== "木桩" ? (
+          <StyledAttrFuncButton onClick={() => assignToDummy(_enemyDataParsed)}>复制到木桩</StyledAttrFuncButton>
+        ) : (
+          <StyledAttrFuncButton onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>
+            恢复初始值
+          </StyledAttrFuncButton>
+        )}
       </StyledControl>
       <StyledGridContainer>
         {keys.map((key) => {
@@ -116,27 +122,33 @@ export default function EnemyDisplay() {
           return (
             <StyledInputWrapper key={key}>
               <div>{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
-              <ToolInput
-                className={"h-8 font-bold text-xl " + color}
-                value={_enemyDataParsed.attributes[key as never]}
-                setValue={(value: string) => {
-                  // TODO parse float
-                  const number = parseFloat(value) || 0;
-                  const updated = {
-                    ..._enemyDataParsed,
-                    attributes: {
-                      ..._enemyDataParsed.attributes,
-                      [key]: number,
-                    },
-                  };
-                  _setEnemyDataParsed(updated);
-                }}
-                onBlur={() => setEnemyDataParsed(_enemyDataParsed)}
-                onEnter={(evt) => {
-                  evt.preventDefault();
-                  evt.currentTarget.querySelector("input")!.blur();
-                }}
-              />
+              {_enemyDataParsed.name !== "木桩" ? (
+                <div className={"bg-black-gray px-3 leading-8 h-8 font-bold text-xl " + color}>
+                  {_enemyDataParsed.attributes[key as never]}
+                </div>
+              ) : (
+                <ToolInput
+                  className={"h-8 font-bold text-xl " + color}
+                  value={_enemyDataParsed.attributes[key as never]}
+                  setValue={(value: string) => {
+                    // TODO parse float
+                    const number = parseFloat(value) || 0;
+                    const updated = {
+                      ..._enemyDataParsed,
+                      attributes: {
+                        ..._enemyDataParsed.attributes,
+                        [key]: number,
+                      },
+                    };
+                    _setEnemyDataParsed(updated);
+                  }}
+                  onBlur={() => setEnemyDataParsed(_enemyDataParsed)}
+                  onEnter={(evt) => {
+                    evt.preventDefault();
+                    evt.currentTarget.querySelector("input")!.blur();
+                  }}
+                />
+              )}
             </StyledInputWrapper>
           );
         })}

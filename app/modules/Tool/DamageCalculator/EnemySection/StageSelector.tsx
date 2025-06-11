@@ -1,9 +1,8 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState, useEffect } from "react";
 import { navOfZone } from "~/utils/stageSelector";
-import { Button } from "@heroui/react";
-import type { LevelData } from "~/types/gameData";
-import { _post } from "~/utils/tools";
+import type { EnemyInput, LevelData, StageData } from "~/types/gameData";
+import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
@@ -11,6 +10,7 @@ import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { parseEnemyData } from "~/modules/Tool/DamageCalculator/utils";
+import { debounce } from "@heroui/shared-utils";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -117,7 +117,7 @@ export default function StageSelector() {
     return result;
   }, [rogueKey, stages, rogueInput]);
 
-  // 使用 useEffect 来处理副作用操作
+  // 处理区域选择变化后，renderStages的副作用
   useEffect(() => {
     if (renderStages.length > 0) {
       setStageId(renderStages[0].id);
@@ -125,17 +125,33 @@ export default function StageSelector() {
     }
   }, [renderStages, setStageData]);
 
+  // 处理关卡选择变化后，加载stageData的副作用
+  useEffect(() => {
+    async function handleLoadLevelData() {
+      if (!stageData) {
+        setLevelData(undefined);
+        return;
+      }
+      const stageRawData = await _get<LevelData>(
+        `/gamedata/level/${encodeURIComponent(stageData.levelId.toLowerCase())}`,
+      );
+      setLevelData(stageRawData);
+    }
+    debounce(() => {
+      handleLoadLevelData();
+    }, 500)();
+  }, [stageData]);
+
   const [levelData, setLevelData] = useState<LevelData>();
 
-  async function handleLoadLevelData() {
-    if (!stageData) {
-      setLevelData(undefined);
-      return;
-    }
-    const stageRawData = await _post<LevelData>("/gamedata/level", {
-      levelId: stageData.levelId.toLowerCase(),
+  function assignToDummy(parsedEnemyData: EnemyInput) {
+    const dummy = levelData?.enemies.find((enemy) => enemy.id === "enemy_000_dummy");
+    if (!dummy) return;
+    setEnemyData(dummy);
+    setEnemyDataParsed({
+      ...parseEnemyData(dummy, stageData!, levelData!),
+      attributes: parsedEnemyData.attributes,
     });
-    setLevelData(stageRawData);
   }
 
   return (
@@ -167,7 +183,7 @@ export default function StageSelector() {
           }}
         />
 
-        {stageId && (
+        {/* {stageId && (
           <div className="flex items-end">
             <Button
               radius="none"
@@ -177,33 +193,35 @@ export default function StageSelector() {
               加载
             </Button>
           </div>
-        )}
+        )} */}
       </GridContainer>
       {levelData && (
         <StyledStageSelectorBody>
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
-              <span>红名代表死亡后会生成恐卡兹</span>
+              {/* <span>红名代表死亡后会生成恐卡兹</span> TODO */}
             </StyledEnemiesLabel>
             <StyledEnemies>
-              {levelData.enemies.map((enemyData) => {
-                return (
-                  <StyledEnemy
-                    key={enemyData.id}
-                    onClick={() => {
-                      setEnemyData(enemyData);
-                      setEnemyDataParsed(parseEnemyData(enemyData, stageData!, levelData));
-                    }}
-                  >
-                    <EnemyAvatar name={enemyData.name.m_value} />
-                    <StyledEnemyName>{enemyData.name.m_value}</StyledEnemyName>
-                  </StyledEnemy>
-                );
-              })}
+              {levelData.enemies
+                .filter((enemy) => enemy.name.m_value !== "年代印痕")
+                .map((enemyData) => {
+                  return (
+                    <StyledEnemy
+                      key={enemyData.id}
+                      onClick={() => {
+                        setEnemyData(enemyData);
+                        setEnemyDataParsed(parseEnemyData(enemyData, stageData!, levelData));
+                      }}
+                    >
+                      <EnemyAvatar name={enemyData.name.m_value} />
+                      <StyledEnemyName>{enemyData.name.m_value}</StyledEnemyName>
+                    </StyledEnemy>
+                  );
+                })}
             </StyledEnemies>
           </div>
-          <div>{enemyData && <EnemyDisplay />}</div>
+          <div>{enemyData && <EnemyDisplay assignToDummy={assignToDummy} />}</div>
         </StyledStageSelectorBody>
       )}
     </StyledStageSelector>

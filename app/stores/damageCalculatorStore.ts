@@ -72,22 +72,39 @@ interface DamageCalculatorAction {
   setCalcOutput: (output: CalculatorOutput) => void;
 }
 
-const dummy: EnemyInput = {
-  id: "dummy",
+export const dummy: EnemyInput = {
+  id: "enemy_000_dummy",
   level: 0,
   name: "木桩",
-  description: "请任意调整木桩数值",
+  description: "木桩敌人，可以随意设置属性，面板不受收藏品影响",
   attributes: {
     maxHp: 0,
     atk: 0,
     def: 0,
     magicResistance: 0,
     blockCnt: 0,
-    moveSpeed: 0,
-    attackSpeed: 0,
-    baseAttackTime: 0,
+    moveSpeed: 1.0,
+    attackSpeed: 100.0,
+    baseAttackTime: 1.0,
     epDamageResistance: 0,
     epResistance: 0,
+    cost: 5,
+    respawnTime: 5,
+    hpRecoveryPerSec: 0,
+    spRecoveryPerSec: 1,
+    maxDeployCount: 1,
+    massLevel: 0,
+    baseForceLevel: 0,
+    tauntLevel: 0,
+    damageHitratePhysical: 0,
+    damageHitrateMagical: 0,
+    stunImmune: false,
+    silenceImmune: false,
+    sleepImmune: false,
+    frozenImmune: false,
+    levitateImmune: false,
+    disarmedCombatImmune: false,
+    fearedImmune: false,
   },
   levelType: "NORMAL",
   rangedRadius: 0,
@@ -280,7 +297,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         );
       },
       enemyData: undefined as unknown as EnemyData,
-      enemyDataParsed: dummy as unknown as EnemyInput,
+      enemyDataParsed: dummy,
       setEnemyData: (enemyData) =>
         set(
           (state) => ({

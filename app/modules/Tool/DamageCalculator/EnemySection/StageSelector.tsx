@@ -1,11 +1,11 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState, useEffect } from "react";
 import { navOfZone } from "~/utils/stageSelector";
-import type { EnemyInput, LevelData, StageData } from "~/types/gameData";
+import type { EnemyInput, LevelData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
-import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { dummy, useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
@@ -122,8 +122,10 @@ export default function StageSelector() {
     if (renderStages.length > 0) {
       setStageId(renderStages[0].id);
       setStageData(renderStages[0]);
+      setEnemyData(undefined as never);
+      setEnemyDataParsed(dummy);
     }
-  }, [renderStages, setStageData]);
+  }, [renderStages, setEnemyData, setEnemyDataParsed, setStageData]);
 
   // 处理关卡选择变化后，加载stageData的副作用
   useEffect(() => {
@@ -137,10 +139,12 @@ export default function StageSelector() {
       );
       setLevelData(stageRawData);
     }
+    setEnemyData(undefined as never);
+    setEnemyDataParsed(dummy);
     debounce(() => {
       handleLoadLevelData();
     }, 500)();
-  }, [stageData]);
+  }, [setEnemyData, setEnemyDataParsed, stageData]);
 
   const [levelData, setLevelData] = useState<LevelData>();
 

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
-import type { CharAttribute, CharAttributeExt, CharData, CharInput, EnemyInput, RelicWrapper } from "~/types/gameData";
+import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
 import { BuffContext, CalculatorHelper } from "../calculator";
-import { Chip, Tooltip } from "@heroui/react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 
 const StyledAttributeWrapper = styled.div`
   display: grid;
@@ -89,12 +88,6 @@ export function OperatorAttributesOld({ result }: { result: CharAttributeExt }) 
       )}
     </StyledAttributeWrapper>
   );
-}
-
-/** 属性计算公式Token */
-interface AttrCalcToken {
-  tooltip: string;
-  tags: React.ReactNode[];
 }
 
 /** 最大生命值属性计算公式 */
@@ -274,10 +267,9 @@ export function useSpRecoveryPerSecTagGroups(props: {
 export default function OperatorAttributes(props: {
   charData: CharData;
   charInput: CharInput;
-  enemyInput: EnemyInput;
   relics: RelicWrapper[];
 }) {
-  const { stageData, rogueInput, topicSpecItems } = useDamageCalculatorStore();
+  const { stageData, rogueInput, topicSpecItems, enemyData } = useDamageCalculatorStore();
   const [result, setResult] = useState<CharAttributeExt | null>(null);
   const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
@@ -304,19 +296,19 @@ export default function OperatorAttributes(props: {
         charInput: props.charInput,
         charData: props.charData,
         relics: props.relics,
-        enemyInput: props.enemyInput,
+        enemyData: enemyData,
         stageData,
       },
       context,
     );
     // 肉鸽难度加成
-    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: props.enemyInput }, context);
+    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData: enemyData }, context);
     // 肉鸽主题加成（年代、灵感、密文板）
     context = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, context);
 
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);
-  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems, props.enemyInput]);
+  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems, enemyData]);
 
   return (
     <StyledAttributeWrapper>
@@ -374,45 +366,5 @@ export default function OperatorAttributes(props: {
         </>
       )}
     </StyledAttributeWrapper>
-  );
-}
-
-/** 属性展示 */
-function AttrDisplay(props: { calcTokens: AttrCalcToken[]; children: React.ReactNode }) {
-  const { calcTokens, children } = props;
-
-  if (calcTokens.length === 0) {
-    return <span>{children}</span>;
-  }
-  return (
-    <Popover placement="top">
-      <PopoverTrigger>
-        <span className="cursor-pointer">{children}</span>
-      </PopoverTrigger>
-      <PopoverContent>
-        <div className="px-1 py-2">
-          {calcTokens.map((group, index) => (
-            <span key={group.tooltip}>
-              {"( "}
-              {group.tags.map((tag, i) => {
-                if (i < group.tags.length - 1) return <span key={i}>{tag} + </span>;
-                return <span key={i}>{tag}</span>;
-              })}
-              {index < calcTokens.length - 1 ? " ) * " : " )"}
-            </span>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function AttrTag(props: { children: React.ReactNode; tooltip: string }) {
-  return (
-    <Tooltip content={props.tooltip}>
-      <Chip color="warning" variant="faded">
-        {props.children}
-      </Chip>
-    </Tooltip>
   );
 }

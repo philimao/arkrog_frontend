@@ -62,6 +62,7 @@ function cal_Wisadel_sim(
 
 /** 维什戴尔伤害计算器 */
 export default function Wisdel(input: CalculatorInput): CalculatorOutput {
+  const context = input.buffContext;
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const atkBuffIn = input.charInput.charsBuffInGame.atk;
@@ -70,7 +71,9 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
   const atkSpeed = input.charInput.attribute.attackSpeed;
   const skillKey = input.charInput.skillKey;
   const enemyDef = input.enemyInput.attributes.def;
-  const mitigation = input.enemyInput.attributes.damageHitratePhysical || 0;
+  const mitigation =
+    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const vulnD = 0;
   const charge = 1;
 

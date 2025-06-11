@@ -5,24 +5,40 @@ import { GridContainer } from "~/modules/Tool/components/Shared";
 import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
 import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
-import type { EnemyInput } from "~/types/gameData";
+import type { EnemyInput, RelicWrapper } from "~/types/gameData";
+import EnemySpecSelector, { type EnemySpec } from "./EnemySpecSelector";
+import { BuffContext, CalculatorHelper } from "../calculator";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import EnemyAttribute from "./EnemyAttributes";
 
 const StyledEnemyDisplayWrapper = styled.div`
-  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  height: 100%;
+`;
+
+const StyledEnemyDisplayTop = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  min-height: 0;
+  & > * {
+    width: 50%;
+  }
 `;
 
 const StyledName = styled.div`
   font-size: 1.5rem;
   color: white;
   font-weight: bold;
+  white-space: nowrap;
+  margin-bottom: 0.25rem;
 `;
 
 const StyledEnemyAvatar = styled(EnemyAvatar)`
-  width: 8.3rem;
-  height: 8.3rem;
+  width: 8.75rem;
+  height: 8.75rem;
   background: rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 0 0 0.5rem white;
 `;
@@ -51,6 +67,7 @@ const StyledAttrFuncButton = styled.button`
 `;
 
 const StyledGridContainer = styled(GridContainer)`
+  flex-grow: 1;
   background: rgba(24, 24, 24, 0.7);
   padding: 1rem;
   margin-bottom: 0;
@@ -69,7 +86,7 @@ const StyledInputWrapper = styled.div`
   }
 `;
 
-const keys = [
+const displayAttrKeys = [
   "maxHp",
   "atk",
   "def",
@@ -78,26 +95,96 @@ const keys = [
   "baseAttackTime",
   "epDamageResistance",
   "epResistance",
+  "damageResistance",
 ];
 
-export default function EnemyDisplay({ assignToDummy }: { assignToDummy: (parsedEnemyData: EnemyInput) => void }) {
-  const { enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
+export default function EnemyDisplay({
+  assignToDummy,
+  setIllust,
+}: {
+  assignToDummy: (parsedEnemyData: EnemyInput) => void;
+  setIllust: (illust: React.ReactNode) => void;
+}) {
+  const { items, relics } = useGameDataStore();
+  const {
+    rogueInput,
+    topicSpecItems,
+    selectedIds,
+    relicsMap,
+    rogueKey,
+    enemyData,
+    stageData,
+    levelData,
+    enemyDataParsed,
+    setEnemyDataParsed,
+  } = useDamageCalculatorStore();
   // const [phase, setPhase] = useState<number>(1);
-  const [_enemyDataParsed, _setEnemyDataParsed] = useState(enemyDataParsed);
-  const enemyRef = useRef(enemyDataParsed);
+
+  /** 缓存用户修改后的敌人数据，在blur时应用到store中 */
+  const [_enemyDataParsed, _setEnemyDataParsed] = useState<EnemyInput | null>(null);
+  /** 缓存初始敌人数据，在恢复初始值时应用 */
+  const enemyRef = useRef<EnemyInput | null>(null);
+
+  const [enemySpec, setEnemySpec] = useState<EnemySpec[]>([]);
+  const [enemyContext, setEnemyContext] = useState<BuffContext>();
 
   useEffect(() => {
-    enemyRef.current = { ...enemyDataParsed };
-  }, [enemyDataParsed.name]);
+    const relicList = Object.values(items![rogueKey])
+      .filter((item) => item.type === "RELIC")
+      .map((item) => ({
+        ...item,
+        ...relics![rogueKey][item.id],
+        show: true,
+      }));
+    const selectedRelics = selectedIds
+      .map((id) => relicsMap[rogueKey]?.find((relic) => relic.id === id))
+      .filter((r) => r?.userActive)
+      .map((r) => ({
+        relicData: relicList.find((relic) => relic.id === r?.id),
+        ...r,
+      })) as RelicWrapper[];
 
+    let enemyContext = CalculatorHelper.analyzeRelics({
+      relics: selectedRelics,
+      enemyData: enemyData,
+      stageData,
+    });
+    enemyContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput: rogueInput }, enemyContext);
+    enemyContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, enemyContext);
+    enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
+    CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
+    setEnemyContext(enemyContext);
+  }, [enemyData, enemySpec, items, relics, relicsMap, rogueInput, rogueKey, selectedIds, stageData, topicSpecItems]);
+
+  /** 计算敌人属性 */
   useEffect(() => {
+    if (!enemyContext) return;
+    const parsedEnemyData = CalculatorHelper.calculateEnemyAttr({
+      enemyData: enemyData,
+      stageData: stageData!,
+      levelData: levelData!,
+      context: enemyContext,
+    });
+    setEnemyDataParsed(parsedEnemyData);
+  }, [enemyContext, enemyData, levelData, stageData, setEnemyDataParsed, _setEnemyDataParsed]);
+
+  /** 当store中的敌人数据更新时，更新缓存 */
+  useEffect(() => {
+    if (!enemyDataParsed) return;
     _setEnemyDataParsed(enemyDataParsed);
   }, [enemyDataParsed]);
 
+  if (!_enemyDataParsed) return null;
+
   return (
     <StyledEnemyDisplayWrapper>
-      <StyledName>{_enemyDataParsed.name}</StyledName>
-      <StyledEnemyAvatar name={_enemyDataParsed.name} />
+      <StyledEnemyDisplayTop>
+        <div>
+          <StyledName>{_enemyDataParsed.name}</StyledName>
+          <StyledEnemyAvatar name={_enemyDataParsed.name} />
+        </div>
+        <EnemySpecSelector setIllust={setIllust} setEnemySpec={setEnemySpec} />
+      </StyledEnemyDisplayTop>
       <StyledControl>
         {/* <StyledPhase>
           {Array(2)
@@ -117,15 +204,13 @@ export default function EnemyDisplay({ assignToDummy }: { assignToDummy: (parsed
         )}
       </StyledControl>
       <StyledGridContainer>
-        {keys.map((key) => {
+        {displayAttrKeys.map((key) => {
           const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
           return (
             <StyledInputWrapper key={key}>
               <div>{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
               {_enemyDataParsed.name !== "木桩" ? (
-                <div className={"bg-black-gray px-3 leading-8 h-8 font-bold text-xl " + color}>
-                  {_enemyDataParsed.attributes[key as never]}
-                </div>
+                <EnemyAttribute attrKey={key} color={color} />
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}

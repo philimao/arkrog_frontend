@@ -1,6 +1,4 @@
 import { Select, SelectItem, type SelectProps } from "@heroui/react";
-import { styled } from "styled-components";
-import type { HTMLAttributes } from "react";
 
 export default function ToolSelect<T>({
   array,
@@ -8,14 +6,18 @@ export default function ToolSelect<T>({
   getValue = (item) => item as string,
   ...props
 }: {
+  /** 选项数组 */
   array: T[];
+  /** 获取选项的值 */
   getKey?: (item: T, index: number) => string;
+  /** 获取选项的描述 */
   getValue?: (item: T, index: number) => string;
 } & Partial<SelectProps>) {
   return (
     <Select
       radius="none"
       labelPlacement="outside"
+      disallowEmptySelection={true}
       classNames={{
         label: "text-light-gray text-[0.8rem]",
         trigger: "bg-black-gray h-12 data-[focus-visible=true]:!outline-none",

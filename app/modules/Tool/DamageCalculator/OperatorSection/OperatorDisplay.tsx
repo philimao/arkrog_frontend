@@ -168,6 +168,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       activeCharName,
     ],
   );
+
+  /** 有效藏品列表 */
   const relicList: RelicDataExt[] = useMemo(
     () =>
       Object.values(items![rogueKey])
@@ -206,13 +208,13 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         charInput,
         charData,
         relics: selectedRelics,
-        enemyInput: enemyDataParsed,
+        enemyData: enemyData,
         stageData,
       },
       buffContext,
     );
     // 肉鸽难度加成
-    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyInput: enemyDataParsed }, buffContext);
+    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData: enemyDataParsed }, buffContext);
     // 肉鸽主题加成（年代、灵感、密文板）
     buffContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffContext);
 
@@ -392,12 +394,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">
         {charInput.attributeModifier && (
-          <OperatorAttributes
-            charInput={charInput}
-            charData={charData}
-            relics={selectedRelics}
-            enemyInput={enemyDataParsed}
-          />
+          <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
         )}
         <OperatorModifier />
       </div>

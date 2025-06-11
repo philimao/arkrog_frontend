@@ -8,9 +8,10 @@ import {
   type RelicBlackboardInput,
 } from "./impls";
 import { NumericLiteralNode } from "./ast";
+import { parseDefinedData } from "../utils";
 
 /** 敌人攻击力减少 */
-registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper) => {
+registerRelicBlackboard("enemy_atk", (buff: RelicBuff, relic: RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
     | "BOSS"
@@ -18,7 +19,9 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
     | "NORMAL";
   return {
     isActive(input) {
-      return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
+      // 无敌人数据时，默认生效 TODO
+      if (!input.enemyData) return true;
+      return enemy_level_type ? parseDefinedData(input.enemyData.levelType) === enemy_level_type : true;
     },
     apply(input): void {
       const { context } = input;
@@ -29,7 +32,7 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
 });
 
 /** 敌人攻击力增加 */
-registerRelicBlackboard("enemy_atk_up", (buff: RelicBuff, relic: RelicWrapper) => {
+registerRelicBlackboard("enemy_atk", (buff: RelicBuff, relic: RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
     | "BOSS"
@@ -37,7 +40,8 @@ registerRelicBlackboard("enemy_atk_up", (buff: RelicBuff, relic: RelicWrapper) =
     | "NORMAL";
   return {
     isActive(input) {
-      return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
+      if (!input.enemyData) return true;
+      return enemy_level_type ? parseDefinedData(input.enemyData.levelType) === enemy_level_type : true;
     },
     apply(input): void {
       const { context } = input;
@@ -56,7 +60,8 @@ registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper)
     | "NORMAL";
   return {
     isActive(input) {
-      return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
+      if (!input.enemyData) return true;
+      return enemy_level_type ? parseDefinedData(input.enemyData.levelType) === enemy_level_type : true;
     },
     apply(input): void {
       const { context } = input;
@@ -67,7 +72,7 @@ registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper)
 });
 
 /** 敌人最大生命值减少 */
-registerRelicBlackboard("enemy_max_hp_down", (buff: RelicBuff, relic: RelicWrapper) => {
+registerRelicBlackboard("enemy_max_hp", (buff: RelicBuff, relic: RelicWrapper) => {
   const max_hp = getByKeySafe(buff.blackboard, "max_hp");
   // 敌人等级类型
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
@@ -76,12 +81,13 @@ registerRelicBlackboard("enemy_max_hp_down", (buff: RelicBuff, relic: RelicWrapp
     | "NORMAL";
   return {
     isActive(input) {
-      return enemy_level_type ? input.enemyInput.levelType === enemy_level_type : true;
+      if (!input.enemyData) return true;
+      return enemy_level_type ? parseDefinedData(input.enemyData.levelType) === enemy_level_type : true;
     },
     apply(input): void {
       const { context } = input;
       const value = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
-      context.mul_in_game_buff_final_mul_enemy_max_hp_down(value, buff, relic);
+      context.mul_in_game_buff_final_mul_enemy_max_hp(value, buff, relic);
     },
   };
 });
@@ -162,10 +168,10 @@ registerRelicBlackboard("enemy_damage_resistance[inf]", (buff: RelicBuff, relic:
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      const value = 1 - damage_resistance.value;
-      if (context.in_game_buff_final_mul.enemy_damage_resistance_inf.calculate() > value) {
-        context.in_game_buff_final_mul.enemy_damage_resistance_inf.addChild(new NumericLiteralNode(value, relic.name));
-      }
+      // 藏品提供的减伤放在局外取最大值（蛋）
+      context.relic_rune_mul.enemy_damage_resistance.addChild(
+        new NumericLiteralNode(damage_resistance.value, relic.name),
+      );
     },
   };
 });
@@ -177,7 +183,7 @@ registerRelicBlackboard("modify_sp[attack_or_damage]", (buff: RelicBuff, relic: 
   return {
     isActive(input) {
       // 技能类型为攻击或受击回复技能回复技力 TODO 受击回复技力没做
-      return input.charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK";
+      return input.charInput?.skill.spData.spType === "INCREASE_WHEN_ATTACK";
     },
     apply(input): void {
       const { context } = input;
@@ -194,7 +200,7 @@ registerRelicBlackboard("modify_sp_recover[normal]", (buff: RelicBuff, relic: Re
   const sp_recovery_per_sec = getByKeySafe(buff.blackboard, "sp_recovery_per_sec");
   return {
     isActive(input) {
-      return input.charInput.skill.spData.spType === "INCREASE_WITH_TIME";
+      return input.charInput?.skill.spData.spType === "INCREASE_WITH_TIME";
     },
     apply(input): void {
       const { context } = input;
@@ -260,7 +266,7 @@ registerRelicBlackboard("damage_scale[caster]", (buff: RelicBuff, relic: RelicWr
   const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
   return {
     isActive(input) {
-      return input.charData.profession === "CASTER";
+      return !input.charData || input.charData.profession === "CASTER";
     },
     apply(input): void {
       const { context } = input;
@@ -287,7 +293,8 @@ registerRelicBlackboard("modify_fragment_carry_char_attribute[atk]", (buff: Reli
   const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
   return {
     isActive(input) {
-      if (selector_profession) {
+      // 在没有干员数据时，默认生效 TODO
+      if (selector_profession && input.charData) {
         return selector_profession.includes(input.charData.profession.toLowerCase());
       }
       return true;
@@ -306,7 +313,7 @@ registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, r
   const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
   return {
     isActive(input) {
-      if (selector_profession) {
+      if (selector_profession && input.charData) {
         return selector_profession.includes(input.charData.profession.toLowerCase());
       }
       return true;
@@ -324,7 +331,7 @@ registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicWra
   const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
   return {
     isActive(input) {
-      if (selector_profession) {
+      if (selector_profession && input.charData) {
         return selector_profession.includes(input.charData.profession.toLowerCase());
       }
       return true;

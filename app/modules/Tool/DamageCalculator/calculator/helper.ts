@@ -12,13 +12,23 @@ import type {
   EnemyInput,
   RogueInput,
   StageData,
+  EnemyData,
+  LevelData,
 } from "~/types/gameData";
-import { isRelicActive, isBuffActive, isBlackboardActive, allowedBlackboardKeyMap } from "../utils";
+import {
+  isRelicActive,
+  isBuffActive,
+  isBlackboardActive,
+  allowedBlackboardKeyMap,
+  parseEnemyData,
+  parseDefinedData,
+} from "../utils";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
 import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
 import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
 import { commonRelicBlackboard } from "./blackboard";
+import type { EnemySpec } from "../EnemySection/EnemySpecSelector";
 
 /** 加成词条 */
 export interface AdditionEntry {
@@ -90,6 +100,25 @@ export class CalculatorHelper {
     result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec.calculate();
 
     return result;
+  }
+
+  /** 计算敌人属性 */
+  static calculateEnemyAttr(input: {
+    enemyData: EnemyData;
+    stageData: StageData;
+    levelData: LevelData;
+    context: BuffContext;
+  }): EnemyInput {
+    const { enemyData, stageData, levelData, context } = input;
+    const enemyDataParsed = parseEnemyData(enemyData, stageData, levelData);
+    const enemyAttr = enemyDataParsed.attributes;
+
+    // 应用局外加成
+    enemyAttr.atk *= context.in_game_buff_final_mul.enemy_atk.calculate();
+    enemyAttr.def *= context.in_game_buff_final_mul.enemy_def_down.calculate();
+    enemyAttr.maxHp *= context.in_game_buff_final_mul.enemy_max_hp.calculate();
+    enemyAttr.damageResistance = context.in_game_buff_final_mul.enemy_damage_resistance.calculate();
+    return enemyDataParsed;
   }
 
   /** 分析干员养成加成 */
@@ -192,20 +221,21 @@ export class CalculatorHelper {
    * @param input 输入
    * @param input.charInput 角色输入
    * @param input.charData 角色数据
-   * @param input.enemyInput 敌人输入
+   * @param input.enemyData 敌人输入
    * @param input.relics 藏品
    */
   static analyzeRelics(
     input: {
-      charInput: CharInput;
-      charData: CharData;
-      enemyInput: EnemyInput;
+      // charInput在计算敌人数据时难以获取，暂时不传入
+      charInput?: CharInput;
+      charData?: CharData;
+      enemyData: EnemyData;
       relics: RelicWrapper[];
       stageData?: StageData;
     },
     context?: BuffContext,
   ) {
-    const { charInput, charData, enemyInput, relics } = input;
+    const { charInput, charData, enemyData, relics } = input;
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
     /** 用户修正属性 */
     if (charInput && charInput.attributeModifier.atkBase) {
@@ -229,7 +259,7 @@ export class CalculatorHelper {
         if (isRelicBlackboard(buff)) {
           const blackboard = getRelicBlackboard(buff, relic);
           // buff是否可以生效
-          if (blackboard.isActive({ charData, charInput, enemyInput, relics })) {
+          if (blackboard.isActive({ charData, charInput, enemyData, relics })) {
             // 生效 应用到上下文
             blackboard.apply({ context: result, relics });
           } else {
@@ -243,7 +273,8 @@ export class CalculatorHelper {
           result.invalidRelics.push(relic);
           return;
         }
-        if (!CalculatorHelper.isRelicForChar(buff, relic, charData)) {
+        // 无干员数据时，默认生效 TODO
+        if (!charData || !CalculatorHelper.isRelicForChar(buff, relic, charData)) {
           result.invalidRelics.push(relic);
           return;
         }
@@ -262,10 +293,10 @@ export class CalculatorHelper {
 
   /** 分析肉鸽难度加成 */
   static analyzeRogueDifficulty(
-    input: { rogueInput: RogueInput; enemyInput?: EnemyInput },
+    input: { rogueInput: RogueInput; enemyData?: EnemyData },
     context: BuffContext,
   ): BuffContext {
-    const { rogueInput, enemyInput } = input;
+    const { rogueInput, enemyData } = input;
     if (rogueInput.topic === "rogue_4") {
       /** 科技树加成 */
       const tech = parseFloat(rogueInput.rogue_4.tech);
@@ -280,7 +311,7 @@ export class CalculatorHelper {
         context.relic_rune_add.cost.addChild(new NumericLiteralNode(3, "思绪混乱"));
       }
       /** 肉鸽难度加成 */
-      const bossValues = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
       /** 肉鸽层数 */
       const zoneLayerMap: Record<string, number> = {
         zone_1: 1,
@@ -292,34 +323,51 @@ export class CalculatorHelper {
         zone_7: 6,
         zone_8: 7,
       };
-      const bossValue = bossValues[difficulty];
+      const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       const zoneValue = zoneLayerMap[zone]!;
-      if (bossValue) {
-        const value = Math.pow(bossValue / 100 + 1, zoneValue);
-        context.in_game_buff_final_mul.enemy_atk_down.addChild(
+      // 根据肉鸽难度，计算敌人属性加成
+      if (enemyAttrMultiplier) {
+        const value = Math.pow(enemyAttrMultiplier / 100 + 1, zoneValue);
+        context.in_game_buff_final_mul.enemy_atk.addChild(
           new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
         );
 
-        context.in_game_buff_final_mul.enemy_max_hp_down.addChild(
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
         );
       }
+      // 低难度下有加成
+      if (difficulty <= 2) {
+        const diff2Hp = [0.8, 0.85, 0.9];
+        context.in_game_buff_final_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(
+            diff2Hp[difficulty - 1],
+            `直面魂灵·${difficulty} | 所有敌人生命值-${(1 - diff2Hp[difficulty - 1]) * 100}%`,
+          ),
+        );
+      }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
-      if (difficulty >= 4 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
-        context.in_game_buff_final_mul.enemy_max_hp_down.addChild(
+      if (difficulty >= 4 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new NumericLiteralNode(1.2, `直面魂灵·${difficulty} | 精英和领袖敌人生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人攻击力+10% */
-      if (difficulty >= 7 && enemyInput && ["ELITE", "BOSS"].includes(enemyInput.levelType)) {
-        context.in_game_buff_final_mul.enemy_atk_down.addChild(
+      if (difficulty >= 7 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+        context.in_game_buff_final_mul.enemy_atk.addChild(
           new NumericLiteralNode(1.1, `直面魂灵·${difficulty} | 精英和领袖敌人攻击力+10%`),
+        );
+      }
+      if (difficulty >= 10 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.1, `直面魂灵·${difficulty} | 精英及领袖敌人受到的物理与法术伤害降低10%`),
         );
       }
     }
     return context;
   }
 
+  /** 分析肉鸽主题特殊效果，例如萨卡兹的年代、萨米的密文板 */
   static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[] }, context: BuffContext) {
     const { topicSpecItems } = input;
     topicSpecItems
@@ -337,20 +385,33 @@ export class CalculatorHelper {
             case "max_hp":
               context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
-            case "enemy_max_hp_up":
-              context.in_game_buff_final_mul.enemy_max_hp_down.addChild(new NumericLiteralNode(value, item.name));
+            case "enemy_max_hp":
+              context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
-            case "enemy_atk_up":
-              context.in_game_buff_final_mul.enemy_atk_down.addChild(new NumericLiteralNode(value, item.name));
-              break;
-            case "enemy_max_hp_down":
-              context.in_game_buff_final_mul.enemy_max_hp_down.addChild(new NumericLiteralNode(value, item.name));
+            case "enemy_atk":
+              context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, item.name));
               break;
             default:
               break;
           }
         });
       });
+    return context;
+  }
+
+  /** 分析敌人特殊词条 */
+  static analyzeEnemySpec(input: { enemySpec: EnemySpec[] }, context: BuffContext) {
+    const { enemySpec } = input;
+    enemySpec.forEach((spec) => {
+      const { key, value, label } = spec;
+      switch (key) {
+        case "enemy_damage_resistance":
+          context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
+          break;
+        default:
+          break;
+      }
+    });
     return context;
   }
 
@@ -395,14 +456,14 @@ export class CalculatorHelper {
     });
     Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
       const isEnemy = [
-        "enemy_atk_down",
+        "enemy_atk",
         "enemy_def_down",
-        "enemy_max_hp_down",
+        "enemy_max_hp",
         "enemy_damage_scale_phy",
         "enemy_damage_scale_mag",
         "enemy_damage_scale_pure",
         "enemy_damage_scale_ep",
-        "enemy_damage_resistance_inf",
+        "enemy_damage_resistance",
       ].includes(key);
       if (!isEnemy && value.calculate() !== 1) {
         result.in_game_char.push(
@@ -411,7 +472,7 @@ export class CalculatorHelper {
       }
       if (isEnemy && value.calculate() !== 1) {
         // 减伤描述特殊
-        if (key === "enemy_damage_resistance_inf") {
+        if (key === "enemy_damage_resistance") {
           result.enemy.push(
             `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
           );
@@ -544,10 +605,10 @@ export class CalculatorHelper {
     );
 
     // 最终乘算
-    context.in_game_buff_final_mul.enemy_max_hp_down.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_max_hp.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方血量*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_atk_down.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_atk.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方攻击*${toPercent(node.calculate())}`, node),
     );
     context.in_game_buff_final_mul.enemy_def_down.children.forEach((node) =>
@@ -568,7 +629,7 @@ export class CalculatorHelper {
     context.in_game_buff_final_mul.enemy_damage_scale_ep.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方元素损伤*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_damage_resistance_inf.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_damage_resistance.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方减伤*${toPercent(node.calculate())}`, node),
     );
     context.global_buff_stack.damage_scale_phy.children.forEach((node) =>

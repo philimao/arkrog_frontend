@@ -10,6 +10,7 @@ import type {
   CalculatorOutput,
   RogueInput,
   StageData,
+  LevelData,
 } from "~/types/gameData";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
@@ -41,6 +42,7 @@ interface DamageCalculatorStore {
   enemyDataParsed: EnemyInput;
   /** 关卡 */
   stageData?: StageData;
+  levelData?: LevelData;
   calcOutput: CalculatorOutput;
 }
 
@@ -69,6 +71,7 @@ interface DamageCalculatorAction {
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setStageData: (stageData: StageData) => void;
+  setLevelData: (levelData: LevelData) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
 }
 
@@ -328,6 +331,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         );
       },
       setStageData: (stageData) => set((state) => ({ ...state, stageData }), undefined, "setStageData"),
+      setLevelData: (levelData) => set((state) => ({ ...state, levelData }), undefined, "setLevelData"),
       calcOutput: undefined as unknown as CalculatorOutput,
       setCalcOutput: (output) => {
         set(

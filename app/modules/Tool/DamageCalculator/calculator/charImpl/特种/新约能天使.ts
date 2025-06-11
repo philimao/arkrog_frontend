@@ -40,7 +40,9 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf.calculate(); // 敌人减伤
+  const mitigation =
+    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御

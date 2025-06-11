@@ -9,7 +9,6 @@ import { dummy, useDamageCalculatorStore } from "~/stores/damageCalculatorStore"
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { parseEnemyData } from "~/modules/Tool/DamageCalculator/utils";
 import { debounce } from "@heroui/shared-utils";
 
 const StyledStageSelector = styled.div`
@@ -18,7 +17,8 @@ const StyledStageSelector = styled.div`
 
 const StyledStageSelectorBody = styled.div`
   display: flex;
-  height: 30rem;
+  height: 34rem;
+  align-items: stretch;
   & > div:first-child {
     flex-grow: 1;
     max-height: 100%;
@@ -29,7 +29,6 @@ const StyledStageSelectorBody = styled.div`
   & > div:last-child {
     flex-shrink: 0;
     width: 33rem;
-    height: 30rem;
   }
 `;
 
@@ -70,6 +69,7 @@ const StyledEnemies = styled.div`
   &::after {
     content: "";
     position: absolute;
+    left: 0;
     bottom: 0;
     width: 100%;
     height: 4rem;
@@ -89,10 +89,20 @@ const StyledEnemyName = styled.div`
   text-align: center;
 `;
 
-export default function StageSelector() {
+export default function StageSelector({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
   const { stages } = useGameDataStore();
-  const { stageData, rogueKey, enemyData, rogueInput, setEnemyData, setEnemyDataParsed, setRogueZone, setStageData } =
-    useDamageCalculatorStore();
+  const {
+    stageData,
+    levelData,
+    setLevelData,
+    rogueKey,
+    enemyData,
+    rogueInput,
+    setEnemyData,
+    setEnemyDataParsed,
+    setRogueZone,
+    setStageData,
+  } = useDamageCalculatorStore();
   const [stageId, setStageId] = useState<string>("ro4_b_8");
 
   const renderStages = useMemo(() => {
@@ -122,8 +132,6 @@ export default function StageSelector() {
     if (renderStages.length > 0) {
       setStageId(renderStages[0].id);
       setStageData(renderStages[0]);
-      setEnemyData(undefined as never);
-      setEnemyDataParsed(dummy);
     }
   }, [renderStages, setEnemyData, setEnemyDataParsed, setStageData]);
 
@@ -131,7 +139,7 @@ export default function StageSelector() {
   useEffect(() => {
     async function handleLoadLevelData() {
       if (!stageData) {
-        setLevelData(undefined);
+        setLevelData(undefined as never);
         return;
       }
       const stageRawData = await _get<LevelData>(
@@ -144,18 +152,18 @@ export default function StageSelector() {
     debounce(() => {
       handleLoadLevelData();
     }, 500)();
-  }, [setEnemyData, setEnemyDataParsed, stageData]);
-
-  const [levelData, setLevelData] = useState<LevelData>();
+  }, [setEnemyData, setEnemyDataParsed, setLevelData, stageData]);
 
   function assignToDummy(parsedEnemyData: EnemyInput) {
-    const dummy = levelData?.enemies.find((enemy) => enemy.id === "enemy_000_dummy");
-    if (!dummy) return;
-    setEnemyData(dummy);
-    setEnemyDataParsed({
-      ...parseEnemyData(dummy, stageData!, levelData!),
-      attributes: parsedEnemyData.attributes,
-    });
+    // const dummy = levelData?.enemies.find((enemy) => enemy.id === "enemy_000_dummy");
+    // if (!dummy) return;
+    // setEnemyData(dummy);
+    // setEnemyDataParsed({
+    //   ...parseEnemyData(dummy, stageData!, levelData!),
+    //   // 可以保证在复制到木桩时，id不变
+    //   id: parsedEnemyData.id,
+    //   attributes: parsedEnemyData.attributes,
+    // }); // TODO
   }
 
   return (
@@ -208,14 +216,13 @@ export default function StageSelector() {
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
-                .filter((enemy) => enemy.name.m_value !== "年代印痕")
+                .filter((enemy) => !["年代印痕", "昔日道标"].includes(enemy.name.m_value))
                 .map((enemyData) => {
                   return (
                     <StyledEnemy
                       key={enemyData.id}
                       onClick={() => {
                         setEnemyData(enemyData);
-                        setEnemyDataParsed(parseEnemyData(enemyData, stageData!, levelData));
                       }}
                     >
                       <EnemyAvatar name={enemyData.name.m_value} />
@@ -225,7 +232,7 @@ export default function StageSelector() {
                 })}
             </StyledEnemies>
           </div>
-          <div>{enemyData && <EnemyDisplay assignToDummy={assignToDummy} />}</div>
+          <div>{enemyData && <EnemyDisplay assignToDummy={assignToDummy} setIllust={setIllust} />}</div>
         </StyledStageSelectorBody>
       )}
     </StyledStageSelector>

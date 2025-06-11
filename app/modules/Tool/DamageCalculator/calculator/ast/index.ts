@@ -142,10 +142,10 @@ export class NumericLiteralNode extends BaseNode {
 }
 
 export class ExpressionGroupNode extends BaseNode {
-  operator: "+" | "*";
+  operator: "+" | "*" | "max" | "min" | "union";
   children: BaseNode[] = [];
 
-  constructor(operator: "+" | "*", tooltip: string) {
+  constructor(operator: "+" | "*" | "max" | "min" | "union", tooltip: string) {
     super("expression-group", tooltip);
     this.operator = operator;
   }
@@ -161,9 +161,30 @@ export class ExpressionGroupNode extends BaseNode {
         return acc + child.calculate();
       }, 0);
     }
-    return this.children.reduce((acc, child) => {
-      return acc * child.calculate();
-    }, 1);
+    if (this.operator === "*") {
+      return this.children.reduce((acc, child) => {
+        return acc * child.calculate();
+      }, 1);
+    }
+    if (this.operator === "max") {
+      return this.children.reduce((acc, child) => {
+        return Math.max(acc, child.calculate());
+      }, 0);
+    }
+    if (this.operator === "min") {
+      return this.children.reduce((acc, child) => {
+        return Math.min(acc, child.calculate());
+      }, Infinity);
+    }
+    if (this.operator === "union") {
+      return (
+        1 -
+        this.children.reduce((acc, child) => {
+          return acc * (1 - child.calculate());
+        }, 1)
+      );
+    }
+    return NaN;
   }
 
   printExpression() {
@@ -179,6 +200,15 @@ export class ExpressionGroupNode extends BaseNode {
     });
     const childrenStr = validChildren.map((child) => child.printExpression()).join(` ${this.operator} `);
     if (validChildren.length > 1) {
+      if (this.operator === "max") {
+        return `max(${validChildren.map((child) => child.printExpression()).join(", ")})`;
+      }
+      if (this.operator === "min") {
+        return `min(${validChildren.map((child) => child.printExpression()).join(", ")})`;
+      }
+      if (this.operator === "union") {
+        return `union(${validChildren.map((child) => child.printExpression()).join(", ")})`;
+      }
       return `(${childrenStr})`;
     }
     return childrenStr;
@@ -197,6 +227,15 @@ export class ExpressionGroupNode extends BaseNode {
     });
     const childrenStr = validChildren.map((child) => child.printDebug()).join(` ${this.operator} `);
     if (validChildren.length > 1) {
+      if (this.operator === "max") {
+        return `max(${validChildren.map((child) => child.printDebug()).join(", ")})`;
+      }
+      if (this.operator === "min") {
+        return `min(${validChildren.map((child) => child.printDebug()).join(", ")})`;
+      }
+      if (this.operator === "union") {
+        return `union(${validChildren.map((child) => child.printDebug()).join(", ")})`;
+      }
       return `(${childrenStr})`;
     }
     return childrenStr;

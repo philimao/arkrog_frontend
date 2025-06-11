@@ -47,7 +47,7 @@ export interface ZoneData {
 // 特定肉鸽所有关卡
 export type StageOfRogue = Record<string, StageData>;
 
-// 特定关卡信息
+/** 关卡简略信息 */
 export interface StageData {
   id: string;
   code: string;
@@ -61,6 +61,7 @@ export interface StageData {
   [key: string]: string | object | number;
 }
 
+/** 关卡详细信息，包括敌人、路线、地图等 */
 export interface LevelData {
   options: object;
   levelId: null;
@@ -502,10 +503,17 @@ export interface EnemyData {
     atk: DefinedData<number>;
     def: DefinedData<number>;
     magicResistance: DefinedData<number>;
+    cost: DefinedData<number>;
     blockCnt: DefinedData<number>;
     moveSpeed: DefinedData<number>;
     attackSpeed: DefinedData<number>;
     baseAttackTime: DefinedData<number>;
+    respawnTime: DefinedData<number>;
+    hpRecoveryPerSec: DefinedData<number>;
+    spRecoveryPerSec: DefinedData<number>;
+    maxDeployCount: DefinedData<number>;
+    massLevel: DefinedData<number>;
+    baseForceLevel: DefinedData<number>;
     tauntLevel: DefinedData<number>;
     epDamageResistance: DefinedData<number>;
     epResistance: DefinedData<number>;
@@ -607,6 +615,8 @@ export interface EnemyAttribute {
   disarmedCombatImmune: boolean;
   /** 恐惧免疫 */
   fearedImmune: boolean;
+  /** 物理法术减伤 */
+  damageResistance?: number;
 }
 
 /** 肉鸽输入数据 */

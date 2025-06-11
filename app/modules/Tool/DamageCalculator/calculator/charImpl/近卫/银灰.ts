@@ -41,7 +41,9 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation = 1 - context.in_game_buff_final_mul.enemy_damage_resistance_inf.calculate(); // 敌人减伤
+  const mitigation =
+    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
@@ -71,7 +73,7 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
     }
     case "skchr_svrash_3": {
       // 目前不计算眩晕覆盖之类的问题
-      let skillBuffIn = 2.27; // 技能加攻
+      const skillBuffIn = 2.27; // 技能加攻
       const skillDph =
         ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul * 1.15; //默认攻击精英/领袖
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
@@ -90,9 +92,9 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
       const commonHit = Math.ceil(skillRecoveryTime / commonAtkTime); // 期望普攻次数
       const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望攻击次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);
-      let skillTotalDamageMag = skillDamageMag * skillHit * (1 - mitigation);
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);
+      const skillTotalDamageMag = skillDamageMag * skillHit * (1 - mitigation);
 
       result.skill.dph = skillDph;
       result.skill.dps.phy = skillTotalDamagePhy / skillKeepTime;

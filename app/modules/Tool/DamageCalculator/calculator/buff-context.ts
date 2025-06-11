@@ -29,6 +29,8 @@ export interface IBuffContext {
     def: ExpressionGroupNode;
     /** 最大生命值(百分比) */
     max_hp: ExpressionGroupNode;
+    /** 敌人局外减伤（难度加成，5结局蛋） */
+    enemy_damage_resistance: ExpressionGroupNode;
   };
   /** 局内Buff 直接加算 */
   in_game_buff_add: {
@@ -53,14 +55,12 @@ export interface IBuffContext {
   in_game_buff_final_mul: {
     /** 攻击力来源 */
     atk: ExpressionGroupNode;
-    /** 敌人攻击力减少来源 */
-    enemy_atk_down: ExpressionGroupNode;
-    /** 敌人攻击力增加来源 */
-    enemy_atk_up: ExpressionGroupNode;
+    /** 敌人攻击力改变来源 */
+    enemy_atk: ExpressionGroupNode;
     /** 敌人防御力减少来源 */
     enemy_def_down: ExpressionGroupNode;
     /** 敌人最大生命值减少来源 */
-    enemy_max_hp_down: ExpressionGroupNode;
+    enemy_max_hp: ExpressionGroupNode;
     /** 敌人物理易伤来源 */
     enemy_damage_scale_phy: ExpressionGroupNode;
     /** 敌人法术易伤来源 */
@@ -69,8 +69,8 @@ export interface IBuffContext {
     enemy_damage_scale_pure: ExpressionGroupNode;
     /** 敌人元素损伤来源 */
     enemy_damage_scale_ep: ExpressionGroupNode;
-    /** 敌人减伤来源 */
-    enemy_damage_resistance_inf: ExpressionGroupNode;
+    /** 敌人局内减伤（大特、年代） */
+    enemy_damage_resistance: ExpressionGroupNode;
   };
   /** 全局Buff 堆叠 */
   global_buff_stack: {
@@ -99,6 +99,7 @@ export class BuffContext implements IBuffContext {
     atk: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     def: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     max_hp: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_damage_resistance: new ExpressionGroupNode("max", "局外最大值").addChild(new NumericLiteralNode(0, "基数")), // TODO
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
@@ -113,17 +114,16 @@ export class BuffContext implements IBuffContext {
   };
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_atk_down: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_atk_up: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def_down: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_phy: new ExpressionGroupNode("+", "敌人物理易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_mag: new ExpressionGroupNode("+", "敌人法术易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_pure: new ExpressionGroupNode("+", "敌人真伤易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_ep: new ExpressionGroupNode("*", "敌人元素损伤").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_max_hp_down: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_damage_resistance_inf: new ExpressionGroupNode("*", "局内最终乘算").addChild(
-      new NumericLiteralNode(1, "基数"),
-    ),
+    enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_damage_resistance: new ExpressionGroupNode("union", "局内取并集乘算").addChild(
+      new NumericLiteralNode(0, "基数"),
+    ), // TODO
   };
   global_buff_stack: IBuffContext["global_buff_stack"] = {
     damage_scale: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),
@@ -135,12 +135,12 @@ export class BuffContext implements IBuffContext {
 
   /** 敌人攻击力减少 最终乘区 */
   mut_in_game_buff_final_mul_enemy_atk_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_atk_down.addChild(new NumericLiteralNode(value, relic.name));
+    this.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人攻击力增加 最终乘区 */
   mut_in_game_buff_final_mul_enemy_atk_up(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_atk_up.addChild(new NumericLiteralNode(value, relic.name));
+    this.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人防御力减少 最终乘区 */
@@ -149,8 +149,8 @@ export class BuffContext implements IBuffContext {
   }
 
   /** 敌人最大生命值减少 最终乘区 */
-  mul_in_game_buff_final_mul_enemy_max_hp_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_max_hp_down.addChild(new NumericLiteralNode(value, relic.name));
+  mul_in_game_buff_final_mul_enemy_max_hp(value: number, buff: RelicBuff, relic: RelicWrapper) {
+    this.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 法术增伤 堆叠 */

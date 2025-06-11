@@ -6,8 +6,8 @@ import type {
   RelicWrapper,
   CharData,
   CharInput,
-  EnemyInput,
   StageData,
+  EnemyData,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
@@ -18,7 +18,7 @@ export type RelicBlackboardInput = {
   relic: RelicWrapper;
   charInput: CharInput;
   charData: CharData;
-  enemyInput: EnemyInput;
+  enemyData: EnemyData;
   relics: RelicWrapper[];
   stageData?: StageData;
 };
@@ -30,9 +30,9 @@ export type RelicBlackboardApplyInput = {
 };
 export type RelicBlackboard = {
   isActive: (input: {
-    charInput: CharInput;
-    charData: CharData;
-    enemyInput: EnemyInput;
+    charInput?: CharInput;
+    charData?: CharData;
+    enemyData?: EnemyData;
     relics: RelicWrapper[];
   }) => boolean;
   apply(input: { context: BuffContext; relics: RelicWrapper[] }): void;

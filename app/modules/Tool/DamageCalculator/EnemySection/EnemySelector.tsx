@@ -3,10 +3,9 @@ import { styled } from "styled-components";
 import React, { useEffect, useMemo, useState } from "react";
 import StageSelector from "~/modules/Tool/DamageCalculator/EnemySection/StageSelector";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
-import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { dummy, useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import type { EnemyInput } from "~/types/gameData";
 
 const StyledEnemySelector = styled.div`
   margin-bottom: 2rem;
@@ -14,6 +13,7 @@ const StyledEnemySelector = styled.div`
 
 export default function EnemySelector() {
   const [activeMode, setActiveMode] = useState("关卡模式");
+  const [illust, setIllust] = useState<React.ReactNode | null>(null);
   return (
     <StyledEnemySelector>
       <StyledTitle modes={["关卡模式"]} activeMode={activeMode} setActiveMode={setActiveMode}>
@@ -23,7 +23,9 @@ export default function EnemySelector() {
 
       {activeMode === "快速选择" && <QuickSelector />}
 
-      {activeMode === "关卡模式" && <StageSelector />}
+      {activeMode === "关卡模式" && <StageSelector setIllust={setIllust} />}
+
+      {illust}
     </StyledEnemySelector>
   );
 }
@@ -50,27 +52,6 @@ const QuickSelectorEnemy = styled.button`
   }
 `;
 
-const dummy: EnemyInput = {
-  id: "dummy",
-  level: 0,
-  name: "木桩",
-  description: "请任意调整木桩数值",
-  attributes: {
-    maxHp: 0,
-    atk: 0,
-    def: 0,
-    magicResistance: 0,
-    blockCnt: 0,
-    moveSpeed: 0,
-    attackSpeed: 0,
-    baseAttackTime: 0,
-    epDamageResistance: 0,
-    epResistance: 0,
-  },
-  levelType: "NORMAL",
-  rangedRadius: 0,
-};
-
 function uniqueByProperty(arr: never[], prop: string) {
   return [...new Map(arr.map((item) => [item[prop], item])).values()];
 }
@@ -90,7 +71,7 @@ function QuickSelector() {
 
   useEffect(() => {
     setEnemyDataParsed(dummy);
-  }, []);
+  }, [setEnemyDataParsed]);
 
   return (
     <QuickSelectorWrapper>
@@ -108,7 +89,7 @@ function QuickSelector() {
           </QuickSelectorEnemy>
         ))}
       </QuickSelectorEnemies>
-      <div>{enemyDataParsed && <EnemyDisplay />}</div>
+      <div>{enemyDataParsed && <EnemyDisplay assignToDummy={() => {}} setIllust={() => {}} />}</div>
     </QuickSelectorWrapper>
   );
 }

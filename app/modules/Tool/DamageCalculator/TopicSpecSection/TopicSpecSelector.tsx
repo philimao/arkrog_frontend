@@ -171,23 +171,23 @@ const disasters = {
   rogue_4_disaster_1: {
     id: "rogue_4_disaster_1",
     name: "天灾年代",
-    functionDesc: ({ enemy_max_hp_up }: { enemy_max_hp_up: number }) =>
-      `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${enemy_max_hp_up * 100}%`,
+    functionDesc: ({ enemy_max_hp }: { enemy_max_hp: number }) =>
+      `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${enemy_max_hp * 100}%`,
     values: [
-      [{ key: "enemy_max_hp_up", value: 1 }],
-      [{ key: "enemy_max_hp_up", value: 1.5 }],
-      [{ key: "enemy_max_hp_up", value: 2 }],
+      [{ key: "enemy_max_hp", value: 1 }],
+      [{ key: "enemy_max_hp", value: 1.5 }],
+      [{ key: "enemy_max_hp", value: 2 }],
     ],
   },
   rogue_4_disaster_2: {
     id: "rogue_4_disaster_2",
     name: "魔王年代",
-    functionDesc: ({ enemy_atk_up }: { enemy_atk_up: number }) =>
-      `【萨卡兹】敌人的攻击力提升${enemy_atk_up * 100}%，处于年代印痕中的干员无法主动撤退`,
+    functionDesc: ({ enemy_atk }: { enemy_atk: number }) =>
+      `【萨卡兹】敌人的攻击力提升${enemy_atk * 100}%，处于年代印痕中的干员无法主动撤退`,
     values: [
-      [{ key: "enemy_atk_up", value: 0.2 }],
-      [{ key: "enemy_atk_up", value: 0.35 }],
-      [{ key: "enemy_atk_up", value: 0.5 }],
+      [{ key: "enemy_atk", value: 0.2 }],
+      [{ key: "enemy_atk", value: 0.35 }],
+      [{ key: "enemy_atk", value: 0.5 }],
     ],
   },
   rogue_4_disaster_3: {
@@ -220,20 +220,20 @@ const disasters = {
   rogue_4_disaster_5: {
     id: "rogue_4_disaster_5",
     name: "奇观年代",
-    functionDesc: ({ load, enemy_max_hp_up }: { load: number; enemy_max_hp_up: number }) =>
-      `构想的负荷+${load}，所有敌人生命值+${enemy_max_hp_up * 100}%`,
+    functionDesc: ({ load, enemy_max_hp }: { load: number; enemy_max_hp: number }) =>
+      `构想的负荷+${load}，所有敌人生命值+${enemy_max_hp * 100}%`,
     values: [
       [
         { key: "load", value: 1 },
-        { key: "enemy_max_hp_up", value: 0.2 },
+        { key: "enemy_max_hp", value: 0.2 },
       ],
       [
         { key: "load", value: 2 },
-        { key: "enemy_max_hp_up", value: 0.3 },
+        { key: "enemy_max_hp", value: 0.3 },
       ],
       [
         { key: "load", value: 3 },
-        { key: "enemy_max_hp_up", value: 0.5 },
+        { key: "enemy_max_hp", value: 0.5 },
       ],
     ],
   },
@@ -364,7 +364,7 @@ const fragments = {
     name: "爆破",
     desc: "使用后下次战斗<年代之刺>的最大生命值-50%",
     value: 2,
-    buffs: [{ key: "enemy_max_hp_down", value: -0.5 }],
+    buffs: [{ key: "enemy_max_hp", value: -0.5 }],
   },
   rogue_4_fragment_F_26: {
     id: "rogue_4_fragment_F_26",

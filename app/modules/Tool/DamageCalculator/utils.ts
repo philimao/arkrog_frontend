@@ -43,7 +43,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   "damage_scale[sniper]": "狙击易伤",
   "damage_scale[sarkaz]": "对萨卡兹易伤", // 文学
   magic_resistance: "法术抗性",
-  damage_resistance: "伤害降低",
+  damage_resistance: "物理法术减伤",
   "enemy_damage_resistance[inf]": "物理与法术伤害降低",
   sp_recovery_per_sec: "技力回复",
   attack_speed: "攻击速度",
@@ -500,16 +500,6 @@ export function finalizeRelicResults(outBuff: number, relicWrappers: RelicWrappe
   return { charResult, inGameResult, enemyResult };
 }
 
-export function getEnemyParsedAttributes(enemyData: EnemyInput): Record<string, number | string | boolean> {
-  const attributes: Record<string, number | string | boolean> = {};
-  Object.keys(enemyData.attributes).forEach((key) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    attributes[key] = enemyData.attributes[key];
-  });
-  return attributes;
-}
-
 export const outBuffMap: Partial<Record<RogueKey, string[]>> = {
   rogue_1: ["1"],
   rogue_2: ["1", "1.2"],
@@ -533,6 +523,13 @@ export function parseDefinedData<T>(definedData: DefinedData<T>): T {
   return definedData.m_value;
 }
 
+/**
+ * 解析敌人数据
+ * @param enemyData
+ * @param stageData 关卡数据（用于获取难度）
+ * @param levelData 关卡数据（用于获取符文）
+ * @returns
+ */
 export function parseEnemyData(enemyData: EnemyData, stageData: StageData, levelData: LevelData): EnemyInput {
   const stageDifficulty = stageData.difficulty;
   const runes = levelData.runes || [];
@@ -555,12 +552,30 @@ export function parseEnemyData(enemyData: EnemyData, stageData: StageData, level
       atk: parseDefinedData(attributes.atk) * atk_mul,
       def: parseDefinedData(attributes.def) * def_mul,
       magicResistance: parseDefinedData(attributes.magicResistance),
+      cost: parseDefinedData(attributes.cost),
       blockCnt: parseDefinedData(attributes.blockCnt),
       moveSpeed: parseDefinedData(attributes.moveSpeed),
       attackSpeed: parseDefinedData(attributes.attackSpeed),
       baseAttackTime: parseDefinedData(attributes.baseAttackTime),
+      respawnTime: parseDefinedData(attributes.respawnTime),
+      hpRecoveryPerSec: parseDefinedData(attributes.hpRecoveryPerSec),
+      spRecoveryPerSec: parseDefinedData(attributes.spRecoveryPerSec),
+      maxDeployCount: parseDefinedData(attributes.maxDeployCount),
+      massLevel: parseDefinedData(attributes.massLevel),
+      baseForceLevel: parseDefinedData(attributes.baseForceLevel),
+      tauntLevel: parseDefinedData(attributes.tauntLevel),
+      disarmedCombatImmune: parseDefinedData(attributes.disarmedCombatImmune),
+      fearedImmune: parseDefinedData(attributes.fearedImmune),
       epDamageResistance: parseDefinedData(attributes.epDamageResistance),
       epResistance: parseDefinedData(attributes.epResistance),
+      damageHitratePhysical: parseDefinedData(attributes.damageHitratePhysical),
+      damageHitrateMagical: parseDefinedData(attributes.damageHitrateMagical),
+      stunImmune: parseDefinedData(attributes.stunImmune),
+      silenceImmune: parseDefinedData(attributes.silenceImmune),
+      sleepImmune: parseDefinedData(attributes.sleepImmune),
+      frozenImmune: parseDefinedData(attributes.frozenImmune),
+      levitateImmune: parseDefinedData(attributes.levitateImmune),
+      damageResistance: 0,
     },
     levelType: parseDefinedData(enemyData.levelType),
     rangedRadius: enemyData.rangedRadius ? parseDefinedData(enemyData.rangedRadius) : 0,

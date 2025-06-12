@@ -121,7 +121,8 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       rogueInput: {
         topic: "rogue_4",
         rogue_4: {
-          zone: "zone_7",
+          // zone: "zone_7",
+          zone: "zone_5",
           difficulty: 18,
           thoughtLoad: "NORMAL",
         },

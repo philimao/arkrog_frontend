@@ -103,7 +103,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     setRogueZone,
     setStageData,
   } = useDamageCalculatorStore();
-  const [stageId, setStageId] = useState<string>("ro4_b_8");
+  const [stageId, setStageId] = useState<string>("");
 
   const renderStages = useMemo(() => {
     const stageOfRogue = stages![rogueKey];

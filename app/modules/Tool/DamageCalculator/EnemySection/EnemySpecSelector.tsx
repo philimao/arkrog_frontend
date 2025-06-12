@@ -40,14 +40,9 @@ export default function EnemySpecSelector({
   const showSkzdwx = rogueKey === "rogue_4";
   const [mitigationSkzdwx, setMitigationSkzdwx] = useState<string>("0");
 
-  const [selected, setSelected] = useState<string[]>(() => {
-    return (
-      enemyConfig?.selects.map((select) => {
-        return select.options[0].value.toString();
-      }) || []
-    );
-  });
+  const [selected, setSelected] = useState<string[]>([]);
 
+  /** 当敌人配置变化时，更新敌人效果图与默认效果 */
   useEffect(() => {
     if (enemyConfig) {
       const illust = (
@@ -63,15 +58,23 @@ export default function EnemySpecSelector({
         </div>
       );
       setIllust(illust);
-      const result = enemyConfig.selects.map((select, index) => {
-        return select.apply(Number(selected[index]));
-      });
-      console.log("enemy_spec_result", result);
-      setEnemySpec(result);
+      setSelected(enemyConfig.selects.map((select) => select.options[0].value.toString()));
     } else {
       setIllust(null);
+      setSelected([]);
     }
-  }, [selected, enemyConfig, setIllust, setEnemySpec]);
+  }, [enemyConfig, setIllust]);
+
+  /** 当敌人配置选项变化时，更新敌人效果 */
+  useEffect(() => {
+    if (!enemyConfig) return;
+    const result = enemyConfig.selects.map((select, index) => {
+      console.log(select, selected[index]);
+      return select.apply(Number(selected[index]));
+    });
+    console.log("enemy_spec_result", result);
+    setEnemySpec(result);
+  }, [enemyConfig, selected, setEnemySpec]);
 
   return (
     <StyledEnemySpecSelector>

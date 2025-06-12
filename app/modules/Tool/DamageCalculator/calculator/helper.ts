@@ -116,16 +116,21 @@ export class CalculatorHelper {
     // 应用局外加成
     console.group("计算敌人属性");
     enemyAttr.atk *= context.in_game_buff_final_mul.enemy_atk.calculate();
-    console.log(context.in_game_buff_final_mul.enemy_atk.printExpression());
+    console.log("攻击力", context.in_game_buff_final_mul.enemy_atk.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());
     enemyAttr.def *= context.in_game_buff_final_mul.enemy_def_down.calculate();
-    console.log(context.in_game_buff_final_mul.enemy_def_down.printExpression());
+    console.log("防御力", context.in_game_buff_final_mul.enemy_def_down.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_def_down.printDebug());
     enemyAttr.maxHp *= context.in_game_buff_final_mul.enemy_max_hp.calculate();
-    console.log(context.in_game_buff_final_mul.enemy_max_hp.printExpression());
+    console.log("最大生命值", context.in_game_buff_final_mul.enemy_max_hp.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_max_hp.printDebug());
+
+    context.relic_rune_mul.enemy_damage_resistance.calculate();
+    console.log("敌人局外减伤", context.relic_rune_mul.enemy_damage_resistance.printExpression());
+    console.log(context.relic_rune_mul.enemy_damage_resistance.printDebug());
+
     enemyAttr.damageResistance = context.in_game_buff_final_mul.enemy_damage_resistance.calculate();
-    console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
+    console.log("敌人局内减伤", context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printDebug());
     console.groupEnd();
     return enemyDataParsed;

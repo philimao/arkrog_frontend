@@ -149,7 +149,10 @@ export default function EnemyDisplay({
       enemyData: enemyData,
       stageData,
     });
-    enemyContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput: rogueInput }, enemyContext);
+    enemyContext = CalculatorHelper.analyzeRogueDifficulty(
+      { rogueInput: rogueInput, enemyData: enemyData },
+      enemyContext,
+    );
     enemyContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, enemyContext);
     enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
     CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);

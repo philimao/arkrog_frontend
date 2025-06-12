@@ -184,6 +184,7 @@ export class ExpressionGroupNode extends BaseNode {
         }, 1)
       );
     }
+    console.error("Invalid operator", this.operator);
     return NaN;
   }
 

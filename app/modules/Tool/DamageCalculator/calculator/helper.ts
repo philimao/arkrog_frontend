@@ -114,10 +114,20 @@ export class CalculatorHelper {
     const enemyAttr = enemyDataParsed.attributes;
 
     // 应用局外加成
+    console.group("计算敌人属性");
     enemyAttr.atk *= context.in_game_buff_final_mul.enemy_atk.calculate();
+    console.log(context.in_game_buff_final_mul.enemy_atk.printExpression());
+    console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());
     enemyAttr.def *= context.in_game_buff_final_mul.enemy_def_down.calculate();
+    console.log(context.in_game_buff_final_mul.enemy_def_down.printExpression());
+    console.log(context.in_game_buff_final_mul.enemy_def_down.printDebug());
     enemyAttr.maxHp *= context.in_game_buff_final_mul.enemy_max_hp.calculate();
+    console.log(context.in_game_buff_final_mul.enemy_max_hp.printExpression());
+    console.log(context.in_game_buff_final_mul.enemy_max_hp.printDebug());
     enemyAttr.damageResistance = context.in_game_buff_final_mul.enemy_damage_resistance.calculate();
+    console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
+    console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printDebug());
+    console.groupEnd();
     return enemyDataParsed;
   }
 

@@ -124,6 +124,8 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
         if (softMap[argsA[1]] !== softMap[argsB[1]]) return softMap[argsA[1]] - softMap[argsB[1]];
         return parseInt(argsA[3]) - parseInt(argsB[3]);
       });
+    // 防止heroui select报错array与key不匹配
+    setStageId("");
     return result;
   }, [rogueKey, stages, rogueInput]);
 

@@ -133,22 +133,17 @@ export class BuffContext implements IBuffContext {
   };
   constructor() {}
 
-  /** 敌人攻击力减少 最终乘区 */
-  mut_in_game_buff_final_mul_enemy_atk_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
+  /** 敌人攻击力改变 最终乘区 */
+  mut_in_game_buff_final_mul_enemy_atk(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
   }
 
-  /** 敌人攻击力增加 最终乘区 */
-  mut_in_game_buff_final_mul_enemy_atk_up(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
-  }
-
-  /** 敌人防御力减少 最终乘区 */
-  mul_in_game_buff_final_mul_enemy_def_down(value: number, buff: RelicBuff, relic: RelicWrapper) {
+  /** 敌人防御力改变 最终乘区 */
+  mul_in_game_buff_final_mul_enemy_def(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_def_down.addChild(new NumericLiteralNode(value, relic.name));
   }
 
-  /** 敌人最大生命值减少 最终乘区 */
+  /** 敌人最大生命值改变 最终乘区 */
   mul_in_game_buff_final_mul_enemy_max_hp(value: number, buff: RelicBuff, relic: RelicWrapper) {
     this.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, relic.name));
   }

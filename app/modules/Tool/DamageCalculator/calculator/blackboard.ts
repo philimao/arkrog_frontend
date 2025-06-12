@@ -10,8 +10,8 @@ import {
 import { NumericLiteralNode } from "./ast";
 import { parseDefinedData } from "../utils";
 
-/** 敌人攻击力减少 */
-registerRelicBlackboard("enemy_atk", (buff: RelicBuff, relic: RelicWrapper) => {
+/** 敌人攻击力改变 */
+registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
     | "BOSS"
@@ -25,33 +25,14 @@ registerRelicBlackboard("enemy_atk", (buff: RelicBuff, relic: RelicWrapper) => {
     },
     apply(input): void {
       const { context } = input;
+      /** 当value为正数时必然>1，例如攻击力+20%显示为1.2，当value为负数时，表示减攻，例如攻击力-10%显示为-0.1 */
       const value = Math.sign(atk.value) === 1 ? atk.value : 1 + atk.value;
-      context.mut_in_game_buff_final_mul_enemy_atk_down(value, buff, relic);
+      context.mut_in_game_buff_final_mul_enemy_atk(value, buff, relic);
     },
   };
 });
 
-/** 敌人攻击力增加 */
-registerRelicBlackboard("enemy_atk", (buff: RelicBuff, relic: RelicWrapper) => {
-  const atk = getByKeySafe(buff.blackboard, "atk");
-  const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
-    | "BOSS"
-    | "ELITE"
-    | "NORMAL";
-  return {
-    isActive(input) {
-      if (!input.enemyData) return true;
-      return enemy_level_type ? parseDefinedData(input.enemyData.levelType) === enemy_level_type : true;
-    },
-    apply(input): void {
-      const { context } = input;
-      const value = Math.sign(atk.value) === 1 ? atk.value : 1 + atk.value;
-      context.mut_in_game_buff_final_mul_enemy_atk_up(value, buff, relic);
-    },
-  };
-});
-
-/** 敌人防御力减少 */
+/** 敌人防御力改变 */
 registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper) => {
   const def = getByKeySafe(buff.blackboard, "def");
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
@@ -66,13 +47,13 @@ registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper)
     apply(input): void {
       const { context } = input;
       const value = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
-      context.mul_in_game_buff_final_mul_enemy_def_down(value, buff, relic);
+      context.mul_in_game_buff_final_mul_enemy_def(value, buff, relic);
     },
   };
 });
 
-/** 敌人最大生命值减少 */
-registerRelicBlackboard("enemy_max_hp", (buff: RelicBuff, relic: RelicWrapper) => {
+/** 敌人最大生命值改变 */
+registerRelicBlackboard("enemy_max_hp_down", (buff: RelicBuff, relic: RelicWrapper) => {
   const max_hp = getByKeySafe(buff.blackboard, "max_hp");
   // 敌人等级类型
   const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as

@@ -98,13 +98,7 @@ const displayAttrKeys = [
   "damageResistance",
 ];
 
-export default function EnemyDisplay({
-  assignToDummy,
-  setIllust,
-}: {
-  assignToDummy: (parsedEnemyData: EnemyInput) => void;
-  setIllust: (illust: React.ReactNode) => void;
-}) {
+export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
   const { items, relics } = useGameDataStore();
   const {
     rogueInput,
@@ -116,6 +110,7 @@ export default function EnemyDisplay({
     stageData,
     levelData,
     enemyDataParsed,
+    setEnemyData,
     setEnemyDataParsed,
   } = useDamageCalculatorStore();
   // const [phase, setPhase] = useState<number>(1);
@@ -177,6 +172,14 @@ export default function EnemyDisplay({
     _setEnemyDataParsed(enemyDataParsed);
   }, [enemyDataParsed]);
 
+  function assignToDummy() {
+    // 复制到木桩时，id不变保证特殊效果能够正常加载
+    setEnemyData({
+      ...enemyData,
+      name: { m_value: "木桩", m_defined: true },
+    });
+  }
+
   if (!_enemyDataParsed) return null;
 
   return (
@@ -199,7 +202,7 @@ export default function EnemyDisplay({
             ))}
         </StyledPhase> */}
         {_enemyDataParsed.name !== "木桩" ? (
-          <StyledAttrFuncButton onClick={() => assignToDummy(_enemyDataParsed)}>复制到木桩</StyledAttrFuncButton>
+          <StyledAttrFuncButton onClick={() => assignToDummy()}>复制到木桩</StyledAttrFuncButton>
         ) : (
           <StyledAttrFuncButton onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>
             恢复初始值

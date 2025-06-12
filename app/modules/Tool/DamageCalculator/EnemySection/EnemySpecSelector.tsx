@@ -45,6 +45,7 @@ export default function EnemySpecSelector({
   /** 当敌人配置变化时，更新敌人效果图与默认效果 */
   useEffect(() => {
     if (enemyConfig) {
+      //   console.log("加载敌人特殊效果", enemyConfig);
       const illust = (
         <div className="mt-4 flex flex-col gap-4">
           {enemyConfig.selects
@@ -67,14 +68,25 @@ export default function EnemySpecSelector({
 
   /** 当敌人配置选项变化时，更新敌人效果 */
   useEffect(() => {
-    if (!enemyConfig) return;
-    const result = enemyConfig.selects.map((select, index) => {
-      console.log(select, selected[index]);
-      return select.apply(Number(selected[index]));
-    });
+    const result = [];
+    if (enemyConfig) {
+      result.push(
+        ...enemyConfig.selects.map((select, index) => {
+          console.log(select, selected[index]);
+          return select.apply(Number(selected[index]));
+        }),
+      );
+    }
+    if (mitigationSkzdwx === "0.5") {
+      result.push({
+        label: "位于年代印痕中（最终乘算50减伤）",
+        key: "enemy_damage_resistance",
+        value: 0.5,
+      });
+    }
     console.log("enemy_spec_result", result);
     setEnemySpec(result);
-  }, [enemyConfig, selected, setEnemySpec]);
+  }, [enemyConfig, selected, setEnemySpec, mitigationSkzdwx]);
 
   return (
     <StyledEnemySpecSelector>
@@ -172,6 +184,28 @@ const EnemySpecConfigs: Partial<Record<RogueKey, Record<string, EnemySpecConfig>
           apply: (value: number) => {
             return {
               label: "本关固定获得50物法减伤",
+              key: "enemy_damage_resistance",
+              value: value,
+            };
+          },
+        },
+      ],
+    },
+    enemy_2080_skzlwy: {
+      id: "enemy_2080_skzlwy",
+      name: "弗莱蒙特，诸思之解答",
+      selects: [
+        {
+          label: "根据储存的攻击能量数量获得物法减伤",
+          options: [
+            { label: "90减伤 3颗球", value: 0.9 },
+            { label: "60减伤 2颗球", value: 0.6 },
+            { label: "30减伤 1颗球", value: 0.3 },
+            { label: "0减伤 无球", value: 0 },
+          ],
+          apply: (value: number) => {
+            return {
+              label: "根据储存的攻击能量数量获得物法减伤",
               key: "enemy_damage_resistance",
               value: value,
             };

@@ -156,18 +156,6 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     }, 500)();
   }, [setEnemyData, setEnemyDataParsed, setLevelData, stageData]);
 
-  function assignToDummy(parsedEnemyData: EnemyInput) {
-    // const dummy = levelData?.enemies.find((enemy) => enemy.id === "enemy_000_dummy");
-    // if (!dummy) return;
-    // setEnemyData(dummy);
-    // setEnemyDataParsed({
-    //   ...parseEnemyData(dummy, stageData!, levelData!),
-    //   // 可以保证在复制到木桩时，id不变
-    //   id: parsedEnemyData.id,
-    //   attributes: parsedEnemyData.attributes,
-    // }); // TODO
-  }
-
   return (
     <StyledStageSelector>
       <GridContainer>
@@ -234,7 +222,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
                 })}
             </StyledEnemies>
           </div>
-          <div>{enemyData && <EnemyDisplay assignToDummy={assignToDummy} setIllust={setIllust} />}</div>
+          <div>{enemyData && <EnemyDisplay setIllust={setIllust} />}</div>
         </StyledStageSelectorBody>
       )}
     </StyledStageSelector>

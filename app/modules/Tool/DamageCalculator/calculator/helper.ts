@@ -115,13 +115,13 @@ export class CalculatorHelper {
 
     // 应用局外加成
     console.group("计算敌人属性");
-    enemyAttr.atk *= context.in_game_buff_final_mul.enemy_atk.calculate();
+    enemyAttr.atk = Math.round(enemyAttr.atk * context.in_game_buff_final_mul.enemy_atk.calculate());
     console.log("攻击力", context.in_game_buff_final_mul.enemy_atk.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());
-    enemyAttr.def *= context.in_game_buff_final_mul.enemy_def_down.calculate();
+    enemyAttr.def = Math.round(enemyAttr.def * context.in_game_buff_final_mul.enemy_def_down.calculate());
     console.log("防御力", context.in_game_buff_final_mul.enemy_def_down.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_def_down.printDebug());
-    enemyAttr.maxHp *= context.in_game_buff_final_mul.enemy_max_hp.calculate();
+    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * context.in_game_buff_final_mul.enemy_max_hp.calculate());
     console.log("最大生命值", context.in_game_buff_final_mul.enemy_max_hp.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_max_hp.printDebug());
 
@@ -344,11 +344,10 @@ export class CalculatorHelper {
       if (enemyAttrMultiplier) {
         const value = Math.pow(enemyAttrMultiplier / 100 + 1, zoneValue);
         context.in_game_buff_final_mul.enemy_atk.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
+          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue} | 每层加成${enemyAttrMultiplier}%`),
         );
-
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue}`),
+          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue} | 每层加成${enemyAttrMultiplier}%`),
         );
       }
       // 低难度下有加成

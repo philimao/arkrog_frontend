@@ -89,7 +89,7 @@ function QuickSelector() {
           </QuickSelectorEnemy>
         ))}
       </QuickSelectorEnemies>
-      <div>{enemyDataParsed && <EnemyDisplay assignToDummy={() => {}} setIllust={() => {}} />}</div>
+      <div>{enemyDataParsed && <EnemyDisplay setIllust={() => {}} />}</div>
     </QuickSelectorWrapper>
   );
 }

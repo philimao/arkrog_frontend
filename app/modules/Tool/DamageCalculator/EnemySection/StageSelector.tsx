@@ -145,7 +145,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
         return;
       }
       const stageRawData = await _get<LevelData>(
-        `/gamedata/level/${encodeURIComponent(stageData.levelId.toLowerCase())}`,
+        `/gamedata/level/${stageData.levelId.toLowerCase().replace(/\//g, "&&")}`,
       );
       setLevelData(stageRawData);
     }

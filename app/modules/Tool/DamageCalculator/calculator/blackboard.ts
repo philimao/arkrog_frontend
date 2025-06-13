@@ -353,6 +353,7 @@ export const commonRelicBlackboard = {
     const atk = getByKey(buff.blackboard, "atk");
     const def = getByKey(buff.blackboard, "def");
     const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    const respawn_time = getByKey(buff.blackboard, "respawn_time");
     /** 最大生命值 */
     if (max_hp) {
       context.relic_rune_mul.max_hp.addChild(
@@ -390,6 +391,12 @@ export const commonRelicBlackboard = {
           new NumericLiteralNode(attack_speed.value, relic.name, { relic, buff }),
         );
       }
+      is_invalid = false;
+    }
+    if (respawn_time) {
+      context.relic_rune_mul.respawn_time.addChild(
+        new NumericLiteralNode(respawn_time.value, relic.name, { relic, buff }),
+      );
       is_invalid = false;
     }
     if (is_invalid) {

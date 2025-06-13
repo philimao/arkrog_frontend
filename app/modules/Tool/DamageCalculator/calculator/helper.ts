@@ -13,16 +13,8 @@ import type {
   RogueInput,
   StageData,
   EnemyData,
-  LevelData,
 } from "~/types/gameData";
-import {
-  isRelicActive,
-  isBuffActive,
-  isBlackboardActive,
-  allowedBlackboardKeyMap,
-  parseEnemyData,
-  parseDefinedData,
-} from "../utils";
+import { isRelicActive, isBuffActive, isBlackboardActive, allowedBlackboardKeyMap, parseDefinedData } from "../utils";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
 import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
@@ -90,11 +82,13 @@ export class CalculatorHelper {
     result.maxHp += context.relic_rune_add.max_hp.calculate();
     result.cost += context.relic_rune_add.cost.calculate();
     result.hpRecoveryPerSec += context.relic_rune_add.hp_recovery_per_sec.calculate();
+    result.respawnTime += context.relic_rune_add.respawn_time.calculate();
 
     /** 应用局外加成(乘算) */
     result.atk = Math.round(result.atk * context.relic_rune_mul.atk.calculate());
     result.def = Math.round(result.def * context.relic_rune_mul.def.calculate());
     result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp.calculate());
+    result.respawnTime = Math.round(result.respawnTime * context.relic_rune_mul.respawn_time.calculate());
 
     /** 应用局内加算 */
     result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec.calculate();
@@ -176,6 +170,10 @@ export class CalculatorHelper {
           }
           case "ATTACK_SPEED": {
             result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "RESPAWN_TIME": {
+            result.relic_rune_add.respawn_time.addChild(new NumericLiteralNode(mod.value, "潜能"));
             break;
           }
         }

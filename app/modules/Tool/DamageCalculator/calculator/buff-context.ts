@@ -6,7 +6,7 @@ import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 export interface IBuffContext {
   /** 不生效的藏品 */
   invalidRelics: RelicWrapper[];
-  /** 藏品rune 局外加算 */
+  /** 干员养成、藏品rune 局外加算 */
   relic_rune_add: {
     /** 最大生命值 */
     max_hp: ExpressionGroupNode;
@@ -20,6 +20,8 @@ export interface IBuffContext {
     cost: ExpressionGroupNode;
     /** 每秒生命回复 */
     hp_recovery_per_sec: ExpressionGroupNode;
+    /** 再部署时间 */
+    respawn_time: ExpressionGroupNode;
   };
   /** 藏品rune 局外乘算 */
   relic_rune_mul: {
@@ -31,6 +33,8 @@ export interface IBuffContext {
     max_hp: ExpressionGroupNode;
     /** 敌人局外减伤（难度加成，5结局蛋） */
     enemy_damage_resistance: ExpressionGroupNode;
+    /** 再部署时间 */
+    respawn_time: ExpressionGroupNode;
   };
   /** 局内Buff 直接加算 */
   in_game_buff_add: {
@@ -94,12 +98,14 @@ export class BuffContext implements IBuffContext {
     def: new ExpressionGroupNode("+", "局外加算"),
     cost: new ExpressionGroupNode("+", "局外加算"),
     hp_recovery_per_sec: new ExpressionGroupNode("+", "局外加算"),
+    respawn_time: new ExpressionGroupNode("+", "局外加算"),
   };
   relic_rune_mul: IBuffContext["relic_rune_mul"] = {
     atk: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     def: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     max_hp: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_damage_resistance: new ExpressionGroupNode("max", "局外最大值").addChild(new NumericLiteralNode(0, "基数")), // TODO
+    respawn_time: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_damage_resistance: new ExpressionGroupNode("max", "局外最大值").addChild(new NumericLiteralNode(0, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
@@ -123,7 +129,7 @@ export class BuffContext implements IBuffContext {
     enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_resistance: new ExpressionGroupNode("union", "局内取并集乘算").addChild(
       new NumericLiteralNode(0, "基数"),
-    ), // TODO
+    ),
   };
   global_buff_stack: IBuffContext["global_buff_stack"] = {
     damage_scale: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),

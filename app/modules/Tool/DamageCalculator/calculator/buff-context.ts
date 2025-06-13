@@ -58,7 +58,7 @@ export interface IBuffContext {
     /** 敌人攻击力改变来源 */
     enemy_atk: ExpressionGroupNode;
     /** 敌人防御力减少来源 */
-    enemy_def_down: ExpressionGroupNode;
+    enemy_def: ExpressionGroupNode;
     /** 敌人最大生命值减少来源 */
     enemy_max_hp: ExpressionGroupNode;
     /** 敌人物理易伤来源 */
@@ -115,7 +115,7 @@ export class BuffContext implements IBuffContext {
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_def_down: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_def: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_phy: new ExpressionGroupNode("+", "敌人物理易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_mag: new ExpressionGroupNode("+", "敌人法术易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_pure: new ExpressionGroupNode("+", "敌人真伤易伤").addChild(new NumericLiteralNode(1, "基数")),
@@ -140,7 +140,7 @@ export class BuffContext implements IBuffContext {
 
   /** 敌人防御力改变 最终乘区 */
   mul_in_game_buff_final_mul_enemy_def(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_def_down.addChild(new NumericLiteralNode(value, relic.name));
+    this.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(value, relic.name));
   }
 
   /** 敌人最大生命值改变 最终乘区 */

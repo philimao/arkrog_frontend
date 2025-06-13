@@ -103,24 +103,19 @@ export class CalculatorHelper {
   }
 
   /** 计算敌人属性 */
-  static calculateEnemyAttr(input: {
-    enemyData: EnemyData;
-    stageData: StageData;
-    levelData: LevelData;
-    context: BuffContext;
-  }): EnemyInput {
-    const { enemyData, stageData, levelData, context } = input;
-    const enemyDataParsed = parseEnemyData(enemyData, stageData, levelData);
-    const enemyAttr = enemyDataParsed.attributes;
+  static calculateEnemyAttr(input: { enemyInput: EnemyInput; context: BuffContext }): EnemyInput {
+    const { enemyInput, context } = input;
+    const calcEnemyInput = JSON.parse(JSON.stringify(enemyInput));
+    const enemyAttr = calcEnemyInput.attributes;
 
     // 应用局外加成
     console.group("计算敌人属性");
     enemyAttr.atk = Math.round(enemyAttr.atk * context.in_game_buff_final_mul.enemy_atk.calculate());
     console.log("攻击力", context.in_game_buff_final_mul.enemy_atk.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());
-    enemyAttr.def = Math.round(enemyAttr.def * context.in_game_buff_final_mul.enemy_def_down.calculate());
-    console.log("防御力", context.in_game_buff_final_mul.enemy_def_down.printExpression());
-    console.log(context.in_game_buff_final_mul.enemy_def_down.printDebug());
+    enemyAttr.def = Math.round(enemyAttr.def * context.in_game_buff_final_mul.enemy_def.calculate());
+    console.log("防御力", context.in_game_buff_final_mul.enemy_def.printExpression());
+    console.log(context.in_game_buff_final_mul.enemy_def.printDebug());
     enemyAttr.maxHp = Math.round(enemyAttr.maxHp * context.in_game_buff_final_mul.enemy_max_hp.calculate());
     console.log("最大生命值", context.in_game_buff_final_mul.enemy_max_hp.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_max_hp.printDebug());
@@ -133,7 +128,7 @@ export class CalculatorHelper {
     console.log("敌人局内减伤", context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printDebug());
     console.groupEnd();
-    return enemyDataParsed;
+    return calcEnemyInput;
   }
 
   /** 分析干员养成加成 */
@@ -639,7 +634,7 @@ export class CalculatorHelper {
     context.in_game_buff_final_mul.enemy_atk.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方攻击*${toPercent(node.calculate())}`, node),
     );
-    context.in_game_buff_final_mul.enemy_def_down.children.forEach((node) =>
+    context.in_game_buff_final_mul.enemy_def.children.forEach((node) =>
       set_row("in_game_final_mul", `敌方防御*${toPercent(node.calculate())}`, node),
     );
     context.in_game_buff_final_mul.enemy_damage_scale_phy.children.forEach((node) =>

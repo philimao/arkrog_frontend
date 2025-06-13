@@ -199,7 +199,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       return;
     }
     // 选择敌人数据后，需要等待敌人特殊效果加成计算完成，减少重新渲染
-    if (!enemyData && !enemySpec) return;
+    if (!enemyData || !enemySpec) return;
     // 干员养成加成
     let buffContext = CalculatorHelper.analyzeChar({
       charInput: charInput,

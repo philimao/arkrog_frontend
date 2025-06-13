@@ -45,13 +45,13 @@ export class ExpressionUtil {
   enemy_in_game_def() {
     return new ExpressionGroupNode("*", "最终乘算")
       .addChild(new NumericLiteralNode(this.input.enemyInput.attributes.def, "局外防御力"))
-      .addChild(...this.context.in_game_buff_final_mul.enemy_def_down.children);
+      .addChild(...this.context.in_game_buff_final_mul.enemy_def.children);
   }
 
   /** 敌人法术抗性 */
   // enemy_in_game_magic_resistance() {
   //   return new ExpressionGroupNode("*", "最终乘算")
   //     .addChild(new NumericLiteralNode(this.input.enemyInput.attributes.def, "局外防御力"))
-  //     .addChild(...this.context.in_game_buff_final_mul.enemy_def_down_source.children);
+  //     .addChild(...this.context.in_game_buff_final_mul.enemy_def_source.children);
   // }
 }

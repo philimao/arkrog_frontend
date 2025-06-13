@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
+import { allowedBlackboardKeyMap, camelToSnake, parseEnemyData } from "~/modules/Tool/DamageCalculator/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
@@ -195,6 +195,19 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
 
   /** 计算敌人加成上下文 */
   const [enemyContext, setEnemyContext] = useState<BuffContext | null>(null);
+
+  // useEffect(() => {
+  //   console.log("enemyContext", enemyContext);
+  // }, [enemyContext]);
+
+  // useEffect(() => {
+  //   console.log("enemyData", enemyData);
+  // }, [enemyData]);
+
+  // useEffect(() => {
+  //   console.log("enemySpec", enemySpec);
+  // }, [enemySpec]);
+
   useEffect(() => {
     // 选择敌人数据后，等待敌人特殊效果加成计算完成，减少重新渲染
     if (!enemyData || !enemySpec || enemySpec.id !== enemyData.id) return;
@@ -215,13 +228,19 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     setEnemyContext(enemyContext);
   }, [enemyData, enemySpec, rogueInput, selectedRelics, stageData, topicSpecItems]);
 
+  /** 敌人数据基础值 */
+  const enemyBaseRef = useRef<EnemyInput | null>(null);
+
+  useEffect(() => {
+    if (!enemyData || !stageData || !levelData) return;
+    enemyBaseRef.current = parseEnemyData(enemyData, stageData, levelData);
+  }, [enemyData, levelData, stageData]);
+
   /** 计算敌人属性 */
   useEffect(() => {
-    if (!enemyContext) return;
+    if (!enemyContext || !enemyBaseRef.current) return;
     const parsedEnemyData = CalculatorHelper.calculateEnemyAttr({
-      enemyData: enemyData,
-      stageData: stageData!,
-      levelData: levelData!,
+      enemyInput: enemyBaseRef.current!,
       context: enemyContext,
     });
     // 复制到木桩时，保留初始值的减伤
@@ -231,7 +250,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     // 深拷贝初始值
     enemyRef.current = JSON.parse(JSON.stringify(parsedEnemyData));
     setEnemyDataParsed(parsedEnemyData);
-  }, [enemyContext, enemyData, levelData, stageData, setEnemyDataParsed, _setEnemyDataParsed]);
+  }, [enemyContext, setEnemyDataParsed, _setEnemyDataParsed]);
 
   /** 当store中的敌人数据更新时，更新缓存 */
   useEffect(() => {
@@ -249,6 +268,8 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       id: "enemy_000_dummy",
       value: [],
     });
+    // 计算敌人属性需要buffContext变化，但木桩没有加成，所以需要重新创建
+    setEnemyContext(CalculatorHelper.createAdditionContext());
   }
 
   if (!_enemyDataParsed) return null;
@@ -271,6 +292,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                       m_value: _enemyDataParsed.levelType === "NORMAL" ? "ELITE" : "NORMAL",
                     },
                   });
+                  setEnemyContext(CalculatorHelper.createAdditionContext());
                 }
               }}
             >
@@ -305,12 +327,17 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           return (
             <StyledInputWrapper key={key}>
               <div>
-                <Tooltip content={displayAttrKeys[key].tooltip}>
+                <Tooltip content={displayAttrKeys[key].tooltip} isDisabled={!displayAttrKeys[key].tooltip}>
                   <span>{allowedBlackboardKeyMap[camelToSnake(key)]}</span>
                 </Tooltip>
               </div>
               {_enemyDataParsed.name !== "木桩" ? (
-                <EnemyAttribute attrKey={key} color={color} />
+                <EnemyAttribute
+                  attrKey={key}
+                  baseValue={enemyBaseRef.current?.attributes[key as never]}
+                  color={color}
+                  context={enemyContext}
+                />
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}
@@ -369,7 +396,9 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
             <EnemyAttribute
               attrKey="damageResistance"
               attributeValue={enemyContext?.relic_rune_mul.enemy_damage_resistance.calculate()}
+              baseValue={enemyBaseRef.current?.attributes.damageResistance}
               color="text-ak-green"
+              context={enemyContext}
             />
           </div>
         </StyledInputWrapper>

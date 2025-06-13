@@ -450,6 +450,13 @@ export class CalculatorHelper {
       }
     });
     Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+      if (key === "enemy_damage_resistance") {
+        if (value.calculate() === 0) {
+          return;
+        }
+        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+        return;
+      }
       if (value.calculate() !== 1) {
         result.out_game_char.push(
           `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
@@ -469,6 +476,13 @@ export class CalculatorHelper {
       }
     });
     Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+      if (key === "enemy_damage_resistance") {
+        if (value.calculate() === 0) {
+          return;
+        }
+        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+        return;
+      }
       const isEnemy = [
         "enemy_atk",
         "enemy_def_down",
@@ -488,7 +502,7 @@ export class CalculatorHelper {
         // 减伤描述特殊
         if (key === "enemy_damage_resistance") {
           result.enemy.push(
-            `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+            `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
           );
         } else {
           result.enemy.push(

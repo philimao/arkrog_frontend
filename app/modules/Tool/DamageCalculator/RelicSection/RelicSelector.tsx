@@ -1,7 +1,7 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@heroui/react";
-import { finalizeRelicResults, wrapRelicData } from "~/modules/Tool/DamageCalculator/utils";
+import { wrapRelicData } from "~/modules/Tool/DamageCalculator/utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import { GridContainer, StyledTitle } from "~/modules/Tool/components/Shared";
@@ -164,7 +164,7 @@ export default function RelicSelectorWrapper({ charData }: { charData?: CharData
   );
 
   useEffect(() => {
-    setRelicWrapper(rogueKey, relicsByChar2);
+    setRelicWrapper(rogueKey, relicsByChar2 as RelicWrapper[]);
   }, []);
 
   const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
@@ -217,7 +217,10 @@ function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: 
       .filter(
         (relicWrapper) =>
           !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
-          (!searchValue || relicWrapper.name.includes(searchValue)),
+          (!searchValue ||
+            relicWrapper.name.includes(searchValue) ||
+            relicWrapper.pinyin.startsWith(searchValue) ||
+            relicWrapper.initials.startsWith(searchValue)),
       )
       // 藏品价值与关键字筛选
       .filter(
@@ -235,7 +238,7 @@ function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: 
       .map((relicWrapper) => relicWrapper.id);
     updateRelics(showIds, "show", true);
     updateRelics(hideIds, "show", false);
-  }, [rogueInput, items, relicWrappers, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
+  }, [items, relicWrappers, rogueInput, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
   // const selectRelicsByIds = (ids: string[]) => {

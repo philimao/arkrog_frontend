@@ -188,19 +188,20 @@ export class CalculatorHelper {
         CalculatorHelper.analyzeBlackboard(bb, result, "模组属性加成");
       }
       // 天赋与特性效果
-      for (const part of uniEquip.parts) {
-        for (const candidates of [
-          part.overrideTraitDataBundle.candidates, // 特性
-          part.addOrOverrideTalentDataBundle.candidates, // 天赋
-        ]) {
-          if (!candidates) continue;
-          // 从多个candidate中选出符合潜能的
-          const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= charInput.potential);
-          for (const bb of admittedTrait!.blackboard) {
-            CalculatorHelper.analyzeBlackboard(bb, result, "模组天赋加成");
-          }
-        }
-      }
+      // for (const part of uniEquip.parts) {
+      //   for (const candidates of [
+      //     part.overrideTraitDataBundle.candidates, // 特性
+      //     part.addOrOverrideTalentDataBundle.candidates, // 天赋
+      //   ]) {
+      //     if (!candidates) continue;
+      //     // 从多个candidate中选出符合潜能的
+      //     const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= charInput.potential);
+      //     for (const bb of admittedTrait!.blackboard) {
+      //       CalculatorHelper.analyzeBlackboard(bb, result, "模组天赋加成");
+      //     }
+      //   }
+      // }
+      // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
     }
     return result;
   }

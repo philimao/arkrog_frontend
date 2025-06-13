@@ -402,7 +402,7 @@ export function applyAttrModifiers(mod: AttributeModifier, result: CharAttribute
  * @param relicDataExt
  * @param charData
  */
-export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): RelicWrapper {
+export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): Partial<RelicWrapper> {
   // console.log(relicDataExt.name);
   const buffs = relicDataExt.buffs.map((buff) => {
     const isActive =
@@ -439,6 +439,11 @@ export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): 
     hasLayer: hasLayer,
     layer: relicDataExt.layer || 1,
     buffs: buffs,
+    pinyin: relicDataExt.pinyin.replace(/_/g, ""),
+    initials: relicDataExt.pinyin
+      .split("_")
+      .map((s) => s[0])
+      .join(""),
   };
 }
 

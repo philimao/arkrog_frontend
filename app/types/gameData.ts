@@ -339,6 +339,7 @@ export interface ItemData {
   subType: string;
   rarity: string;
   value: number;
+  pinyin: string;
 }
 
 export interface RelicBuff {
@@ -380,6 +381,8 @@ export interface RelicWrapper {
   hasLayer: boolean;
   layer: number;
   show: boolean;
+  pinyin: string;
+  initials: string;
   buffs: RelicWrapperBuff[];
   relicData: RelicData;
 }

@@ -1,4 +1,4 @@
-import { getPath, imageHost } from "~/utils/tools";
+import { cosHost, getPath, imageHost } from "~/utils/tools";
 import type { ImgHTMLAttributes } from "react";
 
 interface EnemyAvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
@@ -6,15 +6,16 @@ interface EnemyAvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
   className?: string;
 }
 
-export default function EnemyAvatar({
-  name,
-  className = "w-full",
-  ...props
-}: EnemyAvatarProps) {
-  const url =
-    name === "木桩"
-      ? "/images/tool/calculator/dummy.png"
-      : encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
+const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”"].reduce(
+  (acc, name) => {
+    acc[name] = cosHost + `/images/rogue_4/${encodeURI(name)}.png`;
+    return acc;
+  },
+  {} as Record<string, string>,
+);
+
+export default function EnemyAvatar({ name, className = "w-full", ...props }: EnemyAvatarProps) {
+  const url = preset[name] || encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
   return (
     <img
       className={className}

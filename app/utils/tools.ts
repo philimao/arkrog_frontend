@@ -113,9 +113,11 @@ function mergeArray<T>(target: T[], source: T[]): T[] {
 export const imageHost = "https://media.prts.wiki/";
 export const assetsHost = "https://torappu.prts.wiki/assets/";
 
+export const cosHost = "https://arkrog-1326514380.cos.ap-beijing.myqcloud.com";
+
 export function getPath(filename: string): string {
   const md5 = MD5(filename).toString();
   return md5.slice(0, 1) + "/" + md5.slice(0, 2) + "/" + filename;
 }
 
-export { _get, _getLevel, _post, generateID, hashString, findDuplicates, mergeArray };
+export { _get, _post, generateID, hashString, findDuplicates, mergeArray };

@@ -3,6 +3,7 @@ import ToolSelect from "../../components/ToolSelect";
 import { styled } from "styled-components";
 import { useEffect, useState } from "react";
 import type { EnemyData } from "~/types/gameData";
+import { cosHost } from "~/utils/tools";
 
 const StyledEnemySpecSelector = styled.div`
   height: 100%;
@@ -202,7 +203,9 @@ const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
             value: value,
           };
         },
-        img: "https://arkrog-1326514380.cos.ap-beijing.myqcloud.com/images%2Frogue_4%2F%E7%89%B9%E9%9B%B7%E8%A5%BF%E6%96%AF-%E5%87%8F%E4%BC%A4%E7%A4%BA%E6%84%8F%E5%9B%BE.png",
+        img:
+          cosHost +
+          "/images%2Frogue_4%2F%E7%89%B9%E9%9B%B7%E8%A5%BF%E6%96%AF-%E5%87%8F%E4%BC%A4%E7%A4%BA%E6%84%8F%E5%9B%BE.png",
       },
     ],
   },

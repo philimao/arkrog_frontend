@@ -40,12 +40,13 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
@@ -68,7 +69,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
   switch (skillKey) {
     case "skchr_archet_1": {
       /*还没加入模组判断, 目前默认是集模*/
-      let skillBuffIn = 0.5; // 技能加攻
+      const skillBuffIn = 0.5; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 2.3 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
@@ -103,7 +104,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
     case "skchr_archet_2": {
       /*技能好就开,仅计算主目标伤害*/
       /*还没加入模组判断, 目前默认是集模*/
-      let skillBuffIn = 0.5; // 技能加攻
+      const skillBuffIn = 0.5; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.4 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;

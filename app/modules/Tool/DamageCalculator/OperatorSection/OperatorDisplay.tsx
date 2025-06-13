@@ -45,6 +45,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     selectedIds,
     relicsMap,
     rogueKey,
+    enemySpec,
     setRelicAnalysisResult,
     setCalcOutput,
   } = useDamageCalculatorStore();
@@ -217,6 +218,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffContext);
     // 肉鸽主题加成（年代、灵感、密文板）
     buffContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffContext);
+    // 敌人特殊配置加成
+    buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffContext);
 
     const input: CalculatorInput = {
       charInput: {
@@ -261,6 +264,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     let buffPanelContext = CalculatorHelper.analyzeRelics(input);
     buffPanelContext = CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
     buffPanelContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffPanelContext);
+    buffPanelContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffPanelContext);
 
     setRelicAnalysisResult(buffPanelContext);
     // 计算结果
@@ -270,6 +274,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     charInput,
     enemyData,
     enemyDataParsed,
+    enemySpec,
     relicList,
     relicsMap,
     rogueInput,

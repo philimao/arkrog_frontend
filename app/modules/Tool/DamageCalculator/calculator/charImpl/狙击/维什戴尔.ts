@@ -72,8 +72,9 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
   const skillKey = input.charInput.skillKey;
   const enemyDef = input.enemyInput.attributes.def;
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const vulnD = 0;
   const charge = 1;
 

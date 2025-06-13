@@ -41,11 +41,12 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
   const commonAtkTimeBase = 1.2; // 普攻基础时间
@@ -60,7 +61,7 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
       break;
     }
     case "skchr_mlynar_3": {
-      let skillBuffIn = 4.0; // 技能加攻
+      const skillBuffIn = 4.0; // 技能加攻
       const skillDph =
         ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.8 * 1.23 * atkBuffFinalMul;
       const skillDphPure = (skillDph * 0.12) / (1.8 * 1.23);
@@ -77,8 +78,8 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
 
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
-      let skillTotalDamagePure = skillDphPure * skillHit * damage_scale_pure;
+      const skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
+      const skillTotalDamagePure = skillDphPure * skillHit * damage_scale_pure;
 
       result.skill.dph = skillDph;
       result.skill.dps.phy = skillTotalDamage / skillKeepTime;

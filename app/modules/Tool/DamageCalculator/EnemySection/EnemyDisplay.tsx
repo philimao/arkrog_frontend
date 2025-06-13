@@ -6,7 +6,7 @@ import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalc
 import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
-import EnemySpecSelector, { type EnemySpec } from "./EnemySpecSelector";
+import EnemySpecSelector from "./EnemySpecSelector";
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
@@ -130,6 +130,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     stageData,
     levelData,
     enemyDataParsed,
+    enemySpec,
     setEnemyData,
     setEnemyDataParsed,
   } = useDamageCalculatorStore();
@@ -140,7 +141,6 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
-  const [enemySpec, setEnemySpec] = useState<EnemySpec[]>([]);
   const [enemyContext, setEnemyContext] = useState<BuffContext>();
 
   useEffect(() => {
@@ -230,7 +230,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           </div>
           <StyledEnemyAvatar name={_enemyDataParsed.name} />
         </div>
-        <EnemySpecSelector setIllust={setIllust} setEnemySpec={setEnemySpec} />
+        <EnemySpecSelector setIllust={setIllust} />
       </StyledEnemyDisplayTop>
       <StyledControl>
         {/* <StyledPhase>

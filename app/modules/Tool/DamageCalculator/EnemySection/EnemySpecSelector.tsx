@@ -24,14 +24,8 @@ export interface EnemySpec {
  * 敌人特殊词条效果（减伤）
  * @param setIllust 设置敌人效果图
  */
-export default function EnemySpecSelector({
-  setIllust,
-  setEnemySpec,
-}: {
-  setIllust: (illust: React.ReactNode) => void;
-  setEnemySpec: (spec: EnemySpec[]) => void;
-}) {
-  const { rogueKey, enemyDataParsed } = useDamageCalculatorStore();
+export default function EnemySpecSelector({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
+  const { rogueKey, enemyDataParsed, setEnemySpec } = useDamageCalculatorStore();
 
   // 可以保证在复制到木桩时，id不变
   const enemyConfig = EnemySpecConfigs[enemyDataParsed.id];
@@ -85,7 +79,7 @@ export default function EnemySpecSelector({
     }
     console.log("enemy_spec_result", result);
     setEnemySpec(result);
-  }, [enemyConfig, selected, setEnemySpec, mitigationSkzdwx]);
+  }, [enemyConfig, mitigationSkzdwx, selected, setEnemySpec]);
 
   return (
     <StyledEnemySpecSelector>

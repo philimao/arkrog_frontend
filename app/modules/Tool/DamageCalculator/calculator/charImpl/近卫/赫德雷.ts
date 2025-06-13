@@ -41,12 +41,13 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
@@ -63,7 +64,7 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
 
   switch (skillKey) {
     case "skchr_hodrer_1": {
-      let skillBuffIn = 0.0; // 技能加攻
+      const skillBuffIn = 0.0; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 2.6 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
@@ -80,8 +81,8 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
@@ -96,7 +97,7 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
       break;
     }
     case "skchr_hodrer_2": {
-      let skillBuffIn = 0.4; // 技能加攻
+      const skillBuffIn = 0.4; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
@@ -113,8 +114,8 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
@@ -130,7 +131,7 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
     }
     case "skchr_hodrer_3": {
       // 目前不计算眩晕覆盖之类的问题
-      let skillBuffIn = 1.2; // 技能加攻
+      const skillBuffIn = 1.2; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
@@ -148,9 +149,9 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
       const skillHit = 68.5 / skillAtkTime; // 技能期望攻击次数(前摇1.5s)
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);
-      let skillTotalDamagePure = skillDamagePure * 68;
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);
+      const skillTotalDamagePure = skillDamagePure * 68;
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);

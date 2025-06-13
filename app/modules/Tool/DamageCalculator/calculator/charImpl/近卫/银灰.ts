@@ -42,11 +42,12 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonBuffIn = 0.27;

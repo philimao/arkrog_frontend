@@ -40,12 +40,13 @@ export default function Vina_Victoria(input: CalculatorInput): CalculatorOutput 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
@@ -87,8 +88,8 @@ export default function Vina_Victoria(input: CalculatorInput): CalculatorOutput 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = skillDamage * skillHit;
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamage = skillDamage * skillHit;
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);

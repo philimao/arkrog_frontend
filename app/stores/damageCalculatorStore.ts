@@ -14,6 +14,7 @@ import type {
 } from "~/types/gameData";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
+import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 interface AttributeModifier {
   atkBase: number;
@@ -22,27 +23,41 @@ interface AttributeModifier {
 }
 
 interface DamageCalculatorStore {
+  /** 肉鸽主题 */
   rogueKey: RogueKey;
   /** 肉鸽难度 */
   rogueInput: RogueInput;
+  /** 肉鸽难度 */
   difficulty: number;
+  /** 干员列表 */
   charList: CharData[];
   /** 当前选中的角色 */
   activeCharName: string;
   /** 仅有藏品的加成上下文 */
   relicAnalysisResult?: BuffContext;
+  /** 是否显示藏品选择器页面 */
   showRelics: boolean;
+  /** 是否显示肉鸽主题特殊效果选择器页面 */
   showTopicSpec: boolean;
+  /** 肉鸽主题特殊效果列表 */
   topicSpecItems: ITopicSpecItem[];
+  /** 预处理后的藏品列表 */
   relicsMap: Record<RogueKey, RelicWrapper[]>;
-  enemyBuff: Record<string, number>;
+  /** 干员属性额外修改 */
   charsModifier: Record<string, AttributeModifier>;
+  /** 选择的藏品ID */
   selectedIds: string[];
+  /** 敌人解包数据 */
   enemyData: EnemyData;
+  /** 敌人解包数据解析后的数据 */
   enemyDataParsed: EnemyInput;
-  /** 关卡 */
+  /** 敌人特殊配置数据 */
+  enemySpec: EnemySpec[];
+  /** 简略关卡数据 */
   stageData?: StageData;
+  /** 关卡详细解包数据 */
   levelData?: LevelData;
+  /** 计算结果 */
   calcOutput: CalculatorOutput;
 }
 
@@ -69,6 +84,7 @@ interface DamageCalculatorAction {
   toggleRelicSelection: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
+  setEnemySpec: (enemySpec: EnemySpec[]) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setStageData: (stageData: StageData) => void;
   setLevelData: (levelData: LevelData) => void;
@@ -320,7 +336,8 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setEnemyDataParsed",
         ),
-      enemyBuff: {} as Record<string, number>,
+      enemySpec: [] as EnemySpec[],
+      setEnemySpec: (enemySpec) => set((state) => ({ ...state, enemySpec }), undefined, "setEnemySpec"),
       charsModifier: {} as Record<string, AttributeModifier>,
       setCharsModifier: (charName, modifier) => {
         set(

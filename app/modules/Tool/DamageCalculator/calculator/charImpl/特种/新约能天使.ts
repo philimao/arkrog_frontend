@@ -41,11 +41,12 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
@@ -63,7 +64,7 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       break;
     }
     case "skchr_angel2_2": {
-      let skillBuffIn = 0.0; // 技能加攻
+      const skillBuffIn = 0.0; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 3.0 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillDphBomb =
@@ -84,8 +85,8 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * skillHit * (1 - mitigation);
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * skillHit * (1 - mitigation);
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
@@ -102,7 +103,7 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
 
     case "skchr_angel2_3": {
       // 不计算投递伤害
-      let skillBuffIn = 0.3; // 技能加攻
+      const skillBuffIn = 0.3; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.6 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillDphBomb =
@@ -123,8 +124,8 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
       const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
 
-      let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
-      let skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * 5 * skillHit * (1 - mitigation);
+      const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
+      const skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * 5 * skillHit * (1 - mitigation);
 
       // if (fire) {
       //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);

@@ -41,11 +41,12 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation =
+    1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const enemyDef = expression_util.enemy_in_game_def().calculate(); // 敌人防御
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = Math.max(input.enemyInput.attributes.magicResistance - 10, 0); // 敌人法抗
   const enemyEP = input.enemyInput.levelType == "NORMAL" ? 1000 : 2000;
 
@@ -114,8 +115,8 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
       const skillEPTime = skillAtkTime * Math.ceil(enemyEP / skillDamage_EP); //在伤害较高时偏差较大
       const skillepHit = Math.max(Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6, 0); //爆条期间命中数
 
-      let commonTotalDamage = (commonDamage + commonTalentDamage * 0.6) * commonHit;
-      let skillTotalDamage = (skillDamage + skillTalentDamage * 0.6) * skillHit;
+      const commonTotalDamage = (commonDamage + commonTalentDamage * 0.6) * commonHit;
+      const skillTotalDamage = (skillDamage + skillTalentDamage * 0.6) * skillHit;
       let skillTotalDamage_ep = skillTalentDamage_ep * skillepHit;
       if (skillepHit) {
         skillTotalDamage_ep += 12000;

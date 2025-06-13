@@ -414,9 +414,9 @@ export class CalculatorHelper {
   }
 
   /** 分析敌人特殊词条 */
-  static analyzeEnemySpec(input: { enemySpec: EnemySpec[] }, context: BuffContext) {
+  static analyzeEnemySpec(input: { enemySpec: EnemySpec }, context: BuffContext) {
     const { enemySpec } = input;
-    enemySpec.forEach((spec) => {
+    enemySpec.value.forEach((spec) => {
       const { key, value, label } = spec;
       switch (key) {
         case "enemy_damage_resistance":

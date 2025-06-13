@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
-import { CalculatorHelper } from "../calculator";
+import { BuffContext, CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
 import { Tooltip } from "@heroui/react";
@@ -194,8 +194,12 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   );
 
   /** 计算敌人加成上下文 */
-  const enemyContext = useMemo(() => {
-    if (!enemyData || !enemySpec) return null;
+  const [enemyContext, setEnemyContext] = useState<BuffContext | null>(null);
+  useEffect(() => {
+    // 选择敌人数据后，等待敌人特殊效果加成计算完成，减少重新渲染
+    if (!enemyData || !enemySpec || enemySpec.id !== enemyData.id) return;
+    // 如果是木桩，不计算敌人加成
+    if (enemyData.name.m_value === "木桩") return;
     let enemyContext = CalculatorHelper.analyzeRelics({
       relics: selectedRelics,
       enemyData: enemyData,
@@ -208,20 +212,8 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     enemyContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, enemyContext);
     enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
     CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
-    return enemyContext;
+    setEnemyContext(enemyContext);
   }, [enemyData, enemySpec, rogueInput, selectedRelics, stageData, topicSpecItems]);
-
-  // useEffect(() => {
-  //   console.log("enemyContext", enemyContext);
-  // }, [enemyContext]);
-
-  // useEffect(() => {
-  //   console.log("enemyData", enemyData);
-  // }, [enemyData]);
-
-  // useEffect(() => {
-  //   console.log("enemySpec", enemySpec);
-  // }, [enemySpec]);
 
   /** 计算敌人属性 */
   useEffect(() => {
@@ -253,7 +245,10 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       id: "enemy_000_dummy",
       name: { m_value: "木桩", m_defined: true },
     });
-    setEnemySpec([]);
+    setEnemySpec({
+      id: "enemy_000_dummy",
+      value: [],
+    });
   }
 
   if (!_enemyDataParsed) return null;

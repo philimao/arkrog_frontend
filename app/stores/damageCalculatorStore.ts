@@ -52,7 +52,7 @@ interface DamageCalculatorStore {
   /** 敌人解包数据解析后的数据 */
   enemyDataParsed: EnemyInput;
   /** 敌人特殊配置数据 */
-  enemySpec: EnemySpec[];
+  enemySpec: EnemySpec;
   /** 简略关卡数据 */
   stageData?: StageData;
   /** 关卡详细解包数据 */
@@ -84,7 +84,7 @@ interface DamageCalculatorAction {
   toggleRelicSelection: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
-  setEnemySpec: (enemySpec: EnemySpec[]) => void;
+  setEnemySpec: (enemySpec: EnemySpec) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setStageData: (stageData: StageData) => void;
   setLevelData: (levelData: LevelData) => void;
@@ -336,7 +336,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setEnemyDataParsed",
         ),
-      enemySpec: undefined as unknown as EnemySpec[],
+      enemySpec: undefined as unknown as EnemySpec,
       setEnemySpec: (enemySpec) =>
         set(
           (state) => {

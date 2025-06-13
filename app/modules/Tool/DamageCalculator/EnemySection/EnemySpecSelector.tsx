@@ -16,9 +16,8 @@ const StyledEnemySpecSelectorInner = styled.div`
 `;
 
 export interface EnemySpec {
-  label: string;
-  key: string;
-  value: number;
+  id: string;
+  value: { label: string; key: string; value: number }[];
 }
 
 /**
@@ -73,7 +72,7 @@ export default function EnemySpecSelector({
   useEffect(() => {
     if (!selected) return;
     const result = [];
-    if (enemyConfig) {
+    if (enemyConfig && enemyConfig.id === enemyData.id) {
       result.push(
         ...enemyConfig.selects.map((select, index) => {
           return select.apply(Number(selected[index]));
@@ -87,8 +86,11 @@ export default function EnemySpecSelector({
         value: 0.5,
       });
     }
-    setEnemySpec(result);
-  }, [enemyConfig, mitigationSkzdwx, selected, setEnemySpec]);
+    setEnemySpec({
+      id: enemyData.id,
+      value: result,
+    });
+  }, [enemyConfig, enemyData.id, mitigationSkzdwx, selected, setEnemySpec]);
 
   if (!selected) return null;
   return (

@@ -1,13 +1,14 @@
 import { styled } from "styled-components";
-import { allowedBlackboardKeyMap, relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
-import React, { type FormEvent, useEffect, useState } from "react";
+import { relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
+import React, { type FormEvent, useEffect, useMemo, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
-import { Divider } from "@heroui/react";
 import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
+import { applyAnyRelics } from "../calculator/debug/print-relics-info";
+import { useGameDataStore } from "~/stores/gameDataStore";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
@@ -24,6 +25,51 @@ const StyledRelicsInner = styled.div`
 export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: RelicWrapper[] }) {
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
+  const { relics, items } = useGameDataStore();
+  const { rogueKey } = useDamageCalculatorStore();
+
+  /** 此处通过分析藏品buff计算哪些藏品生效, 达到禁选无效藏品功能 */
+  const invalidRelicList = useMemo<string[]>(() => {
+    // 需要补充relicData
+    const relicList = Object.values(items![rogueKey])
+      .filter((item) => item.type === "RELIC")
+      .map((item) => ({
+        ...item,
+        ...relics![rogueKey][item.id],
+        show: true,
+      }));
+    const result: string[] = [];
+
+    // 获取应用了所有藏品的加成上下文
+    const context = applyAnyRelics(
+      relicsWrappers.map((r) => ({
+        relicData: relicList.find((relic) => relic.id === r?.id),
+        ...r,
+      })),
+    );
+    // 遍历生效的所有buff取藏品名
+    Object.values(context.relic_rune_add).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    Object.values(context.relic_rune_mul).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    Object.values(context.in_game_buff_add).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    Object.values(context.in_game_buff_mul).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    Object.values(context.in_game_buff_final_mul).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    Object.values(context.global_buff_stack).forEach((value) => {
+      value.children.forEach((node) => result.push(node.tooltip));
+    });
+    // 排除生效的buff
+    return relicsWrappers.filter((relic) => !result.includes(relic.name)).map((relic) => relic.name);
+  }, [relicsWrappers, rogueKey]);
+
   return (
     <StyledRelicsContainer>
       <StyledTitle modes={["列表模式", "集中模式"]} activeMode={mode} setActiveMode={setMode}>
@@ -39,15 +85,21 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
       <StyledRelicsInner>
         {relicsWrappers
           .filter((relicWrapper) => relicWrapper.show && (showAll || relicWrapper.isActive))
+          .sort((a, b) => {
+            const aDisabled = invalidRelicList.includes(a.name);
+            const bDisabled = invalidRelicList.includes(b.name);
+            if (aDisabled === bDisabled) return 0;
+            return aDisabled ? 1 : -1;
+          })
           .map((relicWrapper) => (
-            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} />
+            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} invalidRelicList={invalidRelicList} />
           ))}
       </StyledRelicsInner>
     </StyledRelicsContainer>
   );
 }
 
-const StyledRelicBlock = styled.div<{ $selected: boolean }>`
+const StyledRelicBlock = styled.div<{ $selected: boolean; $disabled: boolean }>`
   display: flex;
   gap: 1rem;
   position: relative;
@@ -56,7 +108,25 @@ const StyledRelicBlock = styled.div<{ $selected: boolean }>`
   border: 1px solid ${(props) => (props.$selected ? "var(--ak-blue)" : "transparent")};
   box-shadow: ${(props) => (props.$selected ? "0 0 4px 0 var(--ak-blue)" : "none")};
   user-select: none;
-  cursor: pointer;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? "0.5" : "1")};
+  position: relative;
+
+  &:hover::after {
+    content: ${(props) => (props.$disabled ? "'该藏品暂未生效'" : "''")};
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    display: ${(props) => (props.$disabled ? "block" : "none")};
+  }
 `;
 
 const StyledImageWrapper = styled.div`
@@ -85,7 +155,7 @@ const StyledLayerWrapper = styled.div`
   }
 `;
 
-function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
+function RelicBlock({ relicWrapper, invalidRelicList }: { relicWrapper: RelicWrapper; invalidRelicList: string[] }) {
   const { setRelicLayer, toggleRelicSelection, selectedIds } = useDamageCalculatorStore();
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
@@ -103,9 +173,15 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
   }
 
   const selected = selectedIds.includes(relicWrapper.id);
+  const isDisabled = invalidRelicList.includes(relicWrapper.name);
 
   return (
-    <StyledRelicBlock $selected={selected} key={relicWrapper.id} onClick={() => toggleRelicSelection(relicWrapper.id)}>
+    <StyledRelicBlock
+      $selected={selected}
+      $disabled={isDisabled}
+      key={relicWrapper.id}
+      onClick={() => !isDisabled && toggleRelicSelection(relicWrapper.id)}
+    >
       <StyledImageWrapper>
         <LazyImage src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`} />
       </StyledImageWrapper>

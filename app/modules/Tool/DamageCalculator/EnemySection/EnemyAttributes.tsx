@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 import type { EnemyData, LevelData, StageData } from "~/types/gameData";
@@ -101,43 +101,30 @@ export default function EnemyAttribute({
   color: string;
 }) {
   const { enemyDataParsed, enemyData, stageData, levelData } = useDamageCalculatorStore();
-  const [multipliers, setMultipliers] = useState<{
-    baseHp: number;
-    baseAtk: number;
-    baseDef: number;
-    hpMul: number;
-    atkMul: number;
-    defMul: number;
-  } | null>(null);
 
-  useEffect(() => {
+  // 使用 useMemo 来避免重复计算倍率信息
+  const multipliers = useMemo(() => {
     if (enemyData && stageData && levelData) {
-      const mults = getEnemyDifficultyMultipliers(enemyData, stageData, levelData);
-      setMultipliers(mults);
+      return getEnemyDifficultyMultipliers(enemyData, stageData, levelData);
     }
+    return null;
   }, [enemyData, stageData, levelData]);
 
-  const maxHpTagGroups = multipliers
-    ? getEnemyMaxHpTagGroups({ baseHp: multipliers.baseHp, hpMul: multipliers.hpMul })
-    : [];
-  const atkTagGroups = multipliers
-    ? getEnemyAtkTagGroups({ baseAtk: multipliers.baseAtk, atkMul: multipliers.atkMul })
-    : [];
-  const defTagGroups = multipliers
-    ? getEnemyDefTagGroups({ baseDef: multipliers.baseDef, defMul: multipliers.defMul })
-    : [];
+  // 使用 useMemo 来避免重复计算 TagGroups
+  const calcTokens = useMemo((): AttrCalcToken[] => {
+    if (!multipliers) return [];
+
+    if (attrKey === "maxHp") {
+      return getEnemyMaxHpTagGroups({ baseHp: multipliers.baseHp, hpMul: multipliers.hpMul });
+    } else if (attrKey === "atk") {
+      return getEnemyAtkTagGroups({ baseAtk: multipliers.baseAtk, atkMul: multipliers.atkMul });
+    } else if (attrKey === "def") {
+      return getEnemyDefTagGroups({ baseDef: multipliers.baseDef, defMul: multipliers.defMul });
+    }
+    return [];
+  }, [multipliers, attrKey]);
 
   const _attributeValue = attributeValue || enemyDataParsed.attributes[attrKey as never];
-
-  // 根据属性类型选择对应的 TagGroups
-  let calcTokens: AttrCalcToken[] = [];
-  if (attrKey === "maxHp") {
-    calcTokens = maxHpTagGroups;
-  } else if (attrKey === "atk") {
-    calcTokens = atkTagGroups;
-  } else if (attrKey === "def") {
-    calcTokens = defTagGroups;
-  }
 
   return (
     <div className={"bg-black-gray px-3 leading-8 h-8 font-bold text-xl " + color}>

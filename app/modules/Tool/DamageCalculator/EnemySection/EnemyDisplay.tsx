@@ -3,11 +3,11 @@ import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
-import { BuffContext, CalculatorHelper } from "../calculator";
+import { CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
 import { Tooltip } from "@heroui/react";
@@ -100,17 +100,44 @@ const StyledInputWrapper = styled.div`
   }
 `;
 
-const displayAttrKeys = [
-  "maxHp",
-  "atk",
-  "def",
-  "magicResistance",
-  "attackSpeed",
-  "baseAttackTime",
-  "epDamageResistance",
-  "epResistance",
-  "damageResistance",
-];
+const displayAttrKeys: Record<string, { min: number; max?: number; tooltip?: React.ReactNode }> = {
+  maxHp: {
+    min: 0,
+  },
+  atk: {
+    min: 0,
+  },
+  def: {
+    min: 0,
+  },
+  magicResistance: {
+    min: 0,
+  },
+  // attackSpeed: {
+  //   min: 0,
+  //   max: 600,
+  // },
+  // baseAttackTime: {
+  //   min: 0,
+  // },
+  epResistance: {
+    min: 0,
+  },
+  epDamageResistance: {
+    min: 0,
+  },
+  damageResistance: {
+    min: 0,
+    max: 1,
+    tooltip: (
+      <ul className="text-sm p-2">
+        <li>敌人特殊能力，例如大特的减伤</li>
+        <li>年代印痕减伤</li>
+        <li>以上两种类型之间取概率并集</li>
+      </ul>
+    ),
+  },
+};
 
 const levelTypeMap = {
   NORMAL: "普通",
@@ -131,6 +158,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     levelData,
     enemyDataParsed,
     enemySpec,
+    setEnemySpec,
     setEnemyData,
     setEnemyDataParsed,
   } = useDamageCalculatorStore();
@@ -141,24 +169,33 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
-  const [enemyContext, setEnemyContext] = useState<BuffContext>();
+  const relicList = useMemo(
+    () =>
+      Object.values(items![rogueKey])
+        .filter((item) => item.type === "RELIC")
+        .map((item) => ({
+          ...item,
+          ...relics![rogueKey][item.id],
+          show: true,
+        })),
+    [items, relics, rogueKey],
+  );
 
-  useEffect(() => {
-    const relicList = Object.values(items![rogueKey])
-      .filter((item) => item.type === "RELIC")
-      .map((item) => ({
-        ...item,
-        ...relics![rogueKey][item.id],
-        show: true,
-      }));
-    const selectedRelics = selectedIds
-      .map((id) => relicsMap[rogueKey]?.find((relic) => relic.id === id))
-      .filter((r) => r?.userActive)
-      .map((r) => ({
-        relicData: relicList.find((relic) => relic.id === r?.id),
-        ...r,
-      })) as RelicWrapper[];
+  const selectedRelics = useMemo(
+    () =>
+      selectedIds
+        .map((id) => relicsMap[rogueKey]?.find((relic) => relic.id === id))
+        .filter((r) => r?.userActive)
+        .map((r) => ({
+          relicData: relicList.find((relic) => relic.id === r?.id),
+          ...r,
+        })) as RelicWrapper[],
+    [relicList, relicsMap, rogueKey, selectedIds],
+  );
 
+  /** 计算敌人加成上下文 */
+  const enemyContext = useMemo(() => {
+    if (!enemyData || !enemySpec) return null;
     let enemyContext = CalculatorHelper.analyzeRelics({
       relics: selectedRelics,
       enemyData: enemyData,
@@ -171,8 +208,20 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     enemyContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, enemyContext);
     enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
     CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
-    setEnemyContext(enemyContext);
-  }, [enemyData, enemySpec, items, relics, relicsMap, rogueInput, rogueKey, selectedIds, stageData, topicSpecItems]);
+    return enemyContext;
+  }, [enemyData, enemySpec, rogueInput, selectedRelics, stageData, topicSpecItems]);
+
+  // useEffect(() => {
+  //   console.log("enemyContext", enemyContext);
+  // }, [enemyContext]);
+
+  // useEffect(() => {
+  //   console.log("enemyData", enemyData);
+  // }, [enemyData]);
+
+  // useEffect(() => {
+  //   console.log("enemySpec", enemySpec);
+  // }, [enemySpec]);
 
   /** 计算敌人属性 */
   useEffect(() => {
@@ -183,6 +232,10 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       levelData: levelData!,
       context: enemyContext,
     });
+    // 复制到木桩时，保留初始值的减伤
+    if (enemyRef.current && enemyRef.current.name !== "木桩" && parsedEnemyData.name === "木桩") {
+      parsedEnemyData.attributes.damageResistance = enemyRef.current.attributes.damageResistance;
+    }
     // 深拷贝初始值
     enemyRef.current = JSON.parse(JSON.stringify(parsedEnemyData));
     setEnemyDataParsed(parsedEnemyData);
@@ -200,6 +253,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       id: "enemy_000_dummy",
       name: { m_value: "木桩", m_defined: true },
     });
+    setEnemySpec([]);
   }
 
   if (!_enemyDataParsed) return null;
@@ -230,7 +284,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           </div>
           <StyledEnemyAvatar name={_enemyDataParsed.name} />
         </div>
-        <EnemySpecSelector setIllust={setIllust} />
+        <EnemySpecSelector setIllust={setIllust} enemyData={enemyData} />
       </StyledEnemyDisplayTop>
       <StyledControl>
         {/* <StyledPhase>
@@ -251,11 +305,15 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
         )}
       </StyledControl>
       <StyledGridContainer>
-        {displayAttrKeys.map((key) => {
+        {Object.keys(displayAttrKeys).map((key) => {
           const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
           return (
             <StyledInputWrapper key={key}>
-              <div>{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
+              <div>
+                <Tooltip content={displayAttrKeys[key].tooltip}>
+                  <span>{allowedBlackboardKeyMap[camelToSnake(key)]}</span>
+                </Tooltip>
+              </div>
               {_enemyDataParsed.name !== "木桩" ? (
                 <EnemyAttribute attrKey={key} color={color} />
               ) : (
@@ -263,8 +321,22 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                   className={"h-8 font-bold text-xl " + color}
                   value={_enemyDataParsed.attributes[key as never]}
                   setValue={(value: string) => {
-                    // TODO parse float
-                    const number = parseFloat(value) || 0;
+                    const updated = {
+                      ..._enemyDataParsed,
+                      attributes: {
+                        ..._enemyDataParsed.attributes,
+                        [key]: value,
+                      },
+                    };
+                    _setEnemyDataParsed(updated);
+                  }}
+                  onBlur={() => {
+                    // 解析浮点数，失败则设置为0
+                    let number = parseFloat(_enemyDataParsed.attributes[key as never]) || 0;
+                    const { min, max } = displayAttrKeys[key as never];
+                    // 应用数据边界
+                    if (min !== undefined && number < min) number = min;
+                    if (max !== undefined && number > max) number = max;
                     const updated = {
                       ..._enemyDataParsed,
                       attributes: {
@@ -273,8 +345,8 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                       },
                     };
                     _setEnemyDataParsed(updated);
+                    setEnemyDataParsed(updated);
                   }}
-                  onBlur={() => setEnemyDataParsed(_enemyDataParsed)}
                   onEnter={(evt) => {
                     evt.preventDefault();
                     evt.currentTarget.querySelector("input")!.blur();
@@ -288,11 +360,11 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           <div>
             <Tooltip
               content={
-                <div className="text-sm p-2">
-                  <div>五结局藏品终结的骨架/躯体/实相（20%减伤）</div>
-                  <div>N10以上精英领袖减伤（10%减伤）</div>
-                  <div>算法为取最大值</div>
-                </div>
+                <ul className="text-sm p-2">
+                  <li>五结局藏品终结的骨架/躯体/实相（20%减伤）</li>
+                  <li>N10以上精英领袖减伤（10%减伤）</li>
+                  <li>算法为取最大值</li>
+                </ul>
               }
             >
               <span>局外物理法术减伤</span>

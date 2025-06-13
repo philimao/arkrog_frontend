@@ -2,6 +2,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "../../components/ToolSelect";
 import { styled } from "styled-components";
 import { useEffect, useState } from "react";
+import type { EnemyData } from "~/types/gameData";
 
 const StyledEnemySpecSelector = styled.div`
   height: 100%;
@@ -24,19 +25,28 @@ export interface EnemySpec {
  * 敌人特殊词条效果（减伤）
  * @param setIllust 设置敌人效果图
  */
-export default function EnemySpecSelector({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
-  const { rogueKey, enemyDataParsed, setEnemySpec } = useDamageCalculatorStore();
+export default function EnemySpecSelector({
+  enemyData,
+  setIllust,
+}: {
+  enemyData: EnemyData;
+  setIllust: (illust: React.ReactNode) => void;
+}) {
+  const { rogueKey, setEnemySpec } = useDamageCalculatorStore();
 
   // 可以保证在复制到木桩时，id不变
-  const enemyConfig = EnemySpecConfigs[enemyDataParsed.id];
+  const [enemyConfig, setEnemyConfig] = useState<EnemySpecConfig>();
 
-  const showSkzdwx = rogueKey === "rogue_4";
+  const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩";
   const [mitigationSkzdwx, setMitigationSkzdwx] = useState<string>("0");
 
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>();
 
   /** 当敌人配置变化时，更新敌人效果图与默认效果 */
   useEffect(() => {
+    // 在同一个effect中同步更新enemyConfig与selected，减少下一个useEffect的重复计算
+    const enemyConfig = EnemySpecConfigs[enemyData.id];
+    setEnemyConfig(enemyConfig);
     if (enemyConfig) {
       //   console.log("加载敌人特殊效果", enemyConfig);
       const illust = (
@@ -57,15 +67,15 @@ export default function EnemySpecSelector({ setIllust }: { setIllust: (illust: R
       setIllust(null);
       setSelected([]);
     }
-  }, [enemyConfig, setIllust]);
+  }, [enemyData.id, setIllust]);
 
   /** 当敌人配置选项变化时，更新敌人效果 */
   useEffect(() => {
+    if (!selected) return;
     const result = [];
     if (enemyConfig) {
       result.push(
         ...enemyConfig.selects.map((select, index) => {
-          console.log(select, selected[index]);
           return select.apply(Number(selected[index]));
         }),
       );
@@ -77,10 +87,10 @@ export default function EnemySpecSelector({ setIllust }: { setIllust: (illust: R
         value: 0.5,
       });
     }
-    console.log("enemy_spec_result", result);
     setEnemySpec(result);
   }, [enemyConfig, mitigationSkzdwx, selected, setEnemySpec]);
 
+  if (!selected) return null;
   return (
     <StyledEnemySpecSelector>
       <StyledEnemySpecSelectorInner>
@@ -101,7 +111,8 @@ export default function EnemySpecSelector({ setIllust }: { setIllust: (illust: R
               label={select.label}
               selectedKeys={[selected[index]]}
               onChange={(evt) => {
-                setSelected((prev: string[]) => {
+                setSelected((prev: string[] | undefined) => {
+                  if (!prev) return [];
                   const newSelected = [...prev];
                   newSelected[index] = evt.target.value;
                   return newSelected;

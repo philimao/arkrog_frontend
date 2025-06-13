@@ -336,8 +336,17 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setEnemyDataParsed",
         ),
-      enemySpec: [] as EnemySpec[],
-      setEnemySpec: (enemySpec) => set((state) => ({ ...state, enemySpec }), undefined, "setEnemySpec"),
+      enemySpec: undefined as unknown as EnemySpec[],
+      setEnemySpec: (enemySpec) =>
+        set(
+          (state) => {
+            // 字符串判断，解决enemyData与enemySpec的组件层级不同，更新不同步的问题
+            if (JSON.stringify(state.enemySpec) === JSON.stringify(enemySpec)) return;
+            state.enemySpec = enemySpec;
+          },
+          undefined,
+          "setEnemySpec",
+        ),
       charsModifier: {} as Record<string, AttributeModifier>,
       setCharsModifier: (charName, modifier) => {
         set(

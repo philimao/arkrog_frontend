@@ -10,6 +10,7 @@ import EnemySpecSelector, { type EnemySpec } from "./EnemySpecSelector";
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
+import { Tooltip } from "@heroui/react";
 
 const StyledEnemyDisplayWrapper = styled.div`
   display: flex;
@@ -33,7 +34,20 @@ const StyledName = styled.div`
   color: white;
   font-weight: bold;
   white-space: nowrap;
-  margin-bottom: 0.25rem;
+`;
+
+const StyledEnmeyLevelBadge = styled.div<{ $levelType: string }>`
+  font-size: 0.8rem;
+  background: ${({ $levelType }) => {
+    if ($levelType === "BOSS") return "var(--ak-purple)";
+    if ($levelType === "ELITE") return "var(--ak-red)";
+    return "var(--mid-gray)";
+  }};
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.5rem;
 `;
 
 const StyledEnemyAvatar = styled(EnemyAvatar)`
@@ -97,6 +111,12 @@ const displayAttrKeys = [
   "epResistance",
   "damageResistance",
 ];
+
+const levelTypeMap = {
+  NORMAL: "普通",
+  ELITE: "精英",
+  BOSS: "领袖",
+};
 
 export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
   const { items, relics } = useGameDataStore();
@@ -163,6 +183,8 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       levelData: levelData!,
       context: enemyContext,
     });
+    // 深拷贝初始值
+    enemyRef.current = JSON.parse(JSON.stringify(parsedEnemyData));
     setEnemyDataParsed(parsedEnemyData);
   }, [enemyContext, enemyData, levelData, stageData, setEnemyDataParsed, _setEnemyDataParsed]);
 
@@ -173,9 +195,9 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   }, [enemyDataParsed]);
 
   function assignToDummy() {
-    // 复制到木桩时，id不变保证特殊效果能够正常加载
     setEnemyData({
       ...enemyData,
+      id: "enemy_000_dummy",
       name: { m_value: "木桩", m_defined: true },
     });
   }
@@ -186,7 +208,26 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     <StyledEnemyDisplayWrapper>
       <StyledEnemyDisplayTop>
         <div>
-          <StyledName>{_enemyDataParsed.name}</StyledName>
+          <div className="flex gap-4 items-center">
+            <StyledName>{_enemyDataParsed.name}</StyledName>
+            <StyledEnmeyLevelBadge
+              $levelType={_enemyDataParsed.levelType}
+              role={_enemyDataParsed.name === "木桩" ? "button" : "none"}
+              onClick={() => {
+                if (_enemyDataParsed.name === "木桩") {
+                  setEnemyData({
+                    ...enemyData,
+                    levelType: {
+                      m_defined: true,
+                      m_value: _enemyDataParsed.levelType === "NORMAL" ? "ELITE" : "NORMAL",
+                    },
+                  });
+                }
+              }}
+            >
+              {levelTypeMap[_enemyDataParsed.levelType]}
+            </StyledEnmeyLevelBadge>
+          </div>
           <StyledEnemyAvatar name={_enemyDataParsed.name} />
         </div>
         <EnemySpecSelector setIllust={setIllust} setEnemySpec={setEnemySpec} />
@@ -243,6 +284,28 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
             </StyledInputWrapper>
           );
         })}
+        <StyledInputWrapper>
+          <div>
+            <Tooltip
+              content={
+                <div className="text-sm p-2">
+                  <div>五结局藏品终结的骨架/躯体/实相（20%减伤）</div>
+                  <div>N10以上精英领袖减伤（10%减伤）</div>
+                  <div>算法为取最大值</div>
+                </div>
+              }
+            >
+              <span>局外物理法术减伤</span>
+            </Tooltip>
+          </div>
+          <div>
+            <EnemyAttribute
+              attrKey="damageResistance"
+              attributeValue={enemyContext?.relic_rune_mul.enemy_damage_resistance.calculate()}
+              color="text-ak-green"
+            />
+          </div>
+        </StyledInputWrapper>
       </StyledGridContainer>
     </StyledEnemyDisplayWrapper>
   );

@@ -91,7 +91,15 @@ export function getEnemyDifficultyMultipliers(enemyData: EnemyData, stageData: S
   };
 }
 
-export default function EnemyAttribute({ attrKey, color }: { attrKey: string; color: string }) {
+export default function EnemyAttribute({
+  attrKey,
+  attributeValue,
+  color,
+}: {
+  attrKey: string;
+  attributeValue?: number;
+  color: string;
+}) {
   const { enemyDataParsed, enemyData, stageData, levelData } = useDamageCalculatorStore();
   const [multipliers, setMultipliers] = useState<{
     baseHp: number;
@@ -119,7 +127,7 @@ export default function EnemyAttribute({ attrKey, color }: { attrKey: string; co
     ? getEnemyDefTagGroups({ baseDef: multipliers.baseDef, defMul: multipliers.defMul })
     : [];
 
-  const attributeValue = enemyDataParsed.attributes[attrKey as never];
+  const _attributeValue = attributeValue || enemyDataParsed.attributes[attrKey as never];
 
   // 根据属性类型选择对应的 TagGroups
   let calcTokens: AttrCalcToken[] = [];
@@ -133,7 +141,7 @@ export default function EnemyAttribute({ attrKey, color }: { attrKey: string; co
 
   return (
     <div className={"bg-black-gray px-3 leading-8 h-8 font-bold text-xl " + color}>
-      <AttrDisplay calcTokens={calcTokens}>{attributeValue}</AttrDisplay>
+      <AttrDisplay calcTokens={calcTokens}>{_attributeValue}</AttrDisplay>
     </div>
   );
 }

@@ -214,7 +214,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       buffContext,
     );
     // 肉鸽难度加成
-    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData: enemyDataParsed }, buffContext);
+    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffContext);
     // 肉鸽主题加成（年代、灵感、密文板）
     buffContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffContext);
 
@@ -249,8 +249,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       skillData: skillObject, // 技能原始解包数据
       uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: relicsMap[rogueKey].map((r) => ({
-        relicData: relicList.find((relic) => relic.id === r?.id),
         ...r,
+        relicData: relicList.find((relic) => relic.id === r?.id)!,
       })), // 有效藏品列表
       rogueInput,
       buffContext,
@@ -266,20 +266,22 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     // 计算结果
     setCalcOutput(calcResult);
   }, [
-    selectedRelics,
     charData,
     charInput,
     enemyData,
     enemyDataParsed,
-    skillObject,
-    uniEquipId,
-    uniequip_table,
-    setRelicAnalysisResult,
-    setCalcOutput,
+    relicList,
+    relicsMap,
     rogueInput,
+    rogueKey,
+    selectedRelics,
+    setCalcOutput,
+    setRelicAnalysisResult,
+    skillObject,
     stageData,
     topicSpecItems,
-    rogueKey,
+    uniEquipId,
+    uniequip_table,
   ]);
 
   return (

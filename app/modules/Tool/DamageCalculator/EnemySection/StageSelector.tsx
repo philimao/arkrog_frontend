@@ -89,6 +89,8 @@ const StyledEnemyName = styled.div`
   text-align: center;
 `;
 
+const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标"];
+
 export default function StageSelector({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
   const { stages } = useGameDataStore();
   const {
@@ -206,7 +208,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
-                .filter((enemy) => !["年代印痕", "昔日道标"].includes(enemy.name.m_value))
+                .filter((enemy) => !ignoreEnemyNames.includes(enemy.name.m_value))
                 .map((enemyData) => {
                   return (
                     <StyledEnemy

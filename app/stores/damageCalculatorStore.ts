@@ -91,6 +91,7 @@ interface DamageCalculatorAction {
   setStageData: (stageData: StageData) => void;
   setLevelData: (levelData: LevelData) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
+  resetStore: () => void;
 }
 
 export const dummy: EnemyInput = {
@@ -389,6 +390,39 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           },
           undefined,
           "setCalcOutput",
+        );
+      },
+      resetStore: () => {
+        set(
+          () => ({
+            rogueKey: "rogue_4" as RogueKey,
+            rogueInput: {
+              topic: "rogue_4",
+              rogue_4: {
+                zone: "zone_5",
+                difficulty: 18,
+                thoughtLoad: "NORMAL",
+              },
+            } as RogueInput,
+            difficulty: 18,
+            charList: [] as CharData[],
+            activeCharName: "",
+            relicAnalysisResult: undefined,
+            showRelics: false,
+            showTopicSpec: false,
+            topicSpecItems: [] as ITopicSpecItem[],
+            relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
+            selectedIds: [] as string[],
+            enemyData: undefined as unknown as EnemyData,
+            enemyDataParsed: dummy,
+            enemySpec: undefined as unknown as EnemySpec,
+            charsModifier: {} as Record<string, AttributeModifier>,
+            stageData: undefined,
+            levelData: undefined,
+            calcOutput: undefined as unknown as CalculatorOutput,
+          }),
+          undefined,
+          "resetStore",
         );
       },
     })),

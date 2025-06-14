@@ -13,7 +13,7 @@ import TopicSpecSelector from "./DamageCalculator/TopicSpecSection/TopicSpecSele
 
 export default function ToolIndex() {
   const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();
-  const { charList, activeCharName } = useDamageCalculatorStore();
+  const { charList, activeCharName, resetStore } = useDamageCalculatorStore();
   const [loading, setLoading] = useState(true);
 
   const activeCharData = useMemo(() => {
@@ -23,6 +23,13 @@ export default function ToolIndex() {
   useEffect(() => {
     Promise.all([fetchCharacterRaw(), fetchGameDataExt()]).then(() => setLoading(false));
   }, [fetchCharacterRaw, fetchGameDataExt]);
+
+  // 组件卸载时重置 DamageCalculatorStore
+  useEffect(() => {
+    return () => {
+      resetStore();
+    };
+  }, [resetStore]);
 
   if (loading) return <Loading />;
 

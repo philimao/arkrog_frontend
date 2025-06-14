@@ -103,7 +103,7 @@ export class CalculatorHelper {
     const enemyAttr = calcEnemyInput.attributes;
 
     // 应用局外加成
-    console.group("计算敌人属性");
+    console.groupCollapsed("计算敌人属性");
     enemyAttr.atk = Math.round(enemyAttr.atk * context.in_game_buff_final_mul.enemy_atk.calculate());
     console.log("攻击力", context.in_game_buff_final_mul.enemy_atk.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());

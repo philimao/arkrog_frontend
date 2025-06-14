@@ -28,10 +28,10 @@ export default function OperatorSelectorWrapper() {
     "赫德雷",
     "Mon3tr",
     "维娜·维多利亚",
-    "维什戴尔",
+    // "维什戴尔",
     "空弦",
     "玛恩纳",
-    "安洁莉娜",
+    // "安洁莉娜",
     "新约能天使",
     "逻各斯",
     "银灰",
@@ -60,7 +60,7 @@ export default function OperatorSelectorWrapper() {
       <StyledSelectorWrapper>
         {charList.length > 0 ? (
           charList.map((charData, i) =>
-            charData ? <OperatorButton charData={charData} i={i} key={i} /> : <OperatorSelector i={i} key={i} />,
+            charData ? <OperatorButton charData={charData} key={i} /> : <OperatorSelector i={i} key={i} />,
           )
         ) : (
           <OperatorSelector i={0} />
@@ -89,15 +89,8 @@ const StyledOperatorButton = styled.button<{ $active: boolean }>`
   background: ${(props) => (props.$active ? "var(--ak-blue)" : "var(--dark-gray)")};
 `;
 
-const StyledRemoveButton = styled.button`
-  position: absolute;
-  padding: 0.75rem;
-  right: 0;
-  top: 0;
-`;
-
-export function OperatorButton({ charData, i }: { charData: CharData; i: number }) {
-  const { activeCharName, setActiveCharName, removeCharData } = useDamageCalculatorStore();
+export function OperatorButton({ charData }: { charData: CharData }) {
+  const { activeCharName, setActiveCharName } = useDamageCalculatorStore();
   const active = activeCharName === charData.name;
   return (
     <StyledOperatorButtonWrapper $active={active}>

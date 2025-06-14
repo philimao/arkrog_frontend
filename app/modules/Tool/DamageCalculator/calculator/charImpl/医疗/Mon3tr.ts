@@ -67,7 +67,7 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph, skillDph * 0.05) * damage_scale * damage_scale_pure;
 
-      const skillAtkTimeBase = 1.35; // 技能基础时间
+      const skillAtkTimeBase = 1.4; // 技能基础时间
       const skillAtkFrame = Math.round((skillAtkTimeBase * 3000.0) / atkSpeed); // 技能攻击间隔帧
       const skillAtkTime = skillAtkFrame / 30.0; // 技能攻击间隔时间
 

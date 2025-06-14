@@ -61,7 +61,7 @@ export default function EnemyAttribute({
 }) {
   const { enemyDataParsed } = useDamageCalculatorStore();
 
-  const _attributeValue = attributeValue || enemyDataParsed.attributes[attrKey as never];
+  const _attributeValue = attributeValue !== undefined ? attributeValue : enemyDataParsed.attributes[attrKey as never];
 
   // 使用 useMemo 来避免重复计算 TagGroups
   const calcTokens = useMemo((): AttrCalcToken[] => {

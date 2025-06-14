@@ -1,7 +1,7 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState, useEffect } from "react";
 import { navOfZone } from "~/utils/stageSelector";
-import type { EnemyInput, LevelData } from "~/types/gameData";
+import type { LevelData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
@@ -176,7 +176,10 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
           array={renderStages}
           getKey={(stage) => stage.id}
           getValue={(stage) => {
-            if (stage.isBoss) return `BOSS · ${stage.name}`;
+            if (stage.isBoss) {
+              if (stage.description.includes("出现新的敌人")) return `BOSS · 带船 · ${stage.name}`;
+              else return `BOSS · ${stage.name}`;
+            }
             if (stage.id.includes("duel")) return `狭路 · ${stage.name}`;
             return `${stage.isElite ? "紧急 · " : "普通 · "}${stage.name}`;
           }}

@@ -32,12 +32,12 @@ export default function EnemySpecSelector({
   enemyData: EnemyData;
   setIllust: (illust: React.ReactNode) => void;
 }) {
-  const { rogueKey, setEnemySpec } = useDamageCalculatorStore();
+  const { rogueKey, difficulty, setEnemySpec } = useDamageCalculatorStore();
 
   // 可以保证在复制到木桩时，id不变
   const [enemyConfig, setEnemyConfig] = useState<EnemySpecConfig>();
 
-  const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩";
+  const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
   const [mitigationSkzdwx, setMitigationSkzdwx] = useState<string>("0");
 
   const [selected, setSelected] = useState<string[]>();
@@ -68,6 +68,27 @@ export default function EnemySpecSelector({
       setSelected([]);
     }
   }, [enemyData.id, setIllust]);
+
+  /** 当难度小于14时，设置年代印痕减伤为0 */
+  useEffect(() => {
+    if (difficulty < 14) {
+      setMitigationSkzdwx((prev) => {
+        if (prev === "0.5") return "0";
+        return prev;
+      });
+    }
+  }, [difficulty]);
+
+  /** 当难度大于等于14时，为年代之刺与饮泣之刺设置年代印痕减伤 */
+  useEffect(() => {
+    console.log(difficulty, enemyData.id);
+    if (difficulty >= 14 && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
+      setMitigationSkzdwx((prev) => {
+        if (prev === "0") return "0.5";
+        return prev;
+      });
+    }
+  }, [difficulty, enemyData.id]);
 
   /** 当敌人配置选项变化时，更新敌人效果 */
   useEffect(() => {

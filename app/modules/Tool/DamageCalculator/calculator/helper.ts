@@ -119,6 +119,7 @@ export class CalculatorHelper {
     console.log(context.relic_rune_mul.enemy_damage_resistance.printDebug());
 
     enemyAttr.damageResistance = context.in_game_buff_final_mul.enemy_damage_resistance.calculate();
+    console.log(context.in_game_buff_final_mul.enemy_damage_resistance);
     console.log("敌人局内减伤", context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
     console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printDebug());
     console.groupEnd();
@@ -338,37 +339,55 @@ export class CalculatorHelper {
       if (enemyAttrMultiplier) {
         const value = Math.pow(enemyAttrMultiplier / 100 + 1, zoneValue);
         context.in_game_buff_final_mul.enemy_atk.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue} | 每层加成${enemyAttrMultiplier}%`),
+          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}% | 层数${zoneValue}`),
         );
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 层数${zoneValue} | 每层加成${enemyAttrMultiplier}%`),
+          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}% | 层数${zoneValue}`),
         );
       }
       // 低难度下有加成
       if (difficulty <= 2) {
         const diff2Hp = [0.8, 0.85, 0.9];
-        context.in_game_buff_final_mul.enemy_damage_resistance.addChild(
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new NumericLiteralNode(
-            diff2Hp[difficulty - 1],
-            `直面魂灵·${difficulty} | 所有敌人生命值-${(1 - diff2Hp[difficulty - 1]) * 100}%`,
+            diff2Hp[difficulty],
+            `直面魂灵·${difficulty} | 所有敌人生命值-${Math.round((1 - diff2Hp[difficulty]) * 100)}%`,
           ),
+        );
+      }
+      /** <年代之刺>与<饮泣之刺>的最大生命值+20% */
+      if (difficulty >= 4 && enemyData && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.2, `直面魂灵·4 | 年代之刺与饮泣之刺的最大生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
       if (difficulty >= 4 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
-          new NumericLiteralNode(1.2, `直面魂灵·${difficulty} | 精英和领袖敌人生命值+20%`),
+          new NumericLiteralNode(1.2, `直面魂灵·4 | 精英和领袖敌人生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人攻击力+10% */
       if (difficulty >= 7 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
         context.in_game_buff_final_mul.enemy_atk.addChild(
-          new NumericLiteralNode(1.1, `直面魂灵·${difficulty} | 精英和领袖敌人攻击力+10%`),
+          new NumericLiteralNode(1.1, `直面魂灵·7 | 精英和领袖敌人攻击力+10%`),
         );
       }
       if (difficulty >= 10 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
         context.relic_rune_mul.enemy_damage_resistance.addChild(
-          new NumericLiteralNode(0.1, `直面魂灵·${difficulty} | 精英及领袖敌人受到的物理与法术伤害降低10%`),
+          new NumericLiteralNode(0.1, `直面魂灵·10 | 精英及领袖敌人受到的物理与法术伤害降低10%`),
+        );
+      }
+      /** N14大特血量加成 */
+      if (difficulty >= 14 && enemyData && enemyData.id === "enemy_2081_skztxs") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.5, `直面魂灵·14 | 特雷西斯，黑冠尊主的最大生命值提升至150%`),
+        );
+      }
+      /** N15黑棺血量加成 */
+      if (difficulty >= 15 && enemyData && enemyData.id === "enemy_2083_skzhg") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(2, `直面魂灵·15 | “放逐的黑棺”的最大生命值提升至200%`),
         );
       }
     }

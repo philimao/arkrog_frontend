@@ -15,15 +15,15 @@ export const DamageCalculatorSettings: {
     维娜·维多利亚: {
       disabled_skills: ["skchr_siege2_1", "skchr_siege2_2"],
     },
-    维什戴尔: {
-      disabled_skills: ["skchr_wisdel_1", "skchr_wisdel_2", "skchr_wisdel_3"],
-    },
+    // 维什戴尔: {
+    //   disabled_skills: ["skchr_wisdel_1", "skchr_wisdel_2", "skchr_wisdel_3"],
+    // },
     玛恩纳: {
       disabled_skills: ["skchr_mlynar_1", "skchr_mlynar_2"],
     },
-    安洁莉娜: {
-      disabled_skills: ["skchr_aglina_1", "skchr_aglina_2", "skchr_aglina_3"],
-    },
+    // 安洁莉娜: {
+    //   disabled_skills: ["skchr_aglina_1", "skchr_aglina_2", "skchr_aglina_3"],
+    // },
     逻各斯: {
       disabled_skills: ["skchr_logos_1", "skchr_logos_2"],
     },

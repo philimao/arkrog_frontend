@@ -398,7 +398,7 @@ export class CalculatorHelper {
   static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[] }, context: BuffContext) {
     const { topicSpecItems } = input;
     topicSpecItems
-      .filter((item) => item)
+      .filter((item) => item && item.userActive)
       .forEach((item) => {
         item.buffs.forEach((buff) => {
           const { key, value } = buff;
@@ -413,6 +413,7 @@ export class CalculatorHelper {
               context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_max_hp":
+              console.log(item.name, value);
               context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_atk":

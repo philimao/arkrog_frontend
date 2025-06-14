@@ -36,7 +36,8 @@ const StyledCollapseButton = styled.div`
 
 export default function FooterPanel() {
   const relicsContainerRef = useRef<HTMLDivElement>(null);
-  const { showRelics, rogueKey, toggleShowRelics, selectedIds, setSelectedIds } = useDamageCalculatorStore();
+  const { showRelics, rogueKey, toggleShowRelics, selectedIds, setSelectedIds, setTopicSpecItems } =
+    useDamageCalculatorStore();
   const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
 
   const [showBuff, setShowBuff] = useState(false);
@@ -118,7 +119,14 @@ export default function FooterPanel() {
           </div>
           <TopicSpecTrigger />
           <BuffPanel show={showBuff} setShow={setShowBuff} />
-          <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>
+          <StyledClearRelicsButton
+            onClick={() => {
+              setSelectedIds([]);
+              setTopicSpecItems(() => []);
+            }}
+          >
+            清空
+          </StyledClearRelicsButton>
         </>
       )}
     </StyledFooterPanel>

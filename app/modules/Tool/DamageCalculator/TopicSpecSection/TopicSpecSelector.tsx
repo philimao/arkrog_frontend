@@ -7,6 +7,7 @@ export interface ITopicSpecItem {
   id: string;
   name: string;
   desc: string;
+  userActive: boolean;
   buffs: { key: string; value: number }[];
   url: string;
   invert: number;
@@ -103,6 +104,7 @@ export default function TopicSpecSelector() {
                     ...fragment,
                     url,
                     invert: 0,
+                    userActive: true,
                   };
                 return updated;
               });
@@ -144,6 +146,7 @@ export default function TopicSpecSelector() {
                     buffs,
                     url,
                     invert: 1,
+                    userActive: true,
                   };
                 }
                 return updated;
@@ -185,18 +188,18 @@ const disasters = {
     functionDesc: ({ enemy_atk }: { enemy_atk: number }) =>
       `【萨卡兹】敌人的攻击力提升${enemy_atk * 100}%，处于年代印痕中的干员无法主动撤退`,
     values: [
-      [{ key: "enemy_atk", value: 0.2 }],
-      [{ key: "enemy_atk", value: 0.35 }],
-      [{ key: "enemy_atk", value: 0.5 }],
+      [{ key: "enemy_atk", value: 1.2 }],
+      [{ key: "enemy_atk", value: 1.35 }],
+      [{ key: "enemy_atk", value: 1.5 }],
     ],
   },
-  rogue_4_disaster_3: {
-    id: "rogue_4_disaster_3",
-    name: "苦难年代",
-    functionDesc: ({ damage }: { damage: number }) =>
-      `所有我方单位部署时损失当前生命值的${damage}%（每个单位退场前只会生效一次）`,
-    values: [[{ key: "damage", value: 0.25 }], [{ key: "damage", value: 0.5 }], [{ key: "damage", value: 0.7 }]],
-  },
+  // rogue_4_disaster_3: {
+  //   id: "rogue_4_disaster_3",
+  //   name: "苦难年代",
+  //   functionDesc: ({ damage }: { damage: number }) =>
+  //     `所有我方单位部署时损失当前生命值的${damage}%（每个单位退场前只会生效一次）`,
+  //   values: [[{ key: "damage", value: 0.25 }], [{ key: "damage", value: 0.5 }], [{ key: "damage", value: 0.7 }]],
+  // },
   rogue_4_disaster_4: {
     id: "rogue_4_disaster_4",
     name: "金融年代",
@@ -225,30 +228,30 @@ const disasters = {
     values: [
       [
         { key: "load", value: 1 },
-        { key: "enemy_max_hp", value: 0.2 },
+        { key: "enemy_max_hp", value: 1.2 },
       ],
       [
         { key: "load", value: 2 },
-        { key: "enemy_max_hp", value: 0.3 },
+        { key: "enemy_max_hp", value: 1.3 },
       ],
       [
         { key: "load", value: 3 },
-        { key: "enemy_max_hp", value: 0.5 },
+        { key: "enemy_max_hp", value: 1.5 },
       ],
     ],
   },
-  rogue_4_disaster_6: {
-    id: "rogue_4_disaster_6",
-    name: "拥挤年代",
-    functionDesc: ({ deploy }: { deploy: number }) => `可部署人数-${deploy}`,
-    values: [[{ key: "deploy", value: 1 }], [{ key: "deploy", value: 2 }], [{ key: "deploy", value: 3 }]],
-  },
-  rogue_4_disaster_7: {
-    id: "rogue_4_disaster_7",
-    name: "哲学年代",
-    functionDesc: () => `去伪存真出现杂念横生的概率提升，并有概率无法解读`,
-    values: [],
-  },
+  // rogue_4_disaster_6: {
+  //   id: "rogue_4_disaster_6",
+  //   name: "拥挤年代",
+  //   functionDesc: ({ deploy }: { deploy: number }) => `可部署人数-${deploy}`,
+  //   values: [[{ key: "deploy", value: 1 }], [{ key: "deploy", value: 2 }], [{ key: "deploy", value: 3 }]],
+  // },
+  // rogue_4_disaster_7: {
+  //   id: "rogue_4_disaster_7",
+  //   name: "哲学年代",
+  //   functionDesc: () => `去伪存真出现杂念横生的概率提升，并有概率无法解读`,
+  //   values: [],
+  // },
   rogue_4_disaster_8: {
     id: "rogue_4_disaster_8",
     name: "繁荣年代",
@@ -256,12 +259,12 @@ const disasters = {
       `战场的宝箱出现概率大幅提升，我方单位最大生命值提升${max_hp * 100}%`,
     values: [[{ key: "max_hp", value: 0.2 }], [{ key: "max_hp", value: 0.3 }], [{ key: "max_hp", value: 0.5 }]],
   },
-  rogue_4_disaster_9: {
-    id: "rogue_4_disaster_9",
-    name: "悖论",
-    functionDesc: () => `战场上我方单位的形象不再可见`,
-    values: [],
-  },
+  // rogue_4_disaster_9: {
+  //   id: "rogue_4_disaster_9",
+  //   name: "悖论",
+  //   functionDesc: () => `战场上我方单位的形象不再可见`,
+  //   values: [],
+  // },
 };
 
 const fragments = {
@@ -329,7 +332,7 @@ const fragments = {
     name: "驱城",
     desc: "使用后下次战斗所有我方单位再部署时间-20%",
     value: 3,
-    buffs: [{ key: "respawn_time", value: -0.2 }],
+    buffs: [{ key: "respawn_time", value: 0.8 }],
   },
   rogue_4_fragment_F_21: {
     id: "rogue_4_fragment_F_21",
@@ -364,7 +367,7 @@ const fragments = {
     name: "爆破",
     desc: "使用后下次战斗<年代之刺>的最大生命值-50%",
     value: 2,
-    buffs: [{ key: "enemy_max_hp", value: -0.5 }],
+    buffs: [{ key: "enemy_max_hp", value: 0.5 }],
   },
   rogue_4_fragment_F_26: {
     id: "rogue_4_fragment_F_26",

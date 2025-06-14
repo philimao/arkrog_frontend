@@ -36,16 +36,19 @@ const StyledTopicSpecTriggerInfoInner = styled.div`
   }
 `;
 
-const StyledTopicSpecNode = styled.div<{ $url: string; $invert: number }>`
+const StyledTopicSpecNode = styled.div<{ $url: string; $invert: number; $userActive: boolean }>`
   width: 4rem;
   height: 4rem;
   background: url(${(props) => props.$url}) no-repeat center center;
   background-size: contain;
   filter: invert(${(props) => props.$invert});
+  opacity: ${(props) => (props.$userActive ? "1" : "0.3")};
+  user-select: none;
+  cursor: pointer;
 `;
 
 export default function TopicSpecTrigger() {
-  const { rogueKey, toggleShowTopicSpec, topicSpecItems } = useDamageCalculatorStore();
+  const { rogueKey, toggleShowTopicSpec, topicSpecItems, setTopicSpecItems } = useDamageCalculatorStore();
 
   if (rogueKey === "rogue_4")
     return (
@@ -59,19 +62,30 @@ export default function TopicSpecTrigger() {
           </StyledTopicSpecTriggerInfo>
         </StyledSpecTrigger>
         {topicSpecItems
-          .filter((node) => node)
-          .map((node) => (
+          .filter((item) => item)
+          .map((item) => (
             <Tooltip
-              key={node.id}
+              key={item.id}
               closeDelay={300}
               content={
                 <div className="px-1 py-2">
-                  <div className="font-bold">{node.name}</div>
-                  <div className="text-small">{node.desc}</div>
+                  <div className="font-bold">{item.name}</div>
+                  <div className="text-small">{item.desc}</div>
                 </div>
               }
             >
-              <StyledTopicSpecNode $url={node.url} $invert={node.invert} />
+              <StyledTopicSpecNode
+                onClick={() => {
+                  setTopicSpecItems((items) => {
+                    const updated = [...items];
+                    updated.find((i) => i.id === item.id)!.userActive = !item.userActive;
+                    return updated;
+                  });
+                }}
+                $url={item.url}
+                $invert={item.invert}
+                $userActive={item.userActive}
+              />
             </Tooltip>
           ))}
       </StyledTopicSpecContainer>

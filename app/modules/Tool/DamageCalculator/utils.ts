@@ -10,6 +10,7 @@ import type {
   RelicBuff,
   RelicDataExt,
   RelicWrapper,
+  RelicWrapperBuff,
   RogueKey,
   StageData,
 } from "~/types/gameData";
@@ -403,21 +404,12 @@ export function applyAttrModifiers(mod: AttributeModifier, result: CharAttribute
  * @param charData
  */
 export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): Partial<RelicWrapper> {
-  // console.log(relicDataExt.name);
-  const buffs = relicDataExt.buffs.map((buff) => {
+  const buffs: RelicWrapperBuff[] = relicDataExt.buffs.map((buff) => {
     const isActive =
       isRelicActive(relicDataExt.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
-    const charResult = {};
-    const enemyResult = {};
-    if (isActive) {
-      const result = isBuffForChar(buff) ? charResult : enemyResult;
-      applyBlackboard(buff, result);
-    }
     return {
       key: buff.key,
       isActive,
-      charResult,
-      enemyResult,
     };
   });
   const hasLayer = relicDataExt.buffs.some(
@@ -445,64 +437,6 @@ export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): 
       .map((s) => s[0])
       .join(""),
   };
-}
-
-/**
- * 根据藏品选择情况计算最终藏品加成结果
- * @param outBuff
- * @param relicWrappers
- * @param selectedRelicIds
- */
-export function finalizeRelicResults(outBuff: number, relicWrappers: RelicWrapper[], selectedRelicIds: string[]) {
-  const charResult: Record<string, number> = {};
-  const inGameResult: Record<string, number> = {};
-  const enemyResult: Record<string, number> = {};
-  // 局外加成
-  if (outBuff > 1) {
-    charResult["max_hp"] = outBuff;
-    charResult["atk"] = outBuff;
-    charResult["def"] = outBuff;
-  }
-  const run = (relicWrapper: RelicWrapper, buffResult: Record<string, number>, result: Record<string, number>) => {
-    for (const key in buffResult) {
-      // 物理易伤、法术易伤、真伤易伤：多个buff效果取合, 但需要减去1
-      if (["damage_scale[phy]", "damage_scale[mag]", "damage_scale[pure]"].includes(key)) {
-        result[key] = (result[key] || 1) + (buffResult[key] - 1);
-        continue;
-      }
-      // 元素易伤: 多个buff效果相乘
-      if (key === "damage_scale[ep]") {
-        if (result[key]) {
-          result[key] *= buffResult[key];
-        } else {
-          result[key] = buffResult[key];
-        }
-        continue;
-      }
-      // 其他buff效果取合
-      result[key] = (result[key] || 0) + (relicWrapper.layer || 1) * buffResult[key];
-    }
-  };
-  relicWrappers
-    // 用户选择的藏品
-    .filter(
-      (relicWrapper) => selectedRelicIds.includes(relicWrapper.id) && relicWrapper.isActive && relicWrapper.userActive,
-    )
-    .forEach((relicWrapper) => {
-      relicWrapper.buffs
-        // 能对当前干员生效的藏品
-        .filter((buff) => buff.isActive)
-        .forEach((buff) => {
-          if (inGameRelicNames.includes(relicWrapper.name)) {
-            // 局内生效
-            run(relicWrapper, buff.charResult, inGameResult);
-          } else {
-            run(relicWrapper, buff.charResult, charResult);
-          }
-          run(relicWrapper, buff.enemyResult, enemyResult);
-        });
-    });
-  return { charResult, inGameResult, enemyResult };
 }
 
 export const outBuffMap: Partial<Record<RogueKey, string[]>> = {

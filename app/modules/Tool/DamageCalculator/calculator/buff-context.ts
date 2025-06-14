@@ -1,4 +1,3 @@
-import type { RelicBuff } from "~/types/gameData";
 import type { RelicWrapper } from "~/types/gameData";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 
@@ -138,26 +137,6 @@ export class BuffContext implements IBuffContext {
     damage_scale_phy: new ExpressionGroupNode("*", "堆叠").addChild(new NumericLiteralNode(1, "基数")),
   };
   constructor() {}
-
-  /** 敌人攻击力改变 最终乘区 */
-  mut_in_game_buff_final_mul_enemy_atk(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
-  }
-
-  /** 敌人防御力改变 最终乘区 */
-  mul_in_game_buff_final_mul_enemy_def(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(value, relic.name));
-  }
-
-  /** 敌人最大生命值改变 最终乘区 */
-  mul_in_game_buff_final_mul_enemy_max_hp(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, relic.name));
-  }
-
-  /** 法术增伤 堆叠 */
-  stack_global_buff_stack_damage_scale_mag(value: number, buff: RelicBuff, relic: RelicWrapper) {
-    this.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(value, relic.name));
-  }
 
   /** 克隆 */
   clone() {

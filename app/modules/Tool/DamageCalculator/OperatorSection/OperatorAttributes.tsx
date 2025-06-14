@@ -157,7 +157,6 @@ export function useDefTagGroups(props: { attribute: CharAttribute; context: Buff
     {
       tooltip: "局外乘区",
       tags: [
-        <AttrTag tooltip="基数">1</AttrTag>,
         ...context.relic_rune_mul.def.children.map((item) => (
           <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
         )),

@@ -364,9 +364,6 @@ export const commonRelicBlackboard = {
     /** 攻击力 */
     if (atk) {
       const inGame = inGameRelicNames.includes(relic.name);
-      if (relic.name === "空羽兽") {
-        console.log("inGame", inGame);
-      }
       if (inGame) {
         context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
       } else {

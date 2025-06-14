@@ -81,7 +81,6 @@ export default function EnemySpecSelector({
 
   /** 当难度大于等于14时，为年代之刺与饮泣之刺设置年代印痕减伤 */
   useEffect(() => {
-    console.log(difficulty, enemyData.id);
     if (difficulty >= 14 && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
       setMitigationSkzdwx((prev) => {
         if (prev === "0") return "0.5";

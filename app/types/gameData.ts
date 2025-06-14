@@ -375,9 +375,13 @@ export interface RelicWrapper {
   name: string;
   value: number;
   usage: string;
+  /** 对当前干员是否生效 */
   isActive: boolean;
+  /** 是否被用户选中生效，默认生效 */
   userActive: boolean;
+  /** 是否被用户收藏 TODO */
   isFavorite: boolean;
+  /** 是否存在层数 */
   hasLayer: boolean;
   layer: number;
   show: boolean;

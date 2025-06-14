@@ -100,6 +100,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     rogueKey,
     enemyData,
     rogueInput,
+    selectRelic,
     setEnemyData,
     setEnemyDataParsed,
     setRogueZone,
@@ -151,12 +152,24 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
       );
       setLevelData(stageRawData);
     }
+    if (
+      stageData &&
+      [
+        "ro4_b_4_c", // 紧急授课
+        "ro4_b_4_d", // 思维矫正
+        "ro4_b_4_c", // 朝谒
+        "ro4_b_4_d", // 魂灵朝谒
+        "ro4_b_7", // 授法
+      ].includes(stageData.id)
+    ) {
+      selectRelic("rogue_4_relic_final_6");
+    }
     setEnemyData(undefined as never);
     setEnemyDataParsed(dummy);
     debounce(() => {
       handleLoadLevelData();
     }, 500)();
-  }, [setEnemyData, setEnemyDataParsed, setLevelData, stageData]);
+  }, [selectRelic, setEnemyData, setEnemyDataParsed, setLevelData, stageData]);
 
   return (
     <StyledStageSelector>

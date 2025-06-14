@@ -82,6 +82,8 @@ interface DamageCalculatorAction {
   updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
   setSelectedIds: (ids: string[]) => void;
   toggleRelicSelection: (id: string) => void;
+  selectRelic: (id: string) => void;
+  unselectRelic: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
   setEnemySpec: (enemySpec: EnemySpec) => void;
@@ -302,6 +304,26 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       },
       selectedIds: [] as string[],
       setSelectedIds: (ids) => set((state) => ({ ...state, selectedIds: ids }), undefined, "setSelectedIds"),
+      selectRelic: (id) =>
+        set(
+          (state) => {
+            if (!state.selectedIds.includes(id)) {
+              state.selectedIds.push(id);
+            }
+          },
+          undefined,
+          "selectRelic",
+        ),
+      unselectRelic: (id) =>
+        set(
+          (state) => {
+            if (state.selectedIds.includes(id)) {
+              state.selectedIds.splice(state.selectedIds.indexOf(id), 1);
+            }
+          },
+          undefined,
+          "unselectRelic",
+        ),
       toggleRelicSelection: (id) => {
         set(
           (state) => {

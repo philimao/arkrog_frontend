@@ -43,13 +43,13 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
   const mitigation =
     1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
-  const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
+  const commonDPH = ((atk + atkBuffInAdd + 0.26) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
   //const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
   result.attack.dph = commonDPH;
@@ -64,7 +64,7 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       break;
     }
     case "skchr_angel2_2": {
-      const skillBuffIn = 0.0; // 技能加攻
+      const skillBuffIn = 0.26; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 3.0 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillDphBomb =
@@ -103,7 +103,7 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
 
     case "skchr_angel2_3": {
       // 不计算投递伤害
-      const skillBuffIn = 0.3; // 技能加攻
+      const skillBuffIn = 0.56; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 1.6 * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       const skillDphBomb =

@@ -43,16 +43,14 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
   const mitigation =
     1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
-  // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
+  // const cardA: boolean = input.relics.find((r) => r.name === "疗养体验卡") !== undefined; // 疗养卡
+  // const cardB: boolean = input.relics.find((r) => r.name === "疗养特供卡") !== undefined;
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
-  // const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
-  // const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
-  // result.attack.dph = commonDPH;
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = 100 + atkSpeedBuff + 22; // 攻击速度
   const commonAtkTimeBase = 2.85; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
@@ -68,7 +66,6 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
       const skillBuffIn = 3.3; // 技能加攻
       const skillDph = ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * atkBuffFinalMul;
       const skillDamage = Math.max(skillDph, skillDph * 0.05) * damage_scale * damage_scale_pure;
-      // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
       const skillAtkTimeBase = 1.35; // 技能基础时间
       const skillAtkFrame = Math.round((skillAtkTimeBase * 3000.0) / atkSpeed); // 技能攻击间隔帧
@@ -77,18 +74,20 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
       const spInitial = 0; // 技能初始技力
       const skillSp = 15.0; // 技能技力消耗
       const skillKeepTime = 25.0; // 技能持续时间
-      const skillRecoveryTime = Math.max(skillKeepTime - spInitial, 0) / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
+      const skillRecoveryTime = Math.max(skillSp - spInitial, 0) / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = 25.0 / skillAtkTime - 1; // 技能期望普攻次数
+      const skillHit = Math.floor(25.0 / skillAtkTime); // 技能期望普攻次数
+      // if (cardA || cardB) {
+      //   const a = cardA ? 1 : 0;
+      //   const b = cardB ? 1 : 0;
+      //   const atkSpeedCard = 40 * a + 70 * b;
+      //   const skillAtkFrameCard = Math.round((skillAtkTimeBase * 3000.0) / (atkSpeed + atkSpeedCard));
+      // }
 
       const commonTotalDamage = 0;
       const skillTotalDamage = skillDamage * skillHit;
 
-      // if (fire) {
-      //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
-      //   skillTotalDamage += skillFireDamage * skillHit * 3 * 0.25 * (1 - mitigation);
-      // }
 
       result.skill.dph = skillDph;
       result.skill.dps.pure = skillTotalDamage / skillKeepTime;

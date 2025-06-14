@@ -8,7 +8,7 @@ import {
   type RelicBlackboardInput,
 } from "./impls";
 import { NumericLiteralNode } from "./ast";
-import { parseDefinedData } from "../utils";
+import { inGameRelicNames, parseDefinedData } from "../utils";
 
 /** 敌人攻击力改变 */
 registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper) => {
@@ -363,7 +363,17 @@ export const commonRelicBlackboard = {
     }
     /** 攻击力 */
     if (atk) {
-      context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name, { relic, buff }));
+      const inGame = inGameRelicNames.includes(relic.name);
+      if (relic.name === "空羽兽") {
+        console.log("inGame", inGame);
+      }
+      if (inGame) {
+        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      } else {
+        context.relic_rune_mul.atk.addChild(
+          new NumericLiteralNode(atk.value * relic.layer, relic.name, { relic, buff }),
+        );
+      }
       is_invalid = false;
     }
     /** 防御力 */

@@ -13,14 +13,16 @@ import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
-export type RelicBlackboardInput = {
+export type CharRelicBlackboardInput = {
   buff: RelicBuff;
   relic: RelicWrapper;
-  charInput: CharInput;
-  charData: CharData;
-  enemyData: EnemyData;
-  relics: RelicWrapper[];
   stageData?: StageData;
+  charData?: CharData;
+};
+export type EnemyRelicBlackboardInput = {
+  buff: RelicBuff;
+  relic: RelicWrapper;
+  enemyData: EnemyData;
 };
 export type RelicBlackboardApplyInput = {
   buff: RelicBuff;
@@ -72,6 +74,7 @@ export function registerRelicBlackboard(key: string, apply: (buff: RelicBuff, re
 
 /** 获取藏品黑板 */
 export function getRelicBlackboard(buff: RelicBuff, relic: RelicWrapper): RelicBlackboard {
+  // key为char时代表什么？没有注册 TODO
   const key = buff.blackboard.find((b) => b.key === "key")?.valueStr || "char";
   const relicBlackboard = relicBlackboardMap.get(key);
   if (!relicBlackboard) {

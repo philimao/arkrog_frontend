@@ -4,7 +4,6 @@ import type {
   CharData,
   DamageByType,
   RelicWrapper,
-  RelicBuff,
   CharAttributeExt,
   CharInput,
   CharAttribute,
@@ -14,12 +13,12 @@ import type {
   StageData,
   EnemyData,
 } from "~/types/gameData";
-import { isRelicActive, isBuffActive, isBlackboardActive, allowedBlackboardKeyMap, parseDefinedData } from "../utils";
+import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
 import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
 import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
-import { commonRelicBlackboard } from "./blackboard";
+import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "./blackboard";
 import type { EnemySpec } from "../EnemySection/EnemySpecSelector";
 
 /** 加成词条 */
@@ -245,7 +244,7 @@ export class CalculatorHelper {
     },
     context?: BuffContext,
   ) {
-    const { charInput, charData, enemyData, relics } = input;
+    const { charInput, charData, enemyData, relics, stageData } = input;
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
     /** 用户修正属性 */
     if (charInput && charInput.attributeModifier.atkBase) {
@@ -265,7 +264,13 @@ export class CalculatorHelper {
     for (const relic of relics) {
       // 遍历藏品buff
       relic.relicData.buffs.forEach((buff) => {
-        // 是否存在藏品黑板实现
+        // 藏品在黑名单中
+        if (!isRelicInBlacklist(relic.name)) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+
+        // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
         if (isRelicBlackboard(buff)) {
           const blackboard = getRelicBlackboard(buff, relic);
           // buff是否可以生效
@@ -278,17 +283,22 @@ export class CalculatorHelper {
           }
           return;
         }
-        // 藏品在黑名单中
-        if (!isRelicActive(relic.name)) {
-          result.invalidRelics.push(relic);
-          return;
+        // 藏品可能对双方生效，但单个Buff只对一方生效
+        if (isBuffForEnemy(buff)) {
+          // 对敌人生效
+          if (!commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic })) {
+            result.invalidRelics.push(relic);
+            return;
+          }
+          commonEnemyRelicBlackboard.apply({ relic, context: result, buff, relics });
+        } else {
+          // 判断是否适用干员通用黑板
+          if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, relic })) {
+            result.invalidRelics.push(relic);
+            return;
+          }
+          commonCharRelicBlackboard.apply({ relic, context: result, buff, relics });
         }
-        // 无干员数据时，默认生效 TODO
-        if (!charData || !CalculatorHelper.isRelicForChar(buff, relic, charData)) {
-          result.invalidRelics.push(relic);
-          return;
-        }
-        commonRelicBlackboard.apply({ relic, context: result, buff, relics });
       });
     }
 
@@ -403,7 +413,6 @@ export class CalculatorHelper {
         item.buffs.forEach((buff) => {
           const { key, value, selector } = buff;
           if (selector) {
-            console.log(selector);
             const [type, key, value] = selector.split(":");
             if (type === "enemy") {
               console.log(enemyData);
@@ -411,7 +420,6 @@ export class CalculatorHelper {
               // 对特定敌人类型生效，如爆破对刺
               if (key === "id" && !value.split("|").includes(enemyData.id)) return;
               // 对特定敌人标签生效，如魔王年代对萨卡兹
-              console.log(enemyData.enemyTags.m_value, value);
               if (key === "tag" && !enemyData.enemyTags.m_value?.includes(value)) return;
             }
           }
@@ -454,12 +462,6 @@ export class CalculatorHelper {
       }
     });
     return context;
-  }
-
-  /** 该藏品Buff对干员是否生效 */
-  static isRelicForChar(buff: RelicBuff, relic: RelicWrapper, charData: CharData): boolean {
-    const isActive = isRelicActive(relic.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
-    return isActive;
   }
 
   /** 把上下文输出一个加成词条 */

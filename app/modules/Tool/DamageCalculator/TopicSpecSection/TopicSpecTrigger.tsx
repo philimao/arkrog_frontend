@@ -1,5 +1,4 @@
 import { Tooltip } from "@heroui/react";
-import { Fragment } from "react/jsx-runtime";
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 

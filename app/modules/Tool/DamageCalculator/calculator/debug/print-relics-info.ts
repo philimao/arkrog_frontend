@@ -1,7 +1,7 @@
 import type { CalculatorInput, RelicWrapper } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
 import { getRelicBlackboard, isRelicBlackboard } from "../impls";
-import { commonRelicBlackboard } from "../blackboard";
+import { commonCharRelicBlackboard } from "../blackboard";
 
 /**
  * 打印藏品信息
@@ -23,7 +23,7 @@ export function applyAnyRelics(relics: RelicWrapper[]) {
         const relicBlackboard = getRelicBlackboard(buff, relic);
         relicBlackboard.apply({ context, relics: relics });
       } else if (!key) {
-        commonRelicBlackboard.apply({ context, relics: relics, buff: buff, relic: relic });
+        commonCharRelicBlackboard.apply({ context, relics: relics, buff: buff, relic: relic });
       }
     }
   }

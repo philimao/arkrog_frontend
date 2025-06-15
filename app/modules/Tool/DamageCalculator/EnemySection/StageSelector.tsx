@@ -52,11 +52,14 @@ const StyledEnemies = styled.div`
   overflow: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, 4rem);
-  justify-content: center;
   gap: 0.5rem;
+  align-content: start;
+  align-items: start;
+  justify-content: center;
   padding: 0.5rem;
   background: rgba(78, 78, 78, 0.5);
   box-shadow: 4px 4px 6px 0 rgba(0, 0, 0, 0.25);
+  user-select: none;
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -78,7 +81,8 @@ const StyledEnemies = styled.div`
   }
 `;
 
-const StyledEnemy = styled.div`
+const StyledEnemy = styled.div<{ $selected: boolean }>`
+  box-shadow: ${({ $selected }) => ($selected ? "0px 0px 10px 2px #FFF" : "none")};
   width: 4rem;
 `;
 
@@ -157,8 +161,8 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
       [
         "ro4_b_4_c", // 紧急授课
         "ro4_b_4_d", // 思维矫正
-        "ro4_b_4_c", // 朝谒
-        "ro4_b_4_d", // 魂灵朝谒
+        "ro4_b_5_c", // 朝谒
+        "ro4_b_5_d", // 魂灵朝谒
         "ro4_b_7", // 授法
       ].includes(stageData.id)
     ) {
@@ -225,16 +229,17 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
             <StyledEnemies>
               {levelData.enemies
                 .filter((enemy) => !ignoreEnemyNames.includes(enemy.name.m_value!))
-                .map((enemyData) => {
+                .map((_enemyData) => {
                   return (
                     <StyledEnemy
-                      key={enemyData.id}
+                      key={_enemyData.id}
+                      $selected={_enemyData.id === enemyData?.id}
                       onClick={() => {
-                        setEnemyData(enemyData);
+                        setEnemyData(_enemyData);
                       }}
                     >
-                      <EnemyAvatar name={enemyData.name.m_value} />
-                      <StyledEnemyName>{enemyData.name.m_value}</StyledEnemyName>
+                      <EnemyAvatar name={_enemyData.name.m_value} />
+                      <StyledEnemyName>{_enemyData.name.m_value}</StyledEnemyName>
                     </StyledEnemy>
                   );
                 })}

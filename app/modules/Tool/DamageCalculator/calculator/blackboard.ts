@@ -4,11 +4,19 @@ import {
   getByKey,
   getByKeySafe,
   registerRelicBlackboard,
+  type CharRelicBlackboardInput,
   type RelicBlackboardApplyInput,
-  type RelicBlackboardInput,
+  type EnemyRelicBlackboardInput,
 } from "./impls";
 import { NumericLiteralNode } from "./ast";
-import { inGameRelicNames, parseDefinedData } from "../utils";
+import {
+  inGameRelicNames,
+  isBlackboardActiveForChar,
+  isBlackboardActiveForEnemy,
+  isBuffActive,
+  isRelicInBlacklist,
+  parseDefinedData,
+} from "../utils";
 
 /** 敌人攻击力改变 */
 registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper) => {
@@ -326,8 +334,32 @@ registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicWra
   };
 });
 
-export const commonRelicBlackboard = {
-  isActive({ buff, stageData }: RelicBlackboardInput) {
+export const commonEnemyRelicBlackboard = {
+  isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
+    const isActive = isRelicInBlacklist(relic.name) && isBlackboardActiveForEnemy(buff, enemyData);
+    console.log(buff, isActive);
+    return isActive;
+  },
+  apply({ relic, context, buff }: RelicBlackboardApplyInput): void {
+    // 目前只处理了雕词錾刀和十戒，但敌人通用面板应该也重构到此处 TODO
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (max_hp) {
+      context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(Math.abs(max_hp.value), relic.name));
+    }
+    const def = getByKey(buff.blackboard, "def");
+    if (def) {
+      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(Math.abs(def.value), relic.name));
+    }
+  },
+};
+
+export const commonCharRelicBlackboard = {
+  isActive({ buff, stageData, charData, relic }: CharRelicBlackboardInput) {
+    // 判断藏品是否可以生效（旧逻辑）
+    const isActive =
+      isRelicInBlacklist(relic.name) && isBuffActive(buff, charData) && isBlackboardActiveForChar(buff, charData);
+    if (!isActive) return false;
+
     const validator_roguelike_event_type = getByKey(buff.blackboard, "validator.roguelike_event_type")?.valueStr as
       | "BATTLE_BOSS"
       | "DUEL";
@@ -344,7 +376,7 @@ export const commonRelicBlackboard = {
       }
       // 不满足条件 无效藏品
       if (!validator) {
-        return;
+        return false;
       }
     }
     return true;

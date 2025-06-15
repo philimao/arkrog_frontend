@@ -4,6 +4,7 @@ import type {
   CharAttributeExt,
   CharData,
   DefinedData,
+  EnemyData,
   RelicBuff,
   RelicDataExt,
   RelicWrapper,
@@ -177,8 +178,23 @@ export const disallowedValueStrs = [
  * 藏品是否在黑名单内，是否可以生效
  * @param relicDataExt
  */
-export function isRelicActive(name: string) {
+export function isRelicInBlacklist(name: string) {
   return !disallowedRelicNames.includes(name);
+}
+
+const trapEnemies = [
+  "trap_760_skztzs", // 年代之刺
+  "trap_761_skzthx", // 尊主的残影
+];
+/**
+ * 藏品是否对敌人生效
+ * 例外：十戒（大特的影子是trap）
+ **/
+export function isBuffForEnemy(buff: RelicBuff) {
+  return (
+    buff.blackboard.some((bb) => bb.valueStr?.startsWith("enemy_")) ||
+    buff.blackboard.some((bb) => trapEnemies.includes(bb.valueStr!))
+  );
 }
 
 /**
@@ -206,12 +222,26 @@ export function isBuffActive(buff: RelicBuff, charData?: CharData): boolean {
   else return false;
 }
 
+/** 检查黑板效果是否对敌人生效 */
+export function isBlackboardActiveForEnemy(buff: RelicBuff, enemyData: EnemyData) {
+  // 敌人ID选择器
+  let bbSelector;
+  if (buff.key.startsWith("enemy") && (bbSelector = buff.blackboard.find((bb) => bb.key === "selector.enemy"))) {
+    return bbSelector.valueStr === enemyData.id;
+  }
+  // trap类敌人ID选择器
+  if (buff.key.startsWith("char") && (bbSelector = buff.blackboard.find((bb) => bb.key === "selector.char"))) {
+    return bbSelector.valueStr === enemyData.id;
+  }
+  return true;
+}
+
 /**
  * 检查Blackboard是否对该干员生效
  * @param buff
  * @param charData
  */
-export function isBlackboardActive(buff: RelicBuff, charData?: CharData): boolean {
+export function isBlackboardActiveForChar(buff: RelicBuff, charData?: CharData): boolean {
   // 空羽兽 key=char & valueStr=token 为召唤物效果
   if (
     buff.key.startsWith("char") &&
@@ -402,7 +432,9 @@ export function applyAttrModifiers(mod: AttributeModifier, result: CharAttribute
 export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): Partial<RelicWrapper> {
   const buffs: RelicWrapperBuff[] = relicDataExt.buffs.map((buff) => {
     const isActive =
-      isRelicActive(relicDataExt.name) && isBuffActive(buff, charData) && isBlackboardActive(buff, charData);
+      isRelicInBlacklist(relicDataExt.name) &&
+      isBuffActive(buff, charData) &&
+      isBlackboardActiveForChar(buff, charData);
     return {
       key: buff.key,
       isActive,

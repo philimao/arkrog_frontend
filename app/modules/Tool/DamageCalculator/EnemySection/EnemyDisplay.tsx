@@ -309,7 +309,9 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               >
                 {levelTypeMap[_enemyDataParsed.levelType]}
               </StyledEnmeyLevelBadge>
-              <StyledEnemyTag>{enemyTagMap[_enemyDataParsed.enemyTags[0]]}</StyledEnemyTag>
+              {_enemyDataParsed.enemyTags.length > 0 && (
+                <StyledEnemyTag>{enemyTagMap[_enemyDataParsed.enemyTags[0]]}</StyledEnemyTag>
+              )}
             </div>
           </StyledEnemyHeader>
           <StyledEnemyAvatar name={_enemyDataParsed.name} />

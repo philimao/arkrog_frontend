@@ -27,7 +27,7 @@ registerRelicBlackboard("enemy_atk_down", (buff: RelicBuff, relic: RelicWrapper)
       const { context } = input;
       /** 当value为正数时必然>1，例如攻击力+20%显示为1.2，当value为负数时，表示减攻，例如攻击力-10%显示为-0.1 */
       const value = Math.sign(atk.value) === 1 ? atk.value : 1 + atk.value;
-      context.mut_in_game_buff_final_mul_enemy_atk(value, buff, relic);
+      context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
     },
   };
 });
@@ -47,7 +47,7 @@ registerRelicBlackboard("enemy_def_down", (buff: RelicBuff, relic: RelicWrapper)
     apply(input): void {
       const { context } = input;
       const value = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
-      context.mul_in_game_buff_final_mul_enemy_def(value, buff, relic);
+      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(value, relic.name));
     },
   };
 });
@@ -68,7 +68,7 @@ registerRelicBlackboard("enemy_max_hp_down", (buff: RelicBuff, relic: RelicWrapp
     apply(input): void {
       const { context } = input;
       const value = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
-      context.mul_in_game_buff_final_mul_enemy_max_hp(value, buff, relic);
+      context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, relic.name));
     },
   };
 });
@@ -251,7 +251,7 @@ registerRelicBlackboard("damage_scale[caster]", (buff: RelicBuff, relic: RelicWr
     },
     apply(input): void {
       const { context } = input;
-      context.stack_global_buff_stack_damage_scale_mag(damage_scale.value, buff, relic);
+      context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
     },
   };
 });
@@ -263,7 +263,9 @@ registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicWr
     isActive: () => true,
     apply(input): void {
       const { context } = input;
-      context.stack_global_buff_stack_damage_scale_mag(1 + damage_scale.value * relic.layer, buff, relic);
+      context.global_buff_stack.damage_scale_mag.addChild(
+        new NumericLiteralNode(1 + damage_scale.value * relic.layer, relic.name),
+      );
     },
   };
 });

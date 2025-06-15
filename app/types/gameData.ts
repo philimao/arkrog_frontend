@@ -366,8 +366,6 @@ export interface RelicData {
 export interface RelicWrapperBuff {
   key: string;
   isActive: boolean;
-  charResult: Record<string, number>;
-  enemyResult: Record<string, number>;
 }
 
 export interface RelicWrapper {

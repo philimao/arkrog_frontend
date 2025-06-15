@@ -2,7 +2,7 @@ import { cosHost, getPath, imageHost } from "~/utils/tools";
 import type { ImgHTMLAttributes } from "react";
 
 interface EnemyAvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
-  name: string;
+  name: string | null;
   className?: string;
 }
 
@@ -15,6 +15,8 @@ const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”
 );
 
 export default function EnemyAvatar({ name, className = "w-full", ...props }: EnemyAvatarProps) {
+  if (!name) return null;
+
   const url = preset[name] || encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
   return (
     <img

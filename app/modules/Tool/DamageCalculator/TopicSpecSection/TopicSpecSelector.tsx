@@ -186,7 +186,7 @@ const disasters = {
     id: "rogue_4_disaster_2",
     name: "魔王年代",
     functionDesc: ({ enemy_atk }: { enemy_atk: number }) =>
-      `【萨卡兹】敌人的攻击力提升${enemy_atk * 100}%，处于年代印痕中的干员无法主动撤退`,
+      `【萨卡兹】敌人的攻击力提升${(enemy_atk - 1) * 100}%，处于年代印痕中的干员无法主动撤退`,
     values: [
       [{ key: "enemy_atk", value: 1.2, selector: "enemy:tag:sarkaz" }],
       [{ key: "enemy_atk", value: 1.35, selector: "enemy:tag:sarkaz" }],
@@ -200,6 +200,7 @@ const disasters = {
   //     `所有我方单位部署时损失当前生命值的${damage}%（每个单位退场前只会生效一次）`,
   //   values: [[{ key: "damage", value: 0.25 }], [{ key: "damage", value: 0.5 }], [{ key: "damage", value: 0.7 }]],
   // },
+  // TODO 费用没实现
   rogue_4_disaster_4: {
     id: "rogue_4_disaster_4",
     name: "金融年代",
@@ -224,7 +225,7 @@ const disasters = {
     id: "rogue_4_disaster_5",
     name: "奇观年代",
     functionDesc: ({ load, enemy_max_hp }: { load: number; enemy_max_hp: number }) =>
-      `构想的负荷+${load}，所有敌人生命值+${enemy_max_hp * 100}%`,
+      `构想的负荷+${load}，所有敌人生命值+${(enemy_max_hp - 1) * 100}%`,
     values: [
       [
         { key: "load", value: 1 },

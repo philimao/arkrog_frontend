@@ -219,7 +219,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     // 肉鸽难度加成
     buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffContext);
     // 肉鸽主题加成（年代、灵感、密文板）
-    buffContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffContext);
+    buffContext = CalculatorHelper.analyzeTopicSpec(
+      { topicSpecItems: topicSpecItems, enemyData: enemyData },
+      buffContext,
+    );
     // 敌人特殊配置加成
     buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffContext);
 
@@ -265,7 +268,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
     let buffPanelContext = CalculatorHelper.analyzeRelics(input);
     buffPanelContext = CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
-    buffPanelContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, buffPanelContext);
+    buffPanelContext = CalculatorHelper.analyzeTopicSpec(
+      { topicSpecItems: topicSpecItems, enemyData: enemyData },
+      buffPanelContext,
+    );
     buffPanelContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffPanelContext);
 
     setRelicAnalysisResult(buffPanelContext);

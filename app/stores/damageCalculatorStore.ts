@@ -130,6 +130,8 @@ export const dummy: EnemyInput = {
   },
   levelType: "NORMAL",
   rangedRadius: 0,
+  applyWay: "MELEE",
+  enemyTags: [],
 };
 
 export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCalculatorAction>()(

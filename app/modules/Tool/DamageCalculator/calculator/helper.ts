@@ -362,18 +362,18 @@ export class CalculatorHelper {
         );
       }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
-      if (difficulty >= 4 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+      if (difficulty >= 4 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new NumericLiteralNode(1.2, `直面魂灵·4 | 精英和领袖敌人生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人攻击力+10% */
-      if (difficulty >= 7 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+      if (difficulty >= 7 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
         context.in_game_buff_final_mul.enemy_atk.addChild(
           new NumericLiteralNode(1.1, `直面魂灵·7 | 精英和领袖敌人攻击力+10%`),
         );
       }
-      if (difficulty >= 10 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType))) {
+      if (difficulty >= 10 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
         context.relic_rune_mul.enemy_damage_resistance.addChild(
           new NumericLiteralNode(0.1, `直面魂灵·10 | 精英及领袖敌人受到的物理与法术伤害降低10%`),
         );
@@ -403,13 +403,16 @@ export class CalculatorHelper {
         item.buffs.forEach((buff) => {
           const { key, value, selector } = buff;
           if (selector) {
+            console.log(selector);
             const [type, key, value] = selector.split(":");
             if (type === "enemy") {
+              console.log(enemyData);
               if (!enemyData) return;
               // 对特定敌人类型生效，如爆破对刺
               if (key === "id" && !value.split("|").includes(enemyData.id)) return;
               // 对特定敌人标签生效，如魔王年代对萨卡兹
-              if (key === "tag" && !enemyData.enemyTags.m_value.includes(value)) return;
+              console.log(enemyData.enemyTags.m_value, value);
+              if (key === "tag" && !enemyData.enemyTags.m_value?.includes(value)) return;
             }
           }
           switch (key) {

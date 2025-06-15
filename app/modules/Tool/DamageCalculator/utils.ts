@@ -4,15 +4,11 @@ import type {
   CharAttributeExt,
   CharData,
   DefinedData,
-  EnemyData,
-  EnemyInput,
-  LevelData,
   RelicBuff,
   RelicDataExt,
   RelicWrapper,
   RelicWrapperBuff,
   RogueKey,
-  StageData,
 } from "~/types/gameData";
 
 /**
@@ -458,67 +454,8 @@ export const professions = [
   "WARRIOR",
 ];
 
-export function parseDefinedData<T>(definedData: DefinedData<T>): T {
+export function parseDefinedData<T>(definedData: DefinedData<T>): T | null {
   return definedData.m_value;
-}
-
-/**
- * 解析敌人数据
- * @param enemyData
- * @param stageData 关卡数据（用于获取难度）
- * @param levelData 关卡数据（用于获取符文）
- * @returns
- */
-export function parseEnemyData(enemyData: EnemyData, stageData: StageData, levelData: LevelData): EnemyInput {
-  const stageDifficulty = stageData.difficulty;
-  const runes = levelData.runes || [];
-  const rune = runes.find(
-    (rune) =>
-      rune.key === "enemy_attribute_mul" && (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),
-  )?.blackboard;
-  const atk_mul = rune?.find((bb) => bb.key === "atk")?.value || 1;
-  const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
-  const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
-
-  const attributes = enemyData.attributes;
-  return {
-    id: enemyData.id,
-    level: enemyData.level,
-    name: parseDefinedData(enemyData.name),
-    description: parseDefinedData(enemyData.description),
-    attributes: {
-      maxHp: parseDefinedData(attributes.maxHp) * hp_mul,
-      atk: parseDefinedData(attributes.atk) * atk_mul,
-      def: parseDefinedData(attributes.def) * def_mul,
-      magicResistance: parseDefinedData(attributes.magicResistance),
-      cost: parseDefinedData(attributes.cost),
-      blockCnt: parseDefinedData(attributes.blockCnt),
-      moveSpeed: parseDefinedData(attributes.moveSpeed),
-      attackSpeed: parseDefinedData(attributes.attackSpeed),
-      baseAttackTime: parseDefinedData(attributes.baseAttackTime),
-      respawnTime: parseDefinedData(attributes.respawnTime),
-      hpRecoveryPerSec: parseDefinedData(attributes.hpRecoveryPerSec),
-      spRecoveryPerSec: parseDefinedData(attributes.spRecoveryPerSec),
-      maxDeployCount: parseDefinedData(attributes.maxDeployCount),
-      massLevel: parseDefinedData(attributes.massLevel),
-      baseForceLevel: parseDefinedData(attributes.baseForceLevel),
-      tauntLevel: parseDefinedData(attributes.tauntLevel),
-      disarmedCombatImmune: parseDefinedData(attributes.disarmedCombatImmune),
-      fearedImmune: parseDefinedData(attributes.fearedImmune),
-      epDamageResistance: parseDefinedData(attributes.epDamageResistance),
-      epResistance: parseDefinedData(attributes.epResistance),
-      damageHitratePhysical: parseDefinedData(attributes.damageHitratePhysical),
-      damageHitrateMagical: parseDefinedData(attributes.damageHitrateMagical),
-      stunImmune: parseDefinedData(attributes.stunImmune),
-      silenceImmune: parseDefinedData(attributes.silenceImmune),
-      sleepImmune: parseDefinedData(attributes.sleepImmune),
-      frozenImmune: parseDefinedData(attributes.frozenImmune),
-      levitateImmune: parseDefinedData(attributes.levitateImmune),
-      damageResistance: 0,
-    },
-    levelType: parseDefinedData(enemyData.levelType),
-    rangedRadius: enemyData.rangedRadius ? parseDefinedData(enemyData.rangedRadius) : 0,
-  };
 }
 
 export function snakeToCamel(str: string) {

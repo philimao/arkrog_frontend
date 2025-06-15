@@ -224,7 +224,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
-                .filter((enemy) => !ignoreEnemyNames.includes(enemy.name.m_value))
+                .filter((enemy) => !ignoreEnemyNames.includes(enemy.name.m_value!))
                 .map((enemyData) => {
                   return (
                     <StyledEnemy

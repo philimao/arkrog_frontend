@@ -303,7 +303,7 @@ export default function OperatorAttributes(props: {
     // 肉鸽难度加成
     context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData: enemyData }, context);
     // 肉鸽主题加成（年代、灵感、密文板）
-    context = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, context);
+    context = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems, enemyData: enemyData }, context);
 
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
     setContext(context);

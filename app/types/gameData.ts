@@ -485,7 +485,7 @@ export interface EnemyBasicData {
 
 export interface DefinedData<T> {
   m_defined: boolean;
-  m_value: T;
+  m_value: T | null;
 }
 
 export interface EnemySkillData {
@@ -543,7 +543,7 @@ export interface EnemyData {
     m_defined: true;
     m_value: "BOSS" | "ELITE" | "NORMAL";
   };
-  rangedRadius: DefinedData<number>;
+  rangeRadius: DefinedData<number>;
   numOfExtraDrops: DefinedData<number>;
   viewRadius: DefinedData<number>;
   notCountInTotal: DefinedData<boolean>;
@@ -558,10 +558,21 @@ export interface EnemyInput {
   level: 0 | 1 | 2;
   name: string;
   description: string;
+  // prefabKey: string;
   attributes: EnemyAttribute;
+  applyWay: "MELEE" | "RANGED";
+  // motion: string;
+  enemyTags: string[];
+  // lifePointReduce: number;
   /** 敌人等级类型 */
   levelType: "BOSS" | "ELITE" | "NORMAL";
   rangedRadius: number | null;
+  // numOfExtraDrops: number;
+  // viewRadius: number;
+  // notCountInTotal: boolean;
+  // talentBlackboard: BlackboardData[] | null;
+  // skills: EnemySkillData[] | null;
+  // spData: null;
 }
 
 /** 敌人最终面板 */

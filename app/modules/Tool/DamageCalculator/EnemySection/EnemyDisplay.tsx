@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { allowedBlackboardKeyMap, camelToSnake, parseEnemyData } from "~/modules/Tool/DamageCalculator/utils";
+import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
@@ -11,6 +11,7 @@ import { BuffContext, CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
 import { Tooltip } from "@heroui/react";
+import { enemyTagMap, levelTypeMap, parseEnemyData } from "./enemyUtils";
 
 const StyledEnemyDisplayWrapper = styled.div`
   display: flex;
@@ -29,6 +30,14 @@ const StyledEnemyDisplayTop = styled.div`
   }
 `;
 
+const StyledEnemyLeftInfo = styled.div``;
+
+const StyledEnemyHeader = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+`;
+
 const StyledName = styled.div`
   font-size: 1.5rem;
   color: white;
@@ -36,23 +45,27 @@ const StyledName = styled.div`
   white-space: nowrap;
 `;
 
-const StyledEnmeyLevelBadge = styled.div<{ $levelType: string }>`
+const StyledEnemyTag = styled.div`
   font-size: 0.8rem;
-  background: ${({ $levelType }) => {
-    if ($levelType === "BOSS") return "var(--ak-purple)";
-    if ($levelType === "ELITE") return "var(--ak-red)";
-    return "var(--mid-gray)";
-  }};
   color: white;
   font-weight: bold;
   white-space: nowrap;
   border-radius: 0.25rem;
   padding: 0.1rem 0.5rem;
+  background: var(--mid-gray);
+`;
+
+const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{ $levelType: string }>`
+  background: ${({ $levelType }) => {
+    if ($levelType === "BOSS") return "var(--ak-purple)";
+    if ($levelType === "ELITE") return "var(--ak-red)";
+    return "var(--mid-gray)";
+  }};
 `;
 
 const StyledEnemyAvatar = styled(EnemyAvatar)`
-  width: 8.75rem;
-  height: 8.75rem;
+  width: 10rem;
+  height: 10rem;
   background: rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 0 0 0.5rem white;
 `;
@@ -139,12 +152,6 @@ const displayAttrKeys: Record<string, { min: number; max?: number; tooltip?: Rea
   },
 };
 
-const levelTypeMap = {
-  NORMAL: "普通",
-  ELITE: "精英",
-  BOSS: "领袖",
-};
-
 export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
   const { items, relics } = useGameDataStore();
   const {
@@ -222,7 +229,10 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       { rogueInput: rogueInput, enemyData: enemyData },
       enemyContext,
     );
-    enemyContext = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems }, enemyContext);
+    enemyContext = CalculatorHelper.analyzeTopicSpec(
+      { topicSpecItems: topicSpecItems, enemyData: enemyData },
+      enemyContext,
+    );
     enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
     CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
     setEnemyContext(enemyContext);
@@ -277,30 +287,33 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   return (
     <StyledEnemyDisplayWrapper>
       <StyledEnemyDisplayTop>
-        <div>
-          <div className="flex gap-4 items-center">
+        <StyledEnemyLeftInfo>
+          <StyledEnemyHeader>
             <StyledName>{_enemyDataParsed.name}</StyledName>
-            <StyledEnmeyLevelBadge
-              $levelType={_enemyDataParsed.levelType}
-              role={_enemyDataParsed.name === "木桩" ? "button" : "none"}
-              onClick={() => {
-                if (_enemyDataParsed.name === "木桩") {
-                  setEnemyData({
-                    ...enemyData,
-                    levelType: {
-                      m_defined: true,
-                      m_value: _enemyDataParsed.levelType === "NORMAL" ? "ELITE" : "NORMAL",
-                    },
-                  });
-                  setEnemyContext(CalculatorHelper.createAdditionContext());
-                }
-              }}
-            >
-              {levelTypeMap[_enemyDataParsed.levelType]}
-            </StyledEnmeyLevelBadge>
-          </div>
+            <div className="flex gap-2">
+              <StyledEnmeyLevelBadge
+                $levelType={_enemyDataParsed.levelType}
+                role={_enemyDataParsed.name === "木桩" ? "button" : "none"}
+                onClick={() => {
+                  if (_enemyDataParsed.name === "木桩") {
+                    setEnemyData({
+                      ...enemyData,
+                      levelType: {
+                        m_defined: true,
+                        m_value: _enemyDataParsed.levelType === "NORMAL" ? "ELITE" : "NORMAL",
+                      },
+                    });
+                    setEnemyContext(CalculatorHelper.createAdditionContext());
+                  }
+                }}
+              >
+                {levelTypeMap[_enemyDataParsed.levelType]}
+              </StyledEnmeyLevelBadge>
+              <StyledEnemyTag>{enemyTagMap[_enemyDataParsed.enemyTags[0]]}</StyledEnemyTag>
+            </div>
+          </StyledEnemyHeader>
           <StyledEnemyAvatar name={_enemyDataParsed.name} />
-        </div>
+        </StyledEnemyLeftInfo>
         <EnemySpecSelector setIllust={setIllust} enemyData={enemyData} />
       </StyledEnemyDisplayTop>
       <StyledControl>
@@ -410,20 +423,20 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
             />
           </div>
         </StyledInputWrapper>
+        <svg width="0" height="0">
+          <defs>
+            <symbol id="question_circle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 17V16.9929M12 14.8571C12 11.6429 15 12.3571 15 9.85714C15 8.27919 13.6568 7 12 7C10.6567 7 9.51961 7.84083 9.13733 9M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </symbol>
+          </defs>
+        </svg>
       </StyledGridContainer>
-      <svg width="0" height="0">
-        <defs>
-          <symbol id="question_circle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M12 17V16.9929M12 14.8571C12 11.6429 15 12.3571 15 9.85714C15 8.27919 13.6568 7 12 7C10.6567 7 9.51961 7.84083 9.13733 9M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </symbol>
-        </defs>
-      </svg>
     </StyledEnemyDisplayWrapper>
   );
 }

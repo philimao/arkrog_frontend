@@ -8,7 +8,7 @@ export interface ITopicSpecItem {
   name: string;
   desc: string;
   userActive: boolean;
-  buffs: { key: string; value: number }[];
+  buffs: { key: string; value: number; selector?: string }[];
   url: string;
   invert: number;
 }
@@ -177,9 +177,9 @@ const disasters = {
     functionDesc: ({ enemy_max_hp }: { enemy_max_hp: number }) =>
       `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${enemy_max_hp * 100}%`,
     values: [
-      [{ key: "enemy_max_hp", value: 1 }],
-      [{ key: "enemy_max_hp", value: 1.5 }],
-      [{ key: "enemy_max_hp", value: 2 }],
+      [{ key: "enemy_max_hp", value: 1, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
+      [{ key: "enemy_max_hp", value: 1.5, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
+      [{ key: "enemy_max_hp", value: 2, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
     ],
   },
   rogue_4_disaster_2: {
@@ -188,9 +188,9 @@ const disasters = {
     functionDesc: ({ enemy_atk }: { enemy_atk: number }) =>
       `【萨卡兹】敌人的攻击力提升${enemy_atk * 100}%，处于年代印痕中的干员无法主动撤退`,
     values: [
-      [{ key: "enemy_atk", value: 1.2 }],
-      [{ key: "enemy_atk", value: 1.35 }],
-      [{ key: "enemy_atk", value: 1.5 }],
+      [{ key: "enemy_atk", value: 1.2, selector: "enemy:tag:sarkaz" }],
+      [{ key: "enemy_atk", value: 1.35, selector: "enemy:tag:sarkaz" }],
+      [{ key: "enemy_atk", value: 1.5, selector: "enemy:tag:sarkaz" }],
     ],
   },
   // rogue_4_disaster_3: {
@@ -367,7 +367,7 @@ const fragments = {
     name: "爆破",
     desc: "使用后下次战斗<年代之刺>的最大生命值-50%",
     value: 2,
-    buffs: [{ key: "enemy_max_hp", value: 0.5 }],
+    buffs: [{ key: "enemy_max_hp", value: 0.5, selector: "enemy:id:trap_760_skztzs" }],
   },
   rogue_4_fragment_F_26: {
     id: "rogue_4_fragment_F_26",

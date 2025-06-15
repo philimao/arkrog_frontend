@@ -395,13 +395,23 @@ export class CalculatorHelper {
   }
 
   /** 分析肉鸽主题特殊效果，例如萨卡兹的年代、萨米的密文板 */
-  static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[] }, context: BuffContext) {
-    const { topicSpecItems } = input;
+  static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[]; enemyData?: EnemyData }, context: BuffContext) {
+    const { topicSpecItems, enemyData } = input;
     topicSpecItems
       .filter((item) => item && item.userActive)
       .forEach((item) => {
         item.buffs.forEach((buff) => {
-          const { key, value } = buff;
+          const { key, value, selector } = buff;
+          if (selector) {
+            const [type, key, value] = selector.split(":");
+            if (type === "enemy") {
+              if (!enemyData) return;
+              // 对特定敌人类型生效，如爆破对刺
+              if (key === "id" && !value.split("|").includes(enemyData.id)) return;
+              // 对特定敌人标签生效，如魔王年代对萨卡兹
+              if (key === "tag" && !enemyData.enemyTags.m_value.includes(value)) return;
+            }
+          }
           switch (key) {
             case "atk":
               context.relic_rune_mul.atk.addChild(new NumericLiteralNode(value, item.name));

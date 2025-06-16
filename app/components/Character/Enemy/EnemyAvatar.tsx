@@ -6,7 +6,7 @@ interface EnemyAvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
   className?: string;
 }
 
-const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”"].reduce(
+const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”", "尊主的残影"].reduce(
   (acc, name) => {
     acc[name] = cosHost + `/images/rogue_4/${encodeURI(name)}.png`;
     return acc;

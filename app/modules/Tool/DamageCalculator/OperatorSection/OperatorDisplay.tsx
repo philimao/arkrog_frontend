@@ -1,6 +1,14 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useEffect, useMemo, useState } from "react";
-import type { CharBasicData, CharData, CharInput, RelicDataExt, CalculatorInput, RelicWrapper } from "~/types/gameData";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import type {
+  CharBasicData,
+  CharData,
+  CharInput,
+  RelicDataExt,
+  CalculatorInput,
+  RelicWrapper,
+  SkillLevelData,
+} from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
@@ -11,6 +19,8 @@ import { CalculatorHelper } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
 import { DamageCalculatorSettings } from "../black-list";
 import { printRelicsInfo } from "../calculator/debug/print-relics-info";
+import { parseSkillDescription } from "../utils";
+import CustomIcon from "~/components/Character/CustomIcon";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -31,6 +41,42 @@ const StyledSelectWrapper = styled.div`
   gap: 0.5rem;
   & > * {
     width: 10rem;
+  }
+`;
+
+const StyledSkillDisplay = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  .skill-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+  .skill-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .skill-type {
+    display: flex;
+    gap: 0.25rem;
+    & > div {
+      font-size: 0.8rem;
+      background-color: var(--dark-gray);
+      padding: 0.1rem 0.5rem;
+      border-radius: 0.25rem;
+      line-height: 1.5;
+    }
+  }
+  .skill-sp {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .skill-description {
+    font-size: 0.8rem;
+  }
+  .skill-description > strong {
+    margin: 0 0.15rem;
   }
 `;
 
@@ -82,10 +128,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const [frameIndex, setFrameIndex] = useState<string>("0");
 
   // 属性数据
-  const attribute = useMemo(
-    () => phase?.attributesKeyFrames[parseInt(frameIndex)],
-    [frameIndex, phase?.attributesKeyFrames],
-  );
+  // const attribute = useMemo(
+  //   () => phase?.attributesKeyFrames[parseInt(frameIndex)],
+  //   [frameIndex, phase?.attributesKeyFrames],
+  // );
 
   // 技能选择
   const skills = useMemo(() => basicData && Object.values(basicData?.skills), [basicData]);
@@ -111,7 +157,15 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setSkillLevel(levels.slice(-1)[0]!.key.toString());
     return levels;
   }, [phaseLevel, skillObject?.levels.length]);
-  const skill = useMemo(() => skillObject?.levels[parseInt(skillLevel)], [skillLevel, skillObject?.levels]);
+  const skill: (SkillLevelData & { descriptionNode: ReactNode }) | null = useMemo(() => {
+    const skill = skillObject?.levels[parseInt(skillLevel)];
+    return skill
+      ? {
+          ...skill,
+          descriptionNode: parseSkillDescription(skill),
+        }
+      : null;
+  }, [skillLevel, skillObject?.levels]);
 
   // 模组选择
   const [uniEquipId, setUniEquipId] = useState<string>("");
@@ -141,7 +195,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       level: parseInt(frameIndex),
       skillKey,
       skillLevel: parseInt(skillLevel),
-      skill,
+      skill: skill!,
       uniEquipId,
       uniEquipLevel: parseInt(uniEquipLevel),
       uniEquip,
@@ -297,6 +351,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     uniequip_table,
   ]);
 
+  useEffect(() => {
+    console.log(skill);
+  }, [skill]);
+
   return (
     <div className="mb-4">
       <StyledOperatorDisplayWrapper>
@@ -386,7 +444,38 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
             </>
           )}
         </StyledSelectWrapper>
-        <div className="hidden">
+        {skill && (
+          <StyledSkillDisplay>
+            <div className="flex gap-4 items-center">
+              <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
+              <div>
+                <div className="flex gap-2 items-center">
+                  <div className="skill-name">{skill.name}</div>
+                  <div className="skill-type">
+                    <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
+                    <div>{skill.skillType === "MANUAL" ? "手动触发" : "自动触发"}</div>
+                  </div>
+                </div>
+                <div className="skill-sp">
+                  <div className="flex gap-1">
+                    <span>初始</span>
+                    <strong>{skill.spData.initSp}</strong>
+                  </div>
+                  <div className="flex gap-1">
+                    <span>消耗</span>
+                    <strong>{skill.spData.spCost}</strong>
+                  </div>
+                  <div className="flex gap-1">
+                    <span>持续</span>
+                    <strong>{skill.duration}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="skill-description">{skill.descriptionNode}</div>
+          </StyledSkillDisplay>
+        )}
+        {/* <div className="hidden">
           {attribute && (
             <div className="whitespace-pre-wrap">
               <div>面板</div>
@@ -405,7 +494,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               {JSON.stringify(uniEquip, null, 2)}
             </div>
           )}
-        </div>
+        </div> */}
       </StyledOperatorDisplayWrapper>
       <div className="flex gap-4">
         {charInput.attributeModifier && (

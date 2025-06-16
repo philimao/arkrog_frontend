@@ -1,3 +1,4 @@
+import React, { type ReactNode } from "react";
 import type {
   AttributeModifier,
   BlackboardData,
@@ -10,6 +11,7 @@ import type {
   RelicWrapper,
   RelicWrapperBuff,
   RogueKey,
+  SkillLevelData,
 } from "~/types/gameData";
 
 /**
@@ -500,4 +502,152 @@ export function camelToSnake(str: string) {
 
 export function relicAlterToBasic(str: string) {
   return str.split("_").slice(0, 5).join("_");
+}
+
+const redKeys = ["atk", "attack@damage"];
+const blueKeys = ["hp", "attack@value"];
+export function parseSkillDescription(skill: SkillLevelData): ReactNode {
+  if (!skill) return null;
+  let description = skill.description;
+
+  // 记录每个替换的bb.key信息，用于后续设置颜色
+  const valueKeyMap = new Map<string, string>();
+
+  console.log(skill.description);
+  console.log(skill.blackboard);
+
+  // 第一步：替换黑板参数，同时记录键值对应关系
+  for (const bb of skill.blackboard) {
+    const re = new RegExp(`<@[^>/]+>([^{<]*){(-)?${bb.key}(:0%)?}([^<]*)</>`);
+    description = description.replace(
+      re,
+      (match: string, preGroup: string, minusGroup: string, percentGroup: string, postGroup: string) => {
+        // console.log(
+        //   "Key",
+        //   bb.key,
+        //   "Match:",
+        //   match,
+        //   "Pre:",
+        //   preGroup,
+        //   "Minus:",
+        //   minusGroup,
+        //   "Percent:",
+        //   percentGroup,
+        //   "Post:",
+        //   postGroup,
+        // );
+        // 符号
+        const sign = minusGroup ? -1 : 1;
+        // 确定值
+        const value =
+          (preGroup || "") +
+          (percentGroup ? Math.round(sign * bb.value * 100) + "%" : (sign * bb.value).toString()) +
+          (postGroup || "");
+
+        // 生成唯一标识符
+        const uniqueId = `__VALUE_${Math.random().toString(36).substr(2, 9)}__`;
+        valueKeyMap.set(uniqueId, bb.key);
+
+        // 返回带有唯一标识符的标签
+        return `<span data-key="${uniqueId}">${value}</span>`;
+      },
+    );
+  }
+
+  // 第二步：解析所有HTML标签为React节点
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+
+  const tagRegex = /<([^>]+)>([^<]+)<\/[^>]*>/g;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = tagRegex.exec(description)) !== null) {
+    // 添加标签前的文本（处理换行符）
+    if (match.index > lastIndex) {
+      const text = description.slice(lastIndex, match.index);
+      if (text) {
+        parseTextWithLineBreaks(text, parts, keyIndex);
+      }
+    }
+
+    const tagContent = match[1];
+    const innerText = match[2];
+
+    // 检查是否是我们的特殊span标签
+    const dataKeyMatch = tagContent.match(/data-key="([^"]+)"/);
+    if (dataKeyMatch) {
+      const uniqueId = dataKeyMatch[1];
+      const bbKey = valueKeyMap.get(uniqueId);
+
+      // 根据bb.key确定颜色类
+      let colorClass = "";
+      if (redKeys.some((key) => bbKey?.includes(key))) {
+        colorClass = "text-ak-red";
+      } else if (blueKeys.some((key) => bbKey?.includes(key))) {
+        colorClass = "text-ak-blue";
+      }
+
+      parts.push(
+        React.createElement(
+          "strong",
+          {
+            key: `bb-${keyIndex++}`,
+            className: colorClass,
+          },
+          innerText,
+        ),
+      );
+    } else {
+      // 普通的HTML标签，统一处理为strong（也需要处理换行符）
+      const processedInnerText = parseTextWithLineBreaks(innerText, [], keyIndex);
+      parts.push(
+        React.createElement(
+          "strong",
+          {
+            key: `tag-${keyIndex++}`,
+          },
+          ...processedInnerText,
+        ),
+      );
+    }
+
+    lastIndex = tagRegex.lastIndex;
+  }
+
+  // 添加剩余的文本（处理换行符）
+  if (lastIndex < description.length) {
+    const text = description.slice(lastIndex);
+    if (text) {
+      parseTextWithLineBreaks(text, parts, keyIndex);
+    }
+  }
+
+  return React.createElement(React.Fragment, {}, ...parts);
+}
+
+// 辅助函数：解析包含换行符的文本
+function parseTextWithLineBreaks(text: string, parts: ReactNode[], keyIndex: number): ReactNode[] {
+  const segments = text.split("\\n");
+  const result: ReactNode[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    if (segments[i]) {
+      result.push(segments[i]);
+    }
+
+    // 在非最后一个段落后添加换行
+    if (i < segments.length - 1) {
+      result.push(React.createElement("br", { key: `br-${keyIndex}-${i}` }));
+    }
+  }
+
+  // 如果parts数组传入，直接添加到parts中
+  if (parts) {
+    parts.push(...result);
+    return parts;
+  }
+
+  // 否则返回结果数组
+  return result;
 }

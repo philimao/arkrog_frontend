@@ -286,7 +286,7 @@ export class CalculatorHelper {
         // 藏品可能对双方生效，但单个Buff只对一方生效
         if (isBuffForEnemy(buff)) {
           // 对敌人生效
-          if (!commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic })) {
+          if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic })) {
             result.invalidRelics.push(relic);
             return;
           }

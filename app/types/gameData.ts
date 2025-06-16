@@ -128,7 +128,7 @@ export interface UniEquipPhaseData {
   equipLevel: number;
   parts: {
     resKey: string;
-    target: string;
+    target: "DISPLAY" | "TALENT_DATA_ONLY" | "TALENT" | "TRAIT" | "TRAIT_DATA_ONLY";
     isToken: boolean;
     addOrOverrideTalentDataBundle: {
       candidates: CharTalentData[] | null;
@@ -267,18 +267,20 @@ export interface CharTalent {
 }
 
 export interface CharTalentData {
-  unlockCondition: { phase: `Phase_${number}`; level: 1 | 2 };
+  unlockCondition: { phase: `PHASE_${number}`; level: number };
   requiredPotentialRank: number;
-  name: string;
-  description: string;
+  name: string | null;
+  description: string | null;
+  overrideDescription: string | null;
+  upgradeDescription: string | null;
   blackboard: BlackboardData[];
 }
 
 // 特性
 export interface CharTraitData {
-  additionalDescription: string;
+  additionalDescription: string | null;
   unlockCondition: {
-    phase: string;
+    phase: `PHASE_${number}`;
     level: number;
   };
   requiredPotentialRank: number;

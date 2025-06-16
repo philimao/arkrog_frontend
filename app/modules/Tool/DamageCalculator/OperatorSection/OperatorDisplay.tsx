@@ -1,5 +1,5 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   CharBasicData,
   CharData,
@@ -8,6 +8,7 @@ import type {
   CalculatorInput,
   RelicWrapper,
   SkillLevelData,
+  UniEquipPhaseData,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
@@ -19,7 +20,7 @@ import { CalculatorHelper } from "../calculator/helper";
 import OperatorAttributes from "./OperatorAttributes";
 import { DamageCalculatorSettings } from "../black-list";
 import { printRelicsInfo } from "../calculator/debug/print-relics-info";
-import { parseSkillDescription } from "../utils";
+import { allowedBlackboardKeyMap, parseBlackboardDescription } from "../utils";
 import CustomIcon from "~/components/Character/CustomIcon";
 
 const StyledOperatorDisplayWrapper = styled.div`
@@ -37,46 +38,11 @@ const StyledOperatorAvatar = styled(OperatorAvatar)`
 
 const StyledSelectWrapper = styled.div`
   display: grid;
+  align-content: start;
   grid-template-columns: auto auto auto;
   gap: 0.5rem;
   & > * {
     width: 10rem;
-  }
-`;
-
-const StyledSkillDisplay = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  .skill-icon {
-    width: 3rem;
-    height: 3rem;
-  }
-  .skill-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
-  .skill-type {
-    display: flex;
-    gap: 0.25rem;
-    & > div {
-      font-size: 0.8rem;
-      background-color: var(--dark-gray);
-      padding: 0.1rem 0.5rem;
-      border-radius: 0.25rem;
-      line-height: 1.5;
-    }
-  }
-  .skill-sp {
-    display: flex;
-    gap: 0.5rem;
-  }
-  .skill-description {
-    font-size: 0.8rem;
-  }
-  .skill-description > strong {
-    margin: 0 0.15rem;
   }
 `;
 
@@ -157,14 +123,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setSkillLevel(levels.slice(-1)[0]!.key.toString());
     return levels;
   }, [phaseLevel, skillObject?.levels.length]);
-  const skill: (SkillLevelData & { descriptionNode: ReactNode }) | null = useMemo(() => {
-    const skill = skillObject?.levels[parseInt(skillLevel)];
-    return skill
-      ? {
-          ...skill,
-          descriptionNode: parseSkillDescription(skill),
-        }
-      : null;
+  const skill: SkillLevelData | null = useMemo(() => {
+    return skillObject?.levels[parseInt(skillLevel)];
   }, [skillLevel, skillObject?.levels]);
 
   // 模组选择
@@ -179,6 +139,9 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       setUniEquipId("");
     }
   }, [basicData, frameIndex, phaseLevel]);
+  const uniEquipName = useMemo(() => {
+    return basicData?.uniequip[uniEquipId]?.uniEquipName;
+  }, [basicData, uniEquipId]);
   const uniEquip = useMemo(
     () => uniequip_table![uniEquipId]?.phases[parseInt(uniEquipLevel)],
     [uniEquipId, uniEquipLevel, uniequip_table],
@@ -351,10 +314,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     uniequip_table,
   ]);
 
-  useEffect(() => {
-    console.log(skill);
-  }, [skill]);
-
   return (
     <div className="mb-4">
       <StyledOperatorDisplayWrapper>
@@ -444,37 +403,10 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
             </>
           )}
         </StyledSelectWrapper>
-        {skill && (
-          <StyledSkillDisplay>
-            <div className="flex gap-4 items-center">
-              <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
-              <div>
-                <div className="flex gap-2 items-center">
-                  <div className="skill-name">{skill.name}</div>
-                  <div className="skill-type">
-                    <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
-                    <div>{skill.skillType === "MANUAL" ? "手动触发" : "自动触发"}</div>
-                  </div>
-                </div>
-                <div className="skill-sp">
-                  <div className="flex gap-1">
-                    <span>初始</span>
-                    <strong>{skill.spData.initSp}</strong>
-                  </div>
-                  <div className="flex gap-1">
-                    <span>消耗</span>
-                    <strong>{skill.spData.spCost}</strong>
-                  </div>
-                  <div className="flex gap-1">
-                    <span>持续</span>
-                    <strong>{skill.duration}</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="skill-description">{skill.descriptionNode}</div>
-          </StyledSkillDisplay>
-        )}
+        <div className="flex flex-col gap-4 grow">
+          {skill && <SkillDisplay skill={skill} />}
+          {uniEquip && uniEquipName && <UniEquipDisplay uniEquipName={uniEquipName} uniEquip={uniEquip} />}
+        </div>
         {/* <div className="hidden">
           {attribute && (
             <div className="whitespace-pre-wrap">
@@ -502,6 +434,191 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         )}
         <OperatorModifier />
       </div>
+      <svg width="0" height="0">
+        <defs>
+          <symbol id="chevron-up" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path d="M106.666667 659.2L172.8 725.333333 512 386.133333 851.2 725.333333l66.133333-66.133333L512 256z"></path>
+          </symbol>
+        </defs>
+      </svg>
     </div>
+  );
+}
+
+const StyledSkillDisplay = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  .skill-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+  .skill-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .skill-type {
+    display: flex;
+    gap: 0.25rem;
+    & > div {
+      font-size: 0.8rem;
+      background-color: var(--dark-gray);
+      padding: 0.1rem 0.5rem;
+      border-radius: 0.25rem;
+      line-height: 1.5;
+    }
+  }
+  .skill-sp {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .skill-description {
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+  }
+  .skill-description > strong {
+    margin: 0 0.15rem;
+  }
+`;
+
+const StyledChevron = styled.svg<{ $rotate: boolean }>`
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: rotate(${({ $rotate }) => ($rotate ? "180deg" : "0deg")});
+  transition: transform 0.3s ease-in-out;
+`;
+
+function SkillDisplay({ skill }: { skill: SkillLevelData }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <StyledSkillDisplay>
+      <div className="flex gap-4 items-center">
+        <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
+        <div>
+          <div className="flex gap-2 items-center">
+            <div className="skill-name">{skill.name}</div>
+            <div className="skill-type">
+              <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
+              <div>{skill.skillType === "MANUAL" ? "手动触发" : "自动触发"}</div>
+            </div>
+          </div>
+          <div className="skill-sp">
+            <div className="flex gap-1">
+              <span>初始</span>
+              <strong>{skill.spData.initSp}</strong>
+            </div>
+            <div className="flex gap-1">
+              <span>消耗</span>
+              <strong>{skill.spData.spCost}</strong>
+            </div>
+            <div className="flex gap-1">
+              <span>持续</span>
+              <strong>{skill.duration}</strong>
+            </div>
+          </div>
+        </div>
+        <StyledChevron $rotate={isOpen} onClick={() => setIsOpen(!isOpen)}>
+          <use href="#chevron-up" />
+        </StyledChevron>
+      </div>
+      {isOpen && (
+        <div className="skill-description">{parseBlackboardDescription(skill.description!, skill.blackboard)}</div>
+      )}
+    </StyledSkillDisplay>
+  );
+}
+
+const StyledUniEquipDisplay = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+
+  .uni-equip-icon {
+    width: 3rem;
+    height: 3rem;
+    filter: invert(1);
+  }
+  .uni-equip-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .uni-equip-attributes {
+    display: flex;
+    gap: 0.5rem;
+    & > div {
+      display: flex;
+      gap: 0.25rem;
+    }
+  }
+  .uni-equip-description {
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    & strong {
+      margin: 0 0.15rem;
+    }
+  }
+`;
+
+function UniEquipDisplay({ uniEquipName, uniEquip }: { uniEquipName: string; uniEquip: UniEquipPhaseData }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <StyledUniEquipDisplay>
+      <div className="flex gap-4">
+        <CustomIcon name={"模组等级_" + uniEquip.equipLevel} size={65} className="uni-equip-icon" />
+        <div>
+          <div className="uni-equip-name">{uniEquipName}</div>
+          <div className="uni-equip-attributes">
+            {uniEquip.attributeBlackboard.map((bb) => (
+              <div key={bb.key}>
+                <span>{allowedBlackboardKeyMap[bb.key]}</span>
+                <strong>{"+" + bb.value}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+        <StyledChevron $rotate={isOpen} onClick={() => setIsOpen(!isOpen)}>
+          <use href="#chevron-up" />
+        </StyledChevron>
+      </div>
+      {isOpen && (
+        <div className="uni-equip-description">
+          {uniEquip.parts.map((part) => {
+            if (part.overrideTraitDataBundle.candidates) {
+              return part.overrideTraitDataBundle.candidates
+                .filter((trait) => trait.additionalDescription)
+                .map((trait) => {
+                  return (
+                    <div key={trait.additionalDescription}>
+                      {parseBlackboardDescription(trait.additionalDescription!, trait.blackboard)}
+                    </div>
+                  );
+                });
+            } else if (part.addOrOverrideTalentDataBundle.candidates) {
+              return part.addOrOverrideTalentDataBundle.candidates
+                .filter((talent) => talent.description || talent.overrideDescription || talent.upgradeDescription)
+                .map((talent) => {
+                  return (
+                    <div key={talent.description}>
+                      {parseBlackboardDescription(
+                        talent.description || talent.overrideDescription || talent.upgradeDescription!,
+                        talent.blackboard,
+                      )}
+                    </div>
+                  );
+                });
+            } else {
+              return null;
+            }
+          })}
+        </div>
+      )}
+    </StyledUniEquipDisplay>
   );
 }

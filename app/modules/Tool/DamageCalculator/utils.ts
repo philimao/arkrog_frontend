@@ -11,7 +11,6 @@ import type {
   RelicWrapper,
   RelicWrapperBuff,
   RogueKey,
-  SkillLevelData,
 } from "~/types/gameData";
 
 /**
@@ -506,18 +505,14 @@ export function relicAlterToBasic(str: string) {
 
 const redKeys = ["atk", "attack@damage"];
 const blueKeys = ["hp", "attack@value"];
-export function parseSkillDescription(skill: SkillLevelData): ReactNode {
-  if (!skill) return null;
-  let description = skill.description;
+export function parseBlackboardDescription(desc: string, blackboard: BlackboardData[]): ReactNode {
+  let description = desc;
 
   // 记录每个替换的bb.key信息，用于后续设置颜色
   const valueKeyMap = new Map<string, string>();
 
-  console.log(skill.description);
-  console.log(skill.blackboard);
-
   // 第一步：替换黑板参数，同时记录键值对应关系
-  for (const bb of skill.blackboard) {
+  for (const bb of blackboard) {
     const re = new RegExp(`<@[^>/]+>([^{<]*){(-)?${bb.key}(:0%)?}([^<]*)</>`);
     description = description.replace(
       re,

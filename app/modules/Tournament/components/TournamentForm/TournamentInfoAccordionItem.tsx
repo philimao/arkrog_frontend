@@ -38,7 +38,7 @@ export default function TournamentInfoAccordionItem({
             value={formData.name}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full p-2 focus:outline-ak-blue"
             required
           />
         </div>
@@ -51,7 +51,7 @@ export default function TournamentInfoAccordionItem({
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
+            className="w-full p-2 focus:outline-ak-blue cursor-pointer"
             required
           >
             <option value="individual">个人赛</option>
@@ -67,28 +67,32 @@ export default function TournamentInfoAccordionItem({
             value={formData.avatar}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full p-2 focus:outline-ak-blue"
           />
         </div>
 
-        {topics && <div>
-          <label className="block text-sm font-light mb-1">
-            肉鸽 <span className="text-ak-red">*</span>
-          </label>
-          <select
-            name="rogue"
-            value={formData.rogue ? topics[formData.rogue as RogueKey].name : Object.values(topics).reverse()[0].name}
-            onChange={handleChange}
-            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
-            required
-          >
-            {Object.values(topics).reverse().map((topic) => (
-              <option key={topic.id} value={topic.name}>
-                {topic.name}
-              </option>
-            ))}
-          </select>
-        </div>}
+        {topics && (
+          <div>
+            <label className="block text-sm font-light mb-1">
+              肉鸽 <span className="text-ak-red">*</span>
+            </label>
+            <select
+              name="rogue"
+              value={formData.rogue ? topics[formData.rogue as RogueKey].name : Object.values(topics).reverse()[0].name}
+              onChange={handleChange}
+              className="w-full p-2 focus:outline-ak-blue cursor-pointer"
+              required
+            >
+              {Object.values(topics)
+                .reverse()
+                .map((topic) => (
+                  <option key={topic.id} value={topic.name}>
+                    {topic.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-light mb-1">
@@ -98,7 +102,7 @@ export default function TournamentInfoAccordionItem({
             name="edition"
             value={formData.edition}
             onChange={handleChange}
-            className="w-full px-3 py-2 focus:outline-ak-blue cursor-pointer"
+            className="w-full p-2 focus:outline-ak-blue cursor-pointer"
             required
           >
             <option value="初始版本">初始版本</option>
@@ -115,9 +119,10 @@ export default function TournamentInfoAccordionItem({
             type="text"
             name="level"
             value={formData.level}
+            placeholder="例：N18"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full p-2 focus:outline-ak-blue"
             required
           />
         </div>
@@ -132,7 +137,7 @@ export default function TournamentInfoAccordionItem({
             value={formData.organizerName}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full p-2 focus:outline-ak-blue"
             required
           />
         </div>
@@ -147,7 +152,7 @@ export default function TournamentInfoAccordionItem({
             value={formData.room}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 focus:outline-ak-blue"
+            className="w-full p-2 focus:outline-ak-blue"
             required
           />
         </div>
@@ -161,7 +166,7 @@ export default function TournamentInfoAccordionItem({
               value={formData.memberAlias}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className="w-full px-3 py-2 focus:outline-ak-blue"
+              className="w-full p-2 focus:outline-ak-blue"
             />
           </div>
         )}
@@ -175,7 +180,7 @@ export default function TournamentInfoAccordionItem({
               value={formData.keyMemberAlias}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className="w-full px-3 py-2 focus:outline-ak-blue"
+              className="w-full p-2 focus:outline-ak-blue"
             />
           </div>
         )}
@@ -296,7 +301,7 @@ export default function TournamentInfoAccordionItem({
           name="rule"
           value={formData.rule}
           onChange={handleChange}
-          className="w-full px-3 py-2 focus:outline-ak-blue"
+          className="w-full p-2 focus:outline-ak-blue"
           rows={4}
         />
       </div>
@@ -307,7 +312,7 @@ export default function TournamentInfoAccordionItem({
           name="detailRule"
           value={formData.detailRule}
           onChange={handleChange}
-          className="w-full px-3 py-2 focus:outline-ak-blue"
+          className="w-full p-2 focus:outline-ak-blue"
           rows={4}
         />
       </div>

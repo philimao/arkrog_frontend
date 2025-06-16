@@ -89,7 +89,7 @@ export default function TournamentDetail() {
 
   const renderHeader = () => {
     return (
-      <div className="flex gap-4 my-4">
+      <div className="flex gap-4 mb-16">
         <div className="w-full max-w-40">
           <img
             src={tournamentData.avatar}
@@ -146,13 +146,11 @@ export default function TournamentDetail() {
   return (
     <div className="relative">
       <StyledBackButtonContainer>
-        <div className="relative">
-          <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-          <StyledEditButton onClick={() => navigate("edit")}>编辑</StyledEditButton>
-        </div>
+        <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
+        <StyledEditButton onClick={() => navigate("edit")}>编辑</StyledEditButton>
       </StyledBackButtonContainer>
       {renderHeader()}
-      <div className="my-16">
+      <div className="mb-16">
         <SectionContainer
           title="比赛规则"
           content={tournamentData.rule}

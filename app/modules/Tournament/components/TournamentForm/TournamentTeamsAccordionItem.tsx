@@ -39,12 +39,14 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">队伍ID</label>
+                  <label className="block text-sm font-light mb-1">
+                    队伍ID <span className="text-ak-red">*</span>
+                  </label>
                   <input
                     type="text"
                     value={team.id}
@@ -57,7 +59,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
+                    required
                   />
                 </div>
                 <div>
@@ -74,7 +77,7 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                   />
                 </div>
                 <div>
@@ -91,7 +94,7 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                   />
                 </div>
                 <div>
@@ -108,7 +111,7 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                   />
                 </div>
                 <div>
@@ -124,7 +127,8 @@ export default function TournamentTeamsAccordionItem({
                         teams: newTeams,
                       }));
                     }}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    onKeyDown={handleKeyDown}
+                    className="w-full p-2 focus:outline-ak-blue"
                   />
                 </div>
               </div>

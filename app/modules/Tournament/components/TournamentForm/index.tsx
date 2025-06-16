@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
+import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
 import { _post } from "~/utils/tools";
 import { Accordion, AccordionItem } from "@heroui/react";
@@ -23,7 +23,7 @@ export default function TournamentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<TournamentData>(
     tournamentData
-      ? { ...tournamentData }
+      ? structuredClone(tournamentData)
       : {
           id: "",
           name: "",
@@ -49,6 +49,7 @@ export default function TournamentForm({
   const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
+  const [editingStage, setEditingStage] = useState<TournamentStage | undefined>(formData.stages?.[0]);
   const formDataRef = useRef<TournamentData>(formData);
   const saveToStorageRef = useRef<boolean>(true);
   const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
@@ -78,7 +79,7 @@ export default function TournamentForm({
     if (storedData) {
       setFormData(JSON.parse(storedData));
     } else if (tournamentData) {
-      setFormData(tournamentData);
+      setFormData(structuredClone(tournamentData));
     }
 
     // 每次组件重新挂载时重置编辑开始时间
@@ -157,7 +158,11 @@ export default function TournamentForm({
   const returnToPrevPage = () => {
     saveToStorageRef.current = false;
     localStorage.removeItem(`tournamentForm-${tournamentData?.id}`);
-    navigate(-1);
+    if (tournamentData) {
+      navigate(`/tournament/${tournamentData.id}`);
+    } else {
+      navigate(-1);
+    }
   };
 
   const handleFormKeyDown = (e: React.KeyboardEvent) => {
@@ -228,7 +233,13 @@ export default function TournamentForm({
         </AccordionItem>
 
         <AccordionItem key="比赛进程" aria-label="比赛进程" title="比赛进程">
-          <TournamentProgressAccordionItem />
+          <TournamentProgressAccordionItem
+            formData={formData}
+            setFormData={setFormData}
+            handleKeyDown={handleKeyDown}
+            editingStage={editingStage}
+            setEditingStage={setEditingStage}
+          />
         </AccordionItem>
       </Accordion>
 

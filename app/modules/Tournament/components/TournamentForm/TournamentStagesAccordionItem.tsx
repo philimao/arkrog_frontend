@@ -35,7 +35,7 @@ export default function TournamentStagesAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                     required
                   />
                 </div>
@@ -55,7 +55,7 @@ export default function TournamentStagesAccordionItem({
                         stages: newStages,
                       }));
                     }}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                     required
                   />
                 </div>
@@ -75,7 +75,7 @@ export default function TournamentStagesAccordionItem({
                         stages: newStages,
                       }));
                     }}
-                    className="w-full px-3 py-2 focus:outline-ak-blue"
+                    className="w-full p-2 focus:outline-ak-blue"
                     required
                   />
                 </div>
@@ -101,7 +101,7 @@ export default function TournamentStagesAccordionItem({
         onClick={() => {
           const now = Date.now();
           const newStage = {
-            name: "新阶段",
+            name: `阶段${formData.stages.length + 1}`,
             startTime: now,
             endTime: now + 86400000, // +1 day
             type: "rank" as const,

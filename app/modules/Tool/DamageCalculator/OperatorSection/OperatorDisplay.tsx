@@ -383,7 +383,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 label="选择技能"
                 array={skills}
                 getKey={(skillItem) => skillItem.skillId}
-                getValue={(skillItem) => skillItem.name}
+                getValue={(skillItem) => skillItem.skillOrder + "-" + skillItem.name}
                 selectedKeys={[skillKey]}
                 onChange={(evt) => setSkillKey(evt.target.value)}
                 disabledKeys={DamageCalculatorSettings.operator[activeCharName]?.disabled_skills}
@@ -408,7 +408,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 selectedKeys={[uniEquipId]}
                 array={equips}
                 getKey={(equip) => equip.uniEquipId}
-                getValue={(equip) => equip.uniEquipName}
+                getValue={(equip) => (equip.typeName2 ? equip.typeName2 + "-" : "") + equip.uniEquipName}
                 onChange={(evt) => setUniEquipId(evt.target.value)}
                 isDisabled={!uniEquipId}
               />

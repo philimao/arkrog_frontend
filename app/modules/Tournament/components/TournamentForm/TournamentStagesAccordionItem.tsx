@@ -1,5 +1,5 @@
 import { CloseIcon } from "~/components/Icons";
-import type { TournamentData } from "~/types/tournamentsData";
+import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
@@ -78,6 +78,28 @@ export default function TournamentStagesAccordionItem({
                     className="w-full p-2 focus:outline-ak-blue"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-light mb-1">
+                    赛制 <span className="text-ak-red">*</span>
+                  </label>
+                  <select
+                    name="type"
+                    value={stage.type}
+                    onChange={(e) => {
+                      const newStages = [...formData.stages];
+                      newStages[index].type = e.target.value as TournamentStage["type"];
+                      setFormData((prev) => ({
+                        ...prev,
+                        stages: newStages,
+                      }));
+                    }}
+                    className="w-full p-2 focus:outline-ak-blue"
+                    required
+                  >
+                    <option value="rank">排名赛</option>
+                    <option value="1on1">淘汰赛</option>
+                  </select>
                 </div>
               </div>
               <div>

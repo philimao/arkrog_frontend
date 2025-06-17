@@ -343,7 +343,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               <div className="flex justify-between">
                 <span>{allowedBlackboardKeyMap[camelToSnake(key)]}</span>
                 {displayAttrKeys[key].tooltip && (
-                  <Tooltip content={displayAttrKeys[key].tooltip}>
+                  <Tooltip content={displayAttrKeys[key].tooltip} closeDelay={100}>
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                       <use href="#question_circle" />
                     </svg>
@@ -408,6 +408,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                   <li>算法为取最大值</li>
                 </ul>
               }
+              closeDelay={100}
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                 <use href="#question_circle" />

@@ -49,6 +49,22 @@ const StyledSelectWrapper = styled.div`
   }
 `;
 
+const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION" }>`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  padding: 0 1rem;
+  font-weight: 600;
+  background: ${({ $thoughtLoad }) =>
+    `url("https://arkrog-1326514380.cos.ap-beijing.myqcloud.com/images%2Frogue_4%2Fthought_load_${$thoughtLoad}.png")`};
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+`;
+
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
   const {
@@ -421,8 +437,9 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                       </ul>
                     </div>
                   }
+                  closeDelay={100}
                 >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" color="#9A9A9A">
                     <use href="#question_circle" />
                   </svg>
                 </Tooltip>
@@ -431,21 +448,29 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 onPress={() =>
                   setRogueThoughtLoad(rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "CONFUSION" : "NORMAL")
                 }
-                className={
-                  "shadow-outer-sm " +
-                  (rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "text-green-400/25" : "text-yellow-400/25")
-                }
+                className="px-0"
               >
-                <span className="w-full text-left text-white">
-                  {rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "清晰" : "混乱"}
-                </span>
+                <StyledThoughtLoadInner $thoughtLoad={rogueInput.rogue_4.thoughtLoad}>
+                  <span
+                    className={rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "text-md" : "text-[0.6rem] opacity-50"}
+                  >
+                    清晰
+                  </span>
+                  <span
+                    className={rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "text-[0.6rem] opacity-50" : "text-md"}
+                  >
+                    混乱
+                  </span>
+                </StyledThoughtLoadInner>
               </ToolButton>
             </div>
           )}
         </StyledSelectWrapper>
         <div className="flex flex-col gap-4 grow">
           {skill && <SkillDisplay skill={skill} />}
-          {uniEquip && uniEquipName && <UniEquipDisplay uniEquipName={uniEquipName} uniEquip={uniEquip} />}
+          {uniEquip && uniEquipName && (
+            <UniEquipDisplay potential={potential} uniEquipName={uniEquipName} uniEquip={uniEquip} />
+          )}
         </div>
         {/* <div className="hidden">
           {attribute && (
@@ -614,7 +639,15 @@ const StyledUniEquipDisplay = styled.div`
   }
 `;
 
-function UniEquipDisplay({ uniEquipName, uniEquip }: { uniEquipName: string; uniEquip: UniEquipPhaseData }) {
+function UniEquipDisplay({
+  potential,
+  uniEquipName,
+  uniEquip,
+}: {
+  potential: string;
+  uniEquipName: string;
+  uniEquip: UniEquipPhaseData;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -652,18 +685,22 @@ function UniEquipDisplay({ uniEquipName, uniEquip }: { uniEquipName: string; uni
                   );
                 });
             } else if (part.addOrOverrideTalentDataBundle.candidates) {
-              return part.addOrOverrideTalentDataBundle.candidates
-                .filter((talent) => talent.description || talent.overrideDescription || talent.upgradeDescription)
-                .map((talent) => {
-                  return (
-                    <div key={talent.description}>
-                      {parseBlackboardDescription(
-                        talent.description || talent.overrideDescription || talent.upgradeDescription!,
-                        talent.blackboard,
-                      )}
-                    </div>
-                  );
-                });
+              const talent = part.addOrOverrideTalentDataBundle.candidates.findLast(
+                (talent) =>
+                  talent.requiredPotentialRank <= parseInt(potential) &&
+                  (talent.description || talent.overrideDescription || talent.upgradeDescription),
+              );
+              if (!talent) return null;
+              else {
+                return (
+                  <div key={talent.name}>
+                    {parseBlackboardDescription(
+                      talent.description || talent.overrideDescription || talent.upgradeDescription!,
+                      talent.blackboard,
+                    )}
+                  </div>
+                );
+              }
             } else {
               return null;
             }

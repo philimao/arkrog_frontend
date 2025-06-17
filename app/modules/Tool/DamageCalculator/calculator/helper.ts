@@ -246,7 +246,6 @@ export class CalculatorHelper {
   ) {
     const { charInput, charData, enemyData, relics, stageData } = input;
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
-    console.log(charInput?.attributeModifier);
     /** 用户修正属性 */
     if (charInput && charInput.attributeModifier.atkOutPercent) {
       result.relic_rune_mul.atk.addChild(
@@ -423,7 +422,6 @@ export class CalculatorHelper {
           if (selector) {
             const [type, key, value] = selector.split(":");
             if (type === "enemy") {
-              console.log(enemyData);
               if (!enemyData) return;
               // 对特定敌人类型生效，如爆破对刺
               if (key === "id" && !value.split("|").includes(enemyData.id)) return;
@@ -442,7 +440,6 @@ export class CalculatorHelper {
               context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_max_hp":
-              console.log(item.name, value);
               context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_atk":

@@ -51,7 +51,6 @@ export default function OperatorModifier() {
       atkFinal: parseFloat(atkFinal) || 0,
       atkSpd: parseInt(atkSpd) || 0,
     };
-    console.log(charModifier);
     setCharsModifier(activeCharName, charModifier);
   };
 

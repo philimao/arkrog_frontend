@@ -17,9 +17,14 @@ import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSe
 import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 interface AttributeModifier {
-  atkBase: number;
-  atkPercent: number;
+  /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
+  atkOutPercent: number;
+  /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
+  atkInPercent: number;
+  /** 攻击力 最终加算 鼓舞 */
   atkFinal: number;
+  /** 攻击速度 */
+  atkSpd: number;
 }
 
 interface DamageCalculatorStore {
@@ -53,6 +58,8 @@ interface DamageCalculatorStore {
   enemyDataParsed: EnemyInput;
   /** 敌人特殊配置数据 */
   enemySpec: EnemySpec;
+  /** 敌人加成上下文 */
+  enemyContext: BuffContext;
   /** 简略关卡数据 */
   stageData?: StageData;
   /** 关卡详细解包数据 */
@@ -87,6 +94,7 @@ interface DamageCalculatorAction {
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
   setEnemySpec: (enemySpec: EnemySpec) => void;
+  setEnemyContext: (enemyContext: BuffContext) => void;
   setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
   setStageData: (stageData: StageData) => void;
   setLevelData: (levelData: LevelData) => void;
@@ -372,6 +380,8 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setEnemySpec",
         ),
+      enemyContext: undefined as unknown as BuffContext,
+      setEnemyContext: (enemyContext) => set((state) => ({ ...state, enemyContext }), undefined, "setEnemyContext"),
       charsModifier: {} as Record<string, AttributeModifier>,
       setCharsModifier: (charName, modifier) => {
         set(

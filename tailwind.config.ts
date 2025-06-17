@@ -30,6 +30,11 @@ export default {
       pattern:
         /^text-(lime|emerald|green|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(50|100|200|300|400|500|600|700|800|900|950)$/,
     },
+    // 预生成指针事件类，确保立即可用
+    "pe-auto",
+    "pe-none",
+    "pointer-events-auto",
+    "pointer-events-none",
   ],
   theme: {
     extend: {

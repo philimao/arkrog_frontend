@@ -3,6 +3,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 import type { BuffContext } from "../calculator/buff-context";
 import type { EnemyAttribute } from "~/types/gameData";
+import { mergeClassNameSafe } from "~/utils/tools";
 
 function getMaxHpTagGroups(props: { baseValue: number; context: BuffContext }): AttrCalcToken[] {
   const { baseValue, context } = props;
@@ -50,13 +51,13 @@ export default function EnemyAttribute({
   attrKey,
   attributeValue,
   baseValue,
-  color,
+  className = "",
   context,
 }: {
   attrKey: string;
   attributeValue?: number;
   baseValue?: number;
-  color: string;
+  className?: string;
   context: BuffContext | null;
 }) {
   const { enemyDataParsed } = useDamageCalculatorStore();
@@ -77,7 +78,7 @@ export default function EnemyAttribute({
   }, [attrKey, baseValue, context]);
 
   return (
-    <div className={"bg-black-gray px-3 leading-8 h-8 font-bold text-xl " + color}>
+    <div className={mergeClassNameSafe("bg-black-gray px-3 leading-8 h-8 font-bold text-xl", className)}>
       <AttrDisplay calcTokens={calcTokens}>{_attributeValue}</AttrDisplay>
     </div>
   );

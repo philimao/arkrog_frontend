@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
+import React, { useEffect, type Dispatch, type SetStateAction } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Input, type InputProps } from "@heroui/react";
 
@@ -21,9 +21,15 @@ function MyInput({
       label={label}
       radius="none"
       classNames={{
+        base: "data-[focus-visible=true]:!outline-none",
         inputWrapper: "bg-black-gray h-14 w-[12rem] group-data-[focus-visible=true]:!ring-0",
         label: "text-light-gray text-[0.8rem] w-full",
         input: "font-bold",
+      }}
+      onKeyDown={(evt) => {
+        if (evt.key === "Enter") {
+          onBlur();
+        }
       }}
       onBlur={onBlur}
       {...props}
@@ -38,19 +44,20 @@ export default function OperatorModifier() {
   const [atkFinal, setAtkFinal] = React.useState<string>("0");
   const [atkSpd, setAtkSpd] = React.useState<string>("0");
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = () => {
     const charModifier = {
-      atkBase: parseFloat(atkBase) || 0,
-      atkPercent: parseFloat(atkPercent) || 0,
+      atkOutPercent: parseFloat(atkBase) || 0,
+      atkInPercent: parseFloat(atkPercent) || 0,
       atkFinal: parseFloat(atkFinal) || 0,
       atkSpd: parseInt(atkSpd) || 0,
     };
+    console.log(charModifier);
     setCharsModifier(activeCharName, charModifier);
-  }, [activeCharName, atkBase, atkFinal, atkPercent, atkSpd, setCharsModifier]);
+  };
 
   useEffect(() => {
     handleBlur();
-  }, [activeCharName, handleBlur]);
+  }, [activeCharName]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -69,7 +76,7 @@ export default function OperatorModifier() {
         endContent={<span>%</span>}
       />
       <MyInput value={atkFinal} setValue={setAtkFinal} label="攻击力变化最终值（局内鼓舞）" onBlur={handleBlur} />
-      <MyInput value={atkSpd} setValue={setAtkSpd} label="攻击速度变化值（暂未实现）" onBlur={handleBlur} />
+      <MyInput value={atkSpd} setValue={setAtkSpd} label="攻击速度变化值" onBlur={handleBlur} />
     </div>
   );
 }

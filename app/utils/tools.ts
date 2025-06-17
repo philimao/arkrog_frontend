@@ -120,4 +120,22 @@ export function getPath(filename: string): string {
   return md5.slice(0, 1) + "/" + md5.slice(0, 2) + "/" + filename;
 }
 
+export function mergeClassNameSafe(className: string, override: string): string {
+  let merged = className;
+  for (const part of override.split(" ")) {
+    if (!part.includes("-")) {
+      merged += " " + part;
+      continue;
+    }
+    const type = part.split("-").reverse().slice(1).reverse().join("-");
+    const re = new RegExp(`${type}-[^\\d-]+`);
+    if (merged.match(re)) {
+      merged = merged.replace(re, part);
+    } else {
+      merged += " " + part;
+    }
+  }
+  return merged;
+}
+
 export { _get, _post, generateID, hashString, findDuplicates, mergeArray };

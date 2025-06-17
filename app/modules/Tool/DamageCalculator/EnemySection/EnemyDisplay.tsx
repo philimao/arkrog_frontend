@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput, RelicWrapper } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
-import { BuffContext, CalculatorHelper } from "../calculator";
+import { CalculatorHelper } from "../calculator";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import EnemyAttribute from "./EnemyAttributes";
 import { Tooltip } from "@heroui/react";
@@ -45,7 +45,7 @@ const StyledName = styled.div`
   white-space: nowrap;
 `;
 
-const StyledEnemyTag = styled.div`
+export const StyledEnemyTag = styled.div`
   font-size: 0.8rem;
   color: white;
   font-weight: bold;
@@ -55,7 +55,7 @@ const StyledEnemyTag = styled.div`
   background: var(--mid-gray);
 `;
 
-const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{ $levelType: string }>`
+export const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{ $levelType: string }>`
   background: ${({ $levelType }) => {
     if ($levelType === "BOSS") return "var(--ak-purple)";
     if ($levelType === "ELITE") return "var(--ak-red)";
@@ -113,7 +113,7 @@ const StyledInputWrapper = styled.div`
   }
 `;
 
-const displayAttrKeys: Record<string, { min: number; max?: number; tooltip?: React.ReactNode }> = {
+export const displayAttrKeys: Record<string, { min: number; max?: number; tooltip?: React.ReactNode }> = {
   maxHp: {
     min: 0,
   },
@@ -165,9 +165,11 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     levelData,
     enemyDataParsed,
     enemySpec,
+    enemyContext,
     setEnemySpec,
     setEnemyData,
     setEnemyDataParsed,
+    setEnemyContext,
   } = useDamageCalculatorStore();
   // const [phase, setPhase] = useState<number>(1);
 
@@ -199,9 +201,6 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
         })) as RelicWrapper[],
     [relicList, relicsMap, rogueKey, selectedIds],
   );
-
-  /** 计算敌人加成上下文 */
-  const [enemyContext, setEnemyContext] = useState<BuffContext | null>(null);
 
   // useEffect(() => {
   //   console.log("enemyContext", enemyContext);
@@ -355,7 +354,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                 <EnemyAttribute
                   attrKey={key}
                   baseValue={enemyBaseRef.current?.attributes[key as never]}
-                  color={color}
+                  className={color}
                   context={enemyContext}
                 />
               ) : (
@@ -420,7 +419,6 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               attrKey="damageResistance"
               attributeValue={enemyContext?.relic_rune_mul.enemy_damage_resistance.calculate()}
               baseValue={enemyBaseRef.current?.attributes.damageResistance}
-              color="text-ak-green"
               context={enemyContext}
             />
           </div>

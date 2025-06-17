@@ -422,12 +422,14 @@ export interface CharInput {
   charsBuffInGame: CharBuffInGame;
   /** 属性修正 */
   attributeModifier: {
-    /** 攻击力 藏品rune加算 */
-    atkBase: number;
-    /** 攻击力 藏品rune乘算 (atkPercent / 100)% */
-    atkPercent: number;
-    /** 攻击力 最终加算(鼓舞加算) */
+    /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
+    atkOutPercent: number;
+    /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
+    atkInPercent: number;
+    /** 攻击力 最终加算 鼓舞 */
     atkFinal: number;
+    /** 攻击速度 */
+    atkSpd: number;
   };
 }
 

@@ -9,7 +9,6 @@ import type {
   RelicWrapper,
   SkillLevelData,
   UniEquipPhaseData,
-  RogueInput,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
@@ -25,6 +24,7 @@ import { allowedBlackboardKeyMap, parseBlackboardDescription } from "../utils";
 import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
+import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -473,6 +473,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
         )}
         <OperatorModifier />
+        <EnemyMiniPreview />
       </div>
     </div>
   );

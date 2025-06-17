@@ -55,7 +55,7 @@ export default function OperatorSelectorWrapper() {
 
   return (
     <StyledOperatorSelectorWrapper>
-      <div>当前仍在数据对接中，主要体验交互逻辑，反馈建议请加入影语集反馈群 909687635</div>
+      {/* <div>当前仍在数据对接中，主要体验交互逻辑，反馈建议请加入影语集反馈群 909687635</div> */}
       <StyledTitle>选择干员</StyledTitle>
       <StyledSelectorWrapper>
         {charList.length > 0 ? (

@@ -24,8 +24,10 @@ export default function ToolSelect<T>({
         value: "font-bold",
         popoverContent: "rounded-none",
         listbox: "rounded-none",
+        ...props.classNames,
       }}
-      {...props}
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      {...(({ classNames, ...rest }) => rest)(props)}
     >
       {array.map((item, index) => (
         <SelectItem

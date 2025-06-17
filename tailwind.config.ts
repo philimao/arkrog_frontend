@@ -15,13 +15,21 @@ const colorExt = {
   "ak-dark-red": "var(--ak-dark-red)",
   "ak-pink": "var(--ak-pink)",
   "semi-black": "var(--semi-black)",
-  "black-gray-70": "var(--black-gray-70)"
+  "black-gray-70": "var(--black-gray-70)",
 };
 
 export default {
   content: [
-    "./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}",
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./app/**/**/*.{js,jsx,ts,tsx}",
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    // 预生成一些常用颜色类，确保它们始终可用
+    {
+      pattern:
+        /^text-(lime|emerald|green|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+    },
   ],
   theme: {
     extend: {
@@ -59,6 +67,11 @@ export default {
       },
       lineHeight: {
         "12": "3rem",
+      },
+      boxShadow: {
+        "outer-lg": "0 0 10px 2px currentColor",
+        "outer-md": "0 0 8px 2px currentColor",
+        "outer-sm": "0 0 5px 1px currentColor",
       },
     },
   },

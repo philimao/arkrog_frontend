@@ -9,6 +9,7 @@ import type {
   RelicWrapper,
   SkillLevelData,
   UniEquipPhaseData,
+  RogueInput,
 } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
@@ -22,6 +23,8 @@ import { DamageCalculatorSettings } from "../black-list";
 import { printRelicsInfo } from "../calculator/debug/print-relics-info";
 import { allowedBlackboardKeyMap, parseBlackboardDescription } from "../utils";
 import CustomIcon from "~/components/Character/CustomIcon";
+import ToolButton from "../../components/ToolButton";
+import { Button, Tooltip } from "@heroui/react";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -47,9 +50,11 @@ const StyledSelectWrapper = styled.div`
 `;
 
 export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { activeCharName, charsModifier, topicSpecItems } = useDamageCalculatorStore();
   const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
   const {
+    activeCharName,
+    charsModifier,
+    topicSpecItems,
     stageData,
     rogueInput,
     enemyDataParsed,
@@ -58,6 +63,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     relicsMap,
     rogueKey,
     enemySpec,
+    setRogueThoughtLoad,
     setRelicAnalysisResult,
     setCalcOutput,
   } = useDamageCalculatorStore();
@@ -402,6 +408,40 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               />
             </>
           )}
+          {rogueKey === "rogue_4" && (
+            <div>
+              <div className="flex items-center justify-between h-6">
+                <span className="text-light-gray text-[0.8rem]">思维负荷</span>
+                <Tooltip
+                  content={
+                    <div>
+                      <ul className="text-sm p-2">
+                        <li>清晰：思维清晰，一切正常</li>
+                        <li>混乱：所有单位部署费用+3，攻击力-20%，技力自然回复速度-20%</li>
+                      </ul>
+                    </div>
+                  }
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <use href="#question_circle" />
+                  </svg>
+                </Tooltip>
+              </div>
+              <ToolButton
+                onPress={() =>
+                  setRogueThoughtLoad(rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "CONFUSION" : "NORMAL")
+                }
+                className={
+                  "shadow-outer-sm " +
+                  (rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "text-green-400/25" : "text-yellow-400/25")
+                }
+              >
+                <span className="w-full text-left text-white">
+                  {rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "清晰" : "混乱"}
+                </span>
+              </ToolButton>
+            </div>
+          )}
         </StyledSelectWrapper>
         <div className="flex flex-col gap-4 grow">
           {skill && <SkillDisplay skill={skill} />}
@@ -434,13 +474,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         )}
         <OperatorModifier />
       </div>
-      <svg width="0" height="0">
-        <defs>
-          <symbol id="chevron-up" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-            <path d="M106.666667 659.2L172.8 725.333333 512 386.133333 851.2 725.333333l66.133333-66.133333L512 256z"></path>
-          </symbol>
-        </defs>
-      </svg>
     </div>
   );
 }
@@ -486,45 +519,60 @@ const StyledSkillDisplay = styled.div`
 const StyledChevron = styled.svg<{ $rotate: boolean }>`
   flex-shrink: 0;
   margin-left: auto;
+  margin-right: 0.5rem;
   width: 1.25rem;
   height: 1.25rem;
   transform: rotate(${({ $rotate }) => ($rotate ? "180deg" : "0deg")});
   transition: transform 0.3s ease-in-out;
 `;
 
+const ButtonWrapper = ({ children, onPress }: { children: React.ReactNode; onPress: () => void }) => {
+  return (
+    <Button
+      className="bg-inherit p-0 h-auto justify-start data-[focus-visible=true]:!outline-none"
+      radius="none"
+      onPress={onPress}
+    >
+      {children}
+    </Button>
+  );
+};
+
 function SkillDisplay({ skill }: { skill: SkillLevelData }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <StyledSkillDisplay>
-      <div className="flex gap-4 items-center">
-        <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
-        <div>
-          <div className="flex gap-2 items-center">
-            <div className="skill-name">{skill.name}</div>
-            <div className="skill-type">
-              <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
-              <div>{skill.skillType === "MANUAL" ? "手动触发" : "自动触发"}</div>
+      <ButtonWrapper onPress={() => setIsOpen(!isOpen)}>
+        <div className="flex gap-4 items-center">
+          <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
+          <div>
+            <div className="flex gap-2 items-center">
+              <div className="skill-name">{skill.name}</div>
+              <div className="skill-type">
+                <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
+                <div>{skill.skillType === "MANUAL" ? "手动触发" : "自动触发"}</div>
+              </div>
             </div>
-          </div>
-          <div className="skill-sp">
-            <div className="flex gap-1">
-              <span>初始</span>
-              <strong>{skill.spData.initSp}</strong>
-            </div>
-            <div className="flex gap-1">
-              <span>消耗</span>
-              <strong>{skill.spData.spCost}</strong>
-            </div>
-            <div className="flex gap-1">
-              <span>持续</span>
-              <strong>{skill.duration}</strong>
+            <div className="skill-sp">
+              <div className="flex gap-1">
+                <span>初始</span>
+                <strong>{skill.spData.initSp}</strong>
+              </div>
+              <div className="flex gap-1">
+                <span>消耗</span>
+                <strong>{skill.spData.spCost}</strong>
+              </div>
+              <div className="flex gap-1">
+                <span>持续</span>
+                <strong>{skill.duration}</strong>
+              </div>
             </div>
           </div>
         </div>
-        <StyledChevron $rotate={isOpen} onClick={() => setIsOpen(!isOpen)}>
+        <StyledChevron $rotate={isOpen}>
           <use href="#chevron-up" />
         </StyledChevron>
-      </div>
+      </ButtonWrapper>
       {isOpen && (
         <div className="skill-description">{parseBlackboardDescription(skill.description!, skill.blackboard)}</div>
       )}
@@ -570,23 +618,25 @@ function UniEquipDisplay({ uniEquipName, uniEquip }: { uniEquipName: string; uni
 
   return (
     <StyledUniEquipDisplay>
-      <div className="flex gap-4">
-        <CustomIcon name={"模组等级_" + uniEquip.equipLevel} size={65} className="uni-equip-icon" />
-        <div>
-          <div className="uni-equip-name">{uniEquipName}</div>
-          <div className="uni-equip-attributes">
-            {uniEquip.attributeBlackboard.map((bb) => (
-              <div key={bb.key}>
-                <span>{allowedBlackboardKeyMap[bb.key]}</span>
-                <strong>{"+" + bb.value}</strong>
-              </div>
-            ))}
+      <ButtonWrapper onPress={() => setIsOpen(!isOpen)}>
+        <div className="flex gap-4 items-center">
+          <CustomIcon name={"模组等级_" + uniEquip.equipLevel} size={65} className="uni-equip-icon" />
+          <div className="text-left">
+            <div className="uni-equip-name">{uniEquipName}</div>
+            <div className="uni-equip-attributes">
+              {uniEquip.attributeBlackboard.map((bb) => (
+                <div key={bb.key}>
+                  <span>{allowedBlackboardKeyMap[bb.key]}</span>
+                  <strong>{"+" + bb.value}</strong>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <StyledChevron $rotate={isOpen} onClick={() => setIsOpen(!isOpen)}>
+        <StyledChevron $rotate={isOpen}>
           <use href="#chevron-up" />
         </StyledChevron>
-      </div>
+      </ButtonWrapper>
       {isOpen && (
         <div className="uni-equip-description">
           {uniEquip.parts.map((part) => {

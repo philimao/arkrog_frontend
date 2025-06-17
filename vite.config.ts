@@ -9,12 +9,16 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     strictPort: true,
+    hmr: {
+      overlay: true,
+    },
   },
   // publicDir: false,
   css: {
     postcss: {
       plugins: [tailwindcss, autoprefixer],
     },
+    devSourcemap: true,
   },
   plugins: [reactRouter(), tsconfigPaths()],
 });

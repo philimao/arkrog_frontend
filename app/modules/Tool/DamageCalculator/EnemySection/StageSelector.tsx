@@ -1,6 +1,5 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState, useEffect } from "react";
-import { navOfZone } from "~/utils/stageSelector";
 import type { LevelData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
@@ -10,6 +9,7 @@ import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { debounce } from "@heroui/shared-utils";
+import { navOfZone } from "./enemyUtils";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;

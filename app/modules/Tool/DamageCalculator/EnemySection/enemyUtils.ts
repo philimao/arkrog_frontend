@@ -81,3 +81,85 @@ export function parseEnemyData(enemyData: EnemyData, stageData: StageData, level
     enemyTags: parseDefinedData(enemyData.enemyTags) || [],
   };
 }
+
+export const navOfZone = [
+  {
+    id: "zone_1",
+    name: "第一层",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if (args[1] !== "n" && args[1] !== "e") return false;
+      return args[2] === "1";
+    },
+  },
+  {
+    id: "zone_2",
+    name: "第二层",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if (args[1] !== "n" && args[1] !== "e") return false;
+      return args[2] === "2";
+    },
+  },
+  {
+    id: "zone_3",
+    name: "第三层",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if ((args[1] === "n" || args[1] === "e") && args[2] === "3") return true;
+      if (args[1] === "b" && ["1", "2", "3"].includes(args[2])) return true;
+      if (args[1] === "duel") return true;
+      return false;
+    },
+  },
+  {
+    id: "zone_4",
+    name: "第四层",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if ((args[1] === "n" || args[1] === "e") && args[2] === "4") return true;
+      if (args[1] === "duel") return true;
+      return false;
+    },
+  },
+  {
+    id: "zone_5",
+    name: "第五层",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if ((args[1] === "n" || args[1] === "e") && args[2] === "5") return true;
+      if (args[1] === "b" && ["4", "5"].includes(args[2])) return true;
+      if (args[1] === "duel") return true;
+      return false;
+    },
+  },
+  {
+    id: "zone_6",
+    name: "第六层 · 爱国者",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
+      if (args[1] === "b" && ["6"].includes(args[2])) return true;
+      return false;
+    },
+  },
+  {
+    id: "zone_7",
+    name: "第六层 · 奎隆",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
+      if (args[1] === "b" && ["7"].includes(args[2])) return true;
+      return false;
+    },
+  },
+  {
+    id: "zone_8",
+    name: "第七层 · 魔王阿米娅",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if (args[1] === "b" && ["8"].includes(args[2])) return true;
+      return false;
+    },
+  },
+];

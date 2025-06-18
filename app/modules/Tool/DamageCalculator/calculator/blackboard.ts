@@ -370,6 +370,24 @@ registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: Re
   };
 });
 
+/** 久居之手 */
+registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "").split("|");
+  return {
+    isActive(input) {
+      if (sub_profession.length > 0 && input.charData) {
+        return sub_profession.includes(input.charData.subProfessionId);
+      }
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    },
+  };
+});
+
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
     const isActive = isRelicInBlacklist(relic.name) && isBlackboardActiveForEnemy(buff, enemyData);

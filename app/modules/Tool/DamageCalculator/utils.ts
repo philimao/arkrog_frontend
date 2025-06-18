@@ -125,6 +125,7 @@ export const layerValueStrs = [
   "rogue_3_relic_book_4", // 裂岩
   "rogue_3_relic_book_7", // 波纹
   "rogue_3_relic_book_10", // 久居
+  "rogue_4_special_hand[time]", // 久居之手
 ];
 
 /**

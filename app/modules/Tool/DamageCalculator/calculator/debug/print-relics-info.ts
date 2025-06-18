@@ -23,6 +23,7 @@ export function applyAnyRelics(relics: RelicWrapper[]) {
         const relicBlackboard = getRelicBlackboard(buff, relic);
         relicBlackboard.apply({ context, relics: relics });
       } else if (!key) {
+        // TODO 需要区分敌人的通用黑板
         commonCharRelicBlackboard.apply({ context, relics: relics, buff: buff, relic: relic });
       }
     }

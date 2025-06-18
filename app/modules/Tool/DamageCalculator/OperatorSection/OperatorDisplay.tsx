@@ -582,7 +582,7 @@ function SkillDisplay({ skill }: { skill: SkillLevelData }) {
     <StyledSkillDisplay>
       <ButtonWrapper onPress={() => setIsOpen(!isOpen)}>
         <div className="flex gap-4 items-center">
-          <CustomIcon name={"技能_死境硝烟"} className="skill-icon" />
+          <CustomIcon name={"技能_" + skill.name} className="skill-icon" />
           <div>
             <div className="flex gap-2 items-center">
               <div className="skill-name">{skill.name}</div>

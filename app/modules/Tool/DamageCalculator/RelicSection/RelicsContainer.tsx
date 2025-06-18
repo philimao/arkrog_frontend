@@ -48,8 +48,8 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
     // 获取应用了所有藏品的加成上下文
     const context = applyAnyRelics(
       relicsWrappers.map((r) => ({
-        relicData: relicList.find((relic) => relic.id === r?.id),
         ...r,
+        relicData: relicList.find((relic) => relic.id === r?.id)!,
       })),
     );
     // 遍历生效的所有buff取藏品名

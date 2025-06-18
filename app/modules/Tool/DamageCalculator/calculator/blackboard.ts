@@ -334,6 +334,42 @@ registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicWra
   };
 });
 
+/** 锈刃-遗世独立 */
+registerRelicBlackboard("AtkUp[NoAllyInRange]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+  const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
+  return {
+    isActive(input) {
+      if (selector_profession && input.charData) {
+        return selector_profession.includes(input.charData.profession.toLowerCase());
+      }
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    },
+  };
+});
+
+/** 文学的开端 */
+registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+  const tag = getByKey(buff.blackboard, "tag")?.valueStr;
+  return {
+    isActive(input) {
+      if (tag && input.enemyData) {
+        return !!input.enemyData.enemyTags.m_value?.includes(tag);
+      }
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.global_buff_stack.damage_scale.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+    },
+  };
+});
+
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
     const isActive = isRelicInBlacklist(relic.name) && isBlackboardActiveForEnemy(buff, enemyData);

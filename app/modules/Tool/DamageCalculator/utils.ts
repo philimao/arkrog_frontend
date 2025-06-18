@@ -159,14 +159,7 @@ export const inGameRelicNames = [
 /**
  * 藏品黑名单（价值低或难以计入）
  */
-export const disallowedRelicNames = [
-  "黑色郁金香",
-  "古堡的子嗣",
-  "衣卡兹",
-  "文学的开端", // 这次不做
-  "Scout的狙击镜",
-  "奴隶猎捕器",
-];
+export const disallowedRelicNames = ["黑色郁金香", "古堡的子嗣", "衣卡兹", "Scout的狙击镜", "奴隶猎捕器"];
 
 /**
  * valueStr黑名单（用于判断isBuffActive)

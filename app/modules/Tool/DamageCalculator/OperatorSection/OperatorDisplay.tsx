@@ -25,6 +25,7 @@ import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
+import { parseEnemyData } from "../EnemySection/enemyUtils";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -75,6 +76,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     rogueInput,
     enemyDataParsed,
     enemyData,
+    levelData,
     selectedIds,
     relicsMap,
     rogueKey,
@@ -82,6 +84,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setRogueThoughtLoad,
     setRelicAnalysisResult,
     setCalcOutput,
+    setGlobalAnalysisResult,
+    setEnemyDataParsed,
   } = useDamageCalculatorStore();
 
   // 选择干员后
@@ -238,7 +242,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       return;
     }
     // 选择敌人数据后，需要等待敌人特殊效果加成计算完成，减少重新渲染
-    if (!enemyData || !enemySpec) return;
+    if (!enemyData || !enemySpec || !stageData || !levelData) return;
     // 干员养成加成
     let buffContext = CalculatorHelper.analyzeChar({
       charInput: charInput,
@@ -265,13 +269,17 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     // 敌人特殊配置加成
     buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffContext);
 
+    const enemyInput = CalculatorHelper.calculateEnemyAttr({
+      enemyInput: parseEnemyData(enemyData, stageData, levelData),
+      context: buffContext,
+    });
     const input: CalculatorInput = {
       charInput: {
         ...charInput,
         // 局外面板
         attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
       },
-      enemyInput: enemyDataParsed,
+      enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
       skillData: skillObject, // 技能原始解包数据
@@ -290,7 +298,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         // 局外面板
         attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
       },
-      enemyInput: enemyDataParsed,
+      enemyInput: enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
       skillData: skillObject, // 技能原始解包数据
@@ -313,22 +321,26 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     );
     buffPanelContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffPanelContext);
 
+    setGlobalAnalysisResult(buffContext);
     setRelicAnalysisResult(buffPanelContext);
+    setEnemyDataParsed(enemyInput);
     // 计算结果
     setCalcOutput(calcResult);
   }, [
     charData,
     charInput,
     enemyData,
-    enemyDataParsed,
     enemySpec,
     relicList,
     relicsMap,
     rogueInput,
+    levelData,
     rogueKey,
     selectedRelics,
     setCalcOutput,
+    setGlobalAnalysisResult,
     setRelicAnalysisResult,
+    setEnemyDataParsed,
     skillObject,
     stageData,
     topicSpecItems,

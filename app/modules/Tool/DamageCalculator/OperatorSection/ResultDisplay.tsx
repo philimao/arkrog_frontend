@@ -83,8 +83,7 @@ const StyledNumberPart = styled(StyledNumberContainer)<{ $type: string }>`
 `;
 
 export function ResultDisplay() {
-  const { calcOutput } = useDamageCalculatorStore();
-  if (!calcOutput) return null;
+  const calcOutput = useDamageCalculatorStore((state) => state.calcOutput);
   return (
     <StyledResultDisplay>
       {Object.keys(calcOutput).map((key) => {

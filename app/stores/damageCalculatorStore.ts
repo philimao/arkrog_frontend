@@ -11,8 +11,9 @@ import type {
   RogueInput,
   StageData,
   LevelData,
+  CharInput,
 } from "~/types/gameData";
-import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
+import { CalculatorHelper, type BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
 import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
 import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
@@ -38,8 +39,10 @@ interface DamageCalculatorStore {
   charList: CharData[];
   /** 当前选中的角色 */
   activeCharName: string;
+  /** 全局加成上下文 */
+  globalAnalysisResult: BuffContext;
   /** 仅有藏品的加成上下文 */
-  relicAnalysisResult?: BuffContext;
+  relicAnalysisResult: BuffContext;
   /** 是否显示藏品选择器页面 */
   showRelics: boolean;
   /** 是否显示肉鸽主题特殊效果选择器页面 */
@@ -79,6 +82,7 @@ interface DamageCalculatorAction {
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
   setActiveCharName: (charName: string) => void;
+  setGlobalAnalysisResult: (context: BuffContext) => void;
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   toggleShowRelics: () => void;
@@ -99,6 +103,12 @@ interface DamageCalculatorAction {
   setStageData: (stageData: StageData) => void;
   setLevelData: (levelData: LevelData) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
+  /** 更新全局加成上下文 */
+  updateGlobalAnalysisResult: (input: {
+    charInput: CharInput;
+    charData: CharData;
+    relics: RelicWrapper[];
+  }) => BuffContext;
   resetStore: () => void;
 }
 
@@ -144,8 +154,15 @@ export const dummy: EnemyInput = {
 
 export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCalculatorAction>()(
   devtools(
-    immer((set) => ({
+    immer((set, get) => ({
+      // ================ 初始状态 ================
       rogueKey: "rogue_4" as RogueKey,
+      difficulty: 18,
+      globalAnalysisResult: CalculatorHelper.createAdditionContext(),
+      relicAnalysisResult: CalculatorHelper.createAdditionContext(),
+
+      // ================ Actions ================
+      // 肉鸽相关 actions
       setRogueKey: (rogueKey) => set((state) => ({ ...state, rogueKey }), undefined, "setRogueKey"),
       rogueInput: {
         topic: "rogue_4",
@@ -157,7 +174,6 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         },
       } as RogueInput,
       setRogueInput: (rogueInput: RogueInput) => set((state) => ({ ...state, rogueInput }), undefined, "setRogueInput"),
-      difficulty: 18,
       setRogueDifficulty: (difficulty) => {
         return set(
           (state) => {
@@ -394,7 +410,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       },
       setStageData: (stageData) => set((state) => ({ ...state, stageData }), undefined, "setStageData"),
       setLevelData: (levelData) => set((state) => ({ ...state, levelData }), undefined, "setLevelData"),
-      calcOutput: undefined as unknown as CalculatorOutput,
+      calcOutput: CalculatorHelper.createCalculatorOutput(),
       setCalcOutput: (output) => {
         set(
           (state) => {
@@ -403,6 +419,70 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           undefined,
           "setCalcOutput",
         );
+      },
+      setGlobalAnalysisResult: (context) => {
+        set(
+          (state) => {
+            state.globalAnalysisResult = context;
+          },
+          undefined,
+          "setGlobalAnalysisResult",
+        );
+      },
+      updateGlobalAnalysisResult: (input) => {
+        const { stageData, enemyData, rogueInput } = get();
+        const { charInput, charData, relics } = input;
+        let globalContext = CalculatorHelper.createAdditionContext();
+        // 干员养成加成
+        if (charInput.attributeModifier) {
+          globalContext = CalculatorHelper.analyzeChar({
+            charInput: input.charInput,
+            charData: input.charData,
+          });
+        }
+        // 藏品加成
+        globalContext = CalculatorHelper.analyzeRelics(
+          {
+            charInput,
+            charData,
+            relics,
+            enemyData: enemyData,
+            stageData,
+          },
+          globalContext,
+        );
+        globalContext = CalculatorHelper.analyzeRogueDifficulty(
+          {
+            rogueInput,
+            enemyData,
+          },
+          globalContext,
+        );
+        let panelContext = CalculatorHelper.createAdditionContext();
+        panelContext = CalculatorHelper.analyzeRelics(
+          {
+            charInput,
+            charData,
+            relics,
+            enemyData: enemyData,
+            stageData,
+          },
+          panelContext,
+        );
+        panelContext = CalculatorHelper.analyzeRogueDifficulty(
+          {
+            rogueInput,
+            enemyData,
+          },
+          panelContext,
+        );
+        console.log("globalContext", globalContext);
+        console.log("panelContext", panelContext);
+        set((state) => {
+          state.globalAnalysisResult = globalContext;
+          state.relicAnalysisResult = panelContext;
+        });
+        return globalContext;
       },
       resetStore: () => {
         set(
@@ -431,7 +511,7 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
             charsModifier: {} as Record<string, AttributeModifier>,
             stageData: undefined,
             levelData: undefined,
-            calcOutput: undefined as unknown as CalculatorOutput,
+            calcOutput: CalculatorHelper.createCalculatorOutput(),
           }),
           undefined,
           "resetStore",

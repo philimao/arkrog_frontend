@@ -214,52 +214,52 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   //   console.log("enemySpec", enemySpec);
   // }, [enemySpec]);
 
-  useEffect(() => {
-    // 选择敌人数据后，等待敌人特殊效果加成计算完成，减少重新渲染
-    if (!enemyData || !enemySpec || enemySpec.id !== enemyData.id) return;
-    // 如果是木桩，不计算敌人加成
-    if (enemyData.name.m_value === "木桩") return;
-    let enemyContext = CalculatorHelper.analyzeRelics({
-      relics: selectedRelics,
-      enemyData: enemyData,
-      stageData,
-    });
-    enemyContext = CalculatorHelper.analyzeRogueDifficulty(
-      { rogueInput: rogueInput, enemyData: enemyData },
-      enemyContext,
-    );
-    enemyContext = CalculatorHelper.analyzeTopicSpec(
-      { topicSpecItems: topicSpecItems, enemyData: enemyData },
-      enemyContext,
-    );
-    enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
-    CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
-    setEnemyContext(enemyContext);
-  }, [enemyData, enemySpec, rogueInput, selectedRelics, stageData, topicSpecItems]);
+  // useEffect(() => {
+  //   // 选择敌人数据后，等待敌人特殊效果加成计算完成，减少重新渲染
+  //   if (!enemyData || !enemySpec || enemySpec.id !== enemyData.id) return;
+  //   // 如果是木桩，不计算敌人加成
+  //   if (enemyData.name.m_value === "木桩") return;
+  //   let enemyContext = CalculatorHelper.analyzeRelics({
+  //     relics: selectedRelics,
+  //     enemyData: enemyData,
+  //     stageData,
+  //   });
+  //   enemyContext = CalculatorHelper.analyzeRogueDifficulty(
+  //     { rogueInput: rogueInput, enemyData: enemyData },
+  //     enemyContext,
+  //   );
+  //   enemyContext = CalculatorHelper.analyzeTopicSpec(
+  //     { topicSpecItems: topicSpecItems, enemyData: enemyData },
+  //     enemyContext,
+  //   );
+  //   enemyContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, enemyContext);
+  //   CalculatorHelper.printAdditionContext(enemyContext, selectedRelics);
+  //   setEnemyContext(enemyContext);
+  // }, [enemyData, enemySpec, rogueInput, selectedRelics, stageData, topicSpecItems]);
 
   /** 敌人数据基础值 */
   const enemyBaseRef = useRef<EnemyInput | null>(null);
 
-  useEffect(() => {
-    if (!enemyData || !stageData || !levelData) return;
-    enemyBaseRef.current = parseEnemyData(enemyData, stageData, levelData);
-  }, [enemyData, levelData, stageData]);
+  // useEffect(() => {
+  //   if (!enemyData || !stageData || !levelData) return;
+  //   enemyBaseRef.current = parseEnemyData(enemyData, stageData, levelData);
+  // }, [enemyData, levelData, stageData]);
 
   /** 计算敌人属性 */
-  useEffect(() => {
-    if (!enemyContext || !enemyBaseRef.current) return;
-    const parsedEnemyData = CalculatorHelper.calculateEnemyAttr({
-      enemyInput: enemyBaseRef.current!,
-      context: enemyContext,
-    });
-    // 复制到木桩时，保留初始值的减伤
-    if (enemyRef.current && enemyRef.current.name !== "木桩" && parsedEnemyData.name === "木桩") {
-      parsedEnemyData.attributes.damageResistance = enemyRef.current.attributes.damageResistance;
-    }
-    // 深拷贝初始值
-    enemyRef.current = JSON.parse(JSON.stringify(parsedEnemyData));
-    setEnemyDataParsed(parsedEnemyData);
-  }, [enemyContext, setEnemyDataParsed, _setEnemyDataParsed]);
+  // useEffect(() => {
+  //   if (!enemyContext || !enemyBaseRef.current) return;
+  //   const parsedEnemyData = CalculatorHelper.calculateEnemyAttr({
+  //     enemyInput: enemyBaseRef.current!,
+  //     context: enemyContext,
+  //   });
+  //   // 复制到木桩时，保留初始值的减伤
+  //   if (enemyRef.current && enemyRef.current.name !== "木桩" && parsedEnemyData.name === "木桩") {
+  //     parsedEnemyData.attributes.damageResistance = enemyRef.current.attributes.damageResistance;
+  //   }
+  //   // 深拷贝初始值
+  //   enemyRef.current = JSON.parse(JSON.stringify(parsedEnemyData));
+  //   setEnemyDataParsed(parsedEnemyData);
+  // }, [enemyContext, setEnemyDataParsed, _setEnemyDataParsed]);
 
   /** 当store中的敌人数据更新时，更新缓存 */
   useEffect(() => {

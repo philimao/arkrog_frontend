@@ -247,22 +247,22 @@ export class CalculatorHelper {
     const { charInput, charData, enemyData, relics, stageData } = input;
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
     /** 用户修正属性 */
-    if (charInput && charInput.attributeModifier.atkOutPercent) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkOutPercent) {
       result.relic_rune_mul.atk.addChild(
         new NumericLiteralNode(charInput.attributeModifier.atkOutPercent / 100, "攻击力变化百分比（局外藏品）"),
       );
     }
-    if (charInput && charInput.attributeModifier.atkInPercent) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkInPercent) {
       result.in_game_buff_mul.atk.addChild(
         new NumericLiteralNode(charInput.attributeModifier.atkInPercent / 100, "攻击力变化百分比（局内血怒）"),
       );
     }
-    if (charInput && charInput.attributeModifier.atkFinal) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkFinal) {
       result.in_game_buff_final_add.atk.addChild(
         new NumericLiteralNode(charInput.attributeModifier.atkFinal, "攻击力变化最终值（局内鼓舞）"),
       );
     }
-    if (charInput && charInput.attributeModifier.atkSpd) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkSpd) {
       result.in_game_buff_add.attack_speed.addChild(
         new NumericLiteralNode(charInput.attributeModifier.atkSpd, "攻击力变化百分比（局内鼓舞）"),
       );

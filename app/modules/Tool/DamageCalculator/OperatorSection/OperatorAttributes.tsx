@@ -268,9 +268,8 @@ export default function OperatorAttributes(props: {
   charInput: CharInput;
   relics: RelicWrapper[];
 }) {
-  const { stageData, rogueInput, topicSpecItems, enemyData } = useDamageCalculatorStore();
+  const context = useDamageCalculatorStore((state) => state.globalAnalysisResult);
   const [result, setResult] = useState<CharAttributeExt | null>(null);
-  const [context, setContext] = useState<BuffContext>(CalculatorHelper.createAdditionContext());
   const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
   const maxHpTagGroups = useMaxHpTagGroups({ attribute: attribute!, context });
   const atkTagGroups = useAtkTagGroups({ attribute: attribute!, context });
@@ -285,29 +284,8 @@ export default function OperatorAttributes(props: {
   });
 
   useEffect(() => {
-    let context = CalculatorHelper.analyzeChar({
-      charInput: props.charInput,
-      charData: props.charData,
-    });
-    // 藏品加成
-    context = CalculatorHelper.analyzeRelics(
-      {
-        charInput: props.charInput,
-        charData: props.charData,
-        relics: props.relics,
-        enemyData: enemyData,
-        stageData,
-      },
-      context,
-    );
-    // 肉鸽难度加成
-    context = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData: enemyData }, context);
-    // 肉鸽主题加成（年代、灵感、密文板）
-    context = CalculatorHelper.analyzeTopicSpec({ topicSpecItems: topicSpecItems, enemyData: enemyData }, context);
-
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
-    setContext(context);
-  }, [props.charData, props.charInput, props.relics, rogueInput, stageData, topicSpecItems, enemyData]);
+  }, [props.charData, props.charInput, props.relics, context]);
 
   return (
     <StyledAttributeWrapper>

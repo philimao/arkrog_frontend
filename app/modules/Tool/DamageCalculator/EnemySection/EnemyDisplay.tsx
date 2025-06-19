@@ -191,7 +191,15 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       id: "enemy_000_dummy",
       value: [],
     });
-    setEnemyBase(JSON.parse(JSON.stringify(_enemyDataParsed)));
+    setEnemyBase(
+      JSON.parse(
+        JSON.stringify({
+          ..._enemyDataParsed,
+          id: "enemy_000_dummy",
+          name: "木桩",
+        }),
+      ),
+    );
   }
 
   if (!_enemyDataParsed) return null;
@@ -282,7 +290,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                         [key]: value,
                       },
                     };
-                    _setEnemyDataParsed(updated);
+                    setEnemyBase(updated);
                   }}
                   onBlur={() => {
                     // 解析浮点数，失败则设置为0
@@ -298,8 +306,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                         [key]: number,
                       },
                     };
-                    _setEnemyDataParsed(updated);
-                    setEnemyDataParsed(updated);
+                    setEnemyBase(updated);
                   }}
                   onEnter={(evt) => {
                     evt.preventDefault();
@@ -310,7 +317,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
             </StyledInputWrapper>
           );
         })}
-        <StyledInputWrapper>
+        {/* <StyledInputWrapper>
           <div className="flex justify-between">
             <span>局外物理法术减伤</span>
             <Tooltip
@@ -336,7 +343,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               context={globalAnalysisResult}
             />
           </div>
-        </StyledInputWrapper>
+        </StyledInputWrapper> */}
       </StyledGridContainer>
     </StyledEnemyDisplayWrapper>
   );

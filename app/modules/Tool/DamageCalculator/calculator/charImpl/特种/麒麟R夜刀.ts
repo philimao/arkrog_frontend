@@ -107,10 +107,10 @@ export default function KirinRYato(input: CalculatorInput): CalculatorOutput {
     case "skchr_yato2_2": {
       // 二技能：乱舞
       // 天赋1效果提升，攻击力提升，16次斩击
-      const talent1Scales = [1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.35, 2.5];
+      const talent1EnhanceScales = [1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.35, 2.5];
       const skillScales = [1.05, 1.08, 1.12, 1.16, 1.2, 1.25, 1.3, 1.35, 1.4, 1.5];
 
-      const talent1Scale = talent1Scales[skillLevel];
+      const talent1EnhanceScale = talent1EnhanceScales[skillLevel];
       const skillScale = skillScales[skillLevel];
 
       // 技能期间有天赋2加成
@@ -122,7 +122,7 @@ export default function KirinRYato(input: CalculatorInput): CalculatorOutput {
       const skillDph = skillAtk * skillScale;
       const physicalDamage = Math.max(skillDph - enemyDef, skillDph * 0.05) * damage_scale * damage_scale_phy;
       // 强化后的法术伤害（天赋1 * 技能倍率）
-      const enhancedTalent1 = talent1Scale * talent1Scale;
+      const enhancedTalent1 = talent1Scale * talent1EnhanceScale;
       const magicalDamage = skillAtk * enhancedTalent1 * skillScale * damage_scale_mag * (1 - enemyMagRes / 100);
 
       // 16次斩击

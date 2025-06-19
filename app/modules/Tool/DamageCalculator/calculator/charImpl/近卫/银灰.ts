@@ -52,7 +52,7 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
   const commonDamage = Math.max(commonDPH * 1.15 - enemyDef, commonDPH * 1.15 * 0.05) * damage_scale * damage_scale_phy;
   const commonDamageMag = commonDPH * 0.1 * damage_scale_mag * (1 - enemyMagRes / 100);
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.33; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
@@ -87,8 +87,8 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
       const skillKeepTime = 30.0; // 技能持续时间
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
-      const commonHit = Math.ceil(skillRecoveryTime / commonAtkTime); // 期望普攻次数
-      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望攻击次数
+      const commonHit = Math.ceil(skillRecoveryTime / commonAtkTime); // 普攻次数
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能攻击次数
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       const skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);

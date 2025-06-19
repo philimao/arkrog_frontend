@@ -50,7 +50,7 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
 
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
 
-  const atkSpeed = 100 + atkSpeedBuff + 22; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff + 22, 600); // 攻击速度
   const commonAtkTimeBase = 2.85; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间

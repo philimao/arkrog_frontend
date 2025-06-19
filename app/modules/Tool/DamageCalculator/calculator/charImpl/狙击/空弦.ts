@@ -51,7 +51,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
   const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
   result.attack.dph = commonDPH;
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.0; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
@@ -150,7 +150,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
       const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望普攻次数
 
       let commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       let skillTotalDamage = skillDamage * skillHit * 3 * (1 - mitigation);

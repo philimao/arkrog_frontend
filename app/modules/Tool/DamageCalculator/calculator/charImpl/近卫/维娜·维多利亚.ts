@@ -51,7 +51,7 @@ export default function Vina_Victoria(input: CalculatorInput): CalculatorOutput 
     Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
   // const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.25; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
@@ -82,8 +82,8 @@ export default function Vina_Victoria(input: CalculatorInput): CalculatorOutput 
       const skillKeepTime = 25.0; // 技能持续时间
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
-      const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
+      const commonHit = Math.ceil(skillRecoveryTime / commonAtkTime); // 普攻次数, 不考虑天赋全程吃阻回的情况
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能普攻次数
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       const skillTotalDamage = skillDamage * skillHit;

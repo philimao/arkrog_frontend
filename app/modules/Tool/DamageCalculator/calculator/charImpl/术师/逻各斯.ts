@@ -62,7 +62,7 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
   const commonTalentDPH_ep = (commonDPH - 165) * 0.6; //元素伤害
   const commonTalentDamage_ep = commonTalentDPH_ep; //暂未考虑元素抗性
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.6; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
@@ -106,7 +106,7 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望普攻次数
 
       const skillDamage_EP = (skillDamage + skillTalentDamage * 0.6) * 0.08 * damage_scale_EP; //元素损伤期望
       const skillEPTime = skillAtkTime * Math.ceil(enemyEP / skillDamage_EP); //在伤害较高时偏差较大

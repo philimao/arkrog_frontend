@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
-import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import TournamentForm from "../components/TournamentForm";
 import { StyledBackButton, StyledBackButtonContainer, StyledDivider } from "../components/Shared";
 import { useUserInfoStore } from "~/stores/userInfoStore";
@@ -104,9 +103,6 @@ export default function TournamentEdit() {
       {editLock.lockStatus.canEdit && <div className="text-sm text-green-600 mb-2">当前由您锁定编辑中</div>}
       <StyledDivider />
       <TournamentForm tournamentData={tournamentData} edit />
-      <div className="mt-6">
-        <UploadCenterTrigger />
-      </div>
 
       {/* 编辑确认弹窗 */}
       <EditLockConfirmModal

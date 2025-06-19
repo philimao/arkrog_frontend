@@ -1,26 +1,15 @@
-import React from "react";
-import { styled } from "styled-components";
 import { openModal } from "~/utils/dom";
 
-const StyledTrigger = styled.button`
-  position: fixed;
-  right: 3rem;
-  bottom: 3rem;
-  width: 3rem;
-  height: 3rem;
-  background: var(--black-gray);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-`;
-
-export default function UploadCenterTrigger() {
+export default function UploadCenterTrigger({
+  className,
+}: {
+  className?: string;
+}) {
   return (
-    <StyledTrigger onClick={() => openModal("upload-center")}>
+    <button className={className} onClick={() => openModal("upload-center")} type="button">
       <svg
-        width="1.5rem"
-        height="1.5rem"
+        width="1rem"
+        height="1rem"
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -38,6 +27,6 @@ export default function UploadCenterTrigger() {
           ></path>
         </g>
       </svg>
-    </StyledTrigger>
+    </button>
   );
 }

@@ -1,3 +1,4 @@
+import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon, LinkIcon } from "~/components/Icons";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
@@ -54,6 +55,7 @@ export default function TournamentPlayersAccordionItem({
                   }));
                 }}
                 className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red absolute top-1 right-1"
+                aria-label="删除选手"
               >
                 <CloseIcon width="0.7rem" height="0.7rem" />
               </button>
@@ -83,11 +85,12 @@ export default function TournamentPlayersAccordionItem({
       {editingPlayer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-t-1 border-t-mid-gray pt-2 mb-2">
           <div className="w-full">
-            <label className="block text-sm font-light mb-1">
+            <label htmlFor="playerName" className="block text-sm font-light mb-1">
               选手名字 <span className="text-ak-red">*</span>
             </label>
             <div className="flex gap-2 items-center">
               <input
+                id="playerName"
                 type="text"
                 value={editingPlayer.name}
                 placeholder="选手名字"
@@ -107,6 +110,7 @@ export default function TournamentPlayersAccordionItem({
                   // call bilibili API
                 }}
                 className="rounded-md px-2 text-black bg-ak-blue inline-flex items-center gap-1 h-6"
+                aria-label="连接bilibili账号"
               >
                 <LinkIcon /> 连接bilibili
               </button>
@@ -119,14 +123,15 @@ export default function TournamentPlayersAccordionItem({
             </div>
           </div>
 
-          {formData.type === "team" && (
+          {formData.type === "team" && formData.teams && (
             <div>
-              <label className="block text-sm font-light mb-1">
+              <label htmlFor="playerTeam" className="block text-sm font-light mb-1">
                 所属队伍 <span className="text-ak-red">*</span>
               </label>
-              <select
+              <Select
+                id="playerTeam"
                 name="playerTeam"
-                value={formData.teams?.find((team) => team.members.includes(editingPlayer.name))?.name}
+                selectedKeys={[formData.teams.find((team) => team.members.includes(editingPlayer.name))?.id ?? '']}
                 onChange={(e) => {
                   const newTeams = [...formData.teams!];
                   newTeams
@@ -143,17 +148,23 @@ export default function TournamentPlayersAccordionItem({
                     teams: newTeams,
                   }));
                 }}
-                className="w-full p-2 focus:outline-ak-blue cursor-pointer"
+                classNames={{
+                  trigger: "bg-mid-gray rounded-none",
+                  value: "",
+                  popoverContent: "bg-mid-gray rounded-none",
+                  listbox: "rounded-none",
+                }}
+                aria-label="所属队伍"
                 required
               >
-                {formData.teams?.map((team) => {
+                {formData.teams.map((team) => {
                   return (
-                    <option key={team.id} value={team.id}>
+                    <SelectItem key={team.id} value={team.id}>
                       {team.name}
-                    </option>
+                    </SelectItem>
                   );
                 })}
-              </select>
+              </Select>
             </div>
           )}
           <div>

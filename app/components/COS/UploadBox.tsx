@@ -13,7 +13,8 @@ import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { type UseCosListReturn } from "~/hooks/useCosList";
 
 const StyledUploadBoxContainer = styled.div`
-  min-height: 41.5rem;
+  max-height: min(38rem, 70vh);
+  overflow-y: auto;
 `;
 
 const StyledUploadBoxWrapper = styled.div`
@@ -23,7 +24,7 @@ const StyledUploadBoxWrapper = styled.div`
 
 const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
   width: 100%;
-  height: ${(props) => (props.$hasFile ? "10rem" : "39.5rem")};
+  height: ${(props) => (props.$hasFile ? "10rem" : "min(36rem, calc(70vh - 2rem))")};
   margin-bottom: 1rem;
   cursor: pointer;
   display: flex;
@@ -82,6 +83,7 @@ const StyledFilename = styled.td`
 
 const StyledSelectPrefix = styled.td`
   padding: 0 1rem;
+  min-width: 8rem;
 `;
 
 const StyledFileControlButton = styled.button``;
@@ -318,8 +320,8 @@ function FileEntry({
   const task = taskMap[file.id];
   const Icon = ({ id }: { id: string }) => (
     <svg
-      width="1.5rem"
-      height="1.5rem"
+      width="1rem"
+      height="1rem"
       style={{ fill: "white", stroke: "none" }}
     >
       <use href={"#" + id} />
@@ -372,11 +374,13 @@ function FileEntry({
               type="text"
               value={filename}
               onChange={(evt) => setFilename(evt.target.value)}
+              className="p-2 focus:outline-ak-blue"
+              maxLength={64}
             />
             <svg
               width="1rem"
               height="1rem"
-              style={{ stroke: "white" }}
+              style={{ stroke: "white", cursor: "pointer" }}
               onClick={() => {
                 setFiles((files) => {
                   const i = files.findIndex((f) => f.id === file.id);
@@ -395,8 +399,9 @@ function FileEntry({
             <svg
               width="1rem"
               height="1rem"
-              style={{ fill: "white", stroke: "none" }}
+              style={{ fill: "white", stroke: "none", cursor: "pointer" }}
               onClick={() => setEditing(true)}
+              className="flex-shrink-0"
             >
               <use href="#pencil" />
             </svg>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { TournamentData, TournamentGame, TournamentStage } from "~/types/tournamentsData";
 import { styled } from "styled-components";
 import { ArrowLeftIcon, ArrowRightIcon } from "~/components/Icons";
-import { generateDateArray } from "./index";
+import { generateDateArray } from "~/utils/date";
 
 // Styled components
 const StyledNav = styled.nav`

@@ -1,5 +1,7 @@
+import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
+import { inputClassName } from ".";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
@@ -20,10 +22,11 @@ export default function TournamentStagesAccordionItem({
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageName-${index}`} className="block text-sm font-light mb-1">
                     阶段名称 <span className="text-ak-red">*</span>
                   </label>
                   <input
+                    id={`stageName-${index}`}
                     type="text"
                     value={stage.name}
                     onChange={(e) => {
@@ -35,15 +38,16 @@ export default function TournamentStagesAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageStartTime-${index}`} className="block text-sm font-light mb-1">
                     开始时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
+                    id={`stageStartTime-${index}`}
                     type="date"
                     value={new Date(stage.startTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
@@ -55,15 +59,16 @@ export default function TournamentStagesAccordionItem({
                         stages: newStages,
                       }));
                     }}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageEndTime-${index}`} className="block text-sm font-light mb-1">
                     结束时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
+                    id={`stageEndTime-${index}`}
                     type="date"
                     value={new Date(stage.endTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
@@ -75,17 +80,18 @@ export default function TournamentStagesAccordionItem({
                         stages: newStages,
                       }));
                     }}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageType-${index}`} className="block text-sm font-light mb-1">
                     赛制 <span className="text-ak-red">*</span>
                   </label>
-                  <select
+                  <Select
+                    id={`stageType-${index}`}
                     name="type"
-                    value={stage.type}
+                    selectedKeys={[stage.type]}
                     onChange={(e) => {
                       const newStages = [...formData.stages];
                       newStages[index].type = e.target.value as TournamentStage["type"];
@@ -94,12 +100,18 @@ export default function TournamentStagesAccordionItem({
                         stages: newStages,
                       }));
                     }}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    classNames={{
+                      trigger: "bg-mid-gray rounded-none",
+                      value: "",
+                      popoverContent: "bg-mid-gray rounded-none",
+                      listbox: "rounded-none",
+                    }}
+                    aria-label="赛制"
                     required
                   >
-                    <option value="rank">排名赛</option>
-                    <option value="1on1">淘汰赛</option>
-                  </select>
+                    <SelectItem key="rank" value="rank">排名赛</SelectItem>
+                    <SelectItem key="1on1" value="1on1">淘汰赛</SelectItem>
+                  </Select>
                 </div>
               </div>
               <div>
@@ -110,6 +122,7 @@ export default function TournamentStagesAccordionItem({
                     setFormData((prev) => ({ ...prev, stages: newStages }));
                   }}
                   className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"
+                  aria-label="删除阶段"
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />
                 </button>

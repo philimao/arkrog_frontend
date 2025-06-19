@@ -15,7 +15,10 @@ import { toast } from "react-toastify";
 import Loading from "~/components/Loading";
 import { BackIcon, DeleteIcon, FolderIcon } from "~/components/Icons";
 
-const StyledListObjectWrapper = styled.div``;
+const StyledListObjectWrapper = styled.div`
+  max-height: min(38rem, 70vh);
+  overflow-y: auto;
+`;
 
 const StyledNav = styled.div`
   display: flex;
@@ -235,7 +238,7 @@ export default function ListObject({
           <span>文件夹</span>
         </StyledDisplaySwitch>
       </StyledNav>
-      <div className="min-h-[38.75rem] flex flex-col">
+      <div className="min-h-[28rem] flex flex-col">
         {objects.length > 0 ? (
           <StyledObjectTable>
             <tbody>

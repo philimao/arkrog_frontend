@@ -84,8 +84,8 @@ export const useCosUpload = (): UseCosUploadReturn => {
     const newFilesWithPreview = await Promise.all(
       allowedFiles.map(async (file) => ({
         id: await hashString(file.name),
-        filename: file.name.split(".")[0],
-        ext: file.name.split(".")[1],
+        filename: file.name.substring(0, file.name.lastIndexOf('.')) || file.name,
+        ext:  file.name.split('.')?.slice(1)?.pop() || '', //  file.name.split(".")[1],
         prefix: "",
         preview: URL.createObjectURL(file), // 生成预览 URL
         file,

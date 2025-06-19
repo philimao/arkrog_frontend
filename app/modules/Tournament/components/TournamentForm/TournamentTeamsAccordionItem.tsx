@@ -1,5 +1,7 @@
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
+import { inputClassName } from ".";
+import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 
 interface TournamentTeamsAccordionItemProps {
   formData: TournamentData;
@@ -24,10 +26,11 @@ export default function TournamentTeamsAccordionItem({
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`teamName-${index}`} className="block text-sm font-light mb-1">
                     队伍名称 <span className="text-ak-red">*</span>
                   </label>
                   <input
+                    id={`teamName-${index}`}
                     type="text"
                     value={team.name}
                     onChange={(e) => {
@@ -39,15 +42,16 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">
+                  <label htmlFor={`teamId-${index}`} className="block text-sm font-light mb-1">
                     队伍ID <span className="text-ak-red">*</span>
                   </label>
                   <input
+                    id={`teamId-${index}`}
                     type="text"
                     value={team.id}
                     onChange={(e) => {
@@ -59,30 +63,37 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">队伍头像</label>
-                  <input
-                    type="text"
-                    value={team.avatar}
-                    onChange={(e) => {
-                      const newTeams = [...formData.teams!];
-                      newTeams[index].avatar = e.target.value;
-                      setFormData((prev) => ({
-                        ...prev,
-                        teams: newTeams,
-                      }));
-                    }}
-                    onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
-                  />
+                  <label htmlFor={`teamAvatar-${index}`} className="block text-sm font-light mb-1">队伍头像</label>
+
+
+                  <div className="relative">
+                    <input
+                      id={`teamAvatar-${index}`}
+                      type="text"
+                      value={team.avatar}
+                      onChange={(e) => {
+                        const newTeams = [...formData.teams!];
+                        newTeams[index].avatar = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          teams: newTeams,
+                        }));
+                      }}
+                      onKeyDown={handleKeyDown}
+                      className={`${inputClassName} pr-12`}
+                    />
+                    <UploadCenterTrigger className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray" aria-label="上传队伍头像" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">队长</label>
+                  <label htmlFor={`teamLeader-${index}`} className="block text-sm font-light mb-1">队长</label>
                   <input
+                    id={`teamLeader-${index}`}
                     type="text"
                     value={team.leader}
                     onChange={(e) => {
@@ -94,12 +105,13 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">核心成员</label>
+                  <label htmlFor={`teamKeyMember-${index}`} className="block text-sm font-light mb-1">核心成员</label>
                   <input
+                    id={`teamKeyMember-${index}`}
                     type="text"
                     value={team.keyMember}
                     onChange={(e) => {
@@ -111,12 +123,13 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-light mb-1">最终排名</label>
+                  <label htmlFor={`teamFinalRank-${index}`} className="block text-sm font-light mb-1">最终排名</label>
                   <input
+                    id={`teamFinalRank-${index}`}
                     type="number"
                     value={team.finalRank || ""}
                     onChange={(e) => {
@@ -128,7 +141,7 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className="w-full p-2 focus:outline-ak-blue"
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -140,6 +153,7 @@ export default function TournamentTeamsAccordionItem({
                     setFormData((prev) => ({ ...prev, teams: newTeams }));
                   }}
                   className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"
+                  aria-label="删除队伍"
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />
                 </button>

@@ -11,6 +11,8 @@ import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
 import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 
+export const inputClassName = "bg-mid-gray w-full p-2 focus:outline-ak-blue";
+
 export default function TournamentForm({
   edit = false,
   tournamentData,

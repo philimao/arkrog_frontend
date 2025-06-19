@@ -1,7 +1,10 @@
+import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
+import { inputClassName } from ".";
+import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 
 interface TournamentInfoAccordionItemProps {
   formData: TournamentData;
@@ -29,158 +32,191 @@ export default function TournamentInfoAccordionItem({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="name" className="block text-sm font-light mb-1">
             赛事名称 <span className="text-ak-red">*</span>
           </label>
           <input
+            id="name"
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full p-2 focus:outline-ak-blue"
+            className={inputClassName}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="type" className="block text-sm font-light mb-1">
             赛事类型 <span className="text-ak-red">*</span>
           </label>
-          <select
+          <Select
+            id="type"
             name="type"
-            value={formData.type}
+            selectedKeys={[formData.type]}
             onChange={handleChange}
-            className="w-full p-2 focus:outline-ak-blue cursor-pointer"
+            classNames={{
+              trigger: "bg-mid-gray rounded-none",
+              value: "",
+              popoverContent: "bg-mid-gray rounded-none",
+              listbox: "rounded-none",
+            }}
+            aria-label="赛事类型"
             required
           >
-            <option value="individual">个人赛</option>
-            <option value="team">团队赛</option>
-          </select>
+            <SelectItem key="individual" value="individual">个人赛</SelectItem>
+            <SelectItem key="team" value="team">团队赛</SelectItem>
+          </Select>
         </div>
 
         <div>
-          <label className="block text-sm font-light mb-1">赛事图标</label>
-          <input
-            type="text"
-            name="avatar"
-            value={formData.avatar}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            className="w-full p-2 focus:outline-ak-blue"
-          />
+          <label htmlFor="avatar" className="block text-sm font-light mb-1">赛事图标</label>
+          <div className="relative">
+            <input
+              id="avatar"
+              type="text"
+              name="avatar"
+              value={formData.avatar}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              className={`${inputClassName} pr-12`}
+            />
+            <UploadCenterTrigger className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray" aria-label="上传赛事图标" />
+          </div>
         </div>
 
         {topics && (
           <div>
-            <label className="block text-sm font-light mb-1">
+            <label htmlFor="rogue" className="block text-sm font-light mb-1">
               肉鸽 <span className="text-ak-red">*</span>
             </label>
-            <select
+            <Select
+              id="rogue"
               name="rogue"
-              value={formData.rogue ? topics[formData.rogue as RogueKey].name : Object.values(topics).reverse()[0].name}
+              selectedKeys={[formData.rogue ? topics[formData.rogue as RogueKey].id : Object.values(topics).reverse()[0].id]}
               onChange={handleChange}
-              className="w-full p-2 focus:outline-ak-blue cursor-pointer"
+              classNames={{
+                trigger: "bg-mid-gray rounded-none",
+                value: "",
+                popoverContent: "bg-mid-gray rounded-none",
+                listbox: "rounded-none",
+              }}
+              aria-label="肉鸽"
               required
             >
               {Object.values(topics)
                 .reverse()
                 .map((topic) => (
-                  <option key={topic.id} value={topic.name}>
+                  <SelectItem key={topic.id} value={topic.name}>
                     {topic.name}
-                  </option>
+                  </SelectItem>
                 ))}
-            </select>
+            </Select>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="edition" className="block text-sm font-light mb-1">
             肉鸽版本 <span className="text-ak-red">*</span>
           </label>
-          <select
+          <Select
+            id="edition"
             name="edition"
-            value={formData.edition}
+            selectedKeys={[formData.edition]}
             onChange={handleChange}
-            className="w-full p-2 focus:outline-ak-blue cursor-pointer"
+            classNames={{
+              trigger: "bg-mid-gray rounded-none",
+              value: "",
+              popoverContent: "bg-mid-gray rounded-none",
+              listbox: "rounded-none",
+            }}
+            aria-label="肉鸽版本"
             required
           >
-            <option value="初始版本">初始版本</option>
-            <option value="DLC_1">DLC_1</option>
-            <option value="DLC_2">DLC_2</option>
-          </select>
+            <SelectItem key="初始版本" value="初始版本">初始版本</SelectItem>
+            <SelectItem key="DLC_1" value="DLC_1">DLC_1</SelectItem>
+            <SelectItem key="DLC_2" value="DLC_2">DLC_2</SelectItem>
+          </Select>
         </div>
 
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="level" className="block text-sm font-light mb-1">
             肉鸽难度 <span className="text-ak-red">*</span>
           </label>
           <input
+            id="level"
             type="text"
             name="level"
             value={formData.level}
             placeholder="例：N18"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full p-2 focus:outline-ak-blue"
+            className={inputClassName}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="organizerName" className="block text-sm font-light mb-1">
             主办方 <span className="text-ak-red">*</span>
           </label>
           <input
+            id="organizerName"
             type="text"
             name="organizerName"
             value={formData.organizerName}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full p-2 focus:outline-ak-blue"
+            className={inputClassName}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-light mb-1">
+          <label htmlFor="room" className="block text-sm font-light mb-1">
             直播间 <span className="text-ak-red">*</span>
           </label>
           <input
+            id="room"
             type="text"
             name="room"
             value={formData.room}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="w-full p-2 focus:outline-ak-blue"
+            className={inputClassName}
             required
           />
         </div>
 
         {formData.type === "team" && (
           <div>
-            <label className="block text-sm font-light mb-1">Member Alias</label>
+            <label htmlFor="memberAlias" className="block text-sm font-light mb-1">成员称号</label>
             <input
+              id="memberAlias"
               type="text"
               name="memberAlias"
               value={formData.memberAlias}
+              placeholder="例：讲述者"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className="w-full p-2 focus:outline-ak-blue"
+              className={inputClassName}
             />
           </div>
         )}
 
         {formData.type === "team" && (
           <div>
-            <label className="block text-sm font-light mb-1">Key Member Alias</label>
+            <label htmlFor="keyMemberAlias" className="block text-sm font-light mb-1">核心成员称号</label>
             <input
+              id="keyMemberAlias"
               type="text"
               name="keyMemberAlias"
               value={formData.keyMemberAlias}
+              placeholder="例：创想家"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className="w-full p-2 focus:outline-ak-blue"
+              className={inputClassName}
             />
           </div>
         )}
@@ -229,7 +265,7 @@ export default function TournamentInfoAccordionItem({
               />
             ) : (
               <div key={index} className="px-2 py-1 rounded-md bg-mid-gray">
-                <button type="button" className="" onClick={() => setEditingLabelIndex(index)}>
+                <button type="button" className="" onClick={() => setEditingLabelIndex(index)} aria-label={`编辑标签${label}`}>
                   {label}
                 </button>
                 <button
@@ -242,6 +278,7 @@ export default function TournamentInfoAccordionItem({
                     }));
                   }}
                   className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
+                  aria-label={`删除标签${label}`}
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />
                 </button>
@@ -296,23 +333,25 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-light mb-1">规则</label>
+        <label htmlFor="rule" className="block text-sm font-light mb-1">规则</label>
         <textarea
+          id="rule"
           name="rule"
           value={formData.rule}
           onChange={handleChange}
-          className="w-full p-2 focus:outline-ak-blue"
+          className={inputClassName}
           rows={4}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-light mb-1">详细规则</label>
+        <label htmlFor="detailRule" className="block text-sm font-light mb-1">详细规则</label>
         <textarea
+          id="detailRule"
           name="detailRule"
           value={formData.detailRule}
           onChange={handleChange}
-          className="w-full p-2 focus:outline-ak-blue"
+          className={inputClassName}
           rows={4}
         />
       </div>

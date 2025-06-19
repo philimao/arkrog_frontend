@@ -19,3 +19,5 @@ export * from "./ThumbUpIcon";
 export * from "./FolderIcon";
 export * from "./BackIcon";
 export * from "./LinkIcon";
+export * from "./InformationIcon";
+export * from "./AttachmentIcon";

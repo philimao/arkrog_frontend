@@ -121,7 +121,7 @@ export default function TournamentStagesAccordionItem({
                     const newStages = formData.stages.filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, stages: newStages }));
                   }}
-                  className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"
+                  className="rounded-md p-1 hover:bg-ak-red"
                   aria-label="删除阶段"
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />

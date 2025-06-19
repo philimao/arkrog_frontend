@@ -1,7 +1,8 @@
-import { CloseIcon } from "~/components/Icons";
+import { CloseIcon, InformationIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
 import { inputClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
+import { Tooltip } from "@heroui/react";
 
 interface TournamentTeamsAccordionItemProps {
   formData: TournamentData;
@@ -68,9 +69,14 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamAvatar-${index}`} className="block text-sm font-light mb-1">队伍头像</label>
-
-
+                  <label htmlFor={`teamAvatar-${index}`} className="flex items-center text-sm font-light mb-1">
+                    队伍头像
+                    <Tooltip content="点击图标上传图片后，将图片链接粘贴此处" className="bg-light-mid-gray text-black">
+                      <span className="px-1">
+                        <InformationIcon width="0.75rem" height="0.75rem" />
+                      </span>
+                    </Tooltip>
+                  </label>
                   <div className="relative">
                     <input
                       id={`teamAvatar-${index}`}
@@ -152,7 +158,7 @@ export default function TournamentTeamsAccordionItem({
                     const newTeams = formData.teams!.filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, teams: newTeams }));
                   }}
-                  className="rounded-md p-2 bg-ak-dark-red hover:bg-ak-red"
+                  className="rounded-md p-1 hover:bg-ak-red"
                   aria-label="删除队伍"
                 >
                   <CloseIcon width="0.7rem" height="0.7rem" />
@@ -166,7 +172,7 @@ export default function TournamentTeamsAccordionItem({
         type="button"
         onClick={() => {
           const newTeam = {
-            name: "新队伍",
+            name: `队伍${(formData.teams?.length ?? 0) + 1}`,
             avatar: "",
             members: [],
             leader: "",

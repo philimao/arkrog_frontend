@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { type UseCosListReturn } from "~/hooks/useCosList";
+import { CloseIcon } from "../Icons";
 
 const StyledUploadBoxContainer = styled.div`
   max-height: min(38rem, 70vh);
@@ -328,8 +329,8 @@ function FileEntry({
     </svg>
   );
   const control = !task ? (
-    <StyledFileControlButton onClick={() => removeFile(file)}>
-      <Icon id="close" />
+    <StyledFileControlButton className="rounded-md p-1 hover:bg-ak-red" onClick={() => removeFile(file)}>
+      <CloseIcon width="1rem" height="1rem" />
     </StyledFileControlButton>
   ) : task.status === "uploading" ? (
     <StyledFileControlButton onClick={() => pauseTask(file.id)}>
@@ -357,8 +358,8 @@ function FileEntry({
       >
         <Icon id="resume" />
       </StyledFileControlButton>
-      <StyledFileControlButton onClick={() => cancelTask(file.id)}>
-        <Icon id="close" />
+      <StyledFileControlButton className="rounded-md p-1 hover:bg-ak-red" onClick={() => cancelTask(file.id)}>
+        <CloseIcon width="1rem" height="1rem" />
       </StyledFileControlButton>
     </>
   );
@@ -492,17 +493,6 @@ const SVG = () => (
         <path d="M9 2H11V14H9V2Z"></path>
       </g>
     </symbol>
-    <svg id="close" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-      <g
-        id="SVGRepo_tracerCarrier"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      ></g>
-      <g id="SVGRepo_iconCarrier">
-        <path d="M5.1716 8.00003L1.08582 3.91424L3.91424 1.08582L8.00003 5.1716L12.0858 1.08582L14.9142 3.91424L10.8285 8.00003L14.9142 12.0858L12.0858 14.9142L8.00003 10.8285L3.91424 14.9142L1.08582 12.0858L5.1716 8.00003Z"></path>
-      </g>
-    </svg>
     <symbol id="copy" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
       <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
       <g

@@ -1,5 +1,5 @@
-import { Select, SelectItem } from "@heroui/react";
-import { CloseIcon, LinkIcon } from "~/components/Icons";
+import { Select, SelectItem, Tooltip } from "@heroui/react";
+import { CloseIcon, InformationIcon, LinkIcon } from "~/components/Icons";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
 
@@ -85,8 +85,14 @@ export default function TournamentPlayersAccordionItem({
       {editingPlayer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-t-1 border-t-mid-gray pt-2 mb-2">
           <div className="w-full">
-            <label htmlFor="playerName" className="block text-sm font-light mb-1">
-              选手名字 <span className="text-ak-red">*</span>
+            <label htmlFor="playerName" className="flex items-center text-sm font-light mb-1">
+              选手名字
+              <Tooltip content="输入名字后点击连接bilibili获取选手头像" className="bg-light-mid-gray text-black">
+                <span className="px-1">
+                  <InformationIcon width="0.75rem" height="0.75rem" />
+                </span>
+              </Tooltip>
+              <span className="text-ak-red">*</span>
             </label>
             <div className="flex gap-2 items-center">
               <input

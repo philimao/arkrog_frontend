@@ -1,5 +1,5 @@
-import { Select, SelectItem } from "@heroui/react";
-import { CloseIcon } from "~/components/Icons";
+import { Select, SelectItem, Tooltip } from "@heroui/react";
+import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
@@ -71,7 +71,14 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="avatar" className="block text-sm font-light mb-1">赛事图标</label>
+          <label htmlFor="avatar" className="flex items-center text-sm font-light mb-1">
+            赛事图标
+            <Tooltip content="点击图标上传图片后，将图片链接粘贴此处" className="bg-light-mid-gray text-black">
+              <span className="px-1">
+                <InformationIcon width="0.75rem" height="0.75rem" />
+              </span>
+            </Tooltip>
+          </label>
           <div className="relative">
             <input
               id="avatar"
@@ -174,8 +181,14 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="room" className="block text-sm font-light mb-1">
-            直播间 <span className="text-ak-red">*</span>
+          <label htmlFor="room" className="flex items-center items-center text-sm font-light mb-1">
+            观赛直播间
+            <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+              <span className="px-1">
+                <InformationIcon width="0.75rem" height="0.75rem" />
+              </span>
+            </Tooltip>
+            <span className="text-ak-red">*</span>
           </label>
           <input
             id="room"
@@ -333,7 +346,14 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div className="mb-4">
-        <label htmlFor="rule" className="block text-sm font-light mb-1">规则</label>
+        <label htmlFor="rule" className="flex items-center text-sm font-light mb-1">
+          规则
+          <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+            <span className="px-1">
+              <InformationIcon width="0.75rem" height="0.75rem" />
+            </span>
+          </Tooltip>
+        </label>
         <textarea
           id="rule"
           name="rule"
@@ -345,7 +365,14 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div>
-        <label htmlFor="detailRule" className="block text-sm font-light mb-1">详细规则</label>
+        <label htmlFor="detailRule" className="flex items-center text-sm font-light mb-1">
+          详细规则
+          <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+            <span className="px-1">
+              <InformationIcon width="0.75rem" height="0.75rem" />
+            </span>
+          </Tooltip>
+        </label>
         <textarea
           id="detailRule"
           name="detailRule"

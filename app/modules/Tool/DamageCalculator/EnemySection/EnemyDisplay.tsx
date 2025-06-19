@@ -168,15 +168,13 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
-  /** 敌人数据基础值 */
-  const enemyBaseRef = useRef<EnemyInput | null>(null);
-
   /** 计算敌人属性 */
   useEffect(() => {
     const enemyInput = CalculatorHelper.calculateEnemyAttr({
       enemyBase,
       context: globalAnalysisResult,
     });
+    console.log("计算敌人数据(display)", enemyInput, enemyBase);
     _setEnemyDataParsed(enemyInput);
   }, [globalAnalysisResult, enemyBase]);
 
@@ -209,32 +207,30 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       <StyledEnemyDisplayTop>
         <StyledEnemyLeftInfo>
           <StyledEnemyHeader>
-            <StyledName>{_enemyDataParsed.name}</StyledName>
+            <StyledName>{enemyBase.name}</StyledName>
             <div className="flex gap-2">
               <StyledEnmeyLevelBadge
-                $levelType={_enemyDataParsed.levelType}
-                role={_enemyDataParsed.name === "木桩" ? "button" : "none"}
+                $levelType={enemyBase.levelType}
+                role={enemyBase.name === "木桩" ? "button" : "none"}
                 onClick={() => {
-                  if (_enemyDataParsed.name === "木桩") {
+                  if (enemyBase.name === "木桩") {
                     setEnemyData({
                       ...enemyData,
                       levelType: {
                         m_defined: true,
-                        m_value: _enemyDataParsed.levelType === "NORMAL" ? "ELITE" : "NORMAL",
+                        m_value: enemyBase.levelType === "NORMAL" ? "ELITE" : "NORMAL",
                       },
                     });
                     setEnemyContext(CalculatorHelper.createAdditionContext());
                   }
                 }}
               >
-                {levelTypeMap[_enemyDataParsed.levelType]}
+                {levelTypeMap[enemyBase.levelType]}
               </StyledEnmeyLevelBadge>
-              {_enemyDataParsed.enemyTags.length > 0 && (
-                <StyledEnemyTag>{enemyTagMap[_enemyDataParsed.enemyTags[0]]}</StyledEnemyTag>
-              )}
+              {enemyBase.enemyTags.length > 0 && <StyledEnemyTag>{enemyTagMap[enemyBase.enemyTags[0]]}</StyledEnemyTag>}
             </div>
           </StyledEnemyHeader>
-          <StyledEnemyAvatar name={_enemyDataParsed.name} />
+          <StyledEnemyAvatar name={enemyBase.name} />
         </StyledEnemyLeftInfo>
         <EnemySpecSelector setIllust={setIllust} enemyData={enemyData} />
       </StyledEnemyDisplayTop>
@@ -248,7 +244,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               </StyledPhaseItem>
             ))}
         </StyledPhase> */}
-        {_enemyDataParsed.name !== "木桩" ? (
+        {enemyBase.name !== "木桩" ? (
           <StyledAttrFuncButton onClick={() => assignToDummy()}>复制到木桩</StyledAttrFuncButton>
         ) : (
           <StyledAttrFuncButton onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>
@@ -271,22 +267,22 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                   </Tooltip>
                 )}
               </div>
-              {_enemyDataParsed.name !== "木桩" ? (
+              {enemyBase.name !== "木桩" ? (
                 <EnemyAttribute
                   attrKey={key}
-                  baseValue={enemyBaseRef.current?.attributes[key as never]}
+                  value={_enemyDataParsed.attributes[key as never]}
                   className={color}
                   context={globalAnalysisResult}
                 />
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}
-                  value={_enemyDataParsed.attributes[key as never]}
+                  value={enemyBase.attributes[key as never]}
                   setValue={(value: string) => {
                     const updated = {
-                      ..._enemyDataParsed,
+                      ...enemyBase,
                       attributes: {
-                        ..._enemyDataParsed.attributes,
+                        ...enemyBase.attributes,
                         [key]: value,
                       },
                     };
@@ -294,15 +290,15 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                   }}
                   onBlur={() => {
                     // 解析浮点数，失败则设置为0
-                    let number = parseFloat(_enemyDataParsed.attributes[key as never]) || 0;
+                    let number = parseFloat(enemyBase.attributes[key as never]) || 0;
                     const { min, max } = displayAttrKeys[key as never];
                     // 应用数据边界
                     if (min !== undefined && number < min) number = min;
                     if (max !== undefined && number > max) number = max;
                     const updated = {
-                      ..._enemyDataParsed,
+                      ...enemyBase,
                       attributes: {
-                        ..._enemyDataParsed.attributes,
+                        ...enemyBase.attributes,
                         [key]: number,
                       },
                     };

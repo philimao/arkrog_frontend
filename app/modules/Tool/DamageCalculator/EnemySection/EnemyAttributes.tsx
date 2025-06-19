@@ -12,10 +12,17 @@ function getMaxHpTagGroups(props: { baseValue: number; context: BuffContext }): 
       tooltip: "局内",
       tags: [<AttrTag tooltip="基础">{baseValue}</AttrTag>],
     },
-    ...context.in_game_buff_final_mul.enemy_max_hp.children.map((item) => ({
-      tooltip: item.tooltip,
-      tags: [<AttrTag tooltip={item.tooltip}>{item.calculate().toFixed(2)}</AttrTag>],
-    })),
+    {
+      tooltip: "乘区",
+      tags: [
+        ...context.relic_rune_mul.enemy_max_hp.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate().toFixed(2)}</AttrTag>
+        )),
+        ...context.in_game_buff_final_mul.enemy_max_hp.children.map((item) => (
+          <AttrTag tooltip={item.tooltip}>{item.calculate().toFixed(2)}</AttrTag>
+        )),
+      ],
+    },
   ];
 }
 
@@ -49,37 +56,33 @@ function getDefTagGroups(props: { baseValue: number; context: BuffContext }): At
 
 export default function EnemyAttribute({
   attrKey,
-  attributeValue,
-  baseValue,
+  value,
   className = "",
   context,
 }: {
   attrKey: string;
-  attributeValue?: number;
-  baseValue?: number;
+  value?: number;
   className?: string;
   context: BuffContext | null;
 }) {
-  const { enemyDataParsed } = useDamageCalculatorStore();
-
-  const _attributeValue = attributeValue !== undefined ? attributeValue : enemyDataParsed.attributes[attrKey as never];
+  const { enemyBase } = useDamageCalculatorStore();
 
   // 使用 useMemo 来避免重复计算 TagGroups
   const calcTokens = useMemo((): AttrCalcToken[] => {
-    if (!context || !baseValue) return [];
+    if (!context) return [];
     if (attrKey === "maxHp") {
-      return getMaxHpTagGroups({ baseValue, context });
+      return getMaxHpTagGroups({ baseValue: enemyBase.attributes.maxHp, context });
     } else if (attrKey === "atk") {
-      return getAtkTagGroups({ baseValue, context });
+      return getAtkTagGroups({ baseValue: enemyBase.attributes.atk, context });
     } else if (attrKey === "def") {
-      return getDefTagGroups({ baseValue, context });
+      return getDefTagGroups({ baseValue: enemyBase.attributes.def, context });
     }
     return [];
-  }, [attrKey, baseValue, context]);
+  }, [attrKey, enemyBase, context]);
 
   return (
     <div className={mergeClassNameSafe("bg-black-gray px-3 leading-8 h-8 font-bold text-xl", className)}>
-      <AttrDisplay calcTokens={calcTokens}>{_attributeValue}</AttrDisplay>
+      <AttrDisplay calcTokens={calcTokens}>{value}</AttrDisplay>
     </div>
   );
 }

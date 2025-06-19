@@ -67,7 +67,7 @@ export default function EnemyMiniPreview() {
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
               <EnemyAttribute
                 attrKey={key}
-                baseValue={enemyInput.attributes[key as never]}
+                value={enemyInput.attributes[key as never]}
                 className={className}
                 context={globalAnalysisResult}
               />

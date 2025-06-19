@@ -51,13 +51,13 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
 
   const commonDPH = ((atk + atkBuffInAdd + 0.26) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
-  //const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
   result.attack.dph = commonDPH;
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.3; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
+  result.attack.dps.phy = commonDamage * (1 - mitigation) / commonAtkTime;
 
   switch (skillKey) {
     case "skchr_angel2_1": {
@@ -70,7 +70,6 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       const skillDphBomb =
         ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 2.0 * atkBuffFinalMul;
       const skillDamageBomb = Math.max(skillDphBomb - enemyDef, skillDphBomb * 0.05) * damage_scale * damage_scale_phy;
-      // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
       const skillAtkTimeBase = 0.6; // 技能基础攻击间隔
       const skillAtkFrame = Math.round((skillAtkTimeBase * 3000.0) / atkSpeed); // 技能攻击间隔(帧)
@@ -88,11 +87,6 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       const skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * skillHit * (1 - mitigation);
 
-      // if (fire) {
-      //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
-      //   skillTotalDamage += skillFireDamage * 0.25 * (1 - mitigation);
-      // }
-
       result.skill.dph = skillDph;
       result.skill.dps.phy = skillTotalDamage / skillKeepTime;
       result.cycle.dps.phy = (skillTotalDamage + commonTotalDamage) / (skillKeepTime + skillRecoveryTime);
@@ -109,7 +103,6 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
       const skillDphBomb =
         ((atk + atkBuffInAdd) * (1 + skillBuffIn + atkBuffInMul) + atkBuffInAdd) * 2.0 * atkBuffFinalMul;
       const skillDamageBomb = Math.max(skillDphBomb - enemyDef, skillDphBomb * 0.05) * damage_scale * damage_scale_phy;
-      // const skillFireDamage = Math.max(skillDph * 2 - enemyDef, skillDph * 2 * 0.05) * damage_scale * damage_scale_phy;
 
       const skillAtkTimeBase = 1.3; // 技能基础攻击间隔
       const skillAtkFrame = Math.round((skillAtkTimeBase * 3000.0) / atkSpeed); // 技能攻击间隔(帧)
@@ -126,11 +119,6 @@ export default function Exusiai_the_New_Covenant(input: CalculatorInput): Calcul
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       const skillTotalDamage = (skillDamage + skillDamageBomb * 0.35) * 5 * skillHit * (1 - mitigation);
-
-      // if (fire) {
-      //   commonTotalDamage += commonFireDamage * commonHit * 0.25 * (1 - mitigation);
-      //   skillTotalDamage += skillFireDamage * 0.25 * (1 - mitigation);
-      // }
 
       result.skill.dph = skillDph;
       result.skill.dps.phy = skillTotalDamage / skillKeepTime;

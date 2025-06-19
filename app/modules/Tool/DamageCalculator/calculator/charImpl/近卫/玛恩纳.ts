@@ -45,7 +45,7 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 1.2; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
@@ -73,7 +73,7 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
       const skillKeepTime = 28.0; // 技能持续时间
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
-      const skillHit = skillKeepTime / skillAtkTime; // 技能期望普攻次数
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望普攻次数
 
       const skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
       const skillTotalDamagePure = skillDphPure * skillHit * damage_scale_pure;

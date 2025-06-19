@@ -51,7 +51,7 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
   //const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
 
-  const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
+  const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
   const commonAtkTimeBase = 2.5; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
@@ -140,11 +140,11 @@ export default function Hoederer(input: CalculatorInput): CalculatorOutput {
 
       const spInitial = 0; // 藏品初始技力
       const skillSp = 50.0;
-      const skillKeepTime = 70.0; // 技能持续时间
+      const skillKeepTime = 68.5; // 技能持续时间
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数
-      const skillHit = 68.5 / skillAtkTime; // 技能期望攻击次数(前摇1.5s)
+      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望攻击次数(前摇1.5s)
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
       const skillTotalDamagePhy = skillDamage * skillHit * (1 - mitigation);

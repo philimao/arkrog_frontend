@@ -219,8 +219,8 @@ function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: 
           !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
           (!searchValue ||
             relicWrapper.name.includes(searchValue) ||
-            relicWrapper.pinyin.startsWith(searchValue) ||
-            relicWrapper.initials.startsWith(searchValue)),
+            relicWrapper.pinyin.includes(searchValue) ||
+            relicWrapper.initials.includes(searchValue)),
       )
       // 藏品价值与关键字筛选
       .filter(

@@ -225,6 +225,10 @@ export class CalculatorHelper {
         result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(bb.value, tooltip));
         break;
       }
+      case "def": {
+        result.relic_rune_add.def.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
       default: {
         console.log("未处理的黑板数据", bb);
       }

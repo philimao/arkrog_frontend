@@ -1,4 +1,4 @@
-import type { EnemyData, EnemyInput, LevelData, StageData } from "~/types/gameData";
+import type { EnemyData, EnemyInput, StageData } from "~/types/gameData";
 import { parseDefinedData } from "../utils";
 
 export const enemyTagMap: Record<string, string> = {

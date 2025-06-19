@@ -51,7 +51,7 @@ export default function KirinRYato(input: CalculatorInput): CalculatorOutput {
   // 天赋2：鬼人强化状态 - 技能期间及结束后10秒攻击力加成
   const talent2Atk =
     (uniEquipLevel === 2 ? 0.15 : uniEquipLevel === 1 ? 0.14 : 0.13) + // 模组
-    (potential >= 5 ? 0.03 : 0); // 潜能
+    (potential >= 4 ? 0.03 : 0); // 潜能
   /** 技能期2天赋加成 */
   const talent2SkillAtk = talent2Atk + (uniEquipLevel === 2 ? 0.05 : uniEquipLevel === 1 ? 0.03 : 0);
 

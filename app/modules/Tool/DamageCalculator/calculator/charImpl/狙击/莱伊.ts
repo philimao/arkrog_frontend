@@ -40,10 +40,7 @@ export default function Ray(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation =
-    1 -
-    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+  const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   // const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
@@ -53,7 +50,7 @@ export default function Ray(input: CalculatorInput): CalculatorOutput {
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH - enemyDef, commonDPH * 0.05) * damage_scale * damage_scale_phy;
   //const commonFireDamage = Math.max(2 * commonDPH - enemyDef, commonDPH * 2 * 0.05) * damage_scale * damage_scale_phy;
-  result.attack.dph = commonDPH;
+  result.attack.dph = commonDPH * (1 - mitigation);
 
   const atkSpeed = 100 + atkSpeedBuff; // 攻击速度
   const commonAtkTimeBase = 1.3; // 普攻基础时间

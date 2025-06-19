@@ -40,10 +40,7 @@ export default function Młynar(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation =
-    1 -
-    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+  const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御

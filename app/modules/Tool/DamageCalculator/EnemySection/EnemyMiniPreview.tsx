@@ -5,6 +5,7 @@ import EnemyAttribute from "./EnemyAttributes";
 import { allowedBlackboardKeyMap, camelToSnake } from "../utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
+import { CalculatorHelper } from "../calculator/helper";
 
 const StyledEnemyHeader = styled.div`
   display: flex;
@@ -40,21 +41,21 @@ const StyledGridContainer = styled(GridContainer)`
 `;
 
 export default function EnemyMiniPreview() {
-  const { enemyDataParsed, enemyContext } = useDamageCalculatorStore();
-
-  if (!enemyContext) return null;
+  const { enemyBase, globalAnalysisResult } = useDamageCalculatorStore();
+  const enemyInput = CalculatorHelper.calculateEnemyAttr({
+    enemyBase,
+    context: globalAnalysisResult,
+  });
 
   return (
     <div className="flex flex-col">
       <StyledEnemyHeader>
-        <StyledName>{enemyDataParsed.name}</StyledName>
+        <StyledName>{enemyInput.name}</StyledName>
         <div className="flex gap-2">
-          <StyledEnmeyLevelBadge $levelType={enemyDataParsed.levelType}>
-            {levelTypeMap[enemyDataParsed.levelType]}
+          <StyledEnmeyLevelBadge $levelType={enemyInput.levelType}>
+            {levelTypeMap[enemyInput.levelType]}
           </StyledEnmeyLevelBadge>
-          {enemyDataParsed.enemyTags.length > 0 && (
-            <StyledEnemyTag>{enemyTagMap[enemyDataParsed.enemyTags[0]]}</StyledEnemyTag>
-          )}
+          {enemyInput.enemyTags.length > 0 && <StyledEnemyTag>{enemyTagMap[enemyInput.enemyTags[0]]}</StyledEnemyTag>}
         </div>
       </StyledEnemyHeader>
       <StyledGridContainer>
@@ -66,9 +67,9 @@ export default function EnemyMiniPreview() {
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
               <EnemyAttribute
                 attrKey={key}
-                baseValue={enemyDataParsed.attributes[key as never]}
+                baseValue={enemyInput.attributes[key as never]}
                 className={className}
-                context={enemyContext}
+                context={globalAnalysisResult}
               />
             </StyledInputWrapper>
           );

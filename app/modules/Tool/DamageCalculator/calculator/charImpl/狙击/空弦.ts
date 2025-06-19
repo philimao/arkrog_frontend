@@ -39,10 +39,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation =
-    1 -
-    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+  const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 

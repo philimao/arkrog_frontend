@@ -41,10 +41,7 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
-  const mitigation =
-    1 -
-    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+  const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
@@ -60,10 +57,10 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
-  result.attack.dps.phy = commonDamage / commonAtkTime;
-  result.attack.dps.mag = commonDamageMag / commonAtkTime;
-  result.attack.total_damage.phy = commonDamage;
-  result.attack.total_damage.mag = commonDamageMag;
+  result.attack.dps.phy = (commonDamage * (1 - mitigation)) / commonAtkTime;
+  result.attack.dps.mag = (commonDamageMag * (1 - mitigation)) / commonAtkTime;
+  result.attack.total_damage.phy = commonDamage * (1 - mitigation);
+  result.attack.total_damage.mag = commonDamageMag * (1 - mitigation);
 
   switch (skillKey) {
     case "skchr_svrash_1": {

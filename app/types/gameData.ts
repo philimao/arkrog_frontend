@@ -636,7 +636,7 @@ export interface EnemyAttribute {
   /** 恐惧免疫 */
   fearedImmune: boolean;
   /** 物理法术减伤 */
-  damageResistance?: number;
+  damageResistance: number;
 }
 
 /** 肉鸽输入数据 */

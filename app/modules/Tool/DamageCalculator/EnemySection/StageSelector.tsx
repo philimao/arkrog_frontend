@@ -9,7 +9,7 @@ import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { debounce } from "@heroui/shared-utils";
-import { navOfZone } from "./enemyUtils";
+import { navOfZone, parseEnemyData } from "./enemyUtils";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -106,7 +106,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     rogueInput,
     selectRelic,
     setEnemyData,
-    setEnemyDataParsed,
+    setEnemyBase,
     setRogueZone,
     setStageData,
   } = useDamageCalculatorStore();
@@ -142,7 +142,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
       setStageId(renderStages[0].id);
       setStageData(renderStages[0]);
     }
-  }, [renderStages, setEnemyData, setEnemyDataParsed, setStageData]);
+  }, [renderStages, setEnemyData, setEnemyBase, setStageData]);
 
   // 处理关卡选择变化后，加载stageData的副作用
   useEffect(() => {
@@ -169,11 +169,11 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
       selectRelic("rogue_4_relic_final_6");
     }
     setEnemyData(undefined as never);
-    setEnemyDataParsed(dummy);
+    setEnemyBase(dummy);
     debounce(() => {
       handleLoadLevelData();
     }, 500)();
-  }, [selectRelic, setEnemyData, setEnemyDataParsed, setLevelData, stageData]);
+  }, [selectRelic, setEnemyData, setEnemyBase, setLevelData, stageData]);
 
   return (
     <StyledStageSelector>
@@ -236,6 +236,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
                       $selected={_enemyData.id === enemyData?.id}
                       onClick={() => {
                         setEnemyData(_enemyData);
+                        setEnemyBase(parseEnemyData(_enemyData));
                       }}
                     >
                       <EnemyAvatar name={_enemyData.name.m_value} />

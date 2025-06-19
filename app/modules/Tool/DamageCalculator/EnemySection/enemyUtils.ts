@@ -28,17 +28,7 @@ export const levelTypeMap: Record<string, string> = {
  * @param levelData 关卡数据（用于获取符文）
  * @returns
  */
-export function parseEnemyData(enemyData: EnemyData, stageData: StageData, levelData: LevelData): EnemyInput {
-  const stageDifficulty = stageData.difficulty;
-  const runes = levelData.runes || [];
-  const rune = runes.find(
-    (rune) =>
-      rune.key === "enemy_attribute_mul" && (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),
-  )?.blackboard;
-  const atk_mul = rune?.find((bb) => bb.key === "atk")?.value || 1;
-  const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
-  const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
-
+export function parseEnemyData(enemyData: EnemyData): EnemyInput {
   const attributes = enemyData.attributes;
   return {
     id: enemyData.id,
@@ -46,9 +36,9 @@ export function parseEnemyData(enemyData: EnemyData, stageData: StageData, level
     name: parseDefinedData(enemyData.name)!,
     description: parseDefinedData(enemyData.description)!,
     attributes: {
-      maxHp: parseDefinedData(attributes.maxHp)! * hp_mul,
-      atk: parseDefinedData(attributes.atk)! * atk_mul,
-      def: parseDefinedData(attributes.def)! * def_mul,
+      maxHp: parseDefinedData(attributes.maxHp)!,
+      atk: parseDefinedData(attributes.atk)!,
+      def: parseDefinedData(attributes.def)!,
       magicResistance: parseDefinedData(attributes.magicResistance)!,
       cost: parseDefinedData(attributes.cost)!,
       blockCnt: parseDefinedData(attributes.blockCnt)!,

@@ -57,7 +57,9 @@ interface DamageCalculatorStore {
   selectedIds: string[];
   /** 敌人解包数据 */
   enemyData: EnemyData;
-  /** 敌人解包数据解析后的数据 */
+  /** 敌人基础面板 */
+  enemyBase: EnemyInput;
+  /** 敌人输入数据 @deprecated */
   enemyDataParsed: EnemyInput;
   /** 敌人特殊配置数据 */
   enemySpec: EnemySpec;
@@ -96,6 +98,7 @@ interface DamageCalculatorAction {
   selectRelic: (id: string) => void;
   unselectRelic: (id: string) => void;
   setEnemyData: (enemyData: EnemyData) => void;
+  setEnemyBase: (enemyBase: EnemyInput) => void;
   setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
   setEnemySpec: (enemySpec: EnemySpec) => void;
   setEnemyContext: (enemyContext: BuffContext) => void;
@@ -145,6 +148,7 @@ export const dummy: EnemyInput = {
     levitateImmune: false,
     disarmedCombatImmune: false,
     fearedImmune: false,
+    damageResistance: 0,
   },
   levelType: "NORMAL",
   rangedRadius: 0,
@@ -160,6 +164,8 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
       difficulty: 18,
       globalAnalysisResult: CalculatorHelper.createAdditionContext(),
       relicAnalysisResult: CalculatorHelper.createAdditionContext(),
+      enemyBase: dummy,
+      enemyDataParsed: dummy,
 
       // ================ Actions ================
       // 肉鸽相关 actions
@@ -366,7 +372,6 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
         );
       },
       enemyData: undefined as unknown as EnemyData,
-      enemyDataParsed: dummy,
       setEnemyData: (enemyData) =>
         set(
           (state) => ({
@@ -375,6 +380,15 @@ export const useDamageCalculatorStore = create<DamageCalculatorStore & DamageCal
           }),
           undefined,
           "setEnemyData",
+        ),
+      setEnemyBase: (enemyBase) =>
+        set(
+          (state) => ({
+            ...state,
+            enemyBase,
+          }),
+          undefined,
+          "setEnemyBase",
         ),
       setEnemyDataParsed: (enemyDataParsed) =>
         set(

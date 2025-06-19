@@ -12,6 +12,7 @@ import type {
   RogueInput,
   StageData,
   EnemyData,
+  LevelData,
 } from "~/types/gameData";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
@@ -96,33 +97,31 @@ export class CalculatorHelper {
   }
 
   /** 计算敌人属性 */
-  static calculateEnemyAttr(input: { enemyInput: EnemyInput; context: BuffContext }): EnemyInput {
-    const { enemyInput, context } = input;
-    const calcEnemyInput = JSON.parse(JSON.stringify(enemyInput));
-    const enemyAttr = calcEnemyInput.attributes;
+  static calculateEnemyAttr(input: { enemyBase: EnemyInput; context: BuffContext }): EnemyInput {
+    const { enemyBase, context } = input;
 
+    // 木桩敌人靠用户自定义输入, 不需要计算加成
+    if (input.enemyBase.name === "木桩") {
+      return input.enemyBase;
+    }
+
+    const enemyInput = JSON.parse(JSON.stringify(enemyBase));
+    const enemyAttr = enemyInput.attributes;
+
+    const atk_mul = context.relic_rune_mul.enemy_atk.calculate() * context.in_game_buff_final_mul.enemy_atk.calculate();
+    const def_mul = context.relic_rune_mul.enemy_def.calculate() * context.in_game_buff_final_mul.enemy_def.calculate();
+    const maxHp_mul =
+      context.relic_rune_mul.enemy_max_hp.calculate() * context.in_game_buff_final_mul.enemy_max_hp.calculate();
+    const damage_resistance =
+      1 -
+      (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+        (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
     // 应用局外加成
-    console.groupCollapsed("计算敌人属性");
-    enemyAttr.atk = Math.round(enemyAttr.atk * context.in_game_buff_final_mul.enemy_atk.calculate());
-    console.log("攻击力", context.in_game_buff_final_mul.enemy_atk.printExpression());
-    console.log(context.in_game_buff_final_mul.enemy_atk.printDebug());
-    enemyAttr.def = Math.round(enemyAttr.def * context.in_game_buff_final_mul.enemy_def.calculate());
-    console.log("防御力", context.in_game_buff_final_mul.enemy_def.printExpression());
-    console.log(context.in_game_buff_final_mul.enemy_def.printDebug());
-    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * context.in_game_buff_final_mul.enemy_max_hp.calculate());
-    console.log("最大生命值", context.in_game_buff_final_mul.enemy_max_hp.printExpression());
-    console.log(context.in_game_buff_final_mul.enemy_max_hp.printDebug());
-
-    context.relic_rune_mul.enemy_damage_resistance.calculate();
-    console.log("敌人局外减伤", context.relic_rune_mul.enemy_damage_resistance.printExpression());
-    console.log(context.relic_rune_mul.enemy_damage_resistance.printDebug());
-
-    enemyAttr.damageResistance = context.in_game_buff_final_mul.enemy_damage_resistance.calculate();
-    console.log(context.in_game_buff_final_mul.enemy_damage_resistance);
-    console.log("敌人局内减伤", context.in_game_buff_final_mul.enemy_damage_resistance.printExpression());
-    console.log(context.in_game_buff_final_mul.enemy_damage_resistance.printDebug());
-    console.groupEnd();
-    return calcEnemyInput;
+    enemyAttr.atk = Math.round(enemyAttr.atk * atk_mul);
+    enemyAttr.def = Math.round(enemyAttr.def * def_mul);
+    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_mul);
+    enemyAttr.damageResistance = damage_resistance;
+    return enemyInput;
   }
 
   /** 分析干员养成加成 */
@@ -454,18 +453,44 @@ export class CalculatorHelper {
   }
 
   /** 分析敌人特殊词条 */
-  static analyzeEnemySpec(input: { enemySpec: EnemySpec }, context: BuffContext) {
-    const { enemySpec } = input;
-    enemySpec.value.forEach((spec) => {
-      const { key, value, label } = spec;
-      switch (key) {
-        case "enemy_damage_resistance":
-          context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
-          break;
-        default:
-          break;
+  static analyzeEnemySpec(
+    input: { enemySpec?: EnemySpec; enemyData?: EnemyData; stageData?: StageData; levelData?: LevelData },
+    context: BuffContext,
+  ) {
+    const { enemySpec, enemyData, stageData, levelData } = input;
+    if (enemyData && stageData && levelData) {
+      const stageDifficulty = stageData.difficulty;
+      const runes = levelData.runes || [];
+      const rune = runes.find(
+        (rune) =>
+          rune.key === "enemy_attribute_mul" &&
+          (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),
+      )?.blackboard;
+      const atk_mul = rune?.find((bb) => bb.key === "atk")?.value || 1;
+      const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
+      const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
+      if (atk_mul !== 1) {
+        context.relic_rune_mul.enemy_atk.addChild(new NumericLiteralNode(atk_mul, "关卡加成"));
       }
-    });
+      if (def_mul !== 1) {
+        context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(def_mul, "关卡加成"));
+      }
+      if (hp_mul !== 1) {
+        context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(hp_mul, "关卡加成"));
+      }
+    }
+    if (enemySpec) {
+      enemySpec.value.forEach((spec) => {
+        const { key, value, label } = spec;
+        switch (key) {
+          case "enemy_damage_resistance":
+            context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
+            break;
+          default:
+            break;
+        }
+      });
+    }
     return context;
   }
 

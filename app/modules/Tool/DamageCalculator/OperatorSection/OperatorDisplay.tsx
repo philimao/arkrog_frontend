@@ -25,7 +25,6 @@ import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
-import { parseEnemyData } from "../EnemySection/enemyUtils";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -74,7 +73,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     topicSpecItems,
     stageData,
     rogueInput,
-    enemyDataParsed,
+    enemyBase,
     enemyData,
     levelData,
     selectedIds,
@@ -241,8 +240,6 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     if (!charInput.attributeModifier) {
       return;
     }
-    // 选择敌人数据后，需要等待敌人特殊效果加成计算完成，减少重新渲染
-    if (!enemyData || !enemySpec || !stageData || !levelData) return;
     // 干员养成加成
     let buffContext = CalculatorHelper.analyzeChar({
       charInput: charInput,
@@ -267,12 +264,13 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
       buffContext,
     );
     // 敌人特殊配置加成
-    buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffContext);
+    buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec, enemyData, stageData, levelData }, buffContext);
 
     const enemyInput = CalculatorHelper.calculateEnemyAttr({
-      enemyInput: parseEnemyData(enemyData, stageData, levelData),
+      enemyBase,
       context: buffContext,
     });
+
     const input: CalculatorInput = {
       charInput: {
         ...charInput,
@@ -330,6 +328,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     charData,
     charInput,
     enemyData,
+    enemyBase,
     enemySpec,
     relicList,
     relicsMap,

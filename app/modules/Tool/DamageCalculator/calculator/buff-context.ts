@@ -30,6 +30,12 @@ export interface IBuffContext {
     def: ExpressionGroupNode;
     /** 最大生命值(百分比) */
     max_hp: ExpressionGroupNode;
+    /** 敌人攻击力改变来源 */
+    enemy_atk: ExpressionGroupNode;
+    /** 敌人防御力减少来源 */
+    enemy_def: ExpressionGroupNode;
+    /** 敌人最大生命值减少来源 */
+    enemy_max_hp: ExpressionGroupNode;
     /** 敌人局外减伤（难度加成，5结局蛋） */
     enemy_damage_resistance: ExpressionGroupNode;
     /** 再部署时间 */
@@ -104,6 +110,9 @@ export class BuffContext implements IBuffContext {
     def: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     max_hp: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     respawn_time: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_atk: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_def: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_max_hp: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_resistance: new ExpressionGroupNode("max", "局外最大值").addChild(new NumericLiteralNode(0, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {

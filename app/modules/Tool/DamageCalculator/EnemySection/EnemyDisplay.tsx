@@ -189,7 +189,15 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       id: "enemy_000_dummy",
       value: [],
     });
-    setEnemyBase(JSON.parse(JSON.stringify(_enemyDataParsed)));
+    setEnemyBase(
+      JSON.parse(
+        JSON.stringify({
+          ..._enemyDataParsed,
+          id: "enemy_000_dummy",
+          name: "木桩",
+        }),
+      ),
+    );
   }
 
   if (!_enemyDataParsed) return null;
@@ -306,7 +314,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
             </StyledInputWrapper>
           );
         })}
-        <StyledInputWrapper>
+        {/* <StyledInputWrapper>
           <div className="flex justify-between">
             <span>局外物理法术减伤</span>
             <Tooltip
@@ -327,12 +335,11 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           <div>
             <EnemyAttribute
               attrKey="damageResistance"
-              attributeValue={globalAnalysisResult.relic_rune_mul.enemy_damage_resistance.calculate()}
-              baseValue={enemyBaseRef.current?.attributes.damageResistance}
+              value={_enemyDataParsed.attributes.damageResistance}
               context={globalAnalysisResult}
             />
           </div>
-        </StyledInputWrapper>
+        </StyledInputWrapper> */}
       </StyledGridContainer>
     </StyledEnemyDisplayWrapper>
   );

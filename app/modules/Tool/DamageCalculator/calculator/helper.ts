@@ -120,7 +120,7 @@ export class CalculatorHelper {
     enemyAttr.atk = Math.round(enemyAttr.atk * atk_mul);
     enemyAttr.def = Math.round(enemyAttr.def * def_mul);
     enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_mul);
-    enemyAttr.damageResistance = damage_resistance;
+    enemyAttr.damageResistance = Math.round(damage_resistance * 1000) / 1000;
     return enemyInput;
   }
 
@@ -220,6 +220,13 @@ export class CalculatorHelper {
       case "atk": {
         result.relic_rune_add.atk.addChild(new NumericLiteralNode(bb.value, tooltip));
         break;
+      }
+      case "attack_speed": {
+        result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
+      default: {
+        console.log("未处理的黑板数据", bb);
       }
     }
   }

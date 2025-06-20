@@ -84,7 +84,10 @@ export default function Ela(input: CalculatorInput): CalculatorOutput {
 
       // 攻击速度
       const totalAttackSpeed = Math.min(100 + atkSpeedBuff, 600);
-      const attackTime = (baseAttackTime * 3000) / totalAttackSpeed / 30;
+      /** 普通攻击间隔(帧) */
+      const atkFrame = Math.round((baseAttackTime * 3000.0) / totalAttackSpeed);
+      /** 普通攻击间隔(秒) */
+      const attackTime = atkFrame / 30.0;
 
       const duration = 70;
 
@@ -126,7 +129,10 @@ export default function Ela(input: CalculatorInput): CalculatorOutput {
 
       // 攻击速度不变
       const totalAttackSpeed = Math.min(100 + atkSpeedBuff, 600);
-      const attackTime = (baseAttackTime * 3000) / totalAttackSpeed / 30;
+      /** 普通攻击间隔(帧) */
+      const atkFrame = Math.round((baseAttackTime * 3000.0) / totalAttackSpeed);
+      /** 普通攻击间隔(秒) */
+      const attackTime = atkFrame / 30.0;
 
       // 技能持续时间
       const spCosts = [25, 24, 23, 22, 21, 20, 19, 18, 17, 16];
@@ -176,8 +182,14 @@ export default function Ela(input: CalculatorInput): CalculatorOutput {
 
       // 攻击速度提升
       const totalAttackSpeed = Math.min(100 + atkSpeedBuff, 600);
-      const normalAttackTime = (baseAttackTime * 3000) / totalAttackSpeed / 30;
-      const skillAttackTime = ((baseAttackTime + baseAttackTimeReduction) * 3000) / totalAttackSpeed / 30;
+      /** 普通攻击间隔(帧) */
+      const normalAtkFrame = Math.round((baseAttackTime * 3000.0) / totalAttackSpeed);
+      /** 普通攻击间隔(秒) */
+      const normalAttackTime = normalAtkFrame / 30.0;
+      /** 技能攻击间隔(帧) */
+      const skillAtkFrame = Math.round(((baseAttackTime + baseAttackTimeReduction) * 3000) / totalAttackSpeed);
+      /** 技能攻击间隔(秒) */
+      const skillAttackTime = skillAtkFrame / 30.0;
 
       // 40发子弹
       const bulletCount = 40;

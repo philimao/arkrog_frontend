@@ -558,6 +558,177 @@ export default function TournamentProgressAccordionItem({
                             />
                           </div>
 
+                          {editingStage?.type === "1on1" && (
+                            <>
+                              <div>
+                                <label htmlFor="rival" className={labelClassName}>
+                                  对手
+                                </label>
+                                <Select
+                                  id="rival"
+                                  name="rival"
+                                  selectedKeys={editingGame?.rivalMid ? [editingGame?.rivalMid.toString()] : [""]}
+                                  onChange={(e) => {
+                                    const rivalMid = e.target.value;
+                                    const newPlayers = [...formData.players!];
+
+                                    // Find the current player's game
+                                    const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
+                                    const gameIndex = newPlayers[playerIndex].games.findIndex(
+                                      (g) => g.stage === editingStage.name,
+                                    );
+
+                                    if (gameIndex !== -1) {
+                                      // Check if there was a previous rival and clear that relationship
+                                      const previousRivalMid =
+                                        newPlayers[playerIndex].games[gameIndex].rivalMid?.toString();
+                                      if (previousRivalMid) {
+                                        const previousRivalIndex = newPlayers.findIndex(
+                                          (p) => p.mid.toString() === previousRivalMid,
+                                        );
+                                        if (previousRivalIndex !== -1) {
+                                          const previousRivalGameIndex = newPlayers[previousRivalIndex].games.findIndex(
+                                            (g) => g.stage === editingStage.name,
+                                          );
+                                          if (previousRivalGameIndex !== -1) {
+                                            // Clear the previous rival's rivalMid and result
+                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].rivalMid = undefined;
+                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].result = undefined;
+                                          }
+                                        }
+                                      }
+
+                                      // Update current player's rivalMid and clear result when changing rivals
+                                      newPlayers[playerIndex].games[gameIndex].rivalMid = rivalMid;
+                                      newPlayers[playerIndex].games[gameIndex].result = !!rivalMid ? "win" : undefined;
+
+                                      // Find the rival player and update their rivalMid to point to current player
+                                      const rivalIndex = newPlayers.findIndex((p) => p.mid.toString() === rivalMid);
+
+                                      if (rivalIndex !== -1) {
+                                        const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
+                                          (g) => g.stage === editingStage.name,
+                                        );
+
+                                        if (rivalGameIndex !== -1) {
+                                          newPlayers[rivalIndex].games[rivalGameIndex].rivalMid =
+                                            editingPlayer.mid.toString();
+                                          newPlayers[rivalIndex].games[rivalGameIndex].result = "lose";
+                                        } else {
+                                          // Create a new game for the rival if it doesn't exist
+                                          const newDate = new Date(date);
+                                          newDate.setHours(0, 0, 0, 0);
+                                          newPlayers[rivalIndex].games.push({
+                                            date: newDate.getTime(),
+                                            stage: editingStage?.name || "",
+                                            rivalMid: editingPlayer.mid.toString(),
+                                            result: "lose",
+                                            customStageValues: {},
+                                          });
+                                        }
+                                      }
+
+                                      setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                    }
+                                  }}
+                                  classNames={{
+                                    trigger: "bg-[#00000033] rounded-none w-full",
+                                    value: "",
+                                    popoverContent: "bg-mid-gray rounded-none",
+                                    listbox: "rounded-none",
+                                  }}
+                                  aria-label="选择对手"
+                                >
+                                  <SelectItem key="" value="">
+                                    请选择对手
+                                  </SelectItem>
+                                  {players && editingPlayer ? (
+                                    <>
+                                      {players
+                                        .filter(
+                                          (player) =>
+                                            player.mid !== editingPlayer.mid &&
+                                            !player.games.find(
+                                              (g) =>
+                                                g.stage === editingStage.name &&
+                                                g.rivalMid &&
+                                                g.rivalMid.toString() !== editingPlayer.mid.toString(),
+                                            ),
+                                        )
+                                        .map((player) => (
+                                          <SelectItem key={player.mid} value={player.mid}>
+                                            {player.name}
+                                          </SelectItem>
+                                        ))}
+                                    </>
+                                  ) : null}
+                                </Select>
+                              </div>
+
+                              {editingGame?.rivalMid && (
+                                <div>
+                                  <label htmlFor="result" className={labelClassName}>
+                                    比赛结果
+                                  </label>
+                                  <Select
+                                    id="result"
+                                    name="result"
+                                    selectedKeys={[editingGame?.result || "win"]}
+                                    onChange={(e) => {
+                                      const result = e.target.value as "win" | "lose";
+                                      const newPlayers = [...formData.players!];
+
+                                      // Find the current player's game
+                                      const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
+                                      const gameIndex = newPlayers[playerIndex].games.findIndex(
+                                        (g) => g.stage === editingStage.name,
+                                      );
+
+                                      if (gameIndex !== -1) {
+                                        // Update current player's result
+                                        newPlayers[playerIndex].games[gameIndex].result = result;
+
+                                        // Find the rival player and update their result to the opposite
+                                        const rivalMid = newPlayers[playerIndex].games[gameIndex].rivalMid;
+                                        const rivalIndex = newPlayers.findIndex(
+                                          (p) => p.mid.toString() === rivalMid?.toString(),
+                                        );
+
+                                        if (rivalIndex !== -1) {
+                                          const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
+                                            (g) => g.stage === editingStage.name,
+                                          );
+
+                                          if (rivalGameIndex !== -1) {
+                                            // Set opposite result for rival
+                                            newPlayers[rivalIndex].games[rivalGameIndex].result =
+                                              result === "win" ? "lose" : "win";
+                                          }
+                                        }
+
+                                        setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                      }
+                                    }}
+                                    classNames={{
+                                      trigger: "bg-[#00000033] rounded-none w-full",
+                                      value: "",
+                                      popoverContent: "bg-mid-gray rounded-none",
+                                      listbox: "rounded-none",
+                                    }}
+                                    aria-label="选择比赛结果"
+                                  >
+                                    <SelectItem key="win" value="win">
+                                      胜利
+                                    </SelectItem>
+                                    <SelectItem key="lose" value="lose">
+                                      失败
+                                    </SelectItem>
+                                  </Select>
+                                </div>
+                              )}
+                            </>
+                          )}
+
                           {/* 自定义阶段信息值 */}
                           {editingStage?.customStageKeys &&
                             Object.entries(editingStage.customStageKeys).map(([key, value]) => (

@@ -41,7 +41,7 @@ export default function TournamentPlayersAccordionItem({
 
     // Check if key already exists
     if (formData.customPlayerKeys && formData.customPlayerKeys[newCustomKey]) {
-      setKeyError("该已存在");
+      setKeyError("该自定义选手信息已存在");
       return;
     }
 
@@ -118,14 +118,16 @@ export default function TournamentPlayersAccordionItem({
           <div className="pb-4">
             <p className={labelWithTooltipClassName}>
               已有自定义选手信息:
-              <Tooltip
-                content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
-                className="bg-light-mid-gray text-black"
-              >
-                <span className="px-1">
-                  <InformationIcon width="0.75rem" height="0.75rem" />
-                </span>
-              </Tooltip>
+              {formData.type !== "team" && (
+                <Tooltip
+                  content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
+                  className="bg-light-mid-gray text-black"
+                >
+                  <span className="px-1">
+                    <InformationIcon width="0.75rem" height="0.75rem" />
+                  </span>
+                </Tooltip>
+              )}
             </p>
             <div className="flex flex-wrap gap-2">
               {Object.entries(formData.customPlayerKeys).map(([key, value]) => (

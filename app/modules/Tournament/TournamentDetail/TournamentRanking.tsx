@@ -422,6 +422,7 @@ export function TournamentRankingIndividual({ tournamentData }: { tournamentData
     const isFinal = index === tournamentData.stages.length - 1;
 
     if (stage.type === "rank") {
+      // TODO: Change to stage.groupBy
       if (stage.customStageKeys && Object.keys(stage.customStageKeys).includes("group")) {
         const groups = new Set<string>();
         players.forEach((player) => {

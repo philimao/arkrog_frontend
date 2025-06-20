@@ -148,7 +148,7 @@ const IndividualScheduleRow = ({
         <td>
           <div className="flex flex-col justify-center items-center text-center px-2">
             {Object.keys(player.customPlayerValues).map((key) => (
-              <p>{player.customPlayerValues[key]}</p>
+              <p key={key}>{player.customPlayerValues[key]}</p>
             ))}
           </div>
         </td>
@@ -180,7 +180,7 @@ const IndividualScheduleRow = ({
       <td>
         <div className="flex flex-col justify-center items-center text-center">
           {Object.keys(entry[1].customStageValues).map((key) => (
-            <p>{entry[1].customStageValues[key]}</p>
+            <p key={key}>{entry[1].customStageValues[key]}</p>
           ))}
           <PointDisplay point={entry[1].point} />
         </div>

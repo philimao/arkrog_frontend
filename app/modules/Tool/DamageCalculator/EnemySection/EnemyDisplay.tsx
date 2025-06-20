@@ -286,7 +286,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                         [key]: value,
                       },
                     };
-                    _setEnemyDataParsed(updated);
+                    setEnemyBase(updated);
                   }}
                   onBlur={() => {
                     // 解析浮点数，失败则设置为0
@@ -302,8 +302,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                         [key]: number,
                       },
                     };
-                    _setEnemyDataParsed(updated);
-                    setEnemyDataParsed(updated);
+                    setEnemyBase(updated);
                   }}
                   onEnter={(evt) => {
                     evt.preventDefault();

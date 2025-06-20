@@ -146,7 +146,7 @@ export default function Archetto(input: CalculatorInput): CalculatorOutput {
 
       const spInitial = 0.0; // 藏品初始技力
       const skillSp = 30.0; // 技能技力消耗
-      const skillKeepTime = 20.0; // 技能持续时间
+      const skillKeepTime = (20.0 - Math.round(1800 / atkSpeed) / 30.0); // 技能持续时间
       const skillRecoveryTime = skillSp / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况

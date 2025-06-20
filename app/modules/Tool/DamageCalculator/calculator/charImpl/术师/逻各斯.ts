@@ -110,13 +110,29 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
 
       const skillDamage_EP = (skillDamage + skillTalentDamage * 0.6) * 0.08 * damage_scale_EP; //元素损伤期望
       const skillEPTime = skillAtkTime * Math.ceil(enemyEP / skillDamage_EP); //在伤害较高时偏差较大
-      const skillepHit = Math.max(Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6, 0); //爆条期间命中数
+      let skillepHit = 0;
+
+      if (skillEPTime > 15) {
+        skillepHit = Math.max(Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6, 0); //爆条期间命中数
+      }
+      else {
+        skillepHit = Math.max(Math.round((450 - 2 * 30 * skillEPTime) / skillAtkFrame) * 0.6, 0) + 450 / skillAtkFrame; //爆条期间命中数
+      }
 
       const commonTotalDamage = (commonDamage + commonTalentDamage * 0.6) * commonHit;
       const skillTotalDamage = (skillDamage + skillTalentDamage * 0.6) * skillHit;
       let skillTotalDamage_ep = skillTalentDamage_ep * skillepHit;
+
       if (skillepHit) {
-        skillTotalDamage_ep += 12000;
+        if (skillEPTime > 15) {
+          skillTotalDamage_ep += 800 * Math.ceil(30 - skillEPTime);
+        }
+        else if (skillEPTime > 7.5) {
+          skillTotalDamage_ep += 12000;
+        }
+        else {
+          skillTotalDamage_ep += 800 * Math.ceil(15 - 2 * skillEPTime) + 12000;
+        }
       }
 
       result.skill.dph = skillDph;

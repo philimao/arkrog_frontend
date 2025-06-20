@@ -257,9 +257,12 @@ export function isBlackboardActiveForChar(buff: RelicBuff, charData?: CharData):
     if (
       bbSelector.valueStr === "token"
         ? !charData.displayTokenDict
-        : !bbSelector.valueStr?.includes(charData.profession.toLowerCase())
-    )
+        : !bbSelector.valueStr?.includes(charData.profession.toLowerCase()) &&
+          bbSelector.valueStr?.includes("caster") &&
+          charData.name !== "迷迭香" // TODO 没有判断迷迭香模组，该版本实现比较复杂
+    ) {
       return false;
+    }
   }
   // 子职业选择
   if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.sub_profession"))) {

@@ -103,10 +103,12 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
       const spInitial = 0; // 藏品初始技力
       const skillSp = 45.0; // 技能技力消耗
       const skillKeepTime = 30.0; // 技能持续时间
+      const skillStartupFrame = 24; // 技能前摇
+      const skillStartupTime = (skillStartupFrame * 100) / 30.0 / atkSpeed;
       const skillRecoveryTime = skillSp / (1 + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
-      const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能期望普攻次数
+      const skillHit = Math.ceil((skillKeepTime - skillStartupTime) / skillAtkTime); // 技能期望普攻次数
 
       const skillDamage_EP = (skillDamage + skillTalentDamage * 0.6) * 0.08 * damage_scale_EP; //元素损伤期望
       const skillEPTime = skillAtkTime * Math.ceil(enemyEP / skillDamage_EP); //在伤害较高时偏差较大
@@ -114,8 +116,7 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
 
       if (skillEPTime > 15) {
         skillepHit = Math.max(Math.round((900 - 30 * skillEPTime) / skillAtkFrame) * 0.6, 0); //爆条期间命中数
-      }
-      else {
+      } else {
         skillepHit = Math.max(Math.round((450 - 2 * 30 * skillEPTime) / skillAtkFrame) * 0.6, 0) + 450 / skillAtkFrame; //爆条期间命中数
       }
 
@@ -126,11 +127,9 @@ export default function Logos(input: CalculatorInput): CalculatorOutput {
       if (skillepHit) {
         if (skillEPTime > 15) {
           skillTotalDamage_ep += 800 * Math.ceil(30 - skillEPTime);
-        }
-        else if (skillEPTime > 7.5) {
+        } else if (skillEPTime > 7.5) {
           skillTotalDamage_ep += 12000;
-        }
-        else {
+        } else {
           skillTotalDamage_ep += 800 * Math.ceil(15 - 2 * skillEPTime) + 12000;
         }
       }

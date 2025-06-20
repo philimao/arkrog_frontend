@@ -21,3 +21,4 @@ export * from "./BackIcon";
 export * from "./LinkIcon";
 export * from "./InformationIcon";
 export * from "./AttachmentIcon";
+export * from "./AddIcon";

@@ -1,7 +1,9 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
-import { CloseIcon, InformationIcon, LinkIcon } from "~/components/Icons";
+import { AddIcon, CloseIcon, InformationIcon, LinkIcon } from "~/components/Icons";
+import { useState } from "react";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
+import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
 
 interface TournamentPlayersAccordionItemProps {
   formData: TournamentData;
@@ -18,18 +20,174 @@ export default function TournamentPlayersAccordionItem({
   editingPlayer,
   setEditingPlayer,
 }: TournamentPlayersAccordionItemProps) {
+  const [newCustomKey, setNewCustomKey] = useState("");
+  const [newCustomValue, setNewCustomValue] = useState("");
+  const [keyError, setKeyError] = useState("");
+
+  // Validate key input to only allow [a-zA-Z]
+  const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewCustomKey(value);
+    if (/^[a-zA-Z]*$/.test(value)) {
+      setKeyError("");
+    } else {
+      setKeyError("仅支持输入英文字母");
+    }
+  };
+
+  // Add new custom player key
+  const handleAddCustomKey = () => {
+    if (!newCustomKey || !newCustomValue) return;
+
+    // Check if key already exists
+    if (formData.customPlayerKeys && formData.customPlayerKeys[newCustomKey]) {
+      setKeyError("该已存在");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      customPlayerKeys: {
+        ...prev.customPlayerKeys,
+        [newCustomKey]: newCustomValue,
+      },
+    }));
+
+    // Reset inputs
+    setNewCustomKey("");
+    setNewCustomValue("");
+  };
+
+  // Set a key as groupBy
+  const handleSetGroupBy = (key: string) => {
+    const newGroupBy = formData.groupBy === key ? "" : key;
+    setFormData((prev) => ({
+      ...prev,
+      groupBy: newGroupBy,
+    }));
+  };
+
   return (
     <>
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="border-b-1 border-b-mid-gray">
+        <div className="flex pb-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <div>
+              <label htmlFor="customKey" className={labelClassName}>
+                自定义选手信息标识（仅限英文）
+              </label>
+              <input
+                id="customKey"
+                type="text"
+                value={newCustomKey}
+                onChange={handleKeyChange}
+                placeholder="例：server"
+                className={inputClassName}
+                maxLength={20}
+              />
+              {keyError && <span className="text-xs text-ak-red">{keyError}</span>}
+            </div>
+            <div>
+              <label htmlFor="customKeyValue" className={labelClassName}>
+                自定义选手信息名称
+              </label>
+              <input
+                id="customKeyValue"
+                type="text"
+                value={newCustomValue}
+                onChange={(e) => setNewCustomValue(e.target.value)}
+                placeholder="例：服务器"
+                className={inputClassName}
+                maxLength={20}
+              />
+            </div>
+          </div>
+          <div className="relative w-6 flex-shrink-0">
+            <button
+              type="button"
+              onClick={handleAddCustomKey}
+              disabled={!newCustomKey || !newCustomValue || !!keyError}
+              className="cursor-pointer rounded-md p-1 absolute top-8 text-black bg-ak-blue disabled:text-white disabled:bg-mid-gray disabled:cursor-not-allowed"
+              aria-label="添加自定义选手信息"
+            >
+              <AddIcon />
+            </button>
+          </div>
+        </div>
+        {formData.customPlayerKeys && Object.keys(formData.customPlayerKeys).length > 0 && (
+          <div className="pb-4">
+            <p className={labelWithTooltipClassName}>
+              已有自定义选手信息:
+              <Tooltip
+                content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
+                className="bg-light-mid-gray text-black"
+              >
+                <span className="px-1">
+                  <InformationIcon width="0.75rem" height="0.75rem" />
+                </span>
+              </Tooltip>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(formData.customPlayerKeys).map(([key, value]) => (
+                <div key={key} className="flex items-center gap-1 bg-mid-gray p-2 rounded">
+                  <span className="text-sm">
+                    {key}: {value}
+                  </span>
+                  {formData.type !== "team" && (
+                    <label className="flex items-center ml-1">
+                      <input
+                        type="checkbox"
+                        checked={formData.groupBy === key}
+                        onChange={() => handleSetGroupBy(key)}
+                        className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newCustomKeys = { ...formData.customPlayerKeys };
+                      delete newCustomKeys[key];
+
+                      // If this was the groupBy key, reset groupBy
+                      const newGroupBy = formData.groupBy === key ? "" : formData.groupBy;
+
+                      // Need to delete corresponding value from all players
+                      const newPlayers = formData.players!.map((player) => {
+                        const newPlayer = { ...player };
+                        delete newPlayer.customPlayerValues[key];
+                        return newPlayer;
+                      });
+
+                      setFormData((prev) => ({
+                        ...prev,
+                        customPlayerKeys: newCustomKeys,
+                        groupBy: newGroupBy,
+                        players: newPlayers,
+                      }));
+                    }}
+                    className="rounded-md p-1 hover:text-white hover:bg-ak-red"
+                    aria-label={`删除自定义选手信息${key}: ${value}`}
+                  >
+                    <CloseIcon width="0.7rem" height="0.7rem" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2 my-4">
         {formData.players &&
           formData.players.length > 0 &&
           formData.players.map((player, index) => (
             <div
               key={index}
-              className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer === player ? "bg-ak-blue text-black" : !player.name.trim() ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
+              className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer?.mid === player.mid ? "bg-ak-blue text-black" : !player.name.trim() ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
               onClick={(e) => {
                 e.preventDefault();
-                editingPlayer === player ? setEditingPlayer(undefined) : setEditingPlayer(player);
+                editingPlayer?.mid === player.mid ? setEditingPlayer(undefined) : setEditingPlayer(player);
               }}
             >
               <div className={`w-16 h-16 aspect-square flex items-center justify-center bg-light-gray text-black`}>
@@ -40,14 +198,14 @@ export default function TournamentPlayersAccordionItem({
                 )}
               </div>
               <div className="pt-1 break-all">
-                {!player.name ? (editingPlayer === player ? "请填写选手" : "点击填写选手") : player.name}
+                {!player.name ? (editingPlayer?.mid === player.mid ? "请填写选手" : "点击填写选手") : player.name}
               </div>
               <button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (player === editingPlayer) setEditingPlayer(undefined);
+                  if (editingPlayer?.mid === player.mid) setEditingPlayer(undefined);
                   const newPlayers = formData.players!.filter((_, i) => i !== index);
                   setFormData((prev) => ({
                     ...prev,
@@ -85,7 +243,7 @@ export default function TournamentPlayersAccordionItem({
       {editingPlayer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full border-t-1 border-t-mid-gray pt-2 mb-2">
           <div className="w-full">
-            <label htmlFor="playerName" className="flex items-center text-sm font-light mb-1">
+            <label htmlFor="playerName" className={labelWithTooltipClassName}>
               选手名字
               <Tooltip content="输入名字后点击连接bilibili获取选手头像" className="bg-light-mid-gray text-black">
                 <span className="px-1">
@@ -99,10 +257,10 @@ export default function TournamentPlayersAccordionItem({
                 id="playerName"
                 type="text"
                 value={editingPlayer.name}
-                placeholder="选手名字"
+                placeholder="例：棋棋Steins"
                 onChange={(e) => {
                   const newPlayers = [...formData.players!];
-                  newPlayers.find((p) => p.mid.toString() === editingPlayer.mid)!.name = e.target.value.trim();
+                  newPlayers.find((p) => p.mid === editingPlayer.mid)!.name = e.target.value.trim();
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
                 onKeyDown={handleKeyDown}
@@ -123,7 +281,7 @@ export default function TournamentPlayersAccordionItem({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-light mb-1">选手预览</label>
+            <label className={labelClassName}>选手预览</label>
             <div className="bg-mid-gray p-2">
               <p>这里放bilibili头像😊</p>
             </div>
@@ -131,13 +289,13 @@ export default function TournamentPlayersAccordionItem({
 
           {formData.type === "team" && formData.teams && (
             <div>
-              <label htmlFor="playerTeam" className="block text-sm font-light mb-1">
+              <label htmlFor="playerTeam" className={labelClassName}>
                 所属队伍 <span className="text-ak-red">*</span>
               </label>
               <Select
                 id="playerTeam"
                 name="playerTeam"
-                selectedKeys={[formData.teams.find((team) => team.members.includes(editingPlayer.name))?.id ?? '']}
+                selectedKeys={[formData.teams.find((team) => team.members.includes(editingPlayer.name))?.id ?? ""]}
                 onChange={(e) => {
                   const newTeams = [...formData.teams!];
                   newTeams
@@ -173,12 +331,29 @@ export default function TournamentPlayersAccordionItem({
               </Select>
             </div>
           )}
-          <div>
-            <label className="block text-sm font-light mb-1">自定义内容 key</label>
-            <div className="bg-mid-gray p-2">
-              <p>自定义内容 value</p>
+
+          {Object.entries(formData.customPlayerKeys).map(([key, value]) => (
+            <div key={key}>
+              <label htmlFor="customPlayerValue" className={labelClassName}>
+                {value}
+              </label>
+              <input
+                id="customPlayerValue"
+                type="text"
+                value={editingPlayer.customPlayerValues[key] ?? ""}
+                onChange={(e) => {
+                  const newPlayers = [...formData.players!];
+                  const player = newPlayers.find((p) => p.mid === editingPlayer.mid);
+                  if (player) {
+                    player.customPlayerValues[key] = e.target.value.trim();
+                  }
+                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                }}
+                className={inputClassName}
+                maxLength={32}
+              />
             </div>
-          </div>
+          ))}
         </div>
       )}
     </>

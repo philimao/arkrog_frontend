@@ -3,7 +3,9 @@ import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/
 import { generateDateArray } from "~/utils/date";
 import { useEffect, useState } from "react";
 import { CloseIcon } from "~/components/Icons";
-import { inputClassName } from ".";
+import { labelClassName } from ".";
+
+const inputClassName = "bg-[#00000033] w-full p-2 focus:outline-ak-blue";
 
 interface TournamentProgressAccordionItemProps {
   formData: TournamentData;
@@ -46,11 +48,13 @@ export default function TournamentProgressAccordionItem({
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full pb-4 mb-4 border-b-1 border-b-mid-gray">
         <div>
-          <label htmlFor="stage" className="block text-sm font-light mb-1">编辑赛事阶段</label>
+          <label htmlFor="stage" className={labelClassName}>
+            编辑赛事阶段
+          </label>
           <Select
             id="stage"
             name="stage"
-            selectedKeys={[formData.stages?.find((stage) => stage.name === editingStage?.name)?.name ?? '']}
+            selectedKeys={[formData.stages?.find((stage) => stage.name === editingStage?.name)?.name ?? ""]}
             onChange={(e) => {
               setEditingStage(formData.stages?.find((stage) => stage.name === e.target.value));
             }}
@@ -196,21 +200,22 @@ export default function TournamentProgressAccordionItem({
                   (isAddingPlayers[index] && editingPlayer.mid === tempNewPlayer.mid)) && (
                   <div className="bg-mid-gray text-white mt-4 p-2 rounded-md">
                     {editingPlayer.mid === tempNewPlayer.mid ? (
-                      <div>
-                        <label htmlFor="editingPlayer" className="">
+                      <div className="flex">
+                        <label htmlFor="editingPlayer" className="pt-2 flex-shrink-0">
                           <span className="text-ak-red">*</span> 请选择选手：
                         </label>
                         <Select
                           id="editingPlayer"
                           name="editingPlayer"
                           classNames={{
-                            trigger: "bg-mid-gray rounded-none",
+                            trigger: "bg-[#00000033] rounded-none",
                             value: "",
                             popoverContent: "bg-mid-gray rounded-none",
-                            listbox: "rounded-none",
+                            listbox: "rounded",
                           }}
                           aria-label="选择选手"
                           onChange={(e) => {
+                            if (!e.target.value || e.target.value === "请选择选手") return;
                             const newPlayer = formData.players?.find((p) => p.mid.toString() === e.target.value);
                             const newPlayers = [...formData.players!];
                             const newDate = new Date(date);
@@ -233,16 +238,19 @@ export default function TournamentProgressAccordionItem({
                           selectedKeys={["请选择选手"]}
                           required
                         >
-                          {[<SelectItem key="请选择选手" value="请选择选手" aria-disabled>
-                            请选择选手
-                          </SelectItem>
-                          ].concat(remainingPlayers?.map((player) => {
-                            return (
-                              <SelectItem key={player.mid} value={player.mid}>
-                                {player.name}
-                              </SelectItem>
-                            );
-                          }))}
+                          {[
+                            <SelectItem key="请选择选手" value="请选择选手">
+                              请选择选手
+                            </SelectItem>,
+                          ].concat(
+                            remainingPlayers?.map((player) => {
+                              return (
+                                <SelectItem key={player.mid} value={player.mid}>
+                                  {player.name}
+                                </SelectItem>
+                              );
+                            }),
+                          )}
                         </Select>
                       </div>
                     ) : (
@@ -250,7 +258,7 @@ export default function TournamentProgressAccordionItem({
                         <p className="mb-4">正在编辑：{editingPlayer.name}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
                           <div>
-                            <label htmlFor="gameTime" className="block text-sm font-light mb-1">
+                            <label htmlFor="gameTime" className={labelClassName}>
                               比赛时间 <span className="text-ak-red">*</span>
                             </label>
                             <input
@@ -283,13 +291,15 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className="bg-[#00000033] w-full p-2 focus:outline-ak-blue"
+                              className={inputClassName}
                               required
                             />
                           </div>
 
                           <div>
-                            <label htmlFor="starterSquad" className="block text-sm font-light mb-1">开局分队</label>
+                            <label htmlFor="starterSquad" className={labelClassName}>
+                              开局分队
+                            </label>
                             <input
                               id="starterSquad"
                               type="text"
@@ -307,12 +317,14 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className="bg-[#00000033] w-full p-2 focus:outline-ak-blue"
+                              className={inputClassName}
                             />
                           </div>
 
                           <div>
-                            <label htmlFor="starterOp" className="block text-sm font-light mb-1">开局干员</label>
+                            <label htmlFor="starterOp" className={labelClassName}>
+                              开局干员
+                            </label>
                             <input
                               id="starterOp"
                               type="text"
@@ -330,12 +342,14 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className="bg-[#00000033] w-full p-2 focus:outline-ak-blue"
+                              className={inputClassName}
                             />
                           </div>
 
                           <div>
-                            <label htmlFor="point" className="block text-sm font-light mb-1">分数</label>
+                            <label htmlFor="point" className={labelClassName}>
+                              分数
+                            </label>
                             <input
                               id="point"
                               type="number"
@@ -352,12 +366,14 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className="bg-[#00000033] w-full p-2 focus:outline-ak-blue"
+                              className={inputClassName}
                             />
                           </div>
                         </div>
                         <div>
-                          <label htmlFor="ending" className="block text-sm font-light mb-1">结局</label>
+                          <label htmlFor="ending" className={labelClassName}>
+                            结局
+                          </label>
                           <input
                             id="ending"
                             name="ending"
@@ -374,7 +390,7 @@ export default function TournamentProgressAccordionItem({
                               }
                             }}
                             onKeyDown={handleKeyDown}
-                            className="bg-[#00000033] w-full p-2 focus:outline-ak-blue"
+                            className={inputClassName}
                           />
                         </div>
                       </div>

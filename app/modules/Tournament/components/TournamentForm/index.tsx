@@ -12,6 +12,8 @@ import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 
 export const inputClassName = "bg-mid-gray w-full p-2 focus:outline-ak-blue";
+export const labelClassName = "block text-sm font-light mb-1";
+export const labelWithTooltipClassName = "flex items-center text-sm font-light mb-1";
 
 export default function TournamentForm({
   edit = false,
@@ -48,10 +50,10 @@ export default function TournamentForm({
           groupBy: "",
         },
   );
-  const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(formData.players?.[0]);
+  const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>();
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
-  const [editingStage, setEditingStage] = useState<TournamentStage | undefined>(formData.stages?.[0]);
+  const [editingStage, setEditingStage] = useState<TournamentStage | undefined>();
   const formDataRef = useRef<TournamentData>(formData);
   const saveToStorageRef = useRef<boolean>(true);
   const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
@@ -77,26 +79,23 @@ export default function TournamentForm({
   }, [formData]);
 
   useEffect(() => {
+    let formData = undefined;
     const storedData = localStorage.getItem(`tournamentForm-${tournamentData?.id}`);
     if (storedData) {
-      setFormData(JSON.parse(storedData));
+      formData = JSON.parse(storedData);
     } else if (tournamentData) {
-      setFormData(structuredClone(tournamentData));
+      formData = structuredClone(tournamentData);
     }
+
+    setFormData(formData);
+    setEditingPlayer(formData.players?.[0]);
+    setEditingStage(formData.stages?.[0]);
 
     // 每次组件重新挂载时重置编辑开始时间
     if (tournamentData) {
       editStartTimeRef.current = Date.now();
     }
   }, [tournamentData]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
@@ -202,7 +201,6 @@ export default function TournamentForm({
         <AccordionItem key="赛事信息" aria-label="赛事信息" title="赛事信息">
           <TournamentInfoAccordionItem
             formData={formData}
-            handleChange={handleChange}
             handleKeyDown={handleKeyDown}
             setFormData={setFormData}
             addingLabel={addingLabel}

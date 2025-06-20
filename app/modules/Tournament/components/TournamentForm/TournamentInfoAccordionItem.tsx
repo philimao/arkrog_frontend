@@ -3,12 +3,11 @@ import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
-import { inputClassName } from ".";
+import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 
 interface TournamentInfoAccordionItemProps {
   formData: TournamentData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   setFormData: React.Dispatch<React.SetStateAction<TournamentData>>;
   addingLabel: boolean;
@@ -19,7 +18,6 @@ interface TournamentInfoAccordionItemProps {
 
 export default function TournamentInfoAccordionItem({
   formData,
-  handleChange,
   handleKeyDown,
   setFormData,
   addingLabel,
@@ -28,11 +26,20 @@ export default function TournamentInfoAccordionItem({
   setEditingLabelIndex,
 }: TournamentInfoAccordionItemProps) {
   const { topics } = useGameDataStore();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-light mb-1">
+          <label htmlFor="name" className={labelClassName}>
             赛事名称 <span className="text-ak-red">*</span>
           </label>
           <input
@@ -40,6 +47,7 @@ export default function TournamentInfoAccordionItem({
             type="text"
             name="name"
             value={formData.name}
+            placeholder="例：仙术杯#5"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             className={inputClassName}
@@ -48,7 +56,7 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="type" className="block text-sm font-light mb-1">
+          <label htmlFor="type" className={labelClassName}>
             赛事类型 <span className="text-ak-red">*</span>
           </label>
           <Select
@@ -65,13 +73,17 @@ export default function TournamentInfoAccordionItem({
             aria-label="赛事类型"
             required
           >
-            <SelectItem key="individual" value="individual">个人赛</SelectItem>
-            <SelectItem key="team" value="team">团队赛</SelectItem>
+            <SelectItem key="individual" value="individual">
+              个人赛
+            </SelectItem>
+            <SelectItem key="team" value="team">
+              团队赛
+            </SelectItem>
           </Select>
         </div>
 
         <div>
-          <label htmlFor="avatar" className="flex items-center text-sm font-light mb-1">
+          <label htmlFor="avatar" className={labelWithTooltipClassName}>
             赛事图标
             <Tooltip content="点击图标上传图片后，将图片链接粘贴此处" className="bg-light-mid-gray text-black">
               <span className="px-1">
@@ -89,19 +101,24 @@ export default function TournamentInfoAccordionItem({
               onKeyDown={handleKeyDown}
               className={`${inputClassName} pr-12`}
             />
-            <UploadCenterTrigger className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray" aria-label="上传赛事图标" />
+            <UploadCenterTrigger
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray"
+              aria-label="上传赛事图标"
+            />
           </div>
         </div>
 
         {topics && (
           <div>
-            <label htmlFor="rogue" className="block text-sm font-light mb-1">
+            <label htmlFor="rogue" className={labelClassName}>
               肉鸽 <span className="text-ak-red">*</span>
             </label>
             <Select
               id="rogue"
               name="rogue"
-              selectedKeys={[formData.rogue ? topics[formData.rogue as RogueKey].id : Object.values(topics).reverse()[0].id]}
+              selectedKeys={[
+                formData.rogue ? topics[formData.rogue as RogueKey].id : Object.values(topics).reverse()[0].id,
+              ]}
               onChange={handleChange}
               classNames={{
                 trigger: "bg-mid-gray rounded-none",
@@ -124,7 +141,7 @@ export default function TournamentInfoAccordionItem({
         )}
 
         <div>
-          <label htmlFor="edition" className="block text-sm font-light mb-1">
+          <label htmlFor="edition" className={labelClassName}>
             肉鸽版本 <span className="text-ak-red">*</span>
           </label>
           <Select
@@ -141,14 +158,20 @@ export default function TournamentInfoAccordionItem({
             aria-label="肉鸽版本"
             required
           >
-            <SelectItem key="初始版本" value="初始版本">初始版本</SelectItem>
-            <SelectItem key="DLC_1" value="DLC_1">DLC_1</SelectItem>
-            <SelectItem key="DLC_2" value="DLC_2">DLC_2</SelectItem>
+            <SelectItem key="初始版本" value="初始版本">
+              初始版本
+            </SelectItem>
+            <SelectItem key="DLC_1" value="DLC_1">
+              DLC_1
+            </SelectItem>
+            <SelectItem key="DLC_2" value="DLC_2">
+              DLC_2
+            </SelectItem>
           </Select>
         </div>
 
         <div>
-          <label htmlFor="level" className="block text-sm font-light mb-1">
+          <label htmlFor="level" className={labelClassName}>
             肉鸽难度 <span className="text-ak-red">*</span>
           </label>
           <input
@@ -165,7 +188,7 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="organizerName" className="block text-sm font-light mb-1">
+          <label htmlFor="organizerName" className={labelClassName}>
             主办方 <span className="text-ak-red">*</span>
           </label>
           <input
@@ -183,7 +206,7 @@ export default function TournamentInfoAccordionItem({
         <div>
           <label htmlFor="room" className="flex items-center items-center text-sm font-light mb-1">
             观赛直播间
-            <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+            <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
               <span className="px-1">
                 <InformationIcon width="0.75rem" height="0.75rem" />
               </span>
@@ -204,7 +227,9 @@ export default function TournamentInfoAccordionItem({
 
         {formData.type === "team" && (
           <div>
-            <label htmlFor="memberAlias" className="block text-sm font-light mb-1">成员称号</label>
+            <label htmlFor="memberAlias" className={labelClassName}>
+              成员称号
+            </label>
             <input
               id="memberAlias"
               type="text"
@@ -220,7 +245,9 @@ export default function TournamentInfoAccordionItem({
 
         {formData.type === "team" && (
           <div>
-            <label htmlFor="keyMemberAlias" className="block text-sm font-light mb-1">核心成员称号</label>
+            <label htmlFor="keyMemberAlias" className={labelClassName}>
+              核心成员称号
+            </label>
             <input
               id="keyMemberAlias"
               type="text"
@@ -236,7 +263,7 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-light mb-1">标签</label>
+        <label className={labelClassName}>标签</label>
         <div className="flex flex-wrap gap-2">
           {formData.labels.map((label, index) =>
             editingLabelIndex === index ? (
@@ -278,7 +305,12 @@ export default function TournamentInfoAccordionItem({
               />
             ) : (
               <div key={index} className="px-2 py-1 rounded-md bg-mid-gray">
-                <button type="button" className="" onClick={() => setEditingLabelIndex(index)} aria-label={`编辑标签${label}`}>
+                <button
+                  type="button"
+                  className=""
+                  onClick={() => setEditingLabelIndex(index)}
+                  aria-label={`编辑标签${label}`}
+                >
                   {label}
                 </button>
                 <button
@@ -328,6 +360,7 @@ export default function TournamentInfoAccordionItem({
                 }
                 setAddingLabel(false);
               }}
+              maxLength={20}
             />
           )}
           {formData.labels.length < (addingLabel ? 9 : 10) && (
@@ -346,9 +379,9 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div className="mb-4">
-        <label htmlFor="rule" className="flex items-center text-sm font-light mb-1">
+        <label htmlFor="rule" className={labelWithTooltipClassName}>
           规则
-          <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+          <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
             <span className="px-1">
               <InformationIcon width="0.75rem" height="0.75rem" />
             </span>
@@ -365,9 +398,9 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div>
-        <label htmlFor="detailRule" className="flex items-center text-sm font-light mb-1">
+        <label htmlFor="detailRule" className={labelWithTooltipClassName}>
           详细规则
-          <Tooltip content="请使用Markdown格式" className="bg-light-mid-gray text-black">
+          <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
             <span className="px-1">
               <InformationIcon width="0.75rem" height="0.75rem" />
             </span>

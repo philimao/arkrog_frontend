@@ -1,7 +1,7 @@
 import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
-import { inputClassName } from ".";
+import { inputClassName, labelClassName } from ".";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
@@ -22,13 +22,14 @@ export default function TournamentStagesAccordionItem({
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
-                  <label htmlFor={`stageName-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageName-${index}`} className={labelClassName}>
                     阶段名称 <span className="text-ak-red">*</span>
                   </label>
                   <input
                     id={`stageName-${index}`}
                     type="text"
                     value={stage.name}
+                    placeholder="例：初赛"
                     onChange={(e) => {
                       const newStages = [...formData.stages];
                       newStages[index].name = e.target.value;
@@ -43,7 +44,7 @@ export default function TournamentStagesAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`stageStartTime-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageStartTime-${index}`} className={labelClassName}>
                     开始时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
@@ -64,7 +65,7 @@ export default function TournamentStagesAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`stageEndTime-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageEndTime-${index}`} className={labelClassName}>
                     结束时间 <span className="text-ak-red">*</span>
                   </label>
                   <input
@@ -85,7 +86,7 @@ export default function TournamentStagesAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`stageType-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`stageType-${index}`} className={labelClassName}>
                     赛制 <span className="text-ak-red">*</span>
                   </label>
                   <Select
@@ -109,8 +110,12 @@ export default function TournamentStagesAccordionItem({
                     aria-label="赛制"
                     required
                   >
-                    <SelectItem key="rank" value="rank">排名赛</SelectItem>
-                    <SelectItem key="1on1" value="1on1">淘汰赛</SelectItem>
+                    <SelectItem key="rank" value="rank">
+                      积分排名赛
+                    </SelectItem>
+                    <SelectItem key="1on1" value="1on1">
+                      1对1淘汰赛
+                    </SelectItem>
                   </Select>
                 </div>
               </div>

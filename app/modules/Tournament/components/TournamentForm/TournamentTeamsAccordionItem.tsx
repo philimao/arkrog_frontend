@@ -1,6 +1,6 @@
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
-import { inputClassName } from ".";
+import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import { Tooltip } from "@heroui/react";
 
@@ -27,13 +27,14 @@ export default function TournamentTeamsAccordionItem({
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
-                  <label htmlFor={`teamName-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`teamName-${index}`} className={labelClassName}>
                     队伍名称 <span className="text-ak-red">*</span>
                   </label>
                   <input
                     id={`teamName-${index}`}
                     type="text"
                     value={team.name}
+                    placeholder="例：紧集授课"
                     onChange={(e) => {
                       const newTeams = [...formData.teams!];
                       newTeams[index].name = e.target.value;
@@ -48,13 +49,14 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamId-${index}`} className="block text-sm font-light mb-1">
+                  <label htmlFor={`teamId-${index}`} className={labelClassName}>
                     队伍ID <span className="text-ak-red">*</span>
                   </label>
                   <input
                     id={`teamId-${index}`}
                     type="text"
                     value={team.id}
+                    placeholder="例：ET"
                     onChange={(e) => {
                       const newTeams = [...formData.teams!];
                       newTeams[index].id = e.target.value;
@@ -69,7 +71,7 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamAvatar-${index}`} className="flex items-center text-sm font-light mb-1">
+                  <label htmlFor={`teamAvatar-${index}`} className={labelWithTooltipClassName}>
                     队伍头像
                     <Tooltip content="点击图标上传图片后，将图片链接粘贴此处" className="bg-light-mid-gray text-black">
                       <span className="px-1">
@@ -93,11 +95,16 @@ export default function TournamentTeamsAccordionItem({
                       onKeyDown={handleKeyDown}
                       className={`${inputClassName} pr-12`}
                     />
-                    <UploadCenterTrigger className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray" aria-label="上传队伍头像" />
+                    <UploadCenterTrigger
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray"
+                      aria-label="上传队伍头像"
+                    />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor={`teamLeader-${index}`} className="block text-sm font-light mb-1">队长</label>
+                  <label htmlFor={`teamLeader-${index}`} className={labelClassName}>
+                    队长
+                  </label>
                   <input
                     id={`teamLeader-${index}`}
                     type="text"
@@ -115,7 +122,9 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamKeyMember-${index}`} className="block text-sm font-light mb-1">核心成员</label>
+                  <label htmlFor={`teamKeyMember-${index}`} className={labelClassName}>
+                    核心成员
+                  </label>
                   <input
                     id={`teamKeyMember-${index}`}
                     type="text"
@@ -133,7 +142,9 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamFinalRank-${index}`} className="block text-sm font-light mb-1">最终排名</label>
+                  <label htmlFor={`teamFinalRank-${index}`} className={labelClassName}>
+                    最终排名
+                  </label>
                   <input
                     id={`teamFinalRank-${index}`}
                     type="number"

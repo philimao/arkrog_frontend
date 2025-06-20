@@ -318,6 +318,29 @@ export default function TournamentProgressAccordionItem({
                               setEditingPlayer(undefined);
                             }
                             const newPlayers = [...formData.players!];
+
+                            // Check if there was a rival and clear that relationship
+                            if (editingStage?.type === '1on1') {
+                              const rivalMid = newPlayers
+                                .find((p) => p === player)!
+                                .games.find((g) => new Date(g.date).getDate() === date.getDate())?.rivalMid;
+
+                              if (rivalMid) {
+                                const rivalIndex = newPlayers.findIndex((p) => p.mid.toString() === rivalMid.toString());
+                                if (rivalIndex !== -1) {
+                                  const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
+                                    (g) => g.stage === editingStage.name,
+                                  );
+
+                                  if (rivalGameIndex !== -1) {
+                                    // Clear the rival's rivalMid and result
+                                    newPlayers[rivalIndex].games[rivalGameIndex].rivalMid = undefined;
+                                    newPlayers[rivalIndex].games[rivalGameIndex].result = undefined;
+                                  }
+                                }
+                              }
+                            }
+
                             newPlayers.find((p) => p === player)!.games = newPlayers
                               .find((p) => p === player)!
                               .games.filter((g) => new Date(g.date).getDate() !== date.getDate());

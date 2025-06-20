@@ -5,6 +5,14 @@ import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 export interface IBuffContext {
   /** 不生效的藏品 */
   invalidRelics: RelicWrapper[];
+  stage_rune_mul: {
+    /** 敌人攻击力改变来源 */
+    enemy_atk: ExpressionGroupNode;
+    /** 敌人防御力减少来源 */
+    enemy_def: ExpressionGroupNode;
+    /** 敌人最大生命值减少来源 */
+    enemy_max_hp: ExpressionGroupNode;
+  };
   /** 干员养成、藏品rune 局外加算 */
   relic_rune_add: {
     /** 最大生命值 */
@@ -96,6 +104,11 @@ export interface IBuffContext {
 
 export class BuffContext implements IBuffContext {
   invalidRelics: RelicWrapper[] = [];
+  stage_rune_mul: IBuffContext["stage_rune_mul"] = {
+    enemy_atk: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_def: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_max_hp: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
+  };
   relic_rune_add: IBuffContext["relic_rune_add"] = {
     max_hp: new ExpressionGroupNode("+", "局外加算"),
     atk: new ExpressionGroupNode("+", "局外加算"),
@@ -110,9 +123,9 @@ export class BuffContext implements IBuffContext {
     def: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     max_hp: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     respawn_time: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_atk: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_def: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_max_hp: new ExpressionGroupNode("*", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_atk: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_def: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_max_hp: new ExpressionGroupNode("+", "局外乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_resistance: new ExpressionGroupNode("max", "局外最大值").addChild(new NumericLiteralNode(0, "基数")),
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {

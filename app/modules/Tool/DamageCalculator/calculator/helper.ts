@@ -108,18 +108,26 @@ export class CalculatorHelper {
     const enemyInput = JSON.parse(JSON.stringify(enemyBase));
     const enemyAttr = enemyInput.attributes;
 
-    const atk_mul = context.relic_rune_mul.enemy_atk.calculate() * context.in_game_buff_final_mul.enemy_atk.calculate();
-    const def_mul = context.relic_rune_mul.enemy_def.calculate() * context.in_game_buff_final_mul.enemy_def.calculate();
-    const maxHp_mul =
-      context.relic_rune_mul.enemy_max_hp.calculate() * context.in_game_buff_final_mul.enemy_max_hp.calculate();
+    const atk_stage_mul = context.stage_rune_mul.enemy_atk.calculate();
+    const def_stage_mul = context.stage_rune_mul.enemy_def.calculate();
+    const maxHp_stage_mul = context.stage_rune_mul.enemy_max_hp.calculate();
+
+    const atk_rune_mul = context.relic_rune_mul.enemy_atk.calculate();
+    const def_rune_mul = context.relic_rune_mul.enemy_def.calculate();
+    const maxHp_rune_mul = context.relic_rune_mul.enemy_max_hp.calculate();
+
+    const atk_final_mul = context.in_game_buff_final_mul.enemy_atk.calculate();
+    const def_final_mul = context.in_game_buff_final_mul.enemy_def.calculate();
+    const maxHp_final_mul = context.in_game_buff_final_mul.enemy_max_hp.calculate();
+
     const damage_resistance =
       1 -
       (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
         (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
     // 应用局外加成
-    enemyAttr.atk = Math.round(enemyAttr.atk * atk_mul);
-    enemyAttr.def = Math.round(enemyAttr.def * def_mul);
-    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_mul);
+    enemyAttr.atk = Math.round(enemyAttr.atk * atk_stage_mul * atk_rune_mul * atk_final_mul);
+    enemyAttr.def = Math.round(enemyAttr.def * def_stage_mul * def_rune_mul * def_final_mul);
+    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_stage_mul * maxHp_rune_mul * maxHp_final_mul);
     enemyAttr.damageResistance = Math.round(damage_resistance * 1000) / 1000;
     return enemyInput;
   }
@@ -384,8 +392,8 @@ export class CalculatorHelper {
       }
       /** <年代之刺>与<饮泣之刺>的最大生命值+20% */
       if (difficulty >= 4 && enemyData && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
-        context.in_game_buff_final_mul.enemy_max_hp.addChild(
-          new NumericLiteralNode(1.2, `直面魂灵·4 | 年代之刺与饮泣之刺的最大生命值+20%`),
+        context.relic_rune_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.2, `直面魂灵·4 | 年代之刺与饮泣之刺的最大生命值+20%`),
         );
       }
       /** 难度部分词条 精英和领袖敌人生命值+20% */
@@ -439,6 +447,16 @@ export class CalculatorHelper {
               if (key === "tag" && !enemyData.enemyTags.m_value?.includes(value)) return;
             }
           }
+          if (buff.target === "rune_mul") {
+            switch (key) {
+              case "enemy_max_hp":
+                context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
+                break;
+              default:
+                break;
+            }
+            return;
+          }
           switch (key) {
             case "atk":
               context.relic_rune_mul.atk.addChild(new NumericLiteralNode(value, item.name));
@@ -481,13 +499,13 @@ export class CalculatorHelper {
       const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
       const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
       if (atk_mul !== 1) {
-        context.relic_rune_mul.enemy_atk.addChild(new NumericLiteralNode(atk_mul, "关卡加成"));
+        context.stage_rune_mul.enemy_atk.addChild(new NumericLiteralNode(atk_mul, "关卡加成"));
       }
       if (def_mul !== 1) {
-        context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(def_mul, "关卡加成"));
+        context.stage_rune_mul.enemy_def.addChild(new NumericLiteralNode(def_mul, "关卡加成"));
       }
       if (hp_mul !== 1) {
-        context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(hp_mul, "关卡加成"));
+        context.stage_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(hp_mul, "关卡加成"));
       }
     }
     if (enemySpec) {

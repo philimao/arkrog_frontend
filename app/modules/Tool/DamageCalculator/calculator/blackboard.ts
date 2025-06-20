@@ -398,11 +398,11 @@ export const commonEnemyRelicBlackboard = {
     // 目前只处理了雕词錾刀和十戒，但敌人通用面板应该也重构到此处 TODO
     const max_hp = getByKey(buff.blackboard, "max_hp");
     if (max_hp) {
-      context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(Math.abs(max_hp.value), relic.name));
+      context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
     }
     const def = getByKey(buff.blackboard, "def");
     if (def) {
-      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(Math.abs(def.value), relic.name));
+      context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(def.value, relic.name));
     }
   },
 };

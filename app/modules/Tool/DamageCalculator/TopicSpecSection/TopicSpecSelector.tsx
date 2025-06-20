@@ -2,15 +2,24 @@ import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { StyledTitle } from "../../components/Shared";
 import { getPath, imageHost } from "~/utils/tools";
+import { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
+import type { EnemyData } from "~/types/gameData";
 
 export interface ITopicSpecItem {
   id: string;
   name: string;
   desc: string;
   userActive: boolean;
-  buffs: { key: string; value: number; selector?: string }[];
+  buffs: {
+    key: string;
+    value: number;
+    selector?: string;
+    target: "rune_mul" | "buff_add" | "buff_mul" | "buff_final_mul";
+  }[];
   url: string;
   invert: number;
+  functionDesc<T extends Record<string, number>>(args: T): string;
+  apply(input: { context: BuffContext; enemyData?: EnemyData }): void;
 }
 
 const StyledTopicSpecSelector = styled.div<{ $active: boolean }>`
@@ -177,9 +186,9 @@ const disasters = {
     functionDesc: ({ enemy_max_hp }: { enemy_max_hp: number }) =>
       `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${enemy_max_hp * 100}%`,
     values: [
-      [{ key: "enemy_max_hp", value: 1, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
-      [{ key: "enemy_max_hp", value: 1.5, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
-      [{ key: "enemy_max_hp", value: 2, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck" }],
+      [{ key: "enemy_max_hp", value: 1, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck", target: "rune_mul" }],
+      [{ key: "enemy_max_hp", value: 1.5, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck", target: "rune_mul" }],
+      [{ key: "enemy_max_hp", value: 2, selector: "enemy:id:trap_760_skztzs|enemy_2073_skzrck", target: "rune_mul" }],
     ],
   },
   rogue_4_disaster_2: {
@@ -368,7 +377,7 @@ const fragments = {
     name: "爆破",
     desc: "使用后下次战斗<年代之刺>的最大生命值-50%",
     value: 2,
-    buffs: [{ key: "enemy_max_hp", value: 0.5, selector: "enemy:id:trap_760_skztzs" }],
+    buffs: [{ key: "enemy_max_hp", value: -0.5, selector: "enemy:id:trap_760_skztzs", target: "rune_mul" }],
   },
   rogue_4_fragment_F_26: {
     id: "rogue_4_fragment_F_26",

@@ -1,5 +1,5 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type {
   CharBasicData,
   CharData,
@@ -25,6 +25,7 @@ import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
+import { mergeClassNameSafe } from "~/utils/tools";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -85,6 +86,8 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setGlobalAnalysisResult,
     setEnemyInput,
   } = useDamageCalculatorStore();
+  // 面板显示模式
+  const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
 
   const rogueKey = rogueInput.topic;
 
@@ -505,9 +508,38 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           )}
         </div> */}
       </StyledOperatorDisplayWrapper>
+      <div>
+        <a
+          className={mergeClassNameSafe(
+            "text-[0.8rem] px-1 py-2 cursor-pointer inline-block",
+            mode === "out_game" ? "text-ak-blue" : "text-light-gray",
+          )}
+          onClick={() => setMode("out_game")}
+        >
+          局外面板
+        </a>
+        <a
+          className={mergeClassNameSafe(
+            "text-[0.8rem] px-1 py-2 cursor-pointer inline-block",
+            mode === "in_game" ? "text-ak-blue" : "text-light-gray",
+          )}
+          onClick={() => setMode("in_game")}
+        >
+          局内面板
+        </a>
+        {/* <a
+          className={mergeClassNameSafe(
+            "text-[0.8rem] px-1 py-2 cursor-pointer inline-block",
+            mode === "skill" ? "text-ak-blue" : "text-light-gray",
+          )}
+          onClick={() => setMode("skill")}
+        >
+          技能面板
+        </a> */}
+      </div>
       <div className="flex gap-4">
         {charInput.attributeModifier && (
-          <OperatorAttributes charInput={charInput} charData={charData} relics={selectedRelics} />
+          <OperatorAttributes mode={mode} charInput={charInput} charData={charData} relics={selectedRelics} />
         )}
         <OperatorModifier />
         <EnemyMiniPreview />

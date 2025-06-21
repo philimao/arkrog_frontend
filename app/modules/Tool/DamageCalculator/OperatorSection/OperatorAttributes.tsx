@@ -4,6 +4,9 @@ import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
+import { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
+import ExpressionDisplay from "~/modules/Tool/components/ExpressionDisplay";
+import { ExpressionUtil } from "~/modules/Tool/DamageCalculator/calculator/expression-util";
 
 const StyledAttributeWrapper = styled.div`
   display: grid;
@@ -19,176 +22,19 @@ const StyledAttributeWrapper = styled.div`
     align-items: center;
     background: var(--black-gray);
     padding: 0 0.5rem;
+    height: 44px;
     white-space: nowrap;
     & > span:first-child {
       font-weight: bold;
       margin-right: 1.5rem;
     }
-    & > span:last-child {
+    & > div:last-child {
       margin-left: auto;
       font-family: "NovecentoWide", sans-serif;
+      padding: 0;
     }
   }
 `;
-
-export function OperatorAttributesOld({ result }: { result: CharAttributeExt }) {
-  return (
-    <StyledAttributeWrapper>
-      {result && (
-        <>
-          <div>
-            <span>最大生命值</span>
-            <span>{result.maxHp}</span>
-          </div>
-          <div>
-            <span>攻击力</span>
-            <span>{result.atk}</span>
-          </div>
-          <div>
-            <span>防御</span>
-            <span>{result.def}</span>
-          </div>
-          <div>
-            <span>法术抗性</span>
-            <span>{result.magicResistance}</span>
-          </div>
-          <div>
-            <span>费用</span>
-            <span>{result.cost}</span>
-          </div>
-          <div>
-            <span>阻挡数</span>
-            <span>{result.blockCnt}</span>
-          </div>
-          <div>
-            <span>攻击速度</span>
-            <span>{result.attackSpeed}</span>
-          </div>
-          <div>
-            <span>攻击间隔</span>
-            <span>{result.baseAttackTime}</span>
-          </div>
-          <div>
-            <span>再部署</span>
-            <span>{result.respawnTime}</span>
-          </div>
-          <div>
-            <span>每秒生命回复</span>
-            <span>{result.hpRecoveryPerSec}</span>
-          </div>
-          <div>
-            <span>每秒技力回复</span>
-            <span>{result.spRecoveryPerSec}</span>
-          </div>
-          <div>
-            <span>伤害倍率</span>
-            <span>{result.damageScale}</span>
-          </div>
-        </>
-      )}
-    </StyledAttributeWrapper>
-  );
-}
-
-/** 最大生命值属性计算公式 */
-export function useMaxHpTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  return [
-    {
-      tooltip: "局内",
-      tags: [
-        <AttrTag tooltip="基础">{attribute?.maxHp}</AttrTag>,
-        ...context.relic_rune_add.max_hp.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-    {
-      tooltip: "局外乘区",
-      tags: [
-        ...context.relic_rune_mul.max_hp.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-  ];
-}
-
-/** 攻击力属性计算公式 */
-export function useAtkTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  return [
-    {
-      tooltip: "局内",
-      tags: [
-        <AttrTag tooltip="基础">{attribute?.atk}</AttrTag>,
-        ...context.relic_rune_add.atk.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-    {
-      tooltip: "局外乘区",
-      tags: [
-        ...context.relic_rune_mul.atk.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-  ];
-}
-
-/** 防御属性计算公式 */
-export function useDefTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  return [
-    {
-      tooltip: "基础",
-      tags: [
-        <AttrTag tooltip="基础">{attribute?.def}</AttrTag>,
-        ...context.relic_rune_add.def.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-    {
-      tooltip: "局外乘区",
-      tags: [
-        ...context.relic_rune_mul.def.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-  ];
-}
-
-/** 攻击速度属性计算公式 */
-export function useAttackSpeedTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  const tokens = [
-    {
-      tooltip: "局内",
-      tags: [
-        <AttrTag tooltip="基础">{attribute?.attackSpeed}</AttrTag>,
-        ...context.relic_rune_add.attack_speed.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-        // ...context.in_game_buff_add.attack_speed_source.map((item) => (
-        //   <AttrTag tooltip={item.name}>{item.value}</AttrTag>
-        // )),
-      ],
-    },
-  ];
-
-  if (tokens[0].tags.length < 2) {
-    return [];
-  }
-  return tokens;
-}
 
 /** 部署费用属性计算公式 */
 export function useCostTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
@@ -212,133 +58,101 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Buf
   return tokens;
 }
 
-/** 每秒生命回复属性计算公式 */
-export function useHpRecoveryPerSecTagGroups(props: {
-  attribute: CharAttribute;
-  context: BuffContext;
-}): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  const tokens: AttrCalcToken[] = [
-    {
-      tooltip: "基础",
-      tags: [],
-    },
-  ];
-  if (attribute.hpRecoveryPerSec) tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.hpRecoveryPerSec}</AttrTag>);
-  for (const item of context.relic_rune_add.hp_recovery_per_sec.children) {
-    tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
-  }
-
-  if (tokens[0].tags.length < 2) {
-    return [];
-  }
-  return tokens;
-}
-
-/** 每秒技力回复属性计算公式 */
-export function useSpRecoveryPerSecTagGroups(props: {
-  attribute: CharAttribute;
-  context: BuffContext;
-  charInput: CharInput;
-}): AttrCalcToken[] {
-  const { attribute, context, charInput } = props;
-
-  const tokens: AttrCalcToken[] = [
-    {
-      tooltip: "基础",
-      tags: [],
-    },
-  ];
-  /** 攻回技能不会自动回复技力 */
-  if (charInput.skill.spData.spType === "INCREASE_WITH_TIME" && attribute.spRecoveryPerSec)
-    tokens[0].tags.push(<AttrTag tooltip="基础">{attribute.spRecoveryPerSec}</AttrTag>);
-  for (const item of context.in_game_buff_add.sp_recovery_per_sec.children) {
-    tokens[0].tags.push(<AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>);
-  }
-
-  if (tokens[0].tags.length < 1) {
-    return [];
-  }
-  return tokens;
-}
-
 export default function OperatorAttributes(props: {
+  mode: "out_game" | "in_game" | "skill";
   charData: CharData;
   charInput: CharInput;
   relics: RelicWrapper[];
 }) {
   const context = useDamageCalculatorStore((state) => state.globalAnalysisResult);
   const [result, setResult] = useState<CharAttributeExt | null>(null);
-  const attribute = props.charInput.phase?.attributesKeyFrames[props.charInput.level].data;
-  const maxHpTagGroups = useMaxHpTagGroups({ attribute: attribute!, context });
-  const atkTagGroups = useAtkTagGroups({ attribute: attribute!, context });
-  const defTagGroups = useDefTagGroups({ attribute: attribute!, context });
-  const attackSpeedTagGroups = useAttackSpeedTagGroups({ attribute: attribute!, context });
-  const costTagGroups = useCostTagGroups({ attribute: attribute!, context });
-  const hpRecoveryPerSecTagGroups = useHpRecoveryPerSecTagGroups({ attribute: attribute!, context });
-  const spRecoveryPerSecTagGroups = useSpRecoveryPerSecTagGroups({
-    attribute: attribute!,
-    context,
-    charInput: props.charInput,
-  });
+  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
 
   useEffect(() => {
     setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
-  }, [props.charData, props.charInput, props.relics, context]);
 
+    if (props.mode === "out_game") {
+      setEnemyExpression({
+        maxHp: ExpressionUtil.operator_out_game_max_hp({ charInput: props.charInput, context }),
+        atk: ExpressionUtil.operator_out_game_atk({ charInput: props.charInput, context }),
+        def: ExpressionUtil.operator_out_game_def({ charInput: props.charInput, context }),
+        attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charInput: props.charInput, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: props.charInput, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: props.charInput, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: props.charInput, context }),
+      });
+    } else if (props.mode === "in_game") {
+      setEnemyExpression({
+        maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: props.charInput, context }),
+        atk: ExpressionUtil.operator_in_game_atk({ charInput: props.charInput, context }),
+        def: ExpressionUtil.operator_in_game_def({ charInput: props.charInput, context }),
+        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charInput: props.charInput, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: props.charInput, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: props.charInput, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: props.charInput, context }),
+      });
+    } else if (props.mode === "skill") {
+      setEnemyExpression({
+        maxHp: ExpressionUtil.operator_skill_max_hp({ charInput: props.charInput, context }),
+        // atk: ExpressionUtil.operator_skill_atk({ charInput: props.charInput, context }),
+      });
+    }
+  }, [props.mode, props.charData, props.charInput, props.relics, context]);
+
+  // const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
+  // const className = "text-sm h-4 px-2 " + color;
   return (
     <StyledAttributeWrapper>
       {result && (
         <>
           <div>
             <span>最大生命值</span>
-            <AttrDisplay calcTokens={maxHpTagGroups}>{result.maxHp}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.maxHp} className="text-sm h-4 px-2 text-ak-blue" />
           </div>
 
           <div>
             <span>攻击力</span>
-            <AttrDisplay calcTokens={atkTagGroups}>{result.atk}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.atk} className="text-sm h-4 px-2 text-ak-red" />
           </div>
           <div>
             <span>防御</span>
-            <AttrDisplay calcTokens={defTagGroups}>{result.def}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.def} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>法术抗性</span>
-            <span>{result.magicResistance}</span>
+            <div>{result.magicResistance}</div>
           </div>
           <div>
             <span>费用</span>
-            <AttrDisplay calcTokens={costTagGroups}>{result.cost}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.cost} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>阻挡数</span>
-            <span>{result.blockCnt}</span>
+            <div>{result.blockCnt}</div>
           </div>
           <div>
             <span>攻击速度</span>
-            <AttrDisplay calcTokens={attackSpeedTagGroups}>{result.attackSpeed}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.attackSpeed} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>攻击间隔</span>
-            <span>{result.baseAttackTime}</span>
+            <div>{result.baseAttackTime}</div>
           </div>
           <div>
             <span>再部署</span>
-            <span>{result.respawnTime}</span>
+            <div>{result.respawnTime}</div>
           </div>
           <div>
             <span>每秒生命回复</span>
-            <AttrDisplay calcTokens={hpRecoveryPerSecTagGroups}>{result.hpRecoveryPerSec}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.hpRecoveryPerSec} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>每秒技力回复</span>
-            <AttrDisplay calcTokens={spRecoveryPerSecTagGroups}>{result.spRecoveryPerSec}</AttrDisplay>
+            <ExpressionDisplay expression={enemyExpression.spRecoveryPerSec} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>伤害倍率</span>
-            <span>{result.damageScale}</span>
+            <div>{result.damageScale}</div>
           </div>
         </>
       )}

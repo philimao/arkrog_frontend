@@ -142,10 +142,10 @@ export class NumericLiteralNode extends BaseNode {
 }
 
 export class ExpressionGroupNode extends BaseNode {
-  operator: "+" | "*" | "max" | "min" | "union";
+  operator: "-" | "+" | "*" | "max" | "min" | "union";
   children: BaseNode[] = [];
 
-  constructor(operator: "+" | "*" | "max" | "min" | "union", tooltip: string) {
+  constructor(operator: "-" | "+" | "*" | "max" | "min" | "union", tooltip: string) {
     super("expression-group", tooltip);
     this.operator = operator;
   }
@@ -156,6 +156,17 @@ export class ExpressionGroupNode extends BaseNode {
   }
 
   calculate(): number {
+    if (this.operator === "-") {
+      if (this.children.length === 0) {
+        return 0;
+      }
+      return this.children.reduce((acc, child, index) => {
+        if (index === 0) {
+          return child.calculate();
+        }
+        return acc - child.calculate();
+      }, 0);
+    }
     if (this.operator === "+") {
       return this.children.reduce((acc, child) => {
         return acc + child.calculate();
@@ -191,6 +202,9 @@ export class ExpressionGroupNode extends BaseNode {
   printExpression() {
     // 有效子节点
     const validChildren = this.children.filter((child) => {
+      if (this.operator === "-" && child.calculate() === 0) {
+        return false;
+      }
       if (this.operator === "+" && child.calculate() === 0) {
         return false;
       }
@@ -218,6 +232,9 @@ export class ExpressionGroupNode extends BaseNode {
   printDebug() {
     // 有效子节点
     const validChildren = this.children.filter((child) => {
+      if (this.operator === "-" && child.calculate() === 0) {
+        return false;
+      }
       if (this.operator === "+" && child.calculate() === 0) {
         return false;
       }

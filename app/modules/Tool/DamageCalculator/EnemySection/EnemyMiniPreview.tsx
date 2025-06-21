@@ -1,11 +1,14 @@
 import { styled } from "styled-components";
 import { GridContainer } from "../../components/Shared";
 import { displayAttrKeys, StyledEnemyTag, StyledEnmeyLevelBadge } from "./EnemyDisplay";
-import EnemyAttribute from "./EnemyAttributes";
 import { allowedBlackboardKeyMap, camelToSnake } from "../utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
 import { CalculatorHelper } from "../calculator/helper";
+import { useEffect, useState } from "react";
+import { ExpressionUtil } from "../calculator/expression-util";
+import { ExpressionGroupNode, NumericLiteralNode } from "../calculator/ast";
+import ExpressionDisplay from "../../components/ExpressionDisplay";
 
 const StyledEnemyHeader = styled.div`
   display: flex;
@@ -42,20 +45,45 @@ const StyledGridContainer = styled(GridContainer)`
 
 export default function EnemyMiniPreview() {
   const { enemyBase, globalAnalysisResult } = useDamageCalculatorStore();
-  const enemyInput = CalculatorHelper.calculateEnemyAttr({
-    enemyBase,
-    context: globalAnalysisResult,
-  });
+  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
+
+  useEffect(() => {
+    if (enemyBase.name === "木桩") {
+      return;
+    }
+    const enemyInput = CalculatorHelper.calculateEnemyAttr({
+      enemyBase,
+      context: globalAnalysisResult,
+    });
+    setEnemyExpression({
+      maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
+      atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
+      def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
+      magicResistance: new ExpressionGroupNode("+", "法术抗性").addChild(
+        new NumericLiteralNode(enemyInput.attributes.magicResistance, "法术抗性"),
+      ),
+      epResistance: new ExpressionGroupNode("+", "损伤抵抗").addChild(
+        new NumericLiteralNode(enemyInput.attributes.epResistance, "损伤抵抗"),
+      ),
+      epDamageResistance: new ExpressionGroupNode("+", "元素伤害抗性").addChild(
+        new NumericLiteralNode(enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
+      ),
+      damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
+        enemyBase,
+        context: globalAnalysisResult,
+      }),
+    });
+  }, [enemyBase, globalAnalysisResult]);
 
   return (
     <div className="flex flex-col">
       <StyledEnemyHeader>
-        <StyledName>{enemyInput.name}</StyledName>
+        <StyledName>{enemyBase.name}</StyledName>
         <div className="flex gap-2">
-          <StyledEnmeyLevelBadge $levelType={enemyInput.levelType}>
-            {levelTypeMap[enemyInput.levelType]}
+          <StyledEnmeyLevelBadge $levelType={enemyBase.levelType}>
+            {levelTypeMap[enemyBase.levelType]}
           </StyledEnmeyLevelBadge>
-          {enemyInput.enemyTags.length > 0 && <StyledEnemyTag>{enemyTagMap[enemyInput.enemyTags[0]]}</StyledEnemyTag>}
+          {enemyBase.enemyTags.length > 0 && <StyledEnemyTag>{enemyTagMap[enemyBase.enemyTags[0]]}</StyledEnemyTag>}
         </div>
       </StyledEnemyHeader>
       <StyledGridContainer>
@@ -65,12 +93,7 @@ export default function EnemyMiniPreview() {
           return (
             <StyledInputWrapper key={key}>
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
-              <EnemyAttribute
-                attrKey={key}
-                value={enemyInput.attributes[key as never]}
-                className={className}
-                context={globalAnalysisResult}
-              />
+              <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
             </StyledInputWrapper>
           );
         })}

@@ -811,33 +811,3 @@ export class CalculatorHelper {
     console.groupEnd();
   }
 }
-
-/** 局外攻击力公式 */
-export function getOutAtkExpression(baseAtk: number, context: BuffContext) {
-  return new ExpressionGroupNode("*", "局外攻击力")
-    .addChild(
-      new ExpressionGroupNode("+", "局外加成")
-        .addChild(new NumericLiteralNode(baseAtk, "基础攻击力"))
-        .addChild(...context.relic_rune_add.atk.children),
-    )
-    .addChild(context.relic_rune_mul.atk);
-}
-
-/** 局内攻击力公式 */
-export function getInGameAtkExpression(baseAtk: number, context: BuffContext) {
-  const outAtkExpression = getOutAtkExpression(baseAtk, context);
-
-  const atk = new ExpressionGroupNode("*", "直接乘算")
-    .addChild(
-      new ExpressionGroupNode("+", "直接加算")
-        .addChild(outAtkExpression)
-        .addChild(...context.in_game_buff_add.atk.children),
-    )
-    .addChild(context.in_game_buff_mul.atk);
-
-  return new ExpressionGroupNode("*", "最终乘算")
-    .addChild(
-      new ExpressionGroupNode("+", "最终加算").addChild(atk).addChild(...context.in_game_buff_final_add.atk.children),
-    )
-    .addChild(...context.in_game_buff_final_mul.atk.children);
-}

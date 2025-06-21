@@ -8,9 +8,11 @@ import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
 import { CalculatorHelper } from "../calculator";
-import EnemyAttribute from "./EnemyAttributes";
 import { Tooltip } from "@heroui/react";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
+import ExpressionDisplay from "../../components/ExpressionDisplay";
+import { ExpressionUtil } from "../calculator/expression-util";
+import { ExpressionGroupNode, NumericLiteralNode } from "../calculator/ast";
 
 const StyledEnemyDisplayWrapper = styled.div`
   display: flex;
@@ -166,6 +168,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
 
   /** 缓存用户修改后的敌人数据，在blur时应用到store中 */
   const [_enemyInput, _setEnemyInput] = useState<EnemyInput | null>(null);
+  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
@@ -177,6 +180,27 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     });
     console.log("计算敌人数据(display)", enemyInput, enemyBase);
     _setEnemyInput(enemyInput);
+    if (enemyBase.name === "木桩") {
+      return;
+    }
+    setEnemyExpression({
+      maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
+      atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
+      def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
+      magicResistance: new ExpressionGroupNode("+", "法术抗性").addChild(
+        new NumericLiteralNode(enemyInput.attributes.magicResistance, "法术抗性"),
+      ),
+      epResistance: new ExpressionGroupNode("+", "损伤抵抗").addChild(
+        new NumericLiteralNode(enemyInput.attributes.epResistance, "损伤抵抗"),
+      ),
+      epDamageResistance: new ExpressionGroupNode("+", "元素伤害抗性").addChild(
+        new NumericLiteralNode(enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
+      ),
+      damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
+        enemyBase,
+        context: globalAnalysisResult,
+      }),
+    });
   }, [globalAnalysisResult, enemyBase]);
 
   /** 复制敌人当前面板到木桩 */
@@ -269,12 +293,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                 )}
               </div>
               {enemyBase.name !== "木桩" ? (
-                <EnemyAttribute
-                  attrKey={key}
-                  value={_enemyInput.attributes[key as never]}
-                  className={color}
-                  context={globalAnalysisResult}
-                />
+                <ExpressionDisplay className={color} expression={enemyExpression[key]}></ExpressionDisplay>
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}

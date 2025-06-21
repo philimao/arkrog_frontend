@@ -108,9 +108,10 @@ export class CalculatorHelper {
     const enemyInput = JSON.parse(JSON.stringify(enemyBase));
     const enemyAttr = enemyInput.attributes;
 
-    const atk_stage_mul = context.stage_rune_mul.enemy_atk.calculate();
-    const def_stage_mul = context.stage_rune_mul.enemy_def.calculate();
-    const maxHp_stage_mul = context.stage_rune_mul.enemy_max_hp.calculate();
+    // 装置类敌人不受关卡rune的影响
+    const atk_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_atk.calculate();
+    const def_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_def.calculate();
+    const maxHp_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_max_hp.calculate();
 
     const atk_rune_mul = context.relic_rune_mul.enemy_atk.calculate();
     const def_rune_mul = context.relic_rune_mul.enemy_def.calculate();

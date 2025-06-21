@@ -86,7 +86,7 @@ export default function RelicItem({
   relicWrapper: RelicWrapper;
   editable?: boolean;
 }) {
-  const { updateRelic, updateRelics, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
+  const { updateRelic, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
 
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
@@ -133,12 +133,7 @@ export default function RelicItem({
               onClick={(evt) => evt.stopPropagation()}
               onKeyDown={(evt) => evt.key === "Enter" && evt.currentTarget.blur()}
               onBlur={() => {
-                if (booksToSync.includes(relicWrapper.id)) {
-                  const layerNumber = parseInt(layer) || 0;
-                  updateRelics(booksToSync, "layer", layerNumber);
-                } else {
-                  setLayer(setRelicLayer(relicWrapper.id, layer));
-                }
+                setLayer(setRelicLayer(relicWrapper.id, layer));
               }}
             />
           </StyledLayerWrapper>
@@ -147,14 +142,3 @@ export default function RelicItem({
     </Tooltip>
   );
 }
-
-const booksToSync = [
-  "rogue_4_relic_book_6",
-  "rogue_4_relic_book_7",
-  "rogue_4_relic_book_8",
-  "rogue_4_relic_book_9",
-  "rogue_4_relic_book_10",
-  "rogue_4_relic_book_11",
-  "rogue_4_relic_book_12",
-  "rogue_4_relic_book_13",
-];

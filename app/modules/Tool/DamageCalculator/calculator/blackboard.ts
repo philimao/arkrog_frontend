@@ -415,7 +415,7 @@ registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuf
   const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
     .split("|")
     .filter((s) => s.trim());
-  console.log("rogue_3_increaseMaxHPWhenHavingShield", buff);
+
   return {
     isActive(input) {
       if (sub_profession.length > 0 && input.charData) {

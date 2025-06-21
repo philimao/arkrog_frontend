@@ -157,6 +157,29 @@ export const inGameRelicNames = [
   "几丁质刺刃",
 ];
 
+/** 金酒之本系列 */
+export const gin_layer_sync = ["rogue_4_relic_legacy_146", "rogue_4_relic_legacy_174", "rogue_4_relic_legacy_175"];
+/** 论断系列 */
+export const assertions_layer_sync = [
+  "rogue_4_relic_book_6",
+  "rogue_4_relic_book_7",
+  "rogue_4_relic_book_8",
+  "rogue_4_relic_book_9",
+  "rogue_4_relic_book_10",
+  "rogue_4_relic_book_11",
+  "rogue_4_relic_book_12",
+  "rogue_4_relic_book_13",
+];
+/** 思绪系列 */
+export const thought_layer_sync = ["rogue_4_relic_fight_22", "rogue_4_relic_fight_21", "rogue_4_relic_fight_25"];
+/** 突击协议 */
+export const tujixieyi_layer_sync = ["rogue_4_relic_legacy_1", "rogue_4_relic_legacy_2"];
+/** 堡垒协议 */
+export const baoleixieyi_layer_sync = ["rogue_4_relic_legacy_3", "rogue_4_relic_legacy_4"];
+/** 远程协议 */
+export const yuanchengxieyi_layer_sync = ["rogue_4_relic_legacy_5", "rogue_4_relic_legacy_6"];
+/** 破坏协议 */
+export const pohuaixieyi_layer_sync = ["rogue_4_relic_legacy_7", "rogue_4_relic_legacy_8"];
 /**
  * 藏品黑名单（价值低或难以计入）
  */

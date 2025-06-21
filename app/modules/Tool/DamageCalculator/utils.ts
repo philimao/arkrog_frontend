@@ -121,7 +121,7 @@ export const blackboardValueStrsForChar = [/enemy_damage_scale/];
  */
 export const layerValueStrs = [
   "rogue_3_rangedATKUp", // 岩角号
-  "rogue_2_atk_up_on_output_damage[stack]", // 轰鸣手
+  // "rogue_2_atk_up_on_output_damage[stack]", // 轰鸣手
   "rogue_3_relic_book_4", // 裂岩
   "rogue_3_relic_book_7", // 波纹
   "rogue_3_relic_book_10", // 久居

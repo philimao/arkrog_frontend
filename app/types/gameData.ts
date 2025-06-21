@@ -1,4 +1,5 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
+import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
 import type { BasicObject } from "~/types/core";
 
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
@@ -639,24 +640,6 @@ export interface EnemyAttribute {
   fearedImmune: boolean;
   /** 物理法术减伤 */
   damageResistance: number;
-}
-
-/** 肉鸽输入数据 */
-export interface RogueInput {
-  /** 肉鸽主题 */
-  topic: "rogue_4";
-  rogue_4: {
-    /** 层数 */
-    zone: string;
-    /** 科技树 */
-    tech: string;
-    /** 肉鸽难度 */
-    difficulty: number;
-    /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
-    thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
-    /** 当前生效灵感 */
-    inspiration?: string;
-  };
 }
 
 /** 伤害计算器输入参数 */

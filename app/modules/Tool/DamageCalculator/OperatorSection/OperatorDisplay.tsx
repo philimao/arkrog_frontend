@@ -78,14 +78,15 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     levelData,
     selectedIds,
     relicsMap,
-    rogueKey,
     enemySpec,
     setRogueThoughtLoad,
     setRelicAnalysisResult,
     setCalcOutput,
     setGlobalAnalysisResult,
-    setEnemyDataParsed,
+    setEnemyInput,
   } = useDamageCalculatorStore();
+
+  const rogueKey = rogueInput.topic;
 
   // 选择干员后
   useEffect(() => {
@@ -321,7 +322,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
 
     setGlobalAnalysisResult(buffContext);
     setRelicAnalysisResult(buffPanelContext);
-    setEnemyDataParsed(enemyInput);
+    setEnemyInput(enemyInput);
     // 计算结果
     setCalcOutput(calcResult);
   }, [
@@ -339,7 +340,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
     setCalcOutput,
     setGlobalAnalysisResult,
     setRelicAnalysisResult,
-    setEnemyDataParsed,
+    setEnemyInput,
     skillObject,
     stageData,
     topicSpecItems,

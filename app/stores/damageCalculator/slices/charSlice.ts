@@ -1,8 +1,9 @@
-import type { AttributeModifier, CharData } from "~/types/gameData";
-import type { SliceCreator, SlicedCalcOperatorActions, SlicedCalcOperatorState } from "../calcTypes";
+import type { CharData } from "~/types/gameData";
+import type { SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
+import { intialCalcCharState } from "../calcConstants";
 
-export const createOperatorSlice: SliceCreator<SlicedCalcOperatorState & SlicedCalcOperatorActions> = (set) => ({
-  charList: [] as CharData[],
+export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharActions> = (set) => ({
+  ...intialCalcCharState,
   addCharData: () =>
     set(
       (state) => ({
@@ -37,10 +38,8 @@ export const createOperatorSlice: SliceCreator<SlicedCalcOperatorState & SlicedC
       undefined,
       "removeCharData",
     ),
-  activeCharName: "",
   setActiveCharName: (charName) =>
     set((state) => ({ ...state, activeCharName: charName }), undefined, "setActiveCharName"),
-  charsModifier: {} as Record<string, AttributeModifier>,
   setCharsModifier: (charName, modifier) => {
     set(
       (state) => {

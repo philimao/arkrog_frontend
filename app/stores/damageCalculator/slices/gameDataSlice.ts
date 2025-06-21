@@ -1,23 +1,10 @@
-import type { RelicWrapper, RogueInput, RogueKey } from "~/types/gameData";
+import type { RelicWrapper } from "~/types/gameData";
+import type { RogueInput, SlicedCalcGameDataState } from "../calcTypes";
 import type { SliceCreator, SlicedCalcGameDataActions } from "../calcTypes";
-import type { SlicedCalcGameDataState } from "../SlicedCalcGameDataState";
-import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
+import { initialCalcGameDataState } from "../calcConstants";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set) => ({
-  rogueKey: "rogue_4" as RogueKey,
-  rogueInput: {
-    topic: "rogue_4",
-    rogue_4: {
-      // zone: "zone_7",
-      zone: "zone_5",
-      difficulty: 18,
-      thoughtLoad: "NORMAL",
-    },
-  } as RogueInput,
-  difficulty: 18,
-  topicSpecItems: [] as ITopicSpecItem[],
-  selectedIds: [] as string[],
-  relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
+  ...initialCalcGameDataState,
   setRelicWrapper: (rogueKey, relics) =>
     set(
       (state) => {
@@ -29,7 +16,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   updateRelic: (id, key, value) =>
     set(
       (state) => {
-        const relicWrappers = state.relicsMap[state.rogueKey] as RelicWrapper[];
+        const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
         if (relicWrappers) {
           relicWrappers.find((relicWrapper) => relicWrapper.id === id)![key as keyof RelicWrapper] = value as never;
         }
@@ -40,7 +27,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   updateRelics: (ids, key, value) =>
     set(
       (state) => {
-        const relicWrappers = state.relicsMap[state.rogueKey] as RelicWrapper[];
+        const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
         if (relicWrappers) {
           relicWrappers
             .filter((relicWrapper) => ids.includes(relicWrapper.id))
@@ -56,7 +43,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const layerNumber = parseInt(layer);
     set(
       (state) => {
-        state.relicsMap[state.rogueKey].find((r) => r.id === id)!.layer = layerNumber || 0;
+        state.relicsMap[state.rogueInput.topic].find((r) => r.id === id)!.layer = layerNumber || 0;
       },
       undefined,
       "setRelicLayer",
@@ -111,7 +98,6 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueDifficulty: (difficulty) => {
     return set(
       (state) => {
-        state.difficulty = difficulty;
         state.rogueInput[state.rogueInput.topic].difficulty = difficulty;
       },
       undefined,

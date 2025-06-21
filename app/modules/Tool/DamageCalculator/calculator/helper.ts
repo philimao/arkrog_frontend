@@ -9,11 +9,11 @@ import type {
   CharAttribute,
   BlackboardData,
   EnemyInput,
-  RogueInput,
   StageData,
   EnemyData,
   LevelData,
 } from "~/types/gameData";
+import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
 import { getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
@@ -439,24 +439,14 @@ export class CalculatorHelper {
         item.buffs.forEach((buff) => {
           const { key, value, selector } = buff;
           if (selector) {
-            const [type, key, value] = selector.split(":");
+            const [type, filter, filterTarget] = selector.split(":");
             if (type === "enemy") {
               if (!enemyData) return;
               // 对特定敌人类型生效，如爆破对刺
-              if (key === "id" && !value.split("|").includes(enemyData.id)) return;
+              if (filter === "id" && !filterTarget.split("|").includes(enemyData.id)) return;
               // 对特定敌人标签生效，如魔王年代对萨卡兹
-              if (key === "tag" && !enemyData.enemyTags.m_value?.includes(value)) return;
+              if (filter === "tag" && !enemyData.enemyTags.m_value?.includes(filterTarget)) return;
             }
-          }
-          if (buff.target === "rune_mul") {
-            switch (key) {
-              case "enemy_max_hp":
-                context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
-                break;
-              default:
-                break;
-            }
-            return;
           }
           switch (key) {
             case "atk":
@@ -469,7 +459,11 @@ export class CalculatorHelper {
               context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
               break;
             case "enemy_max_hp":
-              context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
+              if (buff.target === "rune_mul") {
+                context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
+              } else {
+                context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
+              }
               break;
             case "enemy_atk":
               context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, item.name));

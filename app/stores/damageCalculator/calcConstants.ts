@@ -1,4 +1,15 @@
-import type { EnemyInput } from "~/types/gameData";
+import type { EnemyData, EnemyInput, RelicWrapper, RogueKey } from "~/types/gameData";
+import type { RogueInput } from "./calcTypes";
+import type {
+  DCalculatorState,
+  SlicedCalcEnemyState,
+  SlicedCalcGameDataState,
+  SlicedCalcCharState,
+  SlicedCalcUIState,
+  SlicedCalculatorState,
+} from "./calcTypes";
+import { BuffContext, CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
+import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 export const dummy: EnemyInput = {
   id: "enemy_000_dummy",
@@ -39,4 +50,54 @@ export const dummy: EnemyInput = {
   rangedRadius: 0,
   applyWay: "MELEE",
   enemyTags: [],
+};
+
+export const initialCalcGameDataState: SlicedCalcGameDataState = {
+  rogueInput: {
+    topic: "rogue_4",
+    // TODO 预设其他肉鸽的初始值
+    rogue_4: {
+      zone: "zone_5",
+      difficulty: 18,
+      thoughtLoad: "NORMAL",
+    },
+  } as RogueInput,
+  topicSpecItems: [],
+  stageData: undefined,
+  levelData: undefined,
+  relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
+  selectedIds: [],
+};
+
+export const initialCalculatorState: SlicedCalculatorState = {
+  relicAnalysisResult: CalculatorHelper.createAdditionContext(),
+  globalAnalysisResult: CalculatorHelper.createAdditionContext(),
+  calcOutput: CalculatorHelper.createCalculatorOutput(),
+};
+
+export const intialCalcCharState: SlicedCalcCharState = {
+  activeCharName: "",
+  charList: [],
+  charsModifier: {},
+};
+
+export const initialEnemyState: SlicedCalcEnemyState = {
+  enemyBase: dummy,
+  enemyInput: dummy,
+  enemyData: undefined as unknown as EnemyData,
+  enemyContext: undefined as unknown as BuffContext,
+  enemySpec: undefined as unknown as EnemySpec,
+};
+
+export const initialCalcUIState: SlicedCalcUIState = {
+  showRelics: false,
+  showTopicSpec: false,
+};
+
+export const initialState: DCalculatorState = {
+  ...initialCalcGameDataState,
+  ...initialCalculatorState,
+  ...intialCalcCharState,
+  ...initialEnemyState,
+  ...initialCalcUIState,
 };

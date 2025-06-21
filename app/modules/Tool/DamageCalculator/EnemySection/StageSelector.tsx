@@ -102,7 +102,6 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     stageData,
     levelData,
     setLevelData,
-    rogueKey,
     enemyData,
     rogueInput,
     selectRelic,
@@ -111,6 +110,8 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     setRogueZone,
     setStageData,
   } = useDamageCalculatorStore();
+
+  const rogueKey = rogueInput.topic;
   const [stageId, setStageId] = useState<string>("");
 
   const renderStages = useMemo(() => {

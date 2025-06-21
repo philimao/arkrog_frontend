@@ -1,13 +1,9 @@
 import { BuffContext, CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
 import type { SliceCreator, SlicedCalculatorActions, SlicedCalculatorState } from "../calcTypes";
-import type { AttributeModifier, CharData, EnemyData, RelicWrapper, RogueInput, RogueKey } from "~/types/gameData";
-import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
-import { dummy } from "../calcConstants";
-import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
+import { initialCalculatorState } from "../calcConstants";
 
 export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedCalculatorActions> = (set, get) => ({
-  globalAnalysisResult: CalculatorHelper.createAdditionContext(),
-  relicAnalysisResult: CalculatorHelper.createAdditionContext(),
+  ...initialCalculatorState,
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) =>
     set(
       (state) => {
@@ -16,16 +12,6 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       undefined,
       "setRelicAnalysisResult",
     ),
-  calcOutput: CalculatorHelper.createCalculatorOutput(),
-  setCalcOutput: (output) => {
-    set(
-      (state) => {
-        state.calcOutput = output;
-      },
-      undefined,
-      "setCalcOutput",
-    );
-  },
   setGlobalAnalysisResult: (context) => {
     set(
       (state) => {
@@ -91,36 +77,15 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     return globalContext;
   },
   resetStore: () => {
+    set(() => initialCalculatorState, undefined, "resetStore");
+  },
+  setCalcOutput: (output) => {
     set(
-      () => ({
-        rogueKey: "rogue_4" as RogueKey,
-        rogueInput: {
-          topic: "rogue_4",
-          rogue_4: {
-            zone: "zone_5",
-            difficulty: 18,
-            thoughtLoad: "NORMAL",
-          },
-        } as RogueInput,
-        difficulty: 18,
-        charList: [] as CharData[],
-        activeCharName: "",
-        relicAnalysisResult: undefined,
-        showRelics: false,
-        showTopicSpec: false,
-        topicSpecItems: [] as ITopicSpecItem[],
-        relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
-        selectedIds: [] as string[],
-        enemyData: undefined as unknown as EnemyData,
-        enemyDataParsed: dummy,
-        enemySpec: undefined as unknown as EnemySpec,
-        charsModifier: {} as Record<string, AttributeModifier>,
-        stageData: undefined,
-        levelData: undefined,
-        calcOutput: CalculatorHelper.createCalculatorOutput(),
-      }),
+      (state) => {
+        state.calcOutput = output;
+      },
       undefined,
-      "resetStore",
+      "setCalcOutput",
     );
   },
 });

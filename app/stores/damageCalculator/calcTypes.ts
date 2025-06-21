@@ -11,7 +11,6 @@ import type {
   EnemyInput,
   LevelData,
   RelicWrapper,
-  RogueInput,
   RogueKey,
   StageData,
 } from "~/types/gameData";
@@ -24,24 +23,40 @@ export type SliceCreator<T> = StateCreator<
 >;
 
 export type DCalculatorState = SlicedCalcGameDataState &
-  SlicedCalcOperatorState &
+  SlicedCalcCharState &
   SlicedCalcEnemyState &
   SlicedCalculatorState &
   SlicedCalcUIState;
 
 export type DCalculatorActions = SlicedCalcGameDataActions &
-  SlicedCalcOperatorActions &
+  SlicedCalcCharActions &
   SlicedCalcEnemyActions &
   SlicedCalculatorActions &
   SlicedCalcUIActions;
 
-export interface SlicedCalcGameDataState {
+/** 肉鸽输入数据 */
+export type RogueInput = {
   /** 肉鸽主题 */
-  rogueKey: RogueKey;
+  topic: RogueKey;
+} & Record<
+  RogueKey,
+  {
+    /** 层数 */
+    zone: string;
+    /** 科技树 */
+    tech: string;
+    /** 肉鸽难度 */
+    difficulty: number;
+    /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
+    thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
+    /** 当前生效灵感 */
+    inspiration?: string;
+  }
+>;
+
+export interface SlicedCalcGameDataState {
   /** 肉鸽难度 */
   rogueInput: RogueInput;
-  /** 肉鸽难度 */
-  difficulty: number;
   /** 肉鸽主题特殊效果列表 */
   topicSpecItems: ITopicSpecItem[];
   /** 预处理后的藏品列表 */
@@ -54,7 +69,7 @@ export interface SlicedCalcGameDataState {
   levelData?: LevelData;
 }
 
-export interface SlicedCalcOperatorState {
+export interface SlicedCalcCharState {
   /** 干员列表 */
   charList: CharData[];
   /** 当前选中的角色 */
@@ -69,7 +84,7 @@ export interface SlicedCalcEnemyState {
   /** 敌人基础面板 */
   enemyBase: EnemyInput;
   /** 敌人输入数据 @deprecated */
-  enemyDataParsed: EnemyInput;
+  enemyInput: EnemyInput;
   /** 敌人特殊配置数据 */
   enemySpec: EnemySpec;
   /** 敌人加成上下文 */
@@ -112,7 +127,7 @@ export interface SlicedCalcGameDataActions {
   setLevelData: (levelData: LevelData) => void;
 }
 
-export interface SlicedCalcOperatorActions {
+export interface SlicedCalcCharActions {
   addCharData: () => void;
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
@@ -123,7 +138,7 @@ export interface SlicedCalcOperatorActions {
 export interface SlicedCalcEnemyActions {
   setEnemyData: (enemyData: EnemyData) => void;
   setEnemyBase: (enemyBase: EnemyInput) => void;
-  setEnemyDataParsed: (enemyDataParsed: EnemyInput) => void;
+  setEnemyInput: (enemyInput: EnemyInput) => void;
   setEnemySpec: (enemySpec: EnemySpec) => void;
   setEnemyContext: (enemyContext: BuffContext) => void;
 }
@@ -132,7 +147,6 @@ export interface SlicedCalculatorActions {
   setGlobalAnalysisResult: (context: BuffContext) => void;
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
-
   /** 更新全局加成上下文 */
   updateGlobalAnalysisResult: (input: {
     charInput: CharInput;

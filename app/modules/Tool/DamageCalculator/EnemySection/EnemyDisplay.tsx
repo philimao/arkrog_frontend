@@ -143,9 +143,10 @@ export const displayAttrKeys: Record<string, { min: number; max?: number; toolti
     max: 1,
     tooltip: (
       <ul className="text-sm p-2">
+        <li>局外减伤（精英敌人10、终结的骨架20，取最大值）</li>
         <li>敌人特殊能力，例如大特的减伤</li>
         <li>年代印痕减伤</li>
-        <li>以上两种类型之间取概率并集</li>
+        <li>以上三种类型之间取概率并集</li>
       </ul>
     ),
   },
@@ -159,7 +160,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     setEnemySpec,
     setEnemyData,
     setEnemyBase,
-    setEnemyDataParsed,
+    setEnemyInput,
     setEnemyContext,
   } = useDamageCalculatorStore();
 
@@ -247,7 +248,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
         {enemyBase.name !== "木桩" ? (
           <StyledAttrFuncButton onClick={() => assignToDummy()}>复制到木桩</StyledAttrFuncButton>
         ) : (
-          <StyledAttrFuncButton onClick={() => setEnemyDataParsed(enemyRef.current as EnemyInput)}>
+          <StyledAttrFuncButton onClick={() => setEnemyInput(enemyRef.current as EnemyInput)}>
             恢复初始值
           </StyledAttrFuncButton>
         )}

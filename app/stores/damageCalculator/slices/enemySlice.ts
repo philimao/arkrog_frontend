@@ -1,14 +1,9 @@
-import type { EnemyData } from "~/types/gameData";
-import { dummy } from "../calcConstants";
+import { initialEnemyState } from "../calcConstants";
 import type { SliceCreator, SlicedCalcEnemyActions, SlicedCalcEnemyState } from "../calcTypes";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
-import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEnemyActions> = (set) => ({
-  enemyBase: dummy,
-  enemyDataParsed: dummy,
-  enemyData: undefined as unknown as EnemyData,
-  enemyContext: undefined as unknown as BuffContext,
+  ...initialEnemyState,
   setEnemyContext: (enemyContext: BuffContext) =>
     set((state) => ({ ...state, enemyContext }), undefined, "setEnemyContext"),
   setEnemyData: (enemyData) =>
@@ -29,16 +24,15 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
       undefined,
       "setEnemyBase",
     ),
-  setEnemyDataParsed: (enemyDataParsed) =>
+  setEnemyInput: (enemyInput) =>
     set(
       (state) => ({
         ...state,
-        enemyDataParsed: enemyDataParsed,
+        enemyInput: enemyInput,
       }),
       undefined,
-      "setEnemyDataParsed",
+      "setEnemyInput",
     ),
-  enemySpec: undefined as unknown as EnemySpec,
   setEnemySpec: (enemySpec) =>
     set(
       (state) => {

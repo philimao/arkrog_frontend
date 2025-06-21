@@ -59,20 +59,20 @@ function uniqueByProperty(arr: never[], prop: string) {
 
 function QuickSelector() {
   const { stageEnemies } = useGameDataStore();
-  const { rogueKey, enemyDataParsed, setEnemyDataParsed } = useDamageCalculatorStore();
+  const { rogueInput, enemyInput, setEnemyInput } = useDamageCalculatorStore();
 
   const popularEnemies = useMemo(() => {
     return uniqueByProperty(
-      Object.values(stageEnemies![rogueKey])
-        .map((enemies) => enemies.filter((enemyDataParsed) => enemyDataParsed.levelType === "BOSS"))
+      Object.values(stageEnemies![rogueInput.topic])
+        .map((enemies) => enemies.filter((enemyInput) => enemyInput.levelType === "BOSS"))
         .flat() as never,
       "id",
     );
-  }, [rogueKey, stageEnemies]);
+  }, [rogueInput.topic, stageEnemies]);
 
   useEffect(() => {
-    setEnemyDataParsed(dummy);
-  }, [setEnemyDataParsed]);
+    setEnemyInput(dummy);
+  }, [setEnemyInput]);
 
   return (
     <QuickSelectorWrapper>
@@ -80,17 +80,17 @@ function QuickSelector() {
         {[dummy, ...popularEnemies].map((enemy) => (
           <QuickSelectorEnemy
             key={enemy.id}
-            className={enemy.id === enemyDataParsed?.id ? "active" : ""}
+            className={enemy.id === enemyInput?.id ? "active" : ""}
             onClick={() => {
               console.log(enemy);
-              setEnemyDataParsed(enemy);
+              setEnemyInput(enemy);
             }}
           >
             <EnemyAvatar name={enemy.name} />
           </QuickSelectorEnemy>
         ))}
       </QuickSelectorEnemies>
-      <div>{enemyDataParsed && <EnemyDisplay setIllust={() => {}} />}</div>
+      <div>{enemyInput && <EnemyDisplay setIllust={() => {}} />}</div>
     </QuickSelectorWrapper>
   );
 }

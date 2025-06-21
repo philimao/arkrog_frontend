@@ -3,9 +3,10 @@ import { styled } from "styled-components";
 import React, { useEffect, useMemo, useState } from "react";
 import StageSelector from "~/modules/Tool/DamageCalculator/EnemySection/StageSelector";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
-import { dummy, useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useGameDataStore } from "~/stores/gameDataStore";
+import { dummy } from "~/stores/damageCalculator/calcConstants";
 
 const StyledEnemySelector = styled.div`
   margin-bottom: 2rem;

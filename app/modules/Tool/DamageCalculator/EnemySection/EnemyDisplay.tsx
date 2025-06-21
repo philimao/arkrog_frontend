@@ -164,7 +164,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
   } = useDamageCalculatorStore();
 
   /** 缓存用户修改后的敌人数据，在blur时应用到store中 */
-  const [_enemyDataParsed, _setEnemyDataParsed] = useState<EnemyInput | null>(null);
+  const [_enemyInput, _setEnemyInput] = useState<EnemyInput | null>(null);
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
@@ -175,7 +175,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
       context: globalAnalysisResult,
     });
     console.log("计算敌人数据(display)", enemyInput, enemyBase);
-    _setEnemyDataParsed(enemyInput);
+    _setEnemyInput(enemyInput);
   }, [globalAnalysisResult, enemyBase]);
 
   /** 复制敌人当前面板到木桩 */
@@ -192,7 +192,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     setEnemyBase(
       JSON.parse(
         JSON.stringify({
-          ..._enemyDataParsed,
+          ..._enemyInput,
           id: "enemy_000_dummy",
           name: "木桩",
         }),
@@ -200,7 +200,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     );
   }
 
-  if (!_enemyDataParsed) return null;
+  if (!_enemyInput) return null;
 
   return (
     <StyledEnemyDisplayWrapper>
@@ -270,7 +270,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
               {enemyBase.name !== "木桩" ? (
                 <EnemyAttribute
                   attrKey={key}
-                  value={_enemyDataParsed.attributes[key as never]}
+                  value={_enemyInput.attributes[key as never]}
                   className={color}
                   context={globalAnalysisResult}
                 />

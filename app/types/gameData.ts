@@ -391,6 +391,17 @@ export interface RelicWrapper {
   relicData: RelicData;
 }
 
+export interface AttributeModifier {
+  /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
+  atkOutPercent: number;
+  /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
+  atkInPercent: number;
+  /** 攻击力 最终加算 鼓舞 */
+  atkFinal: number;
+  /** 攻击速度 */
+  atkSpd: number;
+}
+
 /**
  * 干员输入数据结构
  * 带*的域代表对计算非常重要
@@ -421,16 +432,7 @@ export interface CharInput {
   /** 干员在游戏中的增益 @deprecated */
   charsBuffInGame: CharBuffInGame;
   /** 属性修正 */
-  attributeModifier: {
-    /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
-    atkOutPercent: number;
-    /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
-    atkInPercent: number;
-    /** 攻击力 最终加算 鼓舞 */
-    atkFinal: number;
-    /** 攻击速度 */
-    atkSpd: number;
-  };
+  attributeModifier: AttributeModifier;
 }
 
 /** 干员在游戏中的增益 @deprecated */

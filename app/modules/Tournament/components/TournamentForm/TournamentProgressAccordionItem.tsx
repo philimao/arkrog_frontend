@@ -198,7 +198,7 @@ export default function TournamentProgressAccordionItem({
                   <span className="text-sm">
                     {key}: {value}
                   </span>
-                  {editingStage.type !== "1on1" && (
+                  {formData.type !== "team" && editingStage.type !== "1on1" && (
                     <label className="flex items-center ml-1">
                       <input
                         type="checkbox"
@@ -270,6 +270,7 @@ export default function TournamentProgressAccordionItem({
           player.games.find((game) => new Date(game.date).getDate() === date.getDate()),
         );
         const editingGame = editingPlayer?.games.find((game) => new Date(game.date).getDate() === date.getDate());
+        const editingPlayerTeam = (formData.type === "team" && editingPlayer) ? formData.teams?.find((t) => t.members.includes(editingPlayer.name)) : undefined;
         const tempNewPlayer = {
           mid: `newPlayer-${index}`,
           name: "点击选择选手",
@@ -580,6 +581,40 @@ export default function TournamentProgressAccordionItem({
                               className={inputClassName}
                             />
                           </div>
+
+                          {formData.type === "team" && editingPlayerTeam && (
+                            <div>
+                              <label htmlFor="teamTotalPoints" className={labelWithTooltipClassName}>
+                                {editingPlayerTeam.name}队伍总分
+                                <Tooltip
+                                  content="根据已有数据自动计算得出"
+                                  className="bg-light-mid-gray text-black"
+                                >
+                                  <span className="px-1">
+                                    <InformationIcon width="0.75rem" height="0.75rem" />
+                                  </span>
+                                </Tooltip>
+                              </label>
+                              <input
+                                id="teamTotalPoints"
+                                type="number"
+                                name="teamTotalPoints"
+                                value={(() => {
+                                  // Calculate sum of points for all players in the same team
+                                  const teamPoints = formData.players
+                                    ?.filter(player => editingPlayerTeam.members.includes(player.name))
+                                    .flatMap(player => player.games)
+                                    .filter(game => game.stage === editingStage?.name && game.point !== undefined)
+                                    .reduce((sum, game) => sum + (game.point || 0), 0);
+
+                                  return teamPoints || "";
+                                })()}
+                                className={`${inputClassName} text-ak-blue`}
+                                readOnly
+                                disabled
+                              />
+                            </div>
+                          )}
 
                           {editingStage?.type === "1on1" && (
                             <>

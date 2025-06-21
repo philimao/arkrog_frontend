@@ -51,7 +51,7 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul) + atkBuffFinalAdd) * atkBuffFinalMul;
 
   const atkSpeed = Math.min(100 + atkSpeedBuff + 22, 600); // 攻击速度
-  const commonAtkTimeBase = 2.85; // 普攻基础时间
+  const commonAtkTimeBase = 2.89; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
@@ -74,7 +74,7 @@ export default function Mon3tr(input: CalculatorInput): CalculatorOutput {
       const spInitial = 0; // 技能初始技力
       const skillSp = 15.0; // 技能技力消耗
       const skillKeepTime = 25.0; // 技能持续时间
-      const skillRecoveryTime = Math.max(skillSp - spInitial, 0) / (1 / skillAtkTime + spBuffAdd); // 技能期望回转
+      const skillRecoveryTime = Math.max(skillSp - spInitial, 0) / (1 / commonAtkTime + spBuffAdd); // 技能期望回转
 
       const commonHit = skillRecoveryTime / commonAtkTime; // 期望普攻次数, 不考虑天赋全程吃阻回的情况
       const skillHit = Math.floor(25.0 / skillAtkTime); // 技能期望普攻次数

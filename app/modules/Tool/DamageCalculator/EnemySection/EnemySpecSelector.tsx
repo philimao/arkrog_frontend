@@ -32,12 +32,13 @@ export default function EnemySpecSelector({
   enemyData: EnemyData;
   setIllust: (illust: React.ReactNode) => void;
 }) {
-  const { rogueKey, difficulty, setEnemySpec } = useDamageCalculatorStore();
+  const { rogueInput, setEnemySpec } = useDamageCalculatorStore();
+  const difficulty = rogueInput[rogueInput.topic].difficulty;
 
   // 可以保证在复制到木桩时，id不变
   const [enemyConfig, setEnemyConfig] = useState<EnemySpecConfig>();
 
-  const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
+  const showSkzdwx = rogueInput.topic === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
   const [mitigationSkzdwx, setMitigationSkzdwx] = useState<string>("0");
 
   const [selected, setSelected] = useState<string[]>();

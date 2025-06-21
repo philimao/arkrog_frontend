@@ -4,12 +4,13 @@ import type { LevelData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
-import { dummy, useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { debounce } from "@heroui/shared-utils";
 import { navOfZone, parseEnemyData } from "./enemyUtils";
+import { dummy } from "~/stores/damageCalculator/calcConstants";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -101,7 +102,6 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     stageData,
     levelData,
     setLevelData,
-    rogueKey,
     enemyData,
     rogueInput,
     selectRelic,
@@ -110,6 +110,8 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
     setRogueZone,
     setStageData,
   } = useDamageCalculatorStore();
+
+  const rogueKey = rogueInput.topic;
   const [stageId, setStageId] = useState<string>("");
 
   const renderStages = useMemo(() => {

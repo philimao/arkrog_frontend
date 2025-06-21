@@ -148,7 +148,8 @@ const StyledBuffText = styled.div`
 
 export default function RelicSelectorWrapper({ charData }: { charData?: CharData }) {
   const { relics, items } = useGameDataStore();
-  const { rogueKey, setRelicWrapper } = useDamageCalculatorStore();
+  const { rogueInput, setRelicWrapper } = useDamageCalculatorStore();
+  const rogueKey = rogueInput.topic;
 
   const relicsByChar2 = useMemo(
     () =>
@@ -176,16 +177,9 @@ export default function RelicSelectorWrapper({ charData }: { charData?: CharData
 
 function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: RelicWrapper[] }) {
   const { items } = useGameDataStore();
-  const {
-    rogueKey,
-    showRelics,
-    updateRelics,
-    toggleShowRelics,
-    selectedIds,
-    setSelectedIds,
-    rogueInput,
-    relicAnalysisResult,
-  } = useDamageCalculatorStore();
+  const { showRelics, updateRelics, toggleShowRelics, selectedIds, setSelectedIds, rogueInput, relicAnalysisResult } =
+    useDamageCalculatorStore();
+  const rogueKey = rogueInput.topic;
 
   // Tag筛选
   const [selectedTags, setSelectedTags] = useState<string[]>([]);

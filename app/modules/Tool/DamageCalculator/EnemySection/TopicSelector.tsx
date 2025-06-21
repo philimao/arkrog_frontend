@@ -13,7 +13,9 @@ const StyledTopicSelector = styled.div`
 
 export default function TopicSelector() {
   const { topics } = useGameDataStore();
-  const { rogueKey, setRogueKey, setRogueDifficulty, setRougeTech, rogueInput } = useDamageCalculatorStore();
+  const { setRogueKey, setRogueDifficulty, setRougeTech, rogueInput } = useDamageCalculatorStore();
+
+  const rogueKey = rogueInput.topic;
 
   // 难度选择
   const difficulties = useMemo(() => {

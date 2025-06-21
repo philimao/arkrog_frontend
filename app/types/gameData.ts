@@ -1,4 +1,5 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
+import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
 import type { BasicObject } from "~/types/core";
 
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
@@ -391,6 +392,17 @@ export interface RelicWrapper {
   relicData: RelicData;
 }
 
+export interface AttributeModifier {
+  /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
+  atkOutPercent: number;
+  /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
+  atkInPercent: number;
+  /** 攻击力 最终加算 鼓舞 */
+  atkFinal: number;
+  /** 攻击速度 */
+  atkSpd: number;
+}
+
 /**
  * 干员输入数据结构
  * 带*的域代表对计算非常重要
@@ -421,16 +433,7 @@ export interface CharInput {
   /** 干员在游戏中的增益 @deprecated */
   charsBuffInGame: CharBuffInGame;
   /** 属性修正 */
-  attributeModifier: {
-    /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
-    atkOutPercent: number;
-    /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
-    atkInPercent: number;
-    /** 攻击力 最终加算 鼓舞 */
-    atkFinal: number;
-    /** 攻击速度 */
-    atkSpd: number;
-  };
+  attributeModifier: AttributeModifier;
 }
 
 /** 干员在游戏中的增益 @deprecated */
@@ -637,24 +640,6 @@ export interface EnemyAttribute {
   fearedImmune: boolean;
   /** 物理法术减伤 */
   damageResistance: number;
-}
-
-/** 肉鸽输入数据 */
-export interface RogueInput {
-  /** 肉鸽主题 */
-  topic: "rogue_4";
-  rogue_4: {
-    /** 层数 */
-    zone: string;
-    /** 科技树 */
-    tech: string;
-    /** 肉鸽难度 */
-    difficulty: number;
-    /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
-    thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
-    /** 当前生效灵感 */
-    inspiration?: string;
-  };
 }
 
 /** 伤害计算器输入参数 */

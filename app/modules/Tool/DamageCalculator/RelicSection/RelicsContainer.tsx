@@ -26,7 +26,8 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
   const { relics, items } = useGameDataStore();
-  const { rogueKey } = useDamageCalculatorStore();
+  const { rogueInput } = useDamageCalculatorStore();
+  const rogueKey = rogueInput.topic;
 
   /** 此处通过分析藏品buff计算哪些藏品生效, 达到禁选无效藏品功能 */
   const invalidRelicList = useMemo<string[]>(() => {

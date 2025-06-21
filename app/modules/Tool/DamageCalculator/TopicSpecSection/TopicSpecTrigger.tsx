@@ -47,7 +47,8 @@ const StyledTopicSpecNode = styled.div<{ $url: string; $invert: number; $userAct
 `;
 
 export default function TopicSpecTrigger() {
-  const { rogueKey, toggleShowTopicSpec, topicSpecItems, setTopicSpecItems } = useDamageCalculatorStore();
+  const { rogueInput, toggleShowTopicSpec, topicSpecItems, setTopicSpecItems } = useDamageCalculatorStore();
+  const rogueKey = rogueInput.topic;
 
   if (rogueKey === "rogue_4")
     return (
@@ -77,7 +78,8 @@ export default function TopicSpecTrigger() {
                 onClick={() => {
                   setTopicSpecItems((items) => {
                     const updated = [...items];
-                    updated.find((i) => i.id === item.id)!.userActive = !item.userActive;
+                    console.log(updated);
+                    updated.find((updatedItem) => updatedItem?.id === item.id)!.userActive = !item.userActive;
                     return updated;
                   });
                 }}

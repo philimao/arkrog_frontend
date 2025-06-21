@@ -2,8 +2,6 @@ import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { StyledTitle } from "../../components/Shared";
 import { getPath, imageHost } from "~/utils/tools";
-import { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
-import type { EnemyData } from "~/types/gameData";
 
 export interface ITopicSpecItem {
   id: string;
@@ -14,12 +12,10 @@ export interface ITopicSpecItem {
     key: string;
     value: number;
     selector?: string;
-    target: "rune_mul" | "buff_add" | "buff_mul" | "buff_final_mul";
+    target?: "rune_mul" | "buff_add" | "buff_mul" | "buff_final_mul";
   }[];
   url: string;
   invert: number;
-  functionDesc<T extends Record<string, number>>(args: T): string;
-  apply(input: { context: BuffContext; enemyData?: EnemyData }): void;
 }
 
 const StyledTopicSpecSelector = styled.div<{ $active: boolean }>`
@@ -90,8 +86,9 @@ const StyledFragmentIcon = styled.div<{ $url: string }>`
 `;
 
 export default function TopicSpecSelector() {
-  const { difficulty, showTopicSpec, toggleShowTopicSpec, topicSpecItems, setTopicSpecItems } =
+  const { rogueInput, showTopicSpec, toggleShowTopicSpec, topicSpecItems, setTopicSpecItems } =
     useDamageCalculatorStore();
+  const difficulty = rogueInput[rogueInput.topic].difficulty;
 
   const disasterLevel = difficulty < 6 ? 0 : difficulty < 13 ? 1 : 2;
   const levelStr = levels[disasterLevel];
@@ -114,7 +111,7 @@ export default function TopicSpecSelector() {
                     url,
                     invert: 0,
                     userActive: true,
-                  };
+                  } as ITopicSpecItem;
                 return updated;
               });
             };
@@ -156,7 +153,7 @@ export default function TopicSpecSelector() {
                     url,
                     invert: 1,
                     userActive: true,
-                  };
+                  } as ITopicSpecItem;
                 }
                 return updated;
               });

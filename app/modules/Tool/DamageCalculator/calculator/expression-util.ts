@@ -58,7 +58,9 @@ export class ExpressionUtil {
 
   /** 最大生命值 - 局内 干员最大生命值 */
   static operator_in_game_max_hp(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_out_game_max_hp({ charInput: input.charInput, context: input.context });
+    return new ExpressionGroupNode("*", "直接乘算")
+      .addChild(ExpressionUtil.operator_out_game_max_hp({ charInput: input.charInput, context: input.context }))
+      .addChild(input.context.in_game_buff_mul.max_hp);
   }
 
   /** 最大生命值 - 技能 干员最大生命值 */

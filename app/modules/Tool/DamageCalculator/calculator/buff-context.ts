@@ -60,8 +60,10 @@ export interface IBuffContext {
   };
   /** 局内Buff 直接乘算 */
   in_game_buff_mul: {
-    /** 攻击力来源 */
+    /** 攻击力 */
     atk: ExpressionGroupNode;
+    /** 最大生命值 */
+    max_hp: ExpressionGroupNode;
   };
   /** 局内Buff 最终加算 */
   in_game_buff_final_add: {
@@ -135,6 +137,7 @@ export class BuffContext implements IBuffContext {
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),
+    max_hp: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_final_add: IBuffContext["in_game_buff_final_add"] = {
     atk: new ExpressionGroupNode("+", "局内最终加算"),

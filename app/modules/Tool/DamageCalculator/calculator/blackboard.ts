@@ -373,7 +373,9 @@ registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: Re
 /** 久居之手 */
 registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
-  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "").split("|");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+    .split("|")
+    .filter((s) => s.trim());
   return {
     isActive(input) {
       if (sub_profession.length > 0 && input.charData) {
@@ -390,7 +392,9 @@ registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: R
 
 /** 轰鸣之手 */
 registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", (buff: RelicBuff, relic: RelicWrapper) => {
-  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "").split("|");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+    .split("|")
+    .filter((s) => s.trim());
   return {
     isActive(input) {
       if (sub_profession.length > 0 && input.charData) {
@@ -401,6 +405,27 @@ registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", (buff: RelicBu
     apply(input): void {
       const { context } = input;
       context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(1.5, relic.name));
+    },
+  };
+});
+
+/** 湖中神盾 */
+registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuff, relic: RelicWrapper) => {
+  const max_hp = getByKeySafe(buff.blackboard, "max_hp");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+    .split("|")
+    .filter((s) => s.trim());
+  console.log("rogue_3_increaseMaxHPWhenHavingShield", buff);
+  return {
+    isActive(input) {
+      if (sub_profession.length > 0 && input.charData) {
+        return sub_profession.includes(input.charData.subProfessionId);
+      }
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
     },
   };
 });

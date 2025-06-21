@@ -250,19 +250,24 @@ export function isBlackboardActiveForChar(buff: RelicBuff, charData?: CharData):
     return getActiveBlackboard(buff).length !== 0;
   }
 
-  let bbSelector;
+  let bbSelector = buff.blackboard.find((bb) => bb.key === "selector.profession");
+
+  // 迷迭香逻辑
+  if (charData.name === "迷迭香" && bbSelector) {
+    if (bbSelector.valueStr?.includes("caster") || bbSelector.valueStr?.includes(charData.profession.toLowerCase())) {
+      return true;
+    }
+  }
+
   // 职业选择 warrior | pioneer | tank | support | caster | special | medic | sniper
-  if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.profession"))) {
+  if (bbSelector) {
     // 职业筛选为token且拥有召唤物，或职业筛选通过 空羽兽
     if (
       bbSelector.valueStr === "token"
         ? !charData.displayTokenDict
-        : !bbSelector.valueStr?.includes(charData.profession.toLowerCase()) &&
-          bbSelector.valueStr?.includes("caster") &&
-          charData.name !== "迷迭香" // TODO 没有判断迷迭香模组，该版本实现比较复杂
-    ) {
+        : !bbSelector.valueStr?.includes(charData.profession.toLowerCase())
+    )
       return false;
-    }
   }
   // 子职业选择
   if ((bbSelector = buff.blackboard.find((bb) => bb.key === "selector.sub_profession"))) {

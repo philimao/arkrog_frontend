@@ -3,6 +3,16 @@ import { initialRelicState } from "../calcConstants";
 import type { SliceCreator } from "../calcTypes";
 import type { RelicWrapper } from "~/types/gameData";
 
+import {
+  assertions_layer_sync,
+  baoleixieyi_layer_sync,
+  gin_layer_sync,
+  pohuaixieyi_layer_sync,
+  thought_layer_sync,
+  tujixieyi_layer_sync,
+  yuanchengxieyi_layer_sync,
+} from "~/modules/Tool/DamageCalculator/utils";
+
 export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRelicActions> = (set) => ({
   ...initialRelicState,
   setRelicWrapper: (rogueKey, relics) =>
@@ -40,10 +50,36 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
       "updateRelics",
     ),
   setRelicLayer: (id: string, layer: string) => {
-    const layerNumber = parseInt(layer) || 0;
+    const layerNumber = parseInt(layer);
     set(
       (state) => {
-        state.relicsMap[state.rogueInput.topic].find((r) => r.id === id)!.layer = layerNumber || 0;
+        function updateRelics(ids: string[], key: string, value: number) {
+          const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
+          if (relicWrappers) {
+            relicWrappers
+              .filter((relicWrapper) => ids.includes(relicWrapper.id))
+              .forEach((relicWrapper) => {
+                relicWrapper[key as keyof RelicWrapper] = value as never;
+              });
+          }
+        }
+        if (gin_layer_sync.includes(id)) {
+          updateRelics(gin_layer_sync, "layer", layerNumber || 0);
+        } else if (thought_layer_sync.includes(id)) {
+          updateRelics(thought_layer_sync, "layer", layerNumber || 0);
+        } else if (assertions_layer_sync.includes(id)) {
+          updateRelics(assertions_layer_sync, "layer", layerNumber || 0);
+        } else if (tujixieyi_layer_sync.includes(id)) {
+          updateRelics(tujixieyi_layer_sync, "layer", layerNumber || 0);
+        } else if (baoleixieyi_layer_sync.includes(id)) {
+          updateRelics(baoleixieyi_layer_sync, "layer", layerNumber || 0);
+        } else if (yuanchengxieyi_layer_sync.includes(id)) {
+          updateRelics(yuanchengxieyi_layer_sync, "layer", layerNumber || 0);
+        } else if (pohuaixieyi_layer_sync.includes(id)) {
+          updateRelics(pohuaixieyi_layer_sync, "layer", layerNumber || 0);
+        } else {
+          state.relicsMap[state.rogueInput.topic].find((r) => r.id === id)!.layer = layerNumber || 0;
+        }
       },
       undefined,
       "setRelicLayer",

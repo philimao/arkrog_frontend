@@ -11,6 +11,7 @@ import type {
   StageData,
   EnemyData,
   LevelData,
+  CharInput,
 } from "~/types/gameData";
 import type { CharState, RogueInput } from "~/stores/damageCalculator/calcTypes";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
@@ -211,7 +212,7 @@ export class CalculatorHelper {
       // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
     }
     /** 应用天赋 */
-    getCharImpl(charInput.name).applyTalent({ charInput }, result);
+    getCharImpl(charData.name).applyTalent({ charInput: charState as unknown as CharInput }, result);
 
     return result;
   }

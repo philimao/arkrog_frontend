@@ -438,10 +438,6 @@ registerRelicBlackboard("rogue_4_caster_hand[pair]", (buff: RelicBuff, relic: Re
 /** 湖中神盾 */
 registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuff, relic: RelicWrapper) => {
   const max_hp = getByKeySafe(buff.blackboard, "max_hp");
-  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
-    .split("|")
-    .filter((s) => s.trim());
-
   return {
     isActive() {
       return true;

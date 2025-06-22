@@ -7,6 +7,7 @@ import type {
   CharData,
   StageData,
   EnemyData,
+  CharInput,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";

@@ -86,7 +86,6 @@ export default function RelicItem({
   relicWrapper: RelicWrapper;
   editable?: boolean;
 }) {
-  const { updateRelic, updateRelics, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
   const { updateRelic, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
 
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());

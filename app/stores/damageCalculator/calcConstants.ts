@@ -1,5 +1,15 @@
-import type { EnemyData, EnemyInput, RelicWrapper, RogueKey } from "~/types/gameData";
-import type { RogueInput } from "./calcTypes";
+import type {
+  CharData,
+  CharInput,
+  EnemyData,
+  EnemyInput,
+  LevelData,
+  RelicWrapper,
+  RogueKey,
+  StageData,
+  StageOfRogue,
+} from "~/types/gameData";
+import type { RogueInput, SlicedCalcRelicState } from "./calcTypes";
 import type {
   DCalculatorState,
   SlicedCalcEnemyState,
@@ -8,8 +18,8 @@ import type {
   SlicedCalcUIState,
   SlicedCalculatorState,
 } from "./calcTypes";
-import { BuffContext, CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
-import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
+import { CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
+import type { EnemySpec, EnemySpecConfig } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 export const dummy: EnemyInput = {
   id: "enemy_000_dummy",
@@ -60,13 +70,18 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
       zone: "zone_5",
       difficulty: 18,
       thoughtLoad: "NORMAL",
+      tech: "1.3",
     },
   } as RogueInput,
   topicSpecItems: [],
-  stageData: undefined,
-  levelData: undefined,
-  relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
-  selectedIds: [],
+  skill_table: {},
+  uniequip_table: {},
+  stages: {} as Record<RogueKey, StageOfRogue>,
+  levels: {},
+  renderStages: [],
+  stageId: "",
+  stageData: undefined as unknown as StageData,
+  levelData: undefined as unknown as LevelData,
 };
 
 export const initialCalculatorState: SlicedCalculatorState = {
@@ -79,14 +94,18 @@ export const intialCalcCharState: SlicedCalcCharState = {
   activeCharName: "",
   charList: [],
   charsModifier: {},
+  charData: undefined as unknown as CharData,
+  charInput: undefined as unknown as CharInput,
+  charState: undefined as unknown as SlicedCalcCharState["charState"],
 };
 
 export const initialEnemyState: SlicedCalcEnemyState = {
   enemyBase: dummy,
   enemyInput: dummy,
   enemyData: undefined as unknown as EnemyData,
-  enemyContext: undefined as unknown as BuffContext,
   enemySpec: undefined as unknown as EnemySpec,
+  enemyIllust: undefined as unknown as React.ReactNode,
+  enemyConfig: undefined as unknown as EnemySpecConfig,
 };
 
 export const initialCalcUIState: SlicedCalcUIState = {
@@ -94,10 +113,17 @@ export const initialCalcUIState: SlicedCalcUIState = {
   showTopicSpec: false,
 };
 
+export const initialRelicState: SlicedCalcRelicState = {
+  relicList: [],
+  relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
+  selectedIds: [],
+};
+
 export const initialState: DCalculatorState = {
   ...initialCalcGameDataState,
   ...initialCalculatorState,
   ...intialCalcCharState,
   ...initialEnemyState,
+  ...initialRelicState,
   ...initialCalcUIState,
 };

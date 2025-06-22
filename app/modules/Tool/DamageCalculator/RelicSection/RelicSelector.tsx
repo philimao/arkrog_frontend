@@ -1,7 +1,6 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Input } from "@heroui/react";
-import { wrapRelicData } from "~/modules/Tool/DamageCalculator/utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import { GridContainer, StyledTitle } from "~/modules/Tool/components/Shared";
@@ -12,12 +11,12 @@ import {
   StyledRelicCountInner,
 } from "~/modules/Tool/DamageCalculator/RelicSection/Shared";
 import RelicsContainer from "~/modules/Tool/DamageCalculator/RelicSection/RelicsContainer";
-import type { CharData, RelicWrapper } from "~/types/gameData";
-import { useShallow } from "zustand/react/shallow";
+import type { RelicWrapper } from "~/types/gameData";
 import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
 import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
 import type { AdditionEntry } from "../calculator/helper";
 import { CalculatorHelper } from "../calculator/helper";
+import { useShallow } from "zustand/react/shallow";
 
 const StyledRelicSelector = styled.div<{ $active: boolean }>`
   display: ${(props) => (props.$active ? "block" : "none")};
@@ -146,93 +145,66 @@ const StyledBuffText = styled.div`
   font-size: 0.8rem;
 `;
 
-export default function RelicSelectorWrapper({ charData }: { charData?: CharData }) {
-  const { relics, items } = useGameDataStore();
-  const { rogueInput, setRelicWrapper } = useDamageCalculatorStore();
-  const rogueKey = rogueInput.topic;
-
-  const relicsByChar2 = useMemo(
-    () =>
-      Object.values(items![rogueKey])
-        .filter((item) => item.type === "RELIC")
-        .map((item) => ({
-          ...item,
-          ...relics![rogueKey][item.id],
-          show: true,
-        }))
-        .map((relicDataExt) => wrapRelicData(relicDataExt, charData)),
-    [charData, items, relics, rogueKey],
-  );
-
-  useEffect(() => {
-    setRelicWrapper(rogueKey, relicsByChar2 as RelicWrapper[]);
-  }, []);
-
-  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
-
-  if (!relicWrappers) return null;
-
-  return <RelicSelector charData={charData} relicWrappers={relicWrappers} />;
-}
-
-function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: RelicWrapper[] }) {
+export default function RelicSelector() {
   const { items } = useGameDataStore();
-  const { showRelics, updateRelics, toggleShowRelics, selectedIds, setSelectedIds, rogueInput, relicAnalysisResult } =
+  const { showRelics, toggleShowRelics, selectedIds, setSelectedIds, rogueInput, relicAnalysisResult } =
     useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
+  const difficulty = rogueInput[rogueKey].difficulty;
+  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
 
-  // Tag筛选
+  /** Tag筛选 */
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // 藏品价值与关键字筛选
+  /** 藏品关键字筛选 */
   const [searchValue, setSearchValue] = useState("");
+
   const relicValues = ["16", "12", "8", "1"];
+  /** 藏品价值筛选 */
   const [valueFilter, setValueFilter] = useState<Set<string>>(new Set(["16", "12", "8"]));
 
-  useEffect(() => {
-    const showIds = relicWrappers
-      // 难度筛选
-      .filter((relicWrapper) => {
-        if (
-          items![rogueKey][relicWrapper.id + "_a"] ||
-          items![rogueKey][relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]
-        ) {
-          // 代表随等级难度变化的藏品
-          if (rogueInput[rogueInput.topic].difficulty >= 9) return relicWrapper.id.endsWith("_c");
-          else if (rogueInput[rogueInput.topic].difficulty >= 6) return relicWrapper.id.endsWith("_b");
-          else if (rogueInput[rogueInput.topic].difficulty >= 3) return relicWrapper.id.endsWith("_a");
-          else return relicWrapper.id[relicWrapper.id.length - 2] !== "_";
-        } else {
-          // 随难度不变的藏品
-          return true;
-        }
-      })
-      // Tag筛选
-      .filter(
-        (relicWrapper) =>
-          !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
-          (!searchValue ||
-            relicWrapper.name.includes(searchValue) ||
-            relicWrapper.pinyin.includes(searchValue) ||
-            relicWrapper.initials.includes(searchValue)),
-      )
-      // 藏品价值与关键字筛选
-      .filter(
-        (relicWrapper) =>
-          !selectedTags.length ||
-          selectedTags.some((kw) =>
-            filterFuncMap[kw]
-              ? filterFuncMap[kw](relicWrapper)
-              : relicWrapper.name.includes(kw) || relicWrapper.usage.includes(kw),
-          ),
-      )
-      .map((r) => r.id);
-    const hideIds = relicWrappers
-      .filter((relicWrappers) => !showIds.includes(relicWrappers.id))
-      .map((relicWrapper) => relicWrapper.id);
-    updateRelics(showIds, "show", true);
-    updateRelics(hideIds, "show", false);
-  }, [items, relicWrappers, rogueInput, rogueKey, searchValue, selectedTags, updateRelics, valueFilter]);
+  /** 用户筛选藏品id */
+  const showIds = useMemo(
+    () =>
+      relicWrappers
+        // 难度筛选
+        .filter((relicWrapper) => {
+          if (
+            items![rogueKey][relicWrapper.id + "_a"] ||
+            items![rogueKey][relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]
+          ) {
+            // 代表随等级难度变化的藏品
+            if (difficulty >= 9) return relicWrapper.id.endsWith("_c");
+            else if (difficulty >= 6) return relicWrapper.id.endsWith("_b");
+            else if (difficulty >= 3) return relicWrapper.id.endsWith("_a");
+            else return relicWrapper.id[relicWrapper.id.length - 2] !== "_";
+          } else {
+            // 随难度不变的藏品
+            return true;
+          }
+        })
+        // Tag筛选
+        .filter(
+          (relicWrapper) =>
+            !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
+            (!searchValue ||
+              relicWrapper.name.includes(searchValue) ||
+              relicWrapper.pinyin.includes(searchValue) ||
+              relicWrapper.initials.includes(searchValue)),
+        )
+        // 藏品价值与关键字筛选
+        .filter(
+          (relicWrapper) =>
+            !selectedTags.length ||
+            selectedTags.some((kw) =>
+              filterFuncMap[kw]
+                ? filterFuncMap[kw](relicWrapper)
+                : relicWrapper.name.includes(kw) || relicWrapper.usage.includes(kw),
+            ),
+        )
+        .map((r) => r.id),
+    [difficulty, items, relicWrappers, rogueKey, searchValue, selectedTags, valueFilter],
+  );
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
   // const selectRelicsByIds = (ids: string[]) => {
@@ -374,7 +346,7 @@ function RelicSelector({ relicWrappers }: { charData?: CharData; relicWrappers: 
           ))}
         </StyledBuffContainer>
 
-        <RelicsContainer relicsWrappers={relicWrappers} />
+        <RelicsContainer relicsWrappers={relicWrappers} showIds={showIds} />
       </StyledRelicSelectorInner>
     </StyledRelicSelector>
   );

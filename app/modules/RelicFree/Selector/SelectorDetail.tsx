@@ -2,8 +2,8 @@ import { Tooltip } from "@heroui/react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { styled } from "styled-components";
 import type { StageOfRogue } from "~/types/gameData";
-import { useAppDataStore } from "~/stores/appDataStore";
 import { navOfZone } from "~/utils/stageSelector";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const StyledZoneName = styled.div`
   height: 5rem;
@@ -73,7 +73,7 @@ export default function SelectorDetail({
   // console.log(stageOfRogue);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { stagePreview } = useAppDataStore();
+  const { stagePreview } = useRelicFreeStore();
 
   return (
     <>

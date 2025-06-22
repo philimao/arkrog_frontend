@@ -1,19 +1,28 @@
 import type { StateCreator } from "zustand";
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator";
-import type { EnemySpec } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
+import type { EnemySpec, EnemySpecConfig } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 import type { ITopicSpecItem } from "~/modules/Tool/DamageCalculator/TopicSpecSection/TopicSpecSelector";
 import type {
-  AttributeModifier,
+  AttributeKeyFrame,
+  CharAttributeModifier,
   CalculatorOutput,
   CharData,
   CharInput,
+  CharPhase,
   EnemyData,
   EnemyInput,
   LevelData,
+  RelicDataExt,
   RelicWrapper,
   RogueKey,
+  SkillData,
+  SkillLevelData,
   StageData,
+  StageOfRogue,
+  UniEquipData,
+  UniEquipPhaseData,
 } from "~/types/gameData";
+import type { GameDataState } from "../gameDataStore";
 
 export type SliceCreator<T> = StateCreator<
   DCalculatorState & DCalculatorActions,
@@ -26,13 +35,15 @@ export type DCalculatorState = SlicedCalcGameDataState &
   SlicedCalcCharState &
   SlicedCalcEnemyState &
   SlicedCalculatorState &
-  SlicedCalcUIState;
+  SlicedCalcUIState &
+  SlicedCalcRelicState;
 
 export type DCalculatorActions = SlicedCalcGameDataActions &
   SlicedCalcCharActions &
   SlicedCalcEnemyActions &
   SlicedCalculatorActions &
-  SlicedCalcUIActions;
+  SlicedCalcUIActions &
+  SlicedCalcRelicActions;
 
 /** 肉鸽输入数据 */
 export type RogueInput = {
@@ -59,14 +70,76 @@ export interface SlicedCalcGameDataState {
   rogueInput: RogueInput;
   /** 肉鸽主题特殊效果列表 */
   topicSpecItems: ITopicSpecItem[];
-  /** 预处理后的藏品列表 */
-  relicsMap: Record<RogueKey, RelicWrapper[]>;
-  /** 选择的藏品ID */
-  selectedIds: string[];
-  /** 简略关卡数据 */
-  stageData?: StageData;
+  /** 技能解包数据 */
+  skill_table: Record<string, SkillData>;
+  /** 模组解包数据 */
+  uniequip_table: Record<string, UniEquipData>;
+  /** 关卡基础数据 */
+  stages: Record<RogueKey, StageOfRogue>;
   /** 关卡详细解包数据 */
-  levelData?: LevelData;
+  levels: Record<string, LevelData>;
+  /** 渲染关卡列表 */
+  renderStages: StageData[];
+  /** 当前选中的关卡 */
+  stageId: string;
+  /** 简略关卡数据 */
+  stageData: StageData;
+  /** 关卡详细解包数据 */
+  levelData: LevelData;
+}
+
+export interface SlicedCalcGameDataActions {
+  setRogueInput: (rogueInput: RogueInput) => void;
+  /** 设置肉鸽主题 */
+  setRogueKey: (key: RogueKey) => void;
+  /** 设置肉鸽难度 */
+  setRogueDifficulty: (difficulty: number) => void;
+  /** 设置肉鸽区域 */
+  setRogueZone: (zone: string) => void;
+  /** 设置肉鸽关卡 */
+  setRogueStageId: (stageId: string) => void;
+  /** 设置肉鸽思维负荷 */
+  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
+  /** 设置肉鸽幕后加成 */
+  setRogueTech: (tech: string) => void;
+  setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
+}
+
+export interface CharState {
+  /** 干员精英化阶段选项 */
+  phases: CharPhase[];
+  /** 精英化等级 */
+  phaseLevel: number;
+  /** 干员精英化阶段 */
+  phase: CharPhase;
+  /** 干员等级 */
+  frameIndex: number;
+  /** 干员等级选项 */
+  keyFrames: AttributeKeyFrame[];
+  /** 潜能 */
+  potential: number;
+  /** 技能键名 */
+  skillKey: string;
+  /** 技能选项 */
+  skills: SkillData[];
+  /** 技能等级选项 */
+  skillLevels: { key: number; name: string }[];
+  /** 技能等级 */
+  skillLevel: number;
+  /** 技能数据 */
+  skill: SkillLevelData;
+  /** 模组ID */
+  uniEquipId: string;
+  /** 模组选项 */
+  equips: UniEquipData[];
+  /** 模组等级 */
+  uniEquipLevel: number;
+  /** 模组数据 */
+  uniEquip?: UniEquipPhaseData;
+  /** 模组名称 */
+  uniEquipName: string;
+  /** 干员属性额外修改 */
+  attributeModifier: CharAttributeModifier;
 }
 
 export interface SlicedCalcCharState {
@@ -74,8 +147,40 @@ export interface SlicedCalcCharState {
   charList: CharData[];
   /** 当前选中的角色 */
   activeCharName: string;
-  /** 干员属性额外修改 */
-  charsModifier: Record<string, AttributeModifier>;
+  /** 干员解包数据 */
+  charData: CharData;
+  /** 干员属性额外修改 @deprecated */
+  charsModifier: Record<string, CharAttributeModifier>;
+  /** 干员输入数据 @deprecated */
+  charInput: CharInput;
+  /** 干员状态 */
+  charState: CharState;
+}
+
+export interface SlicedCalcCharActions {
+  addCharData: () => void;
+  setCharData: (charData: CharData, i: number) => void;
+  removeCharData: (i: number) => void;
+  setActiveCharName: (
+    charName: string,
+    skill_table: Record<string, SkillData>,
+    uniequip_table: Record<string, UniEquipData>,
+  ) => void;
+  setCharsModifier: (charName: string, modifier: CharAttributeModifier) => void;
+  /** 设置精英化等级 */
+  setPhaseLevel: (phaseLevel: string) => void;
+  /** 设置干员等级 */
+  setFrameIndex: (frameIndex: string) => void;
+  /** 设置潜能 */
+  setPotential: (potential: string) => void;
+  /** 设置技能键名 */
+  setSkillKey: (skillKey: string) => void;
+  /** 设置技能等级 */
+  setSkillLevel: (skillLevel: string) => void;
+  /** 设置模组ID */
+  setUniEquipId: (uniEquipId: string) => void;
+  /** 设置模组等级 */
+  setUniEquipLevel: (uniEquipLevel: string) => void;
 }
 
 export interface SlicedCalcEnemyState {
@@ -85,10 +190,41 @@ export interface SlicedCalcEnemyState {
   enemyBase: EnemyInput;
   /** 敌人输入数据 @deprecated */
   enemyInput: EnemyInput;
+  /** 敌人特殊配置 */
+  enemyConfig: EnemySpecConfig;
   /** 敌人特殊配置数据 */
   enemySpec: EnemySpec;
-  /** 敌人加成上下文 */
-  enemyContext: BuffContext;
+  /** 敌人示意图 */
+  enemyIllust: React.ReactNode;
+}
+
+export interface SlicedCalcEnemyActions {
+  setEnemyData: (enemyData: EnemyData) => void;
+  setEnemyBase: (enemyBase: EnemyInput) => void;
+  setEnemyInput: (enemyInput: EnemyInput) => void;
+  setEnemySpec: (enemySpec: EnemySpec) => void;
+  setEnemyIllust: (enemyIllust: React.ReactNode) => void;
+  updateEnemySpec: (index: number, value: string) => void;
+}
+
+export interface SlicedCalcRelicState {
+  /** 肉鸽藏品列表 */
+  relicList: RelicDataExt[];
+  /** 预处理后的藏品列表 */
+  relicsMap: Record<RogueKey, RelicWrapper[]>;
+  /** 选择的藏品ID */
+  selectedIds: string[];
+}
+
+export interface SlicedCalcRelicActions {
+  setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
+  setRelicLayer: (id: string, layer: string) => string;
+  updateRelic: (id: string, key: string, value: number | string | boolean) => void;
+  updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
+  setSelectedIds: (ids: string[]) => void;
+  toggleRelicSelection: (id: string) => void;
+  selectRelic: (id: string) => void;
+  unselectRelic: (id: string) => void;
 }
 
 export interface SlicedCalculatorState {
@@ -100,50 +236,8 @@ export interface SlicedCalculatorState {
   calcOutput: CalculatorOutput;
 }
 
-export interface SlicedCalcUIState {
-  /** 是否显示藏品选择器页面 */
-  showRelics: boolean;
-  /** 是否显示肉鸽主题特殊效果选择器页面 */
-  showTopicSpec: boolean;
-}
-
-export interface SlicedCalcGameDataActions {
-  setRogueKey: (key: RogueKey) => void;
-  setRogueInput: (rogueInput: RogueInput) => void;
-  setRogueDifficulty: (difficulty: number) => void;
-  setRogueZone: (zone: string) => void;
-  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
-  setRougeTech: (tech: string) => void;
-  setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
-  setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
-  setRelicLayer: (id: string, layer: string) => string;
-  updateRelic: (id: string, key: string, value: number | string | boolean) => void;
-  updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
-  setSelectedIds: (ids: string[]) => void;
-  toggleRelicSelection: (id: string) => void;
-  selectRelic: (id: string) => void;
-  unselectRelic: (id: string) => void;
-  setStageData: (stageData: StageData) => void;
-  setLevelData: (levelData: LevelData) => void;
-}
-
-export interface SlicedCalcCharActions {
-  addCharData: () => void;
-  setCharData: (charData: CharData, i: number) => void;
-  removeCharData: (i: number) => void;
-  setActiveCharName: (charName: string) => void;
-  setCharsModifier: (charName: string, modifier: AttributeModifier) => void;
-}
-
-export interface SlicedCalcEnemyActions {
-  setEnemyData: (enemyData: EnemyData) => void;
-  setEnemyBase: (enemyBase: EnemyInput) => void;
-  setEnemyInput: (enemyInput: EnemyInput) => void;
-  setEnemySpec: (enemySpec: EnemySpec) => void;
-  setEnemyContext: (enemyContext: BuffContext) => void;
-}
-
 export interface SlicedCalculatorActions {
+  initStore: (gameDataStore: GameDataState) => void;
   setGlobalAnalysisResult: (context: BuffContext) => void;
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
@@ -154,6 +248,13 @@ export interface SlicedCalculatorActions {
     relics: RelicWrapper[];
   }) => BuffContext;
   resetStore: () => void;
+}
+
+export interface SlicedCalcUIState {
+  /** 是否显示藏品选择器页面 */
+  showRelics: boolean;
+  /** 是否显示肉鸽主题特殊效果选择器页面 */
+  showTopicSpec: boolean;
 }
 
 export interface SlicedCalcUIActions {

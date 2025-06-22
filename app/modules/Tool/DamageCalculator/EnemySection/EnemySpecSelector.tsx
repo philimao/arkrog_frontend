@@ -1,8 +1,6 @@
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "../../components/ToolSelect";
 import { styled } from "styled-components";
-import { useEffect, useState } from "react";
-import type { EnemyData } from "~/types/gameData";
 import { cosHost } from "~/utils/tools";
 
 const StyledEnemySpecSelector = styled.div`
@@ -23,149 +21,48 @@ export interface EnemySpec {
 
 /**
  * 敌人特殊词条效果（减伤）
- * @param setIllust 设置敌人效果图
  */
-export default function EnemySpecSelector({
-  enemyData,
-  setIllust,
-}: {
-  enemyData: EnemyData;
-  setIllust: (illust: React.ReactNode) => void;
-}) {
-  const { rogueInput, setEnemySpec } = useDamageCalculatorStore();
-  const difficulty = rogueInput[rogueInput.topic].difficulty;
+export default function EnemySpecSelector() {
+  const { rogueInput, enemyData, enemyConfig, enemySpec, updateEnemySpec } = useDamageCalculatorStore();
 
-  // 可以保证在复制到木桩时，id不变
-  const [enemyConfig, setEnemyConfig] = useState<EnemySpecConfig>();
+  // 显示年代印痕选项
+  const rogueKey = rogueInput.topic;
+  const difficulty = rogueInput[rogueKey].difficulty;
+  const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
 
-  const showSkzdwx = rogueInput.topic === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
-  const [mitigationSkzdwx, setMitigationSkzdwx] = useState<string>("0");
-
-  const [selected, setSelected] = useState<string[]>();
-
-  /** 当敌人配置变化时，更新敌人效果图与默认效果 */
-  useEffect(() => {
-    // 在同一个effect中同步更新enemyConfig与selected，减少下一个useEffect的重复计算
-    const enemyConfig = EnemySpecConfigs[enemyData.id];
-    setEnemyConfig(enemyConfig);
-    if (enemyConfig) {
-      //   console.log("加载敌人特殊效果", enemyConfig);
-      const illust = (
-        <div className="mt-4 flex flex-col gap-4">
-          {enemyConfig.selects
-            .map((select) => {
-              return select.img;
-            })
-            .filter((i) => i)
-            .map((img) => (
-              <img className="w-full" src={img} alt="illust" key={img} />
-            ))}
-        </div>
-      );
-      setIllust(illust);
-      setSelected(enemyConfig.selects.map((select) => select.options[0].value.toString()));
-    } else {
-      setIllust(null);
-      setSelected([]);
-    }
-  }, [enemyData.id, setIllust]);
-
-  /** 当难度小于14时，设置年代印痕减伤为0 */
-  useEffect(() => {
-    if (difficulty < 14) {
-      setMitigationSkzdwx((prev) => {
-        if (prev === "0.5") return "0";
-        return prev;
-      });
-    }
-  }, [difficulty]);
-
-  /** 当难度大于等于14时，为年代之刺与饮泣之刺设置年代印痕减伤 */
-  useEffect(() => {
-    if (difficulty >= 14 && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
-      setMitigationSkzdwx((prev) => {
-        if (prev === "0") return "0.5";
-        return prev;
-      });
-    }
-  }, [difficulty, enemyData.id]);
-
-  /** 当敌人配置选项变化时，更新敌人效果 */
-  useEffect(() => {
-    if (!selected) return;
-    const result = [];
-    if (enemyConfig && enemyConfig.id === enemyData.id) {
-      result.push(
-        ...enemyConfig.selects.map((select, index) => {
-          return select.apply(Number(selected[index]));
-        }),
-      );
-    }
-    if (mitigationSkzdwx === "0.5") {
-      result.push({
-        label: "位于年代印痕中（最终乘算50减伤）",
-        key: "enemy_damage_resistance",
-        value: 0.5,
-      });
-    }
-    setEnemySpec({
-      id: enemyData.id,
-      value: result,
-    });
-  }, [enemyConfig, enemyData.id, mitigationSkzdwx, selected, setEnemySpec]);
-
-  if (!selected) return null;
   return (
     <StyledEnemySpecSelector>
       <StyledEnemySpecSelectorInner>
-        {enemyConfig?.selects.map(
-          (
-            select: {
-              label: string;
-              options: { label: string; value: number }[];
-              apply: (value: number) => { label: string; key: string; value: number };
-            },
-            index: number,
-          ) => (
-            <ToolSelect
-              key={select.label}
-              array={select.options}
-              getKey={(item) => item.value.toString()}
-              getValue={(item) => item.label}
-              label={select.label}
-              selectedKeys={[selected[index]]}
-              onChange={(evt) => {
-                setSelected((prev: string[] | undefined) => {
-                  if (!prev) return [];
-                  const newSelected = [...prev];
-                  newSelected[index] = evt.target.value;
-                  return newSelected;
-                });
-              }}
-            />
-          ),
-        )}
-        {showSkzdwx && (
-          <ToolSelect
-            array={[
-              { label: "否", value: 0 },
-              { label: "是", value: 0.5 },
-            ]}
-            getKey={(item) => item.value.toString()}
-            getValue={(item) => item.label}
-            label="是否位于年代印痕中（最终乘算50减伤）"
-            selectedKeys={[mitigationSkzdwx]}
-            onChange={(evt) => {
-              setMitigationSkzdwx(evt.target.value);
-            }}
-          />
-        )}
+        {enemyConfig.selects
+          .filter((select) => showSkzdwx || select.label !== Rogue4SkzdwxSelect.label)
+          .map(
+            (
+              select: {
+                label: string;
+                options: { label: string; value: number }[];
+                apply: (value: number) => { label: string; key: string; value: number };
+              },
+              index: number,
+            ) => (
+              <ToolSelect
+                key={select.label}
+                array={select.options}
+                getKey={(item) => item.value.toString()}
+                getValue={(item) => item.label}
+                label={select.label}
+                selectedKeys={[enemySpec.value[index].value.toString()]}
+                onChange={(evt) => {
+                  updateEnemySpec(index, evt.target.value);
+                }}
+              />
+            ),
+          )}
       </StyledEnemySpecSelectorInner>
     </StyledEnemySpecSelector>
   );
 }
 
-interface EnemySpecConfig {
+export interface EnemySpecConfig {
   id: string;
   name: string;
   selects: {
@@ -176,7 +73,7 @@ interface EnemySpecConfig {
   }[];
 }
 
-const sharedConfigs: Record<string, EnemySpecConfig> = {};
+export const sharedConfigs: Record<string, EnemySpecConfig> = {};
 [
   { id: "enemy_1220_dzoms", name: "大君之触" },
   { id: "enemy_1220_dzoms_2", name: "仁慈之触" },
@@ -202,7 +99,22 @@ const sharedConfigs: Record<string, EnemySpecConfig> = {};
   };
 });
 
-const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
+export const Rogue4SkzdwxSelect: EnemySpecConfig["selects"][number] = {
+  label: "是否位于年代印痕中（最终乘算50减伤）",
+  options: [
+    { label: "否", value: 0 },
+    { label: "是", value: 0.5 },
+  ],
+  apply: (value: number) => {
+    return {
+      label: "是否位于年代印痕中（最终乘算50减伤）",
+      key: "enemy_damage_resistance",
+      value: value,
+    };
+  },
+};
+
+export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
   // rogue_4 萨卡兹的无终奇语
   enemy_2081_skztxs: {
     id: "enemy_2081_skztxs",

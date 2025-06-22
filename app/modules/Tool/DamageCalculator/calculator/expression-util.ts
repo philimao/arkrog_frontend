@@ -1,6 +1,7 @@
-import { type CalculatorInput, type CharInput, type EnemyInput } from "~/types/gameData";
+import { type CalculatorInput, type EnemyInput } from "~/types/gameData";
 import { BuffContext } from "./buff-context";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
+import type { CharState } from "~/stores/damageCalculator/calcTypes";
 
 /**
  * 公式工具
@@ -42,9 +43,9 @@ export class ExpressionUtil {
   }
 
   /** 最大生命值 - 局外 干员最大生命值 */
-  static operator_out_game_max_hp(input: { charInput: CharInput; context: BuffContext }) {
+  static operator_out_game_max_hp(input: { charState: CharState; context: BuffContext }) {
     // 获取精英化等级属性
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseMaxHp = attribute?.maxHp ?? 0;
 
     return new ExpressionGroupNode("*", "局外最大生命值")
@@ -57,21 +58,21 @@ export class ExpressionUtil {
   }
 
   /** 最大生命值 - 局内 干员最大生命值 */
-  static operator_in_game_max_hp(input: { charInput: CharInput; context: BuffContext }) {
+  static operator_in_game_max_hp(input: { charState: CharState; context: BuffContext }) {
     return new ExpressionGroupNode("*", "直接乘算")
-      .addChild(ExpressionUtil.operator_out_game_max_hp({ charInput: input.charInput, context: input.context }))
+      .addChild(ExpressionUtil.operator_out_game_max_hp({ charState: input.charState, context: input.context }))
       .addChild(input.context.in_game_buff_mul.max_hp);
   }
 
   /** 最大生命值 - 技能 干员最大生命值 */
-  static operator_skill_max_hp(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_in_game_max_hp({ charInput: input.charInput, context: input.context });
+  static operator_skill_max_hp(input: { charState: CharState; context: BuffContext }) {
+    return ExpressionUtil.operator_in_game_max_hp({ charState: input.charState, context: input.context });
   }
 
   /** 攻击力 - 局外 干员攻击力 */
-  static operator_out_game_atk(input: { charInput: CharInput; context: BuffContext }) {
+  static operator_out_game_atk(input: { charState: CharState; context: BuffContext }) {
     // 获取精英化等级属性
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseAtk = attribute?.atk ?? 0;
 
     return new ExpressionGroupNode("*", "局外攻击力")
@@ -84,12 +85,12 @@ export class ExpressionUtil {
   }
 
   /** 攻击力 - 局内 干员攻击力 */
-  static operator_in_game_atk(input: { charInput: CharInput; context: BuffContext }) {
+  static operator_in_game_atk(input: { charState: CharState; context: BuffContext }) {
     // 直接加和直接乘
     const expression = new ExpressionGroupNode("*", "直接加算&直接乘算")
       .addChild(
         new ExpressionGroupNode("+", "直接加算")
-          .addChild(ExpressionUtil.operator_out_game_atk({ charInput: input.charInput, context: input.context }))
+          .addChild(ExpressionUtil.operator_out_game_atk({ charState: input.charState, context: input.context }))
           .addChild(input.context.in_game_buff_add.atk),
       )
       .addChild(input.context.in_game_buff_mul.atk);
@@ -104,8 +105,8 @@ export class ExpressionUtil {
   }
 
   /** 防御力 - 局外 干员防御力 */
-  static operator_out_game_def(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+  static operator_out_game_def(input: { charState: CharState; context: BuffContext }) {
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseDef = attribute?.def ?? 0;
 
     return new ExpressionGroupNode("*", "局外防御力")
@@ -118,13 +119,13 @@ export class ExpressionUtil {
   }
 
   /** 防御力 - 局内 干员防御力 */
-  static operator_in_game_def(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_out_game_def({ charInput: input.charInput, context: input.context });
+  static operator_in_game_def(input: { charState: CharState; context: BuffContext }) {
+    return ExpressionUtil.operator_out_game_def({ charState: input.charState, context: input.context });
   }
 
   /** 攻击速度 - 局外 干员攻击速度 */
-  static operator_out_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+  static operator_out_game_attack_speed(input: { charState: CharState; context: BuffContext }) {
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseAttackSpeed = attribute?.attackSpeed ?? 0;
 
     return new ExpressionGroupNode("+", "攻击速度")
@@ -133,16 +134,16 @@ export class ExpressionUtil {
   }
 
   /** 攻击速度 - 局内 干员攻击速度 */
-  static operator_in_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
+  static operator_in_game_attack_speed(input: { charState: CharState; context: BuffContext }) {
     return ExpressionUtil.operator_out_game_attack_speed({
-      charInput: input.charInput,
+      charState: input.charState,
       context: input.context,
     }).addChild(...input.context.in_game_buff_add.attack_speed.children);
   }
 
   /** 部署费用 - 局外 干员部署费用 */
-  static operator_out_game_cost(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+  static operator_out_game_cost(input: { charState: CharState; context: BuffContext }) {
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseCost = attribute?.cost ?? 0;
 
     return new ExpressionGroupNode("+", "部署费用")
@@ -151,8 +152,8 @@ export class ExpressionUtil {
   }
 
   /** 每秒生命回复 - 局外 干员每秒生命回复 */
-  static operator_out_game_hp_recovery_per_sec(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+  static operator_out_game_hp_recovery_per_sec(input: { charState: CharState; context: BuffContext }) {
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseHpRecoveryPerSec = attribute?.hpRecoveryPerSec ?? 0;
 
     return new ExpressionGroupNode("+", "每秒生命回复")
@@ -161,8 +162,8 @@ export class ExpressionUtil {
   }
 
   /** 每秒技力回复 - 局外 干员每秒技力回复 */
-  static operator_out_game_sp_recovery_per_sec(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.level].data; // TODO 去掉?
+  static operator_out_game_sp_recovery_per_sec(input: { charState: CharState; context: BuffContext }) {
+    const attribute = input.charState.phase?.attributesKeyFrames[input.charState.frameIndex].data; // TODO 去掉?
     const baseSpRecoveryPerSec = attribute?.spRecoveryPerSec ?? 0;
 
     return new ExpressionGroupNode("+", "每秒技力回复").addChild(

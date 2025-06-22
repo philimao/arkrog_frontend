@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
-import React, { type FormEvent, useEffect, useMemo, useState } from "react";
+import React, { type FormEvent, useMemo, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
 import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
@@ -8,7 +8,6 @@ import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
 import { applyAnyRelics } from "../calculator/debug/print-relics-info";
-import { useGameDataStore } from "~/stores/gameDataStore";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
@@ -22,23 +21,19 @@ const StyledRelicsInner = styled.div`
   gap: 1rem;
 `;
 
-export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: RelicWrapper[] }) {
+export default function RelicsContainer({
+  relicsWrappers,
+  showIds,
+}: {
+  relicsWrappers: RelicWrapper[];
+  showIds: string[];
+}) {
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
-  const { relics, items } = useGameDataStore();
-  const { rogueInput } = useDamageCalculatorStore();
-  const rogueKey = rogueInput.topic;
+  const { relicList } = useDamageCalculatorStore();
 
   /** 此处通过分析藏品buff计算哪些藏品生效, 达到禁选无效藏品功能 */
   const invalidRelicList = useMemo<string[]>(() => {
-    // 需要补充relicData
-    const relicList = Object.values(items![rogueKey])
-      .filter((item) => item.type === "RELIC")
-      .map((item) => ({
-        ...item,
-        ...relics![rogueKey][item.id],
-        show: true,
-      }));
     const result: string[] = [
       /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
       "烟花之手",
@@ -74,7 +69,7 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
     });
     // 排除生效的buff
     return relicsWrappers.filter((relic) => !result.includes(relic.name)).map((relic) => relic.name);
-  }, [relicsWrappers, rogueKey]);
+  }, [relicList, relicsWrappers]);
 
   return (
     <StyledRelicsContainer>
@@ -90,7 +85,7 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
       </StyledTitle>
       <StyledRelicsInner>
         {relicsWrappers
-          .filter((relicWrapper) => relicWrapper.show && (showAll || relicWrapper.isActive))
+          .filter((relicWrapper) => showIds.includes(relicWrapper.id) && (showAll || relicWrapper.isActive))
           .sort((a, b) => {
             const aDisabled = invalidRelicList.includes(a.name);
             const bDisabled = invalidRelicList.includes(b.name);
@@ -164,14 +159,6 @@ const StyledLayerWrapper = styled.div`
 function RelicBlock({ relicWrapper, invalidRelicList }: { relicWrapper: RelicWrapper; invalidRelicList: string[] }) {
   const { setRelicLayer, toggleRelicSelection, selectedIds } = useDamageCalculatorStore();
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
-
-  useEffect(() => {
-    setLayer((prev) => {
-      if (prev !== "NaN") {
-        return relicWrapper.layer.toString();
-      } else return prev;
-    });
-  }, [relicWrapper]);
 
   function updateRelicLayer(evt: FormEvent) {
     evt.preventDefault();

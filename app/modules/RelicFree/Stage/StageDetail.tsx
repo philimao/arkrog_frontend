@@ -1,18 +1,11 @@
 import type { RogueKey, StageData, TopicData } from "~/types/gameData";
-import React, {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { type Dispatch, type SetStateAction, useMemo } from "react";
 import { styled } from "styled-components";
 import { useNavigate } from "react-router";
 import SubmitRecordForm from "~/modules/RelicFree/Stage/SubmitRecordForm";
 import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useAppDataStore } from "~/stores/appDataStore";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const StyledDescriptionBlock = styled.div`
   padding: 1.5rem;
@@ -25,8 +18,7 @@ const StyledDescriptionTag = styled.div<{ $tag: string }>`
   padding: 0.25rem 1rem;
   margin-left: 0.25rem;
   font-size: 0.8rem;
-  background: ${(props) =>
-    props.$tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)"};
+  background: ${(props) => (props.$tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)")};
 `;
 
 const StyledBackButtonContainer = styled.div`
@@ -54,20 +46,10 @@ export default function StageDetail({
   stageData: StageData;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { stagePreview } = useAppDataStore();
-  const { stages, enemies } = useGameDataStore();
-  const mapRef = useRef<HTMLImageElement>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const { stagePreview, enemies } = useRelicFreeStore();
+  const { stages } = useGameDataStore();
 
   const enemyOfStage = enemies?.[stageData.id] || [];
-
-  useEffect(() => {
-    if (mapRef.current) {
-      mapRef.current.onload = () => {
-        setMapLoaded(true);
-      };
-    }
-  }, [mapRef]);
 
   const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ""}`;
 
@@ -81,20 +63,13 @@ export default function StageDetail({
 
   const navigate = useNavigate();
 
-  const shouldShowAdditionalDesc =
-    eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
+  const shouldShowAdditionalDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
   const renderAdditionalDesc = () => {
-    const tag = eliteStageData
-      ? "紧急"
-      : stagePreview?.[stageData.id]?.boatDesc
-        ? "带船"
-        : "";
+    const tag = eliteStageData ? "紧急" : stagePreview?.[stageData.id]?.boatDesc ? "带船" : "";
     return (
       <>
         <StyledDescriptionTag $tag={tag}>{tag}</StyledDescriptionTag>
-        {eliteStageData
-          ? eliteStageData.eliteDesc
-          : (stagePreview?.[stageData.id]?.boatDesc ?? "")}
+        {eliteStageData ? eliteStageData.eliteDesc : (stagePreview?.[stageData.id]?.boatDesc ?? "")}
       </>
     );
   };
@@ -120,17 +95,12 @@ export default function StageDetail({
             .replace(/<@.*?>/, "")
             .replace(/<\/>/g, "")}
         </StyledDescriptionBlock>
-        {
-          <StyledDescriptionBlock>
-            {shouldShowAdditionalDesc && renderAdditionalDesc()}
-          </StyledDescriptionBlock>
-        }
+        {<StyledDescriptionBlock>{shouldShowAdditionalDesc && renderAdditionalDesc()}</StyledDescriptionBlock>}
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>
           <span className="text-xl font-bold mb-2">地图</span>
           <img
-            ref={mapRef}
             className="w-full"
             src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
             alt="map"
@@ -149,11 +119,7 @@ export default function StageDetail({
                       <>
                         <img
                           className="w-full"
-                          src={
-                            enemyData.profile
-                              .replace("thumb/", "")
-                              .split("/50px")[0]
-                          }
+                          src={enemyData.profile.replace("thumb/", "").split("/50px")[0]}
                           alt="profile"
                           referrerPolicy="no-referrer"
                           crossOrigin="anonymous"

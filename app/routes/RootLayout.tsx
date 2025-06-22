@@ -14,6 +14,7 @@ import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import ScrollToTop from "~/modules/Standalone/ScrollToTop";
 import UploadCenter from "~/components/COS/UploadCenter";
 import Loading from "~/components/Loading";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
@@ -30,21 +31,32 @@ const StyledBackground = styled.div`
 
 export default function RootLayout() {
   const [currentTheme] = useState("dark");
-  const { fetchGameData } = useGameDataStore();
+  // 用户信息
   const { fetchUserInfo } = useUserInfoStore();
+  // 主页应用数据
   const { fetchAppData } = useAppDataStore();
+  // 无藏记录数据
+  const { fetchRelicFreeData } = useRelicFreeStore();
+  // 游戏数据
+  const { fetchGameDataBasic, fetchGameDataExt } = useGameDataStore();
+  // 赛事数据
   const { fetchTournamentsData } = useTournamentDataStore();
+  // 桌面端
   const desktop = window.matchMedia("(min-width: 640px)").matches;
   const [loading, setLoading] = useState(true);
 
+  // 根据首屏路由加载数据，避免多层同步加载数据，在切换路由时，再次检查是否已经加载
   useEffect(() => {
-    Promise.all([
-      fetchAppData(),
-      fetchUserInfo(),
-      fetchGameData(),
-      fetchTournamentsData(),
-    ]).then(() => setLoading(false));
-  }, [fetchAppData, fetchGameData, fetchTournamentsData, fetchUserInfo]);
+    const route = window.location.pathname.split("/")[1] || "index";
+    const preload = {
+      index: [fetchAppData],
+      "relic-free": [fetchGameDataBasic, fetchRelicFreeData],
+      tool: [fetchGameDataBasic, fetchGameDataExt],
+      tournament: [fetchGameDataBasic, fetchTournamentsData],
+    };
+    const loadArray = [fetchUserInfo, ...preload[route as keyof typeof preload]];
+    Promise.all(loadArray.map((f) => f())).then(() => setLoading(false));
+  }, [fetchAppData, fetchGameDataBasic, fetchGameDataExt, fetchRelicFreeData, fetchTournamentsData, fetchUserInfo]);
 
   return (
     <ThemeProvider theme={theme[currentTheme as keyof typeof theme]}>

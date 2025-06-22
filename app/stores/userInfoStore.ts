@@ -16,7 +16,7 @@ type UserInfoStore = {
 
 export const useUserInfoStore = create<UserInfoStore>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       userInfo: undefined,
       loaded: false,
       login: async (username, password) => {
@@ -72,14 +72,19 @@ export const useUserInfoStore = create<UserInfoStore>()(
         );
       },
       fetchUserInfo: async () => {
-        const info: UserInfo | undefined = await _get("/user/id");
-        if (info) {
-          set({ userInfo: info }, undefined, "fetchUserInfo");
-        } else {
-          set({ userInfo: defaultUserInfo }, undefined, "fetchUserInfo");
+        try {
+          const info: UserInfo | undefined = await _get("/user/id");
+          if (info) {
+            set({ userInfo: info }, undefined, "fetchUserInfo");
+          } else {
+            set({ userInfo: defaultUserInfo }, undefined, "fetchUserInfo");
+          }
+          set({ loaded: true }, undefined, "fetchUserInfo");
+          // console.log(get());
+        } catch (err) {
+          console.error(err);
+          toast.error(`加载用户信息失败！`);
         }
-        set({ loaded: true }, undefined, "fetchUserInfo");
-        // console.log(get());
       },
     }),
     { name: "userInfo" },

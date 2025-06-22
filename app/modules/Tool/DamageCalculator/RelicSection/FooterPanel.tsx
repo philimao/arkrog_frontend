@@ -67,6 +67,7 @@ export default function FooterPanel() {
     setIsDragging(false);
   }, []);
 
+  // 注册水平拖动事件
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);

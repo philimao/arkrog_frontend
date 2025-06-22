@@ -3,7 +3,7 @@ import { styled } from "styled-components";
 import { assetsHost } from "~/utils/tools";
 import type { RelicWrapper } from "~/types/gameData";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Tooltip } from "@heroui/react";
 
 const StyledRelicItem = styled.div<{
@@ -87,16 +87,7 @@ export default function RelicItem({
   editable?: boolean;
 }) {
   const { updateRelic, updateRelics, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
-
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
-
-  useEffect(() => {
-    setLayer((prev) => {
-      if (prev !== "NaN") {
-        return relicWrapper.layer.toString();
-      } else return prev;
-    });
-  }, [relicWrapper]);
 
   return (
     <Tooltip delay={500} closeDelay={150} content={relicWrapper.usage || "无"}>

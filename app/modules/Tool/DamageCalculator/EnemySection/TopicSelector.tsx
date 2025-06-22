@@ -1,6 +1,5 @@
 import type { RogueKey } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import { useEffect, useMemo } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { outBuffMap } from "~/modules/Tool/DamageCalculator/utils";
@@ -13,12 +12,12 @@ const StyledTopicSelector = styled.div`
 
 export default function TopicSelector() {
   const { topics } = useGameDataStore();
-  const { setRogueKey, setRogueDifficulty, setRougeTech, rogueInput } = useDamageCalculatorStore();
+  const { setRogueKey, setRogueDifficulty, setRogueTech: setRougeTech, rogueInput } = useDamageCalculatorStore();
 
   const rogueKey = rogueInput.topic;
 
   // 难度选择
-  const difficulties = useMemo(() => {
+  const difficulties = (() => {
     let array;
     // if (rogueKey === "rogue_1") array = ["王冠", "乌萨斯弯刀"];
     if (rogueKey === "rogue_1")
@@ -37,12 +36,7 @@ export default function TopicSelector() {
         .fill(0)
         .map((_, i) => ({ label: "N" + i, value: i }));
     return array;
-  }, [rogueKey]);
-
-  useEffect(() => {
-    const outBuffs = outBuffMap[rogueKey];
-    setRougeTech(outBuffs![outBuffs!.length - 1]);
-  }, [rogueKey, setRougeTech]);
+  })();
 
   return (
     <StyledTopicSelector>
@@ -64,16 +58,18 @@ export default function TopicSelector() {
           array={difficulties}
           getKey={(levelItem) => levelItem.value.toString()}
           getValue={(levelItem) => levelItem.label}
-          selectedKeys={[rogueInput.rogue_4.difficulty.toString()]}
+          selectedKeys={[rogueInput[rogueKey].difficulty.toString()]}
           onChange={(evt) => setRogueDifficulty(parseInt(evt.target.value))}
         />
-        <ToolSelect
-          disallowEmptySelection={true}
-          label="科技树加成"
-          array={outBuffMap[rogueKey]!}
-          selectedKeys={[rogueInput.rogue_4.tech]}
-          onChange={(evt) => setRougeTech(evt.target.value)}
-        />
+        {rogueKey === "rogue_4" && (
+          <ToolSelect
+            disallowEmptySelection={true}
+            label="科技树加成"
+            array={outBuffMap[rogueKey]!}
+            selectedKeys={[rogueInput[rogueKey].tech]}
+            onChange={(evt) => setRougeTech(evt.target.value)}
+          />
+        )}
       </div>
     </StyledTopicSelector>
   );

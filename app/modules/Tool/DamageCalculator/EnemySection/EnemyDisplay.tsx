@@ -3,7 +3,7 @@ import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
@@ -154,54 +154,55 @@ export const displayAttrKeys: Record<string, { min: number; max?: number; toolti
   },
 };
 
-export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
-  const {
-    enemyData,
-    enemyBase,
-    globalAnalysisResult,
-    setEnemySpec,
-    setEnemyData,
-    setEnemyBase,
-    setEnemyInput,
-    setEnemyContext,
-  } = useDamageCalculatorStore();
+export default function EnemyDisplay() {
+  const { enemyData, enemyBase, globalAnalysisResult, setEnemySpec, setEnemyData, setEnemyBase, setEnemyInput } =
+    useDamageCalculatorStore();
 
-  /** 缓存用户修改后的敌人数据，在blur时应用到store中 */
-  const [_enemyInput, _setEnemyInput] = useState<EnemyInput | null>(null);
-  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
+  /** 输入期间缓存敌人数据，在blur时应用到store中 */
+  const [enemyCache, setEnemyCache] = useState<EnemyInput | null>(null);
   /** 缓存初始敌人数据，在恢复初始值时应用 */
   const enemyRef = useRef<EnemyInput | null>(null);
 
-  /** 计算敌人属性 */
+  /** blur后敌人面板更新时，同步缓存 */
   useEffect(() => {
+    setEnemyCache(enemyBase);
+    enemyRef.current = enemyBase;
+  }, [enemyBase]);
+
+  /** 计算敌人属性 */
+  const _enemyInput = useMemo(() => {
     const enemyInput = CalculatorHelper.calculateEnemyAttr({
       enemyBase,
       context: globalAnalysisResult,
     });
     console.log("计算敌人数据(display)", enemyInput, enemyBase);
-    _setEnemyInput(enemyInput);
+    return enemyInput;
+  }, [enemyBase, globalAnalysisResult]);
+
+  const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
     if (enemyBase.name === "木桩") {
-      return;
+      return {};
     }
-    setEnemyExpression({
+
+    return {
       maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
       atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
       def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
       magicResistance: new ExpressionGroupNode("+", "法术抗性").addChild(
-        new NumericLiteralNode(enemyInput.attributes.magicResistance, "法术抗性"),
+        new NumericLiteralNode(_enemyInput.attributes.magicResistance, "法术抗性"),
       ),
       epResistance: new ExpressionGroupNode("+", "损伤抵抗").addChild(
-        new NumericLiteralNode(enemyInput.attributes.epResistance, "损伤抵抗"),
+        new NumericLiteralNode(_enemyInput.attributes.epResistance, "损伤抵抗"),
       ),
       epDamageResistance: new ExpressionGroupNode("+", "元素伤害抗性").addChild(
-        new NumericLiteralNode(enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
+        new NumericLiteralNode(_enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
       ),
       damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
         enemyBase,
         context: globalAnalysisResult,
       }),
-    });
-  }, [globalAnalysisResult, enemyBase]);
+    };
+  }, [globalAnalysisResult, enemyBase, _enemyInput]);
 
   /** 复制敌人当前面板到木桩 */
   function assignToDummy() {
@@ -225,7 +226,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
     );
   }
 
-  if (!_enemyInput) return null;
+  if (!_enemyInput || !enemyCache) return null;
 
   return (
     <StyledEnemyDisplayWrapper>
@@ -246,7 +247,6 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                         m_value: enemyBase.levelType === "NORMAL" ? "ELITE" : "NORMAL",
                       },
                     });
-                    setEnemyContext(CalculatorHelper.createAdditionContext());
                   }
                 }}
               >
@@ -257,7 +257,7 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
           </StyledEnemyHeader>
           <StyledEnemyAvatar name={enemyBase.name} />
         </StyledEnemyLeftInfo>
-        <EnemySpecSelector setIllust={setIllust} enemyData={enemyData} />
+        <EnemySpecSelector />
       </StyledEnemyDisplayTop>
       <StyledControl>
         {/* <StyledPhase>
@@ -292,33 +292,33 @@ export default function EnemyDisplay({ setIllust }: { setIllust: (illust: React.
                   </Tooltip>
                 )}
               </div>
-              {enemyBase.name !== "木桩" ? (
+              {enemyCache.name !== "木桩" ? (
                 <ExpressionDisplay className={color} expression={enemyExpression[key]}></ExpressionDisplay>
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}
-                  value={enemyBase.attributes[key as never]}
+                  value={enemyCache.attributes[key as never]}
                   setValue={(value: string) => {
                     const updated = {
-                      ...enemyBase,
+                      ...enemyCache,
                       attributes: {
-                        ...enemyBase.attributes,
+                        ...enemyCache.attributes,
                         [key]: value,
                       },
                     };
-                    setEnemyBase(updated);
+                    setEnemyCache(updated);
                   }}
                   onBlur={() => {
                     // 解析浮点数，失败则设置为0
-                    let number = parseFloat(enemyBase.attributes[key as never]) || 0;
+                    let number = parseFloat(enemyCache.attributes[key as never]) || 0;
                     const { min, max } = displayAttrKeys[key as never];
                     // 应用数据边界
                     if (min !== undefined && number < min) number = min;
                     if (max !== undefined && number > max) number = max;
                     const updated = {
-                      ...enemyBase,
+                      ...enemyCache,
                       attributes: {
-                        ...enemyBase.attributes,
+                        ...enemyCache.attributes,
                         [key]: number,
                       },
                     };

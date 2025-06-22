@@ -1,11 +1,4 @@
-import React, {
-  type Dispatch,
-  type FormEvent,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { type Dispatch, type FormEvent, type SetStateAction, useEffect, useMemo, useState } from "react";
 import {
   Button,
   type ButtonProps,
@@ -33,25 +26,18 @@ import { Radio, RadioGroup } from "@heroui/radio";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useGameDataStore } from "~/stores/gameDataStore";
 
-const MyInput = (props: InputProps) => (
-  <Input radius="none" labelPlacement="outside" {...props}></Input>
-);
+const MyInput = (props: InputProps) => <Input radius="none" labelPlacement="outside" {...props}></Input>;
 const MySelect = (props: SelectProps) => (
   <Select radius="none" labelPlacement="outside" {...props}>
     {props.children}
   </Select>
 );
-const MyTextarea = (props: TextAreaProps) => (
-  <Textarea radius="none" labelPlacement="outside" {...props}></Textarea>
-);
+const MyTextarea = (props: TextAreaProps) => <Textarea radius="none" labelPlacement="outside" {...props}></Textarea>;
 const MyButton = (props: ButtonProps) => (
   <Button
     {...props}
     radius="none"
-    className={
-      "ms-auto px-4 py-1.5 bg-ak-blue text-black font-bold " +
-      (props.className ?? "")
-    }
+    className={"ms-auto px-4 py-1.5 bg-ak-blue text-black font-bold " + (props.className ?? "")}
   >
     {props.children}
   </Button>
@@ -88,9 +74,8 @@ export default function SubmitRecordForm({
         }
         // 默认选择最新模组
         memberData.uniequipId =
-          Object.values(charData?.uniequip || {}).sort(
-            (a, b) => b.charEquipOrder - a.charEquipOrder,
-          )[0]?.uniEquipId || "";
+          Object.values(charData?.uniequip || {}).sort((a, b) => b.charEquipOrder - a.charEquipOrder)[0]?.uniEquipId ||
+          "";
         return memberData;
       });
       return memberDataArray;
@@ -107,27 +92,24 @@ export default function SubmitRecordForm({
         .map((memberData) => {
           const { charData } = memberData;
           const defaultChecked =
-            Object.values(charData?.uniequip || {}).sort(
-              (a, b) => b.charEquipOrder - a.charEquipOrder,
-            )[0]?.uniEquipId || "";
+            Object.values(charData?.uniequip || {}).sort((a, b) => b.charEquipOrder - a.charEquipOrder)[0]
+              ?.uniEquipId || "";
           return {
             charData,
             defaultChecked,
-            options: Object.values(charData?.uniequip || {}).map(
-              (uniequipData) => {
-                const { uniEquipId, uniEquipName, typeIcon } = uniequipData;
-                return { uniEquipId, uniEquipName, typeIcon };
-              },
-            ),
+            options: Object.values(charData?.uniequip || {}).map((uniequipData) => {
+              const { uniEquipId, uniEquipName, typeIcon } = uniequipData;
+              return { uniEquipId, uniEquipName, typeIcon };
+            }),
           };
         })
         .filter((i) => i),
     [memberDataArray],
   );
 
-  useEffect(() => {
-    console.log("有效干员", memberDataArray);
-  }, [memberDataArray]);
+  // useEffect(() => {
+  //   console.log("有效干员", memberDataArray);
+  // }, [memberDataArray]);
 
   // useEffect(() => {
   //   console.log("模组选项", uniequipOptions);
@@ -135,11 +117,7 @@ export default function SubmitRecordForm({
 
   async function handleSubmit(evt: FormEvent<HTMLFormElement>) {
     evt.preventDefault();
-    const data = JSON.parse(
-      JSON.stringify(
-        Object.fromEntries(new FormData(evt.currentTarget as HTMLFormElement)),
-      ),
-    );
+    const data = JSON.parse(JSON.stringify(Object.fromEntries(new FormData(evt.currentTarget as HTMLFormElement))));
     for (const key in data) {
       if (key.startsWith("ignore_")) {
         delete data[key];
@@ -168,19 +146,13 @@ export default function SubmitRecordForm({
       return memberStr.toUpperCase() !== (name + skillStr).toUpperCase();
     });
     if (misMatch) {
-      return toast.warning(
-        `队伍组成中 ${misMatch} 无法解析！请检查拼写是否有误`,
-      );
+      return toast.warning(`队伍组成中 ${misMatch} 无法解析！请检查拼写是否有误`);
     }
 
     // 技能验证
-    const skillErrorMember = memberDataArray.find(
-      (memberData) => memberData.skillId === "error",
-    );
+    const skillErrorMember = memberDataArray.find((memberData) => memberData.skillId === "error");
     if (skillErrorMember) {
-      return toast.warning(
-        `队伍组成中 ${skillErrorMember.name} 的技能填写有误！`,
-      );
+      return toast.warning(`队伍组成中 ${skillErrorMember.name} 的技能填写有误！`);
     }
 
     data.team = memberDataArray.map((memberData) => {
@@ -189,10 +161,7 @@ export default function SubmitRecordForm({
     });
     data.stageId = stageId;
     console.log(data);
-    const records: RecordType[] | undefined = await _post<RecordType[]>(
-      "/record/submit",
-      data,
-    );
+    const records: RecordType[] | undefined = await _post<RecordType[]>("/record/submit", data);
     if (records) {
       setRecords(records);
       onClose();
@@ -218,26 +187,12 @@ export default function SubmitRecordForm({
         <ModalContent>
           <ModalHeader>提交记录</ModalHeader>
           <ModalBody>
-            <Form
-              validationBehavior="native"
-              onSubmit={handleSubmit}
-              className="w-full flex flex-col gap-6"
-            >
-              <MyInput
-                name="url"
-                label="视频链接"
-                placeholder="B站长短链，单独BV号，YouTube链接均可解析"
-                required
-              />
+            <Form validationBehavior="native" onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+              <MyInput name="url" label="视频链接" placeholder="B站长短链，单独BV号，YouTube链接均可解析" required />
               <MyInput
                 value={team}
                 onValueChange={setTeam}
-                label={
-                  "队伍组成" +
-                  (team.split(/[+、]/).length
-                    ? `（${team.split(/[+、]/).length}人）`
-                    : "")
-                }
+                label={"队伍组成" + (team.split(/[+、]/).length ? `（${team.split(/[+、]/).length}人）` : "")}
                 placeholder="使用加号（+）或顿号（、）分隔，例：维什戴尔3+逻各斯3"
                 required
               />
@@ -256,8 +211,7 @@ export default function SubmitRecordForm({
                           setMemberDataArray((prev) => {
                             const updated = [...prev];
                             const index = updated.findIndex(
-                              (memberData) =>
-                                memberData.charId === item.charData?.charId,
+                              (memberData) => memberData.charId === item.charData?.charId,
                             );
                             if (index > -1) {
                               updated[index].uniequipId = id;
@@ -269,11 +223,7 @@ export default function SubmitRecordForm({
                         {item.options.map((option) => {
                           const { uniEquipId, uniEquipName, typeIcon } = option;
                           return (
-                            <Radio
-                              description={uniEquipName}
-                              value={uniEquipId}
-                              key={uniEquipId}
-                            >
+                            <Radio description={uniEquipName} value={uniEquipId} key={uniEquipId}>
                               {typeIcon.toUpperCase()}
                             </Radio>
                           );
@@ -283,34 +233,17 @@ export default function SubmitRecordForm({
                   </div>
                 </div>
               )}
-              <MySelect
-                name="type"
-                label="作战类型"
-                defaultSelectedKeys={[Object.keys(StageTypes)[0]]}
-                required
-              >
+              <MySelect name="type" label="作战类型" defaultSelectedKeys={[Object.keys(StageTypes)[0]]} required>
                 {Object.keys(StageTypes).map((typeKey) => (
-                  <SelectItem key={typeKey}>
-                    {StageTypes[typeKey] + "作战"}
-                  </SelectItem>
+                  <SelectItem key={typeKey}>{StageTypes[typeKey] + "作战"}</SelectItem>
                 ))}
               </MySelect>
-              <MySelect
-                name="level"
-                label="难度等级"
-                defaultSelectedKeys={[StageLevels[0]]}
-                required
-              >
+              <MySelect name="level" label="难度等级" defaultSelectedKeys={[StageLevels[0]]} required>
                 {StageLevels.map((l) => (
                   <SelectItem key={l}>{l}</SelectItem>
                 ))}
               </MySelect>
-              <MyTextarea
-                name="note"
-                label="备注"
-                minRows={5}
-                placeholder="攻略者ID、等效情况等"
-              />
+              <MyTextarea name="note" label="备注" minRows={5} placeholder="攻略者ID、等效情况等" />
               <MyButton className="w-full" type="submit">
                 提交
               </MyButton>

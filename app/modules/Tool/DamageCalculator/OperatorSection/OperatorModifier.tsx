@@ -1,4 +1,4 @@
-import React, { useEffect, type Dispatch, type SetStateAction } from "react";
+import React, { type Dispatch, type SetStateAction } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Input, type InputProps } from "@heroui/react";
 
@@ -53,10 +53,6 @@ export default function OperatorModifier() {
     };
     setCharsModifier(activeCharName, charModifier);
   };
-
-  useEffect(() => {
-    handleBlur();
-  }, [activeCharName]);
 
   return (
     <div className="flex flex-col gap-2">

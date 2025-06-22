@@ -5,13 +5,7 @@ import { type RecordType } from "~/types/recordType";
 import { toast } from "react-toastify";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import Loading from "~/components/Loading";
-import type {
-  GameData,
-  RogueKey,
-  StageData,
-  StageOfRogue,
-  TopicData,
-} from "~/types/gameData";
+import type { RogueKey, StageData, StageOfRogue, TopicData } from "~/types/gameData";
 import StageDetail from "~/modules/RelicFree/Stage/StageDetail";
 import RecordDisplay from "~/modules/RecordDisplay";
 
@@ -67,17 +61,9 @@ export default function StagePage() {
   if (!stageData) return <div>非法的关卡名称</div>;
   return (
     <div>
-      <StageDetail
-        topicData={topicData as TopicData}
-        stageData={stageData}
-        setRecords={setRecords}
-      />
+      <StageDetail topicData={topicData as TopicData} stageData={stageData} setRecords={setRecords} />
       <div className="font-bold text-xl">记录收录</div>
-      <RecordDisplay
-        records={records}
-        setRecords={setRecords}
-        isStagePage={true}
-      />
+      <RecordDisplay records={records} setRecords={setRecords} isStagePage={true} />
     </div>
   );
 }

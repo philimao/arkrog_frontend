@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { styled } from "styled-components";
-import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
+import type { CharAttribute } from "~/types/gameData";
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
+import { AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 import { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
 import ExpressionDisplay from "~/modules/Tool/components/ExpressionDisplay";
 import { ExpressionUtil } from "~/modules/Tool/DamageCalculator/calculator/expression-util";
@@ -58,46 +58,44 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Buf
   return tokens;
 }
 
-export default function OperatorAttributes(props: {
-  mode: "out_game" | "in_game" | "skill";
-  charData: CharData;
-  charInput: CharInput;
-  relics: RelicWrapper[];
-}) {
+export default function OperatorAttributes(props: { mode: "out_game" | "in_game" | "skill" }) {
+  const { charState } = useDamageCalculatorStore();
   const context = useDamageCalculatorStore((state) => state.globalAnalysisResult);
-  const [result, setResult] = useState<CharAttributeExt | null>(null);
-  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
 
-  useEffect(() => {
-    setResult(CalculatorHelper.calculateOutsidePanel({ charInput: props.charInput, context }));
+  const result = useMemo(
+    () => CalculatorHelper.calculateOutsidePanel({ charInput: charState, context }),
+    [charState, context],
+  );
 
+  const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
     if (props.mode === "out_game") {
-      setEnemyExpression({
-        maxHp: ExpressionUtil.operator_out_game_max_hp({ charInput: props.charInput, context }),
-        atk: ExpressionUtil.operator_out_game_atk({ charInput: props.charInput, context }),
-        def: ExpressionUtil.operator_out_game_def({ charInput: props.charInput, context }),
-        attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charInput: props.charInput, context }),
-        cost: ExpressionUtil.operator_out_game_cost({ charInput: props.charInput, context }),
-        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: props.charInput, context }),
-        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: props.charInput, context }),
-      });
+      return {
+        maxHp: ExpressionUtil.operator_out_game_max_hp({ charState, context }),
+        atk: ExpressionUtil.operator_out_game_atk({ charState, context }),
+        def: ExpressionUtil.operator_out_game_def({ charState, context }),
+        attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charState, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charState, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charState, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charState, context }),
+      };
     } else if (props.mode === "in_game") {
-      setEnemyExpression({
-        maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: props.charInput, context }),
-        atk: ExpressionUtil.operator_in_game_atk({ charInput: props.charInput, context }),
-        def: ExpressionUtil.operator_in_game_def({ charInput: props.charInput, context }),
-        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charInput: props.charInput, context }),
-        cost: ExpressionUtil.operator_out_game_cost({ charInput: props.charInput, context }),
-        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: props.charInput, context }),
-        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: props.charInput, context }),
-      });
+      return {
+        maxHp: ExpressionUtil.operator_in_game_max_hp({ charState, context }),
+        atk: ExpressionUtil.operator_in_game_atk({ charState, context }),
+        def: ExpressionUtil.operator_in_game_def({ charState, context }),
+        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charState, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charState, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charState, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charState, context }),
+      };
     } else if (props.mode === "skill") {
-      setEnemyExpression({
-        maxHp: ExpressionUtil.operator_skill_max_hp({ charInput: props.charInput, context }),
+      return {
+        maxHp: ExpressionUtil.operator_skill_max_hp({ charState, context }),
         // atk: ExpressionUtil.operator_skill_atk({ charInput: props.charInput, context }),
-      });
+      };
     }
-  }, [props.mode, props.charData, props.charInput, props.relics, context]);
+    return {};
+  }, [charState, context, props.mode]);
 
   // const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
   // const className = "text-sm h-4 px-2 " + color;

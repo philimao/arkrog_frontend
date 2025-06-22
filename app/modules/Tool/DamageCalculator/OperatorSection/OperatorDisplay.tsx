@@ -1,31 +1,18 @@
-import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useEffect, useMemo, useState } from "react";
-import type {
-  CharBasicData,
-  CharData,
-  CharInput,
-  RelicDataExt,
-  CalculatorInput,
-  RelicWrapper,
-  SkillLevelData,
-  UniEquipPhaseData,
-} from "~/types/gameData";
+import React, { useState } from "react";
+import type { SkillLevelData, UniEquipPhaseData } from "~/types/gameData";
 import { styled } from "styled-components";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
-import { calculator } from "~/modules/Tool/DamageCalculator/calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import OperatorModifier from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorModifier";
-import { CalculatorHelper } from "../calculator/helper";
-import OperatorAttributes from "./OperatorAttributes";
 import { DamageCalculatorSettings } from "../black-list";
-import { printRelicsInfo } from "../calculator/debug/print-relics-info";
 import { allowedBlackboardKeyMap, parseBlackboardDescription } from "../utils";
 import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
 import { mergeClassNameSafe } from "~/utils/tools";
+import OperatorAttributes from "./OperatorAttributes";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -66,290 +53,44 @@ const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION"
   background-position: center;
 `;
 
-export default function OperatorDisplay({ charData }: { charData: CharData }) {
-  const { relics, items, character_basic, skill_table, uniequip_table } = useGameDataStore();
+export default function OperatorDisplay() {
   const {
     activeCharName,
-    charsModifier,
-    topicSpecItems,
-    stageData,
+    charState,
+    charData,
     rogueInput,
-    enemyBase,
-    enemyData,
-    levelData,
-    selectedIds,
-    relicsMap,
-    enemySpec,
     setRogueThoughtLoad,
-    setRelicAnalysisResult,
-    setCalcOutput,
-    setGlobalAnalysisResult,
-    setEnemyInput,
+    setPhaseLevel,
+    setFrameIndex,
+    setPotential,
+    setSkillKey,
+    setSkillLevel,
+    setUniEquipId,
+    setUniEquipLevel,
   } = useDamageCalculatorStore();
+
+  const {
+    phaseLevel,
+    phases,
+    frameIndex,
+    keyFrames,
+    potential,
+    skillKey,
+    skills,
+    skillLevels,
+    skillLevel,
+    skill,
+    uniEquipId,
+    equips,
+    uniEquipLevel,
+    uniEquip,
+    uniEquipName,
+  } = charState;
+
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
 
   const rogueKey = rogueInput.topic;
-
-  // 选择干员后
-  useEffect(() => {
-    const basicData = Object.values(character_basic!).find((char) => char.name === activeCharName);
-    if (!basicData) throw new Error(`${activeCharName} Not Found`);
-    setBasicData(basicData);
-    // 设置精英化阶段为最大
-    const maxPhaseLevel = charData.phases.length - 1;
-    setPhaseLevel(maxPhaseLevel.toString());
-    const maxFrameIndex = charData.phases[maxPhaseLevel].attributesKeyFrames.length - 1;
-    setFrameIndex(maxFrameIndex.toString());
-    // 设置为最后一个技能
-    const lastSkillKey = Object.keys(basicData.skills).slice(-1)[0];
-    setSkillKey(lastSkillKey!);
-    // 设置技能等级
-    if (maxPhaseLevel > 1 && parseInt(basicData.rarity.slice(-1)) > 3) setSkillLevel("9");
-    else setSkillLevel("6");
-    // 设置模组，模组默认值在useMemo中更新
-  }, [activeCharName, charData.phases, character_basic]);
-
-  // 干员数据
-  const [basicData, setBasicData] = useState<CharBasicData>();
-
-  // 精英化阶段选择
-  const phases = useMemo(() => charData?.phases, [charData]);
-  const [phaseLevel, setPhaseLevel] = useState<string>("0");
-  const phase = useMemo(() => phases?.[parseInt(phaseLevel)], [phaseLevel, phases]);
-
-  // 干员等级
-  const keyFrames = useMemo(() => phase?.attributesKeyFrames, [phase?.attributesKeyFrames]);
-  const [frameIndex, setFrameIndex] = useState<string>("0");
-
-  // 属性数据
-  // const attribute = useMemo(
-  //   () => phase?.attributesKeyFrames[parseInt(frameIndex)],
-  //   [frameIndex, phase?.attributesKeyFrames],
-  // );
-
-  // 技能选择
-  const skills = useMemo(() => basicData && Object.values(basicData?.skills), [basicData]);
-  const [skillKey, setSkillKey] = useState<string>("");
-  const [skillLevel, setSkillLevel] = useState<string>("3");
-  const skillObject = useMemo(() => skill_table![skillKey], [skillKey, skill_table]);
-  const skillLevels = useMemo(() => {
-    const levels =
-      parseInt(phaseLevel) > 1 && skillObject?.levels.length > 7
-        ? [
-            { key: 3, name: "4级" },
-            { key: 6, name: "7级" },
-            { key: 7, name: "专精一" },
-            { key: 8, name: "专精二" },
-            { key: 9, name: "专精三" },
-          ]
-        : parseInt(phaseLevel) > 0
-          ? [
-              { key: 3, name: "4级" },
-              { key: 6, name: "7级" },
-            ]
-          : [{ key: 3, name: "4级" }];
-    setSkillLevel(levels.slice(-1)[0]!.key.toString());
-    return levels;
-  }, [phaseLevel, skillObject?.levels.length]);
-  const skill: SkillLevelData | null = useMemo(() => {
-    return skillObject?.levels[parseInt(skillLevel)];
-  }, [skillLevel, skillObject?.levels]);
-
-  // 模组选择
-  const [uniEquipId, setUniEquipId] = useState<string>("");
-  const [uniEquipLevel, setUniEquipLevel] = useState<string>("2");
-  const equips = useMemo(() => {
-    if (phaseLevel === "2" && frameIndex === "1" && basicData && parseInt(basicData.rarity.slice(-1)!) > 3) {
-      const latestEquipId = Object.keys(basicData.uniequip).slice(-1)[0];
-      setUniEquipId(latestEquipId);
-      return basicData && Object.values(basicData.uniequip);
-    } else {
-      setUniEquipId("");
-    }
-  }, [basicData, frameIndex, phaseLevel]);
-  const uniEquipName = useMemo(() => {
-    return basicData?.uniequip[uniEquipId]?.uniEquipName;
-  }, [basicData, uniEquipId]);
-  const uniEquip = useMemo(
-    () => uniequip_table![uniEquipId]?.phases[parseInt(uniEquipLevel)],
-    [uniEquipId, uniEquipLevel, uniequip_table],
-  );
-
-  // 潜能选择
-  const [potential, setPotential] = useState<string>("5");
-
-  /** 计算器干员输入 */
-  const charInput: CharInput = useMemo(
-    () => ({
-      phaseLevel: parseInt(phaseLevel),
-      phase,
-      level: parseInt(frameIndex),
-      skillKey,
-      skillLevel: parseInt(skillLevel),
-      skill: skill!,
-      uniEquipId,
-      uniEquipLevel: parseInt(uniEquipLevel),
-      uniEquip,
-      potential: parseInt(potential),
-      charsBuffInGame: {
-        atk: 0,
-        maxHp: 0,
-        damageResistance: 0,
-        damageScale: 0,
-      },
-      attributeModifier: charsModifier[activeCharName],
-    }),
-    [
-      frameIndex,
-      phase,
-      phaseLevel,
-      potential,
-      skill,
-      skillKey,
-      skillLevel,
-      uniEquip,
-      uniEquipId,
-      uniEquipLevel,
-      charsModifier,
-      activeCharName,
-    ],
-  );
-
-  /** 有效藏品列表 */
-  const relicList: RelicDataExt[] = useMemo(
-    () =>
-      Object.values(items![rogueKey])
-        .filter((item) => item.type === "RELIC")
-        .map((item) => ({
-          ...item,
-          ...relics![rogueKey][item.id],
-          show: true,
-        })),
-    [items, relics, rogueKey],
-  );
-
-  /** 选择的藏品 */
-  const selectedRelics = useMemo(() => {
-    return selectedIds
-      .map((id) => relicsMap[rogueKey]?.find((relic) => relic.id === id))
-      .filter((r) => r?.userActive)
-      .map((r) => ({
-        relicData: relicList.find((relic) => relic.id === r?.id),
-        ...r,
-      })) as RelicWrapper[];
-  }, [relicList, relicsMap, rogueKey, selectedIds]);
-
-  useEffect(() => {
-    if (!charInput.attributeModifier) {
-      return;
-    }
-    // 干员养成加成
-    let buffContext = CalculatorHelper.analyzeChar({
-      charInput: charInput,
-      charData: charData,
-    });
-    // 藏品加成
-    buffContext = CalculatorHelper.analyzeRelics(
-      {
-        charInput,
-        charData,
-        relics: selectedRelics,
-        enemyData: enemyData,
-        stageData,
-      },
-      buffContext,
-    );
-    // 肉鸽难度加成
-    buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffContext);
-    // 肉鸽主题加成（年代、灵感、密文板）
-    buffContext = CalculatorHelper.analyzeTopicSpec(
-      { topicSpecItems: topicSpecItems, enemyData: enemyData },
-      buffContext,
-    );
-    // 敌人特殊配置加成
-    buffContext = CalculatorHelper.analyzeEnemySpec({ enemySpec, enemyData, stageData, levelData }, buffContext);
-
-    const enemyInput = CalculatorHelper.calculateEnemyAttr({
-      enemyBase,
-      context: buffContext,
-    });
-
-    const input: CalculatorInput = {
-      charInput: {
-        ...charInput,
-        // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
-      },
-      enemyInput,
-      charData: charData, // 干员解包原始数据
-      enemyData: enemyData, // 敌人解包原始数据
-      skillData: skillObject, // 技能原始解包数据
-      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
-      relics: selectedRelics, // 有效藏品列表
-      rogueInput,
-      buffContext,
-      stageData,
-    };
-    const calcResult = calculator(input);
-    // 标准打印
-    CalculatorHelper.print(input, calcResult);
-    printRelicsInfo({
-      charInput: {
-        ...charInput,
-        // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
-      },
-      enemyInput: enemyInput,
-      charData: charData, // 干员解包原始数据
-      enemyData: enemyData, // 敌人解包原始数据
-      skillData: skillObject, // 技能原始解包数据
-      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
-      relics: relicsMap[rogueKey].map((r) => ({
-        ...r,
-        relicData: relicList.find((relic) => relic.id === r?.id)!,
-      })), // 有效藏品列表
-      rogueInput,
-      buffContext,
-      stageData,
-    });
-
-    /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
-    let buffPanelContext = CalculatorHelper.analyzeRelics(input);
-    buffPanelContext = CalculatorHelper.analyzeRogueDifficulty(input, buffPanelContext);
-    buffPanelContext = CalculatorHelper.analyzeTopicSpec(
-      { topicSpecItems: topicSpecItems, enemyData: enemyData },
-      buffPanelContext,
-    );
-    buffPanelContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffPanelContext);
-
-    setGlobalAnalysisResult(buffContext);
-    setRelicAnalysisResult(buffPanelContext);
-    setEnemyInput(enemyInput);
-    // 计算结果
-    setCalcOutput(calcResult);
-  }, [
-    charData,
-    charInput,
-    enemyData,
-    enemyBase,
-    enemySpec,
-    relicList,
-    relicsMap,
-    rogueInput,
-    levelData,
-    rogueKey,
-    selectedRelics,
-    setCalcOutput,
-    setGlobalAnalysisResult,
-    setRelicAnalysisResult,
-    setEnemyInput,
-    skillObject,
-    stageData,
-    topicSpecItems,
-    uniEquipId,
-    uniequip_table,
-  ]);
 
   return (
     <div className="mb-4">
@@ -363,7 +104,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               array={phases}
               getKey={(_, i) => i.toString()}
               getValue={(_, i) => "精英" + i}
-              selectedKeys={[phaseLevel]}
+              selectedKeys={[phaseLevel.toString()]}
               onChange={(evt) => setPhaseLevel(evt.target.value)}
               isDisabled
             />
@@ -372,7 +113,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
             <ToolSelect
               disallowEmptySelection={true}
               label="选择等级"
-              selectedKeys={[frameIndex]}
+              selectedKeys={[frameIndex.toString()]}
               array={keyFrames}
               getKey={(_, i) => i.toString()}
               getValue={(frame) => frame.level + "级"}
@@ -387,7 +128,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
               array={Array(6).fill(0)}
               getKey={(_, i) => i.toString()}
               getValue={(_, i) => "潜能" + (i + 1)}
-              selectedKeys={[potential]}
+              selectedKeys={[potential.toString()]}
               onChange={(evt) => setPotential(evt.target.value)}
             />
           )}
@@ -398,7 +139,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 label="选择技能"
                 array={skills}
                 getKey={(skillItem) => skillItem.skillId}
-                getValue={(skillItem) => skillItem.skillOrder + "-" + skillItem.name}
+                getValue={(skillItem, i) => `${i + 1}-${skillItem.levels[0].name}`}
                 selectedKeys={[skillKey]}
                 onChange={(evt) => setSkillKey(evt.target.value)}
                 disabledKeys={DamageCalculatorSettings.operator[activeCharName]?.disabled_skills}
@@ -409,7 +150,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 array={skillLevels}
                 getKey={(levelItem) => levelItem.key.toString()}
                 getValue={(levelItem) => levelItem.name}
-                selectedKeys={[skillLevel]}
+                selectedKeys={[skillLevel.toString()]}
                 onChange={(evt) => setSkillLevel(evt.target.value)}
                 isDisabled
               />
@@ -433,7 +174,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
                 array={Array(3).fill(0)}
                 getKey={(_, i) => i.toString()}
                 getValue={(_, i) => "Lv " + (i + 1)}
-                selectedKeys={[uniEquipLevel]}
+                selectedKeys={[uniEquipLevel.toString()]}
                 onChange={(evt) => setUniEquipLevel(evt.target.value)}
                 isDisabled={!uniEquipId || uniEquipId.startsWith("uniequip_001")}
               />
@@ -483,9 +224,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         </StyledSelectWrapper>
         <div className="flex flex-col gap-4 grow">
           {skill && <SkillDisplay skill={skill} />}
-          {uniEquip && uniEquipName && (
-            <UniEquipDisplay potential={potential} uniEquipName={uniEquipName} uniEquip={uniEquip} />
-          )}
+          {uniEquip && <UniEquipDisplay potential={potential} uniEquipName={uniEquipName} uniEquip={uniEquip} />}
         </div>
         {/* <div className="hidden">
           {attribute && (
@@ -538,9 +277,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         </a> */}
       </div>
       <div className="flex gap-4">
-        {charInput.attributeModifier && (
-          <OperatorAttributes mode={mode} charInput={charInput} charData={charData} relics={selectedRelics} />
-        )}
+        <OperatorAttributes mode={mode} />
         <OperatorModifier />
         <EnemyMiniPreview />
       </div>
@@ -688,7 +425,7 @@ function UniEquipDisplay({
   uniEquipName,
   uniEquip,
 }: {
-  potential: string;
+  potential: number;
   uniEquipName: string;
   uniEquip: UniEquipPhaseData;
 }) {
@@ -731,7 +468,7 @@ function UniEquipDisplay({
             } else if (part.addOrOverrideTalentDataBundle.candidates) {
               const talent = part.addOrOverrideTalentDataBundle.candidates.findLast(
                 (talent) =>
-                  talent.requiredPotentialRank <= parseInt(potential) &&
+                  talent.requiredPotentialRank <= potential &&
                   (talent.description || talent.overrideDescription || talent.upgradeDescription),
               );
               if (!talent) return null;

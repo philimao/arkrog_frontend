@@ -22,39 +22,7 @@ const StyledSelectorWrapper = styled.div`
 `;
 
 export default function OperatorSelectorWrapper() {
-  const { character_table } = useGameDataStore();
-  const { charList, setCharData } = useDamageCalculatorStore();
-  const allowCharNames = [
-    "赫德雷",
-    "Mon3tr",
-    "维娜·维多利亚",
-    // "维什戴尔",
-    "空弦",
-    "玛恩纳",
-    // "安洁莉娜",
-    "新约能天使",
-    "逻各斯",
-    "银灰",
-    "麒麟R夜刀",
-    "艾拉",
-    "迷迭香",
-  ];
-  useEffect(() => {
-    Object.values(character_table!)
-      .filter((charData) => {
-        return !["TOKEN", "TRAP"].includes(charData.profession) && allowCharNames.includes(charData.name);
-      })
-      .sort((char1, char2) => {
-        return allowCharNames.indexOf(char1.name) - allowCharNames.indexOf(char2.name);
-      })
-      .forEach((charData, i) => {
-        setCharData(charData!, i);
-      });
-  }, [character_table, setCharData]);
-
-  // function addCharData() {
-  //   setCharData(undefined, charList.length);
-  // }
+  const { charList } = useDamageCalculatorStore();
 
   return (
     <StyledOperatorSelectorWrapper>
@@ -62,11 +30,9 @@ export default function OperatorSelectorWrapper() {
       <StyledTitle>选择干员</StyledTitle>
       <StyledSelectorWrapper>
         {charList.length > 0 ? (
-          charList.map((charData, i) =>
-            charData ? <OperatorButton charData={charData} key={i} /> : <OperatorSelector i={i} key={i} />,
-          )
+          charList.map((charData, i) => <OperatorButton charData={charData} key={i} />)
         ) : (
-          <OperatorSelector i={0} />
+          <OperatorSelector />
         )}
         {/* {charList.length < 5 && charList[charList.length - 1] && (
           <div>
@@ -93,11 +59,15 @@ const StyledOperatorButton = styled.button<{ $active: boolean }>`
 `;
 
 export function OperatorButton({ charData }: { charData: CharData }) {
+  const { skill_table, uniequip_table } = useGameDataStore();
   const { activeCharName, setActiveCharName } = useDamageCalculatorStore();
   const active = activeCharName === charData.name;
   return (
     <StyledOperatorButtonWrapper $active={active}>
-      <StyledOperatorButton $active={active} onClick={() => setActiveCharName(charData.name)}>
+      <StyledOperatorButton
+        $active={active}
+        onClick={() => setActiveCharName(charData.name, skill_table, uniequip_table)}
+      >
         {charData.name}
       </StyledOperatorButton>
       {/*<StyledRemoveButton onClick={() => removeCharData(i)}>*/}
@@ -107,9 +77,9 @@ export function OperatorButton({ charData }: { charData: CharData }) {
   );
 }
 
-export function OperatorSelector({ i }: { i: number }) {
-  const { character_table } = useGameDataStore();
-  const { setCharData, setActiveCharName } = useDamageCalculatorStore();
+export function OperatorSelector() {
+  const { character_table, skill_table, uniequip_table } = useGameDataStore();
+  const { setActiveCharName } = useDamageCalculatorStore();
   const [showListBox, setShowListBox] = useState(false);
   const [value, setValue] = useState("");
 
@@ -139,8 +109,7 @@ export function OperatorSelector({ i }: { i: number }) {
         onEnter={(evt) => {
           evt.preventDefault();
           if (candidates?.length) {
-            setActiveCharName(candidates[0].name);
-            setCharData(candidates[0], i);
+            setActiveCharName(candidates[0].name, skill_table, uniequip_table);
             setShowListBox(false);
           }
         }}
@@ -155,8 +124,7 @@ export function OperatorSelector({ i }: { i: number }) {
                 textValue={charData.name}
                 classNames={{ base: "bg-red rounded-none" }}
                 onPress={() => {
-                  setActiveCharName(charData.name);
-                  setCharData(charData, i);
+                  setActiveCharName(charData.name, skill_table, uniequip_table);
                 }}
               >
                 <div className="flex items-center p-2">

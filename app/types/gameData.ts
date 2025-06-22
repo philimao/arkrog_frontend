@@ -1,25 +1,7 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
 import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
-import type { BasicObject } from "~/types/core";
 
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
-
-// 游戏数据
-export interface GameData {
-  topics: Record<RogueKey, TopicData>;
-  stages: Record<RogueKey, StageOfRogue>;
-  enemies: Record<string, EnemyBasicData[]>;
-  zones: Record<RogueKey, ZoneOfRogue>;
-  traps: BasicObject;
-  relics: Record<RogueKey, Record<string, RelicData>>;
-  items: Record<RogueKey, Record<string, ItemData>>;
-  character_basic?: Record<CharId, CharBasicData>;
-  character_table?: Record<CharId, CharData>;
-  skill_table?: Record<string, SkillData>;
-  uniequip_table?: Record<string, UniEquipData>;
-  uniequip_basic?: Record<string, UniEquipBasicData>;
-  stageEnemies?: Record<RogueKey, Record<string, EnemyInput[]>>;
-}
 
 // 肉鸽主题数据
 export interface TopicData {
@@ -142,9 +124,9 @@ export interface UniEquipPhaseData {
   tokenAttributeBlackboard: Record<string, BlackboardData[]>;
 }
 
-export interface UniEquipData {
-  phases: UniEquipPhaseData[];
-}
+export type UniEquipData = UniEquipBasicData & {
+  phases?: UniEquipPhaseData[];
+};
 
 // 基础技能信息
 export interface SkillBasicData {
@@ -311,21 +293,24 @@ export interface CharPotential {
 // 干员详细信息
 export interface CharData {
   name: string;
-  /** 潜能物品ID */
-  potentialItemId: string;
   description: string;
+  sortIndex: number;
   displayNumber: string;
-  appellation: string;
   position: "MELEE" | "RANGED";
+  tagList: string[];
   rarity: `TIER_${number}`;
   profession: Profession;
   subProfessionId: string;
+  /** 潜能物品ID */
+  potentialItemId: string;
+  appellation: string;
   displayTokenDict: object | null;
   isNotObtainable: boolean;
   itemDesc: string;
   itemUsage: string;
   favorKeyFrames: AttributeKeyFrame[];
   phases: CharPhase[];
+  skills: { skillId: string }[];
   talents: CharTalent[];
   potentialRanks: CharPotential[];
 }
@@ -392,7 +377,7 @@ export interface RelicWrapper {
   relicData: RelicData;
 }
 
-export interface AttributeModifier {
+export interface CharAttributeModifier {
   /** 攻击力 藏品rune加算 局外藏品、合约 (atkOutPercent / 100)% */
   atkOutPercent: number;
   /** 攻击力 局内rune加算 局内藏品、血怒 (atkInPercent / 100)% */
@@ -433,7 +418,7 @@ export interface CharInput {
   /** 干员在游戏中的增益 @deprecated */
   charsBuffInGame: CharBuffInGame;
   /** 属性修正 */
-  attributeModifier: AttributeModifier;
+  attributeModifier: CharAttributeModifier;
 }
 
 /** 干员在游戏中的增益 @deprecated */

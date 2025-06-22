@@ -5,7 +5,7 @@ import { allowedBlackboardKeyMap, camelToSnake } from "../utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
 import { CalculatorHelper } from "../calculator/helper";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { ExpressionUtil } from "../calculator/expression-util";
 import { ExpressionGroupNode, NumericLiteralNode } from "../calculator/ast";
 import ExpressionDisplay from "../../components/ExpressionDisplay";
@@ -44,18 +44,19 @@ const StyledGridContainer = styled(GridContainer)`
 `;
 
 export default function EnemyMiniPreview() {
-  const { enemyBase, globalAnalysisResult } = useDamageCalculatorStore();
-  const [enemyExpression, setEnemyExpression] = useState<Record<string, ExpressionGroupNode>>({});
+  const { enemyBase, enemyInput, globalAnalysisResult } = useDamageCalculatorStore();
 
-  useEffect(() => {
+  const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
     if (enemyBase.name === "木桩") {
-      return;
+      return {};
     }
+
     const enemyInput = CalculatorHelper.calculateEnemyAttr({
       enemyBase,
       context: globalAnalysisResult,
     });
-    setEnemyExpression({
+
+    return {
       maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
       atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
       def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
@@ -72,7 +73,7 @@ export default function EnemyMiniPreview() {
         enemyBase,
         context: globalAnalysisResult,
       }),
-    });
+    };
   }, [enemyBase, globalAnalysisResult]);
 
   return (
@@ -93,7 +94,11 @@ export default function EnemyMiniPreview() {
           return (
             <StyledInputWrapper key={key}>
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
-              <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
+              {enemyExpression[key] ? (
+                <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
+              ) : (
+                <div className={className}>{enemyInput.attributes[key as never]}</div>
+              )}
             </StyledInputWrapper>
           );
         })}

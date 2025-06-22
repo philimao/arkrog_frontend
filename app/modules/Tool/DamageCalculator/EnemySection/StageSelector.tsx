@@ -1,16 +1,10 @@
-import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useMemo, useState, useEffect } from "react";
-import type { LevelData } from "~/types/gameData";
-import { _get } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { debounce } from "@heroui/shared-utils";
-import { navOfZone, parseEnemyData } from "./enemyUtils";
-import { dummy } from "~/stores/damageCalculator/calcConstants";
+import { navOfZone } from "./enemyUtils";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -96,86 +90,17 @@ const StyledEnemyName = styled.div`
 
 const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标"];
 
-export default function StageSelector({ setIllust }: { setIllust: (illust: React.ReactNode) => void }) {
-  const { stages } = useGameDataStore();
+export default function StageSelector() {
   const {
-    stageData,
+    renderStages,
+    setRogueStageId: setStageId,
     levelData,
-    setLevelData,
     enemyData,
     rogueInput,
-    selectRelic,
+    stageId,
     setEnemyData,
-    setEnemyBase,
     setRogueZone,
-    setStageData,
   } = useDamageCalculatorStore();
-
-  const rogueKey = rogueInput.topic;
-  const [stageId, setStageId] = useState<string>("");
-
-  const renderStages = useMemo(() => {
-    const stageOfRogue = stages![rogueKey];
-    const zone = navOfZone.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
-    const result = Object.values(stageOfRogue)
-      // 过滤区域关卡
-      .filter((stage) => zone!.filter(stage))
-      // 排序 BOSS > 普通+紧急
-      .sort((a, b) => {
-        const argsA = a.id.split("_");
-        const argsB = b.id.split("_");
-        const softMap: Record<string, number> = {
-          b: 1,
-          duel: 2,
-          e: 4,
-          n: 4,
-        };
-        if (softMap[argsA[1]] !== softMap[argsB[1]]) return softMap[argsA[1]] - softMap[argsB[1]];
-        return parseInt(argsA[3]) - parseInt(argsB[3]);
-      });
-    // 防止heroui select报错array与key不匹配
-    setStageId("");
-    return result;
-  }, [rogueKey, stages, rogueInput]);
-
-  // 处理区域选择变化后，renderStages的副作用
-  useEffect(() => {
-    if (renderStages.length > 0) {
-      setStageId(renderStages[0].id);
-      setStageData(renderStages[0]);
-    }
-  }, [renderStages, setEnemyData, setEnemyBase, setStageData]);
-
-  // 处理关卡选择变化后，加载stageData的副作用
-  useEffect(() => {
-    async function handleLoadLevelData() {
-      if (!stageData) {
-        setLevelData(undefined as never);
-        return;
-      }
-      const stageRawData = await _get<LevelData>(
-        `/gamedata/level/${stageData.levelId.toLowerCase().replace(/\//g, "&&")}`,
-      );
-      setLevelData(stageRawData);
-    }
-    if (
-      stageData &&
-      [
-        "ro4_b_4_c", // 紧急授课
-        "ro4_b_4_d", // 思维矫正
-        "ro4_b_5_c", // 朝谒
-        "ro4_b_5_d", // 魂灵朝谒
-        "ro4_b_7", // 授法
-      ].includes(stageData.id)
-    ) {
-      selectRelic("rogue_4_relic_final_6");
-    }
-    setEnemyData(undefined as never);
-    setEnemyBase(dummy);
-    debounce(() => {
-      handleLoadLevelData();
-    }, 500)();
-  }, [selectRelic, setEnemyData, setEnemyBase, setLevelData, stageData]);
 
   return (
     <StyledStageSelector>
@@ -203,23 +128,8 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
             return `${stage.isElite ? "紧急 · " : "普通 · "}${stage.name}`;
           }}
           selectedKeys={[stageId]}
-          onChange={(evt) => {
-            setStageId(evt.target.value);
-            setStageData(stages![rogueKey][evt.target.value]);
-          }}
+          onChange={(evt) => setStageId(evt.target.value)}
         />
-
-        {/* {stageId && (
-          <div className="flex items-end">
-            <Button
-              radius="none"
-              className="h-12 bg-black-gray hover:bg-mid-gray w-full font-bold"
-              onPress={handleLoadLevelData}
-            >
-              加载
-            </Button>
-          </div>
-        )} */}
       </GridContainer>
       {levelData && (
         <StyledStageSelectorBody>
@@ -238,7 +148,6 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
                       $selected={_enemyData.id === enemyData?.id}
                       onClick={() => {
                         setEnemyData(_enemyData);
-                        setEnemyBase(parseEnemyData(_enemyData));
                       }}
                     >
                       <EnemyAvatar name={_enemyData.name.m_value} />
@@ -248,7 +157,7 @@ export default function StageSelector({ setIllust }: { setIllust: (illust: React
                 })}
             </StyledEnemies>
           </div>
-          <div>{enemyData && <EnemyDisplay setIllust={setIllust} />}</div>
+          <div>{enemyData && <EnemyDisplay />}</div>
         </StyledStageSelectorBody>
       )}
     </StyledStageSelector>

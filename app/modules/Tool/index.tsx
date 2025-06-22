@@ -1,5 +1,5 @@
 import { useGameDataStore } from "~/stores/gameDataStore";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Loading from "~/components/Loading";
 import OperatorDisplay from "~/modules/Tool/DamageCalculator/OperatorSection/OperatorDisplay";
 import RelicSelector from "~/modules/Tool/DamageCalculator/RelicSection/RelicSelector";
@@ -10,42 +10,45 @@ import FooterPanel from "~/modules/Tool/DamageCalculator/RelicSection/FooterPane
 import { ResultDisplay } from "~/modules/Tool/DamageCalculator/OperatorSection/ResultDisplay";
 import EnemySelector from "~/modules/Tool/DamageCalculator/EnemySection/EnemySelector";
 import TopicSpecSelector from "./DamageCalculator/TopicSpecSection/TopicSpecSelector";
+import CalcCenter from "./DamageCalculator/calculator/CalcCenter";
 
-export default function ToolIndex() {
-  const { fetchGameDataExt, fetchCharacterRaw } = useGameDataStore();
-  const { charList, activeCharName, resetStore } = useDamageCalculatorStore();
-  const [loading, setLoading] = useState(true);
-
-  const activeCharData = useMemo(() => {
-    return charList.find((charData) => charData?.name === activeCharName);
-  }, [activeCharName, charList]);
+export default function ToolIndexWrapper() {
+  const { fetchGameDataExt } = useGameDataStore();
+  const { initStore, resetStore } = useDamageCalculatorStore();
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchCharacterRaw(), fetchGameDataExt()]).then(() => setLoading(false));
-  }, [fetchCharacterRaw, fetchGameDataExt]);
-
-  // 组件卸载时重置 DamageCalculatorStore
-  useEffect(() => {
+    fetchGameDataExt()
+      .then((gameDataStore) => initStore(gameDataStore))
+      .then(() => setLoaded(true));
     return () => {
+      setLoaded(false);
       resetStore();
     };
-  }, [resetStore]);
+  }, [fetchGameDataExt, initStore, resetStore]);
 
-  if (loading) return <Loading />;
+  if (!loaded) return <Loading />;
+
+  return <ToolIndex />;
+}
+
+function ToolIndex() {
+  const { activeCharName } = useDamageCalculatorStore();
 
   return (
     <div className="min-h-screen">
+      <CalcCenter />
       <OperatorSelector />
-      {activeCharData && (
+      {activeCharName && (
         <>
-          <OperatorDisplay charData={activeCharData} />
+          <OperatorDisplay />
           <ResultDisplay />
         </>
       )}
       <TopicSelector />
       <EnemySelector />
       <FooterPanel />
-      <RelicSelector charData={activeCharData} />
+      <RelicSelector />
       <TopicSpecSelector />
       <svg width="0" height="0">
         <defs>

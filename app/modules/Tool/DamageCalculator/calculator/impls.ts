@@ -5,12 +5,12 @@ import type {
   RelicBuff,
   RelicWrapper,
   CharData,
-  CharInput,
   StageData,
   EnemyData,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
+import type { CharState } from "~/stores/damageCalculator/calcTypes";
 
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
 export type CharRelicBlackboardInput = {
@@ -32,7 +32,7 @@ export type RelicBlackboardApplyInput = {
 };
 export type RelicBlackboard = {
   isActive: (input: {
-    charInput?: CharInput;
+    charState?: CharState;
     charData?: CharData;
     enemyData?: EnemyData;
     relics: RelicWrapper[];

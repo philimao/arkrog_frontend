@@ -1,10 +1,4 @@
-import React, {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import RecordCard from "~/components/RecordCard/RecordCard";
 import { useAppDataStore } from "~/stores/appDataStore";
 import type { RecordType } from "~/types/recordType";
@@ -13,33 +7,27 @@ import { toast } from "react-toastify";
 
 const types = ["推荐", "最新"];
 
+async function load(ids: string[], setRecords: Dispatch<SetStateAction<RecordType[]>>) {
+  try {
+    const records = await _post<RecordType[]>("/record/ids", { ids });
+    if (records) setRecords(records);
+  } catch (err) {
+    console.error(err);
+    toast.warning(`加载记录失败！`);
+  }
+}
+
 export default function IndexRelicFree() {
   const { recommendRecordIds, latestRecordIds } = useAppDataStore();
   const [type, setType] = useState<string>(types[0]);
   const [recommend, setRecommend] = useState<RecordType[]>([]);
   const [latest, setLatest] = useState<RecordType[]>([]);
-  const records = useMemo(() => {
-    return type === "推荐" ? recommend : latest;
-  }, [type, recommend, latest]);
+
+  const records = type === "推荐" ? recommend : latest;
 
   useEffect(() => {
-    if (!recommendRecordIds || !latestRecordIds) return;
-    async function load(
-      ids: string[],
-      func: Dispatch<SetStateAction<RecordType[]>>,
-    ) {
-      try {
-        const records = await _post<RecordType[]>("/record/ids", { ids });
-        if (records) func(records);
-      } catch (err) {
-        toast.warning((err as Error).message);
-      }
-    }
-    Promise.all([
-      load(recommendRecordIds, setRecommend),
-      load(latestRecordIds, setLatest),
-    ]);
-  }, [recommendRecordIds, latestRecordIds]);
+    load(recommendRecordIds, setRecommend);
+  }, [recommendRecordIds]);
 
   return (
     <div className="mb-10">
@@ -52,7 +40,14 @@ export default function IndexRelicFree() {
               <span
                 key={tp}
                 className={`${color} first-of-type:me-3`}
-                onClick={() => setType(tp)}
+                onClick={() => {
+                  setType(tp);
+                  if (tp === "推荐" && !recommend.length) {
+                    load(recommendRecordIds, setRecommend);
+                  } else if (tp === "最新" && !latest.length) {
+                    load(latestRecordIds, setLatest);
+                  }
+                }}
                 role="button"
               >
                 {tp}

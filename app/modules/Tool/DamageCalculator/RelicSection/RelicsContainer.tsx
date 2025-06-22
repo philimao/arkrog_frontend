@@ -43,7 +43,6 @@ export default function RelicsContainer({ relicsWrappers }: { relicsWrappers: Re
       /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
       "烟花之手",
       "国王的铠甲",
-      "湖中神盾",
     ];
 
     // 获取应用了所有藏品的加成上下文

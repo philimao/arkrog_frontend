@@ -568,7 +568,7 @@ export class CalculatorHelper {
       }
       const isEnemy = [
         "enemy_atk",
-        "enemy_def_down",
+        "enemy_def",
         "enemy_max_hp",
         "enemy_damage_scale_phy",
         "enemy_damage_scale_mag",

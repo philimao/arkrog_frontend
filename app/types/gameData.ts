@@ -393,6 +393,8 @@ export interface CharAttributeModifier {
  * 带*的域代表对计算非常重要
  */
 export interface CharInput {
+  /** 干员名称 */
+  name: string;
   /** 精英化等级 */
   phaseLevel: number;
   /** 精英化数据 */

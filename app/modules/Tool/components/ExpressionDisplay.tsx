@@ -13,12 +13,10 @@ interface ExpressionDisplayProps {
 
 interface ExpressionItemProps {
   node: BaseNode;
-  onExpand?: (node: ExpressionGroupNode) => void;
-  isExpanded?: (node: ExpressionGroupNode) => boolean;
 }
 
 // 表达式项组件
-const ExpressionItem: React.FC<ExpressionItemProps> = ({ node, onExpand, isExpanded }) => {
+const ExpressionItem: React.FC<ExpressionItemProps> = ({ node }) => {
   if (node instanceof NumericLiteralNode) {
     // 数字节点直接显示为 Chip
     return (
@@ -30,45 +28,29 @@ const ExpressionItem: React.FC<ExpressionItemProps> = ({ node, onExpand, isExpan
     );
   }
 
-  if (node instanceof ExpressionGroupNode) {
-    const value = node.calculate();
-
-    // 根据注意事项3的要求，过滤不需要显示的项
-    if (node.operator === "*" && value === 1) {
-      return null;
-    }
-    if (node.operator === "+" && value === 0) {
-      return null;
-    }
-    if (node.operator === "max" && node.children.length === 1) {
-      // 如果是max但只有一个子项，直接显示子项
-      return <ExpressionItem node={node.children[0]} onExpand={onExpand} isExpanded={isExpanded} />;
-    }
-
-    // 如果已展开，显示完整的表达式结构
-    if (isExpanded?.(node)) {
-      return <ExpressionStructure node={node} onExpand={onExpand} isExpanded={isExpanded} />;
-    }
-
-    // 未展开时显示为可点击的 Chip
-    return (
-      <Tooltip content={node.tooltip}>
-        <Chip color="warning" variant="faded" size="sm" className="cursor-pointer" onClick={() => onExpand?.(node)}>
-          {value}
-        </Chip>
-      </Tooltip>
-    );
-  }
-
-  return null;
+  return (
+    <Tooltip content={node.tooltip}>
+      <Chip color="danger" variant="faded" size="sm">
+        错误
+      </Chip>
+    </Tooltip>
+  );
 };
 
-// 表达式结构组件
-const ExpressionStructure: React.FC<{
-  node: ExpressionGroupNode;
-  onExpand?: (node: ExpressionGroupNode) => void;
-  isExpanded?: (node: ExpressionGroupNode) => boolean;
-}> = ({ node, onExpand, isExpanded }) => {
+export interface ExpressionStructureProps {
+  node: BaseNode;
+  defaultExpanded?: boolean;
+}
+
+// 表达式结构组件(一个递归组件)
+const ExpressionStructure: React.FC<ExpressionStructureProps> = ({ node, defaultExpanded }) => {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  // 如果不是表达式节点, 直接显示
+  if (!(node instanceof ExpressionGroupNode)) {
+    return <ExpressionItem node={node} />;
+  }
+
   // 过滤有效的子节点
   const validChildren = node.children.filter((child) => {
     const childValue = child.calculate();
@@ -81,8 +63,20 @@ const ExpressionStructure: React.FC<{
     return true;
   });
 
+  // 有效子节点不足, 直接显示节点
   if (validChildren.length === 1) {
-    return <ExpressionItem node={validChildren[0]} onExpand={onExpand} isExpanded={isExpanded} />;
+    return <ExpressionStructure node={validChildren[0]} defaultExpanded={true} />;
+  }
+
+  // 没有展开时
+  if (!isExpanded) {
+    return (
+      <Tooltip content={node.tooltip}>
+        <Chip color="warning" variant="shadow" size="sm" className="cursor-pointer" onClick={() => setIsExpanded(true)}>
+          {Math.round(node.calculate() * 100) / 100}
+        </Chip>
+      </Tooltip>
+    );
   }
 
   // 如果是max/min/union函数形式
@@ -92,7 +86,7 @@ const ExpressionStructure: React.FC<{
         <span className="text-sm font-mono">{node.operator}(</span>
         {validChildren.map((child, index) => (
           <React.Fragment key={index}>
-            <ExpressionItem node={child} onExpand={onExpand} isExpanded={isExpanded} />
+            <ExpressionItem node={child} />
             {index < validChildren.length - 1 && <span className="text-sm">,</span>}
           </React.Fragment>
         ))}
@@ -107,7 +101,7 @@ const ExpressionStructure: React.FC<{
       <span className="text-sm font-mono">(</span>
       {validChildren.map((child, index) => (
         <React.Fragment key={index}>
-          <ExpressionItem node={child} onExpand={onExpand} isExpanded={isExpanded} />
+          <ExpressionStructure node={child} />
           {index < validChildren.length - 1 && <span className="text-sm font-mono mx-1">{node.operator}</span>}
         </React.Fragment>
       ))}
@@ -116,27 +110,8 @@ const ExpressionStructure: React.FC<{
   );
 };
 
-// 主组件
+// 表达式显示组件
 export const ExpressionDisplay: React.FC<ExpressionDisplayProps> = ({ expression, className = "" }) => {
-  const [expandedNodes, setExpandedNodes] = useState<Set<ExpressionGroupNode>>(new Set());
-
-  const handleExpand = (node: ExpressionGroupNode) => {
-    setExpandedNodes((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(node)) {
-        newSet.delete(node);
-      } else {
-        newSet.add(node);
-      }
-      return newSet;
-    });
-  };
-
-  const isNodeExpanded = (node: ExpressionGroupNode) => {
-    // return expandedNodes.has(node);
-    return true;
-  };
-
   if (!expression) {
     return null;
   }
@@ -149,7 +124,7 @@ export const ExpressionDisplay: React.FC<ExpressionDisplayProps> = ({ expression
         </PopoverTrigger>
         <PopoverContent>
           <div className="px-1 py-2">
-            <ExpressionStructure node={expression} onExpand={handleExpand} isExpanded={isNodeExpanded} />
+            <ExpressionStructure node={expression} defaultExpanded={true} />
           </div>
         </PopoverContent>
       </Popover>

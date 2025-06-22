@@ -166,14 +166,79 @@ export class BuffContext implements IBuffContext {
   /** 克隆 */
   clone() {
     const clone = new BuffContext();
-    clone.invalidRelics = this.invalidRelics;
-    clone.relic_rune_add = { ...this.relic_rune_add };
-    clone.relic_rune_mul = { ...this.relic_rune_mul };
-    clone.in_game_buff_add = { ...this.in_game_buff_add };
-    clone.in_game_buff_mul = { ...this.in_game_buff_mul };
-    clone.in_game_buff_final_add = { ...this.in_game_buff_final_add };
-    clone.in_game_buff_final_mul = { ...this.in_game_buff_final_mul };
-    clone.global_buff_stack = { ...this.global_buff_stack };
+
+    // 深度克隆 invalidRelics 数组
+    clone.invalidRelics = [...this.invalidRelics];
+
+    // 深度克隆 stage_rune_mul
+    clone.stage_rune_mul = {
+      enemy_atk: this.stage_rune_mul.enemy_atk.clone(),
+      enemy_def: this.stage_rune_mul.enemy_def.clone(),
+      enemy_max_hp: this.stage_rune_mul.enemy_max_hp.clone(),
+    };
+
+    // 深度克隆 relic_rune_add
+    clone.relic_rune_add = {
+      max_hp: this.relic_rune_add.max_hp.clone(),
+      atk: this.relic_rune_add.atk.clone(),
+      attack_speed: this.relic_rune_add.attack_speed.clone(),
+      def: this.relic_rune_add.def.clone(),
+      cost: this.relic_rune_add.cost.clone(),
+      hp_recovery_per_sec: this.relic_rune_add.hp_recovery_per_sec.clone(),
+      respawn_time: this.relic_rune_add.respawn_time.clone(),
+    };
+
+    // 深度克隆 relic_rune_mul
+    clone.relic_rune_mul = {
+      atk: this.relic_rune_mul.atk.clone(),
+      def: this.relic_rune_mul.def.clone(),
+      max_hp: this.relic_rune_mul.max_hp.clone(),
+      respawn_time: this.relic_rune_mul.respawn_time.clone(),
+      enemy_atk: this.relic_rune_mul.enemy_atk.clone(),
+      enemy_def: this.relic_rune_mul.enemy_def.clone(),
+      enemy_max_hp: this.relic_rune_mul.enemy_max_hp.clone(),
+      enemy_damage_resistance: this.relic_rune_mul.enemy_damage_resistance.clone(),
+    };
+
+    // 深度克隆 in_game_buff_add
+    clone.in_game_buff_add = {
+      atk: this.in_game_buff_add.atk.clone(),
+      attack_speed: this.in_game_buff_add.attack_speed.clone(),
+      sp_recovery_per_sec: this.in_game_buff_add.sp_recovery_per_sec.clone(),
+    };
+
+    // 深度克隆 in_game_buff_mul
+    clone.in_game_buff_mul = {
+      atk: this.in_game_buff_mul.atk.clone(),
+      max_hp: this.in_game_buff_mul.max_hp.clone(),
+    };
+
+    // 深度克隆 in_game_buff_final_add
+    clone.in_game_buff_final_add = {
+      atk: this.in_game_buff_final_add.atk.clone(),
+    };
+
+    // 深度克隆 in_game_buff_final_mul
+    clone.in_game_buff_final_mul = {
+      atk: this.in_game_buff_final_mul.atk.clone(),
+      enemy_atk: this.in_game_buff_final_mul.enemy_atk.clone(),
+      enemy_def: this.in_game_buff_final_mul.enemy_def.clone(),
+      enemy_max_hp: this.in_game_buff_final_mul.enemy_max_hp.clone(),
+      enemy_damage_scale_phy: this.in_game_buff_final_mul.enemy_damage_scale_phy.clone(),
+      enemy_damage_scale_mag: this.in_game_buff_final_mul.enemy_damage_scale_mag.clone(),
+      enemy_damage_scale_pure: this.in_game_buff_final_mul.enemy_damage_scale_pure.clone(),
+      enemy_damage_scale_ep: this.in_game_buff_final_mul.enemy_damage_scale_ep.clone(),
+      enemy_damage_resistance: this.in_game_buff_final_mul.enemy_damage_resistance.clone(),
+    };
+
+    // 深度克隆 global_buff_stack
+    clone.global_buff_stack = {
+      damage_scale: this.global_buff_stack.damage_scale.clone(),
+      damage_scale_mag: this.global_buff_stack.damage_scale_mag.clone(),
+      damage_scale_pure: this.global_buff_stack.damage_scale_pure.clone(),
+      damage_scale_phy: this.global_buff_stack.damage_scale_phy.clone(),
+    };
+
     return clone;
   }
 }

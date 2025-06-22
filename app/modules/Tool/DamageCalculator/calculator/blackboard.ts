@@ -409,9 +409,39 @@ registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", (buff: RelicBu
   };
 });
 
+/** 波纹之手 */
+registerRelicBlackboard("rogue_4_caster_hand[pair]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
+  const reliance_relics = getByKeySafe(buff.blackboard, "reliance_relics");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+    .split("|")
+    .filter((s) => s.trim());
+  return {
+    isActive(input) {
+      const isExist = input.relics.some((r) => r.id === reliance_relics.valueStr);
+      // 不存在某藏品时不生效
+      if (!isExist) {
+        return false;
+      }
+      if (sub_profession.length > 0 && input.charData) {
+        return sub_profession.includes(input.charData.subProfessionId);
+      }
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+    },
+  };
+});
+
 /** 湖中神盾 */
 registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuff, relic: RelicWrapper) => {
   const max_hp = getByKeySafe(buff.blackboard, "max_hp");
+  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+    .split("|")
+    .filter((s) => s.trim());
+
   return {
     isActive() {
       return true;
@@ -419,6 +449,81 @@ registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuf
     apply(input): void {
       const { context } = input;
       context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+    },
+  };
+});
+
+/** 城墙之子 */
+registerRelicBlackboard("rogue_4_finalDefense[end_tile]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const max_hp = getByKeySafe(buff.blackboard, "max_hp");
+
+  return {
+    isActive(input) {
+      return isBlackboardActiveForChar(buff, input.charData);
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+    },
+  };
+});
+
+/** 折戟-裂岩 */
+registerRelicBlackboard("rogue_3_relic_book_4", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+
+  return {
+    isActive() {
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    },
+  };
+});
+
+/** 荣耀绶带 */
+registerRelicBlackboard("AtkUp[BlockJustOne]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const atk = getByKeySafe(buff.blackboard, "atk");
+
+  return {
+    isActive() {
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
+    },
+  };
+});
+
+/** 丝契之谜 */
+registerRelicBlackboard("AttackSpeedUp[NoCharInRange]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
+
+  return {
+    isActive() {
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+    },
+  };
+});
+
+/** 丝契之谜 */
+registerRelicBlackboard("rogue_4_attack_speed_up[life_point]", (buff: RelicBuff, relic: RelicWrapper) => {
+  const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
+
+  return {
+    isActive(input) {
+      return isBlackboardActiveForChar(buff, input.charData);
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
     },
   };
 });
@@ -477,6 +582,9 @@ export const commonCharRelicBlackboard = {
     const def = getByKey(buff.blackboard, "def");
     const attack_speed = getByKey(buff.blackboard, "attack_speed");
     const respawn_time = getByKey(buff.blackboard, "respawn_time");
+    const multiplier_atk = getByKey(buff.blackboard, "multiplier@atk");
+    const multiplier_max_hp = getByKey(buff.blackboard, "multiplier@max_hp");
+    const multiplier_def = getByKey(buff.blackboard, "multiplier@def");
     /** 最大生命值 */
     if (max_hp) {
       context.relic_rune_mul.max_hp.addChild(
@@ -521,6 +629,27 @@ export const commonCharRelicBlackboard = {
           new NumericLiteralNode(attack_speed.value, relic.name, { relic, buff }),
         );
       }
+      is_invalid = false;
+    }
+    /** 攻击力 multiplier@atk 来源(几丁质刺刃/佣兵的饰物/生还者合约) */
+    if (multiplier_atk) {
+      context.relic_rune_mul.atk.addChild(
+        new NumericLiteralNode(multiplier_atk.value * relic.layer, relic.name, { relic, buff }),
+      );
+      is_invalid = false;
+    }
+    /** 最大生命值 multiplier@max_hp 来源(几丁质刺刃/佣兵的饰物/生还者合约) */
+    if (multiplier_max_hp) {
+      context.relic_rune_mul.max_hp.addChild(
+        new NumericLiteralNode(multiplier_max_hp.value * relic.layer, relic.name, { relic, buff }),
+      );
+      is_invalid = false;
+    }
+    /** 防御力 multiplier@def 来源(几丁质刺刃/佣兵的饰物/生还者合约) */
+    if (multiplier_def) {
+      context.relic_rune_mul.def.addChild(
+        new NumericLiteralNode(multiplier_def.value * relic.layer, relic.name, { relic, buff }),
+      );
       is_invalid = false;
     }
     if (respawn_time) {

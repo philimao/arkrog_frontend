@@ -32,44 +32,6 @@ export interface ExpressionGroup extends Base {
   children: Base[];
 }
 
-const mock: ASTNode = {
-  type: "expression-group",
-  operator: "*",
-  tooltip: "攻击力",
-  value: 1,
-  children: [
-    {
-      type: "expression-group",
-      operator: "*",
-      tooltip: "局外加成",
-      children: [
-        {
-          type: "expression-group",
-          operator: "+",
-          tooltip: "养成",
-          children: [
-            { type: "number", value: 1, tooltip: "等级" },
-            { type: "number", value: 2, tooltip: "信赖" },
-            { type: "number", value: 2, tooltip: "潜能" },
-            { type: "number", value: 2, tooltip: "模组" },
-          ],
-        } as ExpressionGroup,
-        {
-          type: "expression-group",
-          operator: "+",
-          tooltip: "局外buff",
-          children: [
-            { type: "number", value: 1, tooltip: "科技树" },
-            { type: "number", value: 2, tooltip: "加攻藏品1" },
-            { type: "number", value: 2, tooltip: "加攻藏品2" },
-            { type: "number", value: 2, tooltip: "加攻藏品3" },
-          ],
-        } as ExpressionGroup,
-      ],
-      value: 1,
-    } as ExpressionGroup,
-  ],
-};
 export enum Kind {}
 
 export interface ExpressionGroup {
@@ -106,6 +68,10 @@ export class BaseNode {
       value: this.calculate(),
     };
   }
+
+  clone(): BaseNode {
+    throw new Error("Not implemented");
+  }
 }
 
 export class NumericLiteralNode extends BaseNode {
@@ -138,6 +104,11 @@ export class NumericLiteralNode extends BaseNode {
       tooltip: this.tooltip,
       value: this.value,
     } as NumericLiteral;
+  }
+
+  /** 深度克隆 */
+  clone(): NumericLiteralNode {
+    return new NumericLiteralNode(this.value, this.tooltip, this.source);
   }
 }
 
@@ -270,5 +241,12 @@ export class ExpressionGroupNode extends BaseNode {
       operator: this.operator,
       children: this.children.map((child) => child.structure()),
     } as ExpressionGroup;
+  }
+
+  /** 深度克隆 */
+  clone(): ExpressionGroupNode {
+    return new ExpressionGroupNode(this.operator, this.tooltip).addChild(
+      ...this.children.map((child) => child.clone()),
+    );
   }
 }

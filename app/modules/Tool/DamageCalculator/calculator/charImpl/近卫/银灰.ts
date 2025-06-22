@@ -1,13 +1,13 @@
-import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
+import type { CalculatorInput, CalculatorOutput, CharInput } from "~/types/gameData";
 import { CalculatorHelper } from "../../helper";
-import { ExpressionUtil } from "../../expression-util";
-import { registerCalculatorImpl } from "../../impls";
+import type { BuffContext } from "../../buff-context";
+import { type ApplyTalentFC, type CalculatorImpl, getByKeySafe } from "../../impls";
+import { NumericLiteralNode } from "../../ast";
 
 /** 银灰伤害计算器 */
-export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
+export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOutput => {
   // 干员养成加成
   const context = input.buffContext;
-  const expression_util = new ExpressionUtil(input, context);
 
   // 获取局内buff
   /** 攻击力直接加算 */
@@ -107,4 +107,31 @@ export default function SilverAsh(input: CalculatorInput): CalculatorOutput {
   }
 
   return result;
+};
+
+/** 银灰技能应用 */
+export function applySkill(input: { charInput: CharInput }, context: BuffContext) {
+  const atk = getByKeySafe(input.charInput.skill.blackboard, "atk");
+  if (atk) {
+    context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value, "技能"));
+  }
 }
+
+/** 银灰天赋应用 */
+export const applyTalent: ApplyTalentFC = (input, context) => {
+  if (!input.charInput.uniEquip) {
+    return;
+  }
+  for (const part of input.charInput.uniEquip.parts) {
+    const talent = part.addOrOverrideTalentDataBundle?.candidates?.findLast(
+      (talent) =>
+        talent.requiredPotentialRank <= input.charInput.potential &&
+        (talent.description || talent.overrideDescription || talent.upgradeDescription),
+    );
+    if (!talent) continue;
+    const atk = getByKeySafe(talent.blackboard, "atk");
+    if (atk) {
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value, "模组"));
+    }
+  }
+};

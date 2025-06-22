@@ -15,9 +15,9 @@ import type {
 } from "~/types/gameData";
 import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
-import { getRelicBlackboard, isRelicBlackboard } from "./impls";
+import { getCharImpl, getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
-import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
+import { BaseNode, NumericLiteralNode } from "./ast";
 import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
 import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "./blackboard";
 import type { EnemySpec } from "../EnemySection/EnemySpecSelector";
@@ -211,6 +211,9 @@ export class CalculatorHelper {
       // }
       // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
     }
+    /** 应用天赋 */
+    getCharImpl(charInput.name).applyTalent({ charInput }, result);
+
     return result;
   }
 

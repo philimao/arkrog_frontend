@@ -12,24 +12,44 @@ import type {
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
 
+/** 干员计算器实现 */
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
+/** 天赋应用输入 */
+export type ApplyTalentInput = { charInput: CharInput };
+/** 天赋应用函数 */
+export type ApplyTalentFC = (input: ApplyTalentInput, context: BuffContext) => void;
+/** 技能应用输入 */
+export type ApplySkillInput = { charInput: CharInput };
+/** 技能应用函数 */
+export type ApplySkillFC = (input: ApplySkillInput, context: BuffContext) => void;
+
+/** 干员计算器实现 */
+export interface CharImpl {
+  calculator: CalculatorImpl;
+  applyTalent: ApplyTalentFC;
+  applySkill: ApplySkillFC;
+}
+/** 干员藏品黑板应用输入 */
 export type CharRelicBlackboardInput = {
   buff: RelicBuff;
   relic: RelicWrapper;
   stageData?: StageData;
   charData?: CharData;
 };
+/** 敌人藏品黑板应用输入 */
 export type EnemyRelicBlackboardInput = {
   buff: RelicBuff;
   relic: RelicWrapper;
   enemyData: EnemyData;
 };
+/** 藏品黑板应用输入 */
 export type RelicBlackboardApplyInput = {
   buff: RelicBuff;
   relic: RelicWrapper;
   context: BuffContext;
   relics: RelicWrapper[];
 };
+/** 藏品黑板实现 */
 export type RelicBlackboard = {
   isActive: (input: {
     charInput?: CharInput;
@@ -39,15 +59,31 @@ export type RelicBlackboard = {
   }) => boolean;
   apply(input: { context: BuffContext; relics: RelicWrapper[] }): void;
 };
-const implMap = new Map<string, CalculatorImpl>();
+const implMap = new Map<string, CharImpl>();
 const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard>();
 /**
  * 注册干员计算器实现
  * @param name 干员名称
  * @param impl 计算器实现
  */
-export function registerCalculatorImpl(name: string, impl: CalculatorImpl) {
+export function registerCalculatorImpl(name: string, impl: CharImpl) {
   implMap.set(name, impl);
+}
+
+export function getCharImpl(name: string): CharImpl {
+  const impl = implMap.get(name);
+  if (!impl) {
+    return {
+      calculator: () => CalculatorHelper.createCalculatorOutput(),
+      applyTalent: (input) => {
+        console.warn(`[${input.charInput.name}] 未实现天赋buff应用`);
+      },
+      applySkill: (input) => {
+        console.warn(`[${input.charInput.name}] 未实现技能buff应用`);
+      },
+    };
+  }
+  return impl;
 }
 
 /**
@@ -57,14 +93,14 @@ export function registerCalculatorImpl(name: string, impl: CalculatorImpl) {
  */
 export function getCalculatorImpl(name: string): CalculatorImpl {
   const impl = implMap.get(name);
-  if (!impl) {
+  if (!impl || !impl.calculator) {
     console.warn(`干员 ${name} 的计算器实现为空`);
     return () => {
       console.warn(`干员 ${name} 的计算器实现为空`);
       return CalculatorHelper.createCalculatorOutput();
     };
   }
-  return impl;
+  return impl.calculator;
 }
 
 /** 注册藏品黑板 */

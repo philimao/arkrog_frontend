@@ -182,6 +182,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
   /** 计算器干员输入 */
   const charInput: CharInput = useMemo(
     () => ({
+      name: activeCharName,
       phaseLevel: parseInt(phaseLevel),
       phase,
       level: parseInt(frameIndex),
@@ -527,7 +528,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
         >
           局内面板
         </a>
-        {/* <a
+        <a
           className={mergeClassNameSafe(
             "text-[0.8rem] px-1 py-2 cursor-pointer inline-block",
             mode === "skill" ? "text-ak-blue" : "text-light-gray",
@@ -535,7 +536,7 @@ export default function OperatorDisplay({ charData }: { charData: CharData }) {
           onClick={() => setMode("skill")}
         >
           技能面板
-        </a> */}
+        </a>
       </div>
       <div className="flex gap-4">
         {charInput.attributeModifier && (

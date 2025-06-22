@@ -3,10 +3,11 @@ import { styled } from "styled-components";
 import type { CharAttribute, CharAttributeExt, CharData, CharInput, RelicWrapper } from "~/types/gameData";
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { AttrDisplay, AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
+import { AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 import { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
 import ExpressionDisplay from "~/modules/Tool/components/ExpressionDisplay";
 import { ExpressionUtil } from "~/modules/Tool/DamageCalculator/calculator/expression-util";
+import { getCharImpl } from "../calculator/impls";
 
 const StyledAttributeWrapper = styled.div`
   display: grid;
@@ -92,9 +93,25 @@ export default function OperatorAttributes(props: {
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: props.charInput, context }),
       });
     } else if (props.mode === "skill") {
+      const skillContext = context.clone();
+      getCharImpl(props.charInput.name).applySkill({ charInput: props.charInput }, skillContext);
       setEnemyExpression({
-        maxHp: ExpressionUtil.operator_skill_max_hp({ charInput: props.charInput, context }),
-        // atk: ExpressionUtil.operator_skill_atk({ charInput: props.charInput, context }),
+        maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: props.charInput, context: skillContext }),
+        atk: ExpressionUtil.operator_in_game_atk({ charInput: props.charInput, context: skillContext }),
+        def: ExpressionUtil.operator_in_game_def({ charInput: props.charInput, context: skillContext }),
+        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({
+          charInput: props.charInput,
+          context: skillContext,
+        }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: props.charInput, context: skillContext }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({
+          charInput: props.charInput,
+          context: skillContext,
+        }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({
+          charInput: props.charInput,
+          context: skillContext,
+        }),
       });
     }
   }, [props.mode, props.charData, props.charInput, props.relics, context]);

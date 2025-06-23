@@ -13,19 +13,19 @@ import TopicSpecSelector from "./DamageCalculator/TopicSpecSection/TopicSpecSele
 import CalcCenter from "./DamageCalculator/calculator/CalcCenter";
 
 export default function ToolIndexWrapper() {
-  const { fetchGameDataExt } = useGameDataStore();
+  const { fetchGameDataBasic, fetchGameDataExt } = useGameDataStore();
   const { initStore, resetStore } = useDamageCalculatorStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetchGameDataExt()
-      .then((gameDataStore) => initStore(gameDataStore))
+    Promise.all([fetchGameDataBasic(), fetchGameDataExt()])
+      .then(([, gameDataStore]) => initStore(gameDataStore))
       .then(() => setLoaded(true));
     return () => {
       setLoaded(false);
       resetStore();
     };
-  }, [fetchGameDataExt, initStore, resetStore]);
+  }, [fetchGameDataBasic, fetchGameDataExt, initStore, resetStore]);
 
   if (!loaded) return <Loading />;
 

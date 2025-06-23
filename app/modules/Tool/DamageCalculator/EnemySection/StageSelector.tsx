@@ -91,16 +91,8 @@ const StyledEnemyName = styled.div`
 const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标"];
 
 export default function StageSelector() {
-  const {
-    renderStages,
-    setRogueStageId: setStageId,
-    levelData,
-    enemyData,
-    rogueInput,
-    stageId,
-    setEnemyData,
-    setRogueZone,
-  } = useDamageCalculatorStore();
+  const { renderStages, setRogueStageId, levelData, enemyData, rogueInput, stageId, setEnemyData, setRogueZone } =
+    useDamageCalculatorStore();
 
   return (
     <StyledStageSelector>
@@ -128,7 +120,7 @@ export default function StageSelector() {
             return `${stage.isElite ? "紧急 · " : "普通 · "}${stage.name}`;
           }}
           selectedKeys={[stageId]}
-          onChange={(evt) => setStageId(evt.target.value)}
+          onChange={(evt) => setRogueStageId(evt.target.value)}
         />
       </GridContainer>
       {levelData && (

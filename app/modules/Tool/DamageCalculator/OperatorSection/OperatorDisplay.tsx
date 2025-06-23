@@ -11,7 +11,7 @@ import CustomIcon from "~/components/Character/CustomIcon";
 import ToolButton from "../../components/ToolButton";
 import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
-import { mergeClassNameSafe } from "~/utils/tools";
+import { cosHost, mergeClassNameSafe } from "~/utils/tools";
 import OperatorAttributes from "./OperatorAttributes";
 
 const StyledOperatorDisplayWrapper = styled.div`
@@ -46,8 +46,7 @@ const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION"
   color: white;
   padding: 0 1rem;
   font-weight: 600;
-  background: ${({ $thoughtLoad }) =>
-    `url("https://arkrog-1326514380.cos.ap-beijing.myqcloud.com/images%2Frogue_4%2Fthought_load_${$thoughtLoad}.png")`};
+  background: ${({ $thoughtLoad }) => `url("${cosHost}/images%2Frogue_4%2Fthought_load_${$thoughtLoad}.png")`};
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;

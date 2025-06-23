@@ -5,6 +5,7 @@ import { type AdditionEntry, CalculatorHelper } from "../calculator";
 
 const StyledBuffPanel = styled.div`
   display: flex;
+  gap: 0.5rem;
 `;
 
 const typeMap = {
@@ -43,7 +44,6 @@ export default function BuffPanel({ show, setShow }: { show: boolean; setShow: D
 
 const StyledBuffTrigger = styled.div`
   height: 4rem;
-  width: 6rem;
   display: flex;
   gap: 1rem;
   color: var(--light-gray);

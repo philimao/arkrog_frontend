@@ -1,6 +1,7 @@
 import { Tooltip } from "@heroui/react";
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
+import { cosHost } from "~/utils/tools";
 
 const StyledTopicSpecContainer = styled.div`
   display: flex;
@@ -20,19 +21,15 @@ const StyledSpecTrigger = styled.div`
 `;
 
 const StyledTopicSpecTriggerInfo = styled.div`
-  padding: 0 0.75rem;
-  background: #333333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: #333333 url("${cosHost}/images%2Frogue_4%2F%E7%81%B5%E6%84%9F%E5%B9%B4%E4%BB%A3.png") no-repeat center
+    center / contain;
+  aspect-ratio: 4/3;
   font-family: "NovecentoWide", sans-serif;
 `;
 
 const StyledTopicSpecTriggerInfoInner = styled.div`
-  & > div {
-    font-size: 0.9rem;
-    line-height: 1.5rem;
-  }
+  padding-top: 2.25rem;
+  font-size: 0.9rem;
 `;
 
 const StyledTopicSpecNode = styled.div<{ $url: string; $invert: number; $userActive: boolean }>`
@@ -55,10 +52,7 @@ export default function TopicSpecTrigger() {
       <StyledTopicSpecContainer>
         <StyledSpecTrigger onClick={toggleShowTopicSpec}>
           <StyledTopicSpecTriggerInfo>
-            <StyledTopicSpecTriggerInfoInner>
-              <div>灵感</div>
-              <div>年代</div>
-            </StyledTopicSpecTriggerInfoInner>
+            <StyledTopicSpecTriggerInfoInner>灵感&年代</StyledTopicSpecTriggerInfoInner>
           </StyledTopicSpecTriggerInfo>
         </StyledSpecTrigger>
         {topicSpecItems

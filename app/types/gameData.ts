@@ -590,20 +590,14 @@ export interface CalculatorInput {
   charInput: CharInput & { attribute: CharAttribute };
   /** 干员基础数据 */
   charData: CharData;
-  /** 技能数据 */
-  skillData: SkillData;
   /** 敌人最终面板 */
   enemyInput: EnemyInput;
   /** 敌人基础数据 */
   enemyData: EnemyData;
-  /** 模组数据 */
-  uniEquipData: UniEquipData;
   /** 藏品 */
   relics: RelicWrapper[];
   /** 肉鸽输入数据 */
   rogueInput: RogueInput;
-  /** 关卡基础数据 */
-  stageData?: StageData;
 }
 
 /** 伤害计算器输出参数 */

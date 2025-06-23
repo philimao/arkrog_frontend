@@ -99,11 +99,11 @@ export const intialCalcCharState: SlicedCalcCharState = {
 
 export const initialEnemyState: SlicedCalcEnemyState = {
   enemyBase: dummy,
-  enemyInput: dummy,
   enemyData: undefined as unknown as EnemyData,
   enemySpec: undefined as unknown as EnemySpec,
   enemyIllust: undefined as unknown as React.ReactNode,
   enemyConfig: undefined as unknown as EnemySpecConfig,
+  enemyExpression: {},
 };
 
 export const initialCalcUIState: SlicedCalcUIState = {

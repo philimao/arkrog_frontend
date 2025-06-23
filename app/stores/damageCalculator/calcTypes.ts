@@ -22,6 +22,7 @@ import type {
   UniEquipPhaseData,
 } from "~/types/gameData";
 import type { GameDataState } from "../gameDataStore";
+import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
 
 export type SliceCreator<T> = StateCreator<
   DCalculatorState & DCalculatorActions,
@@ -187,23 +188,25 @@ export interface SlicedCalcEnemyState {
   enemyData: EnemyData;
   /** 敌人基础面板 */
   enemyBase: EnemyInput;
-  /** 敌人输入数据 @deprecated */
-  enemyInput: EnemyInput;
   /** 敌人特殊配置 */
   enemyConfig: EnemySpecConfig;
   /** 敌人特殊配置数据 */
   enemySpec: EnemySpec;
   /** 敌人示意图 */
   enemyIllust: React.ReactNode;
+  /** 敌人属性表达式 */
+  enemyExpression: Record<string, ExpressionGroupNode>;
 }
 
 export interface SlicedCalcEnemyActions {
+  /** 设置敌人解包数据，进行完成敌人数据计算与更新 */
   setEnemyData: (enemyData: EnemyData) => void;
+  /** 直接设置敌人基础面板（仅木桩使用） */
   setEnemyBase: (enemyBase: EnemyInput) => void;
-  setEnemyInput: (enemyInput: EnemyInput) => void;
-  setEnemySpec: (enemySpec: EnemySpec) => void;
-  setEnemyIllust: (enemyIllust: React.ReactNode) => void;
+  /** 用户修改敌人特殊配置选项 */
   updateEnemySpec: (index: number, value: string) => void;
+  /** 设置敌人属性表达式，在多个显示敌人面板的组件中使用 */
+  setEnemyExpression: (expression: Record<string, ExpressionGroupNode>) => void;
 }
 
 export interface SlicedCalcRelicState {

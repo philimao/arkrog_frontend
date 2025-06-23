@@ -53,41 +53,20 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
       undefined,
       "updateEnemySpec",
     ),
-  setEnemyBase: (enemyBase) =>
-    set(
-      (state) => ({
-        ...state,
-        enemyBase,
-      }),
-      undefined,
-      "setEnemyBase",
-    ),
-  setEnemyInput: (enemyInput) =>
-    set(
-      (state) => ({
-        ...state,
-        enemyInput: enemyInput,
-      }),
-      undefined,
-      "setEnemyInput",
-    ),
-  setEnemySpec: (enemySpec) =>
+  setEnemyExpression: (expression) =>
     set(
       (state) => {
-        // 字符串判断，解决enemyData与enemySpec的组件层级不同，更新不同步的问题
-        if (JSON.stringify(state.enemySpec) === JSON.stringify(enemySpec)) return;
-        state.enemySpec = enemySpec;
+        state.enemyExpression = expression;
       },
       undefined,
-      "setEnemySpec",
+      "setEnemyExpression",
     ),
-  setEnemyIllust: (enemyIllust) =>
+  setEnemyBase: (enemyBase) =>
     set(
-      (state) => ({
-        ...state,
-        enemyIllust,
-      }),
+      (state) => {
+        state.enemyBase = enemyBase;
+      },
       undefined,
-      "setEnemyIllust",
+      "setEnemyBase",
     ),
 });

@@ -120,6 +120,12 @@ export function getPath(filename: string): string {
   return md5.slice(0, 1) + "/" + md5.slice(0, 2) + "/" + filename;
 }
 
+/**
+ * 合并className，解决tailwindcss的类名定义顺序与className顺序不同，导致层叠效果没有生效的问题
+ * @param className 原始className
+ * @param override 覆盖className
+ * @returns 合并后的className
+ */
 export function mergeClassNameSafe(className: string, override: string): string {
   let merged = className;
   for (const part of override.split(" ")) {

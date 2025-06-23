@@ -14,7 +14,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setTopicSpecItems",
     ),
-  setRogueInput: (rogueInput: RogueInput) => set((state) => ({ ...state, rogueInput }), undefined, "setRogueInput"),
+  setRogueInput: (rogueInput: RogueInput) =>
+    set(
+      (state) => {
+        state.rogueInput = rogueInput;
+      },
+      undefined,
+      "setRogueInput",
+    ),
   setRogueKey: (rogueKey) =>
     set(
       async (state) => {

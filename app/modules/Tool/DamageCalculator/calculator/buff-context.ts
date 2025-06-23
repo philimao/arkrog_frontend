@@ -57,6 +57,8 @@ export interface IBuffContext {
     attack_speed: ExpressionGroupNode;
     /** 每秒技力回复 */
     sp_recovery_per_sec: ExpressionGroupNode;
+    /** 敌人法术抗性 */
+    enemy_magic_resistance: ExpressionGroupNode;
   };
   /** 局内Buff 直接乘算 */
   in_game_buff_mul: {
@@ -80,6 +82,12 @@ export interface IBuffContext {
     enemy_def: ExpressionGroupNode;
     /** 敌人最大生命值减少来源 */
     enemy_max_hp: ExpressionGroupNode;
+    /** 敌人法术抗性来源 */
+    enemy_magic_resistance: ExpressionGroupNode;
+    /** 敌人元素损伤抗性 */
+    enemy_ep_resistance: ExpressionGroupNode;
+    /** 敌人元素伤害抗性 */
+    enemy_ep_damage_resistance: ExpressionGroupNode;
     /** 敌人物理易伤来源 */
     enemy_damage_scale_phy: ExpressionGroupNode;
     /** 敌人法术易伤来源 */
@@ -134,6 +142,7 @@ export class BuffContext implements IBuffContext {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: new ExpressionGroupNode("+", "局内直接加算"),
+    enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算"),
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),
@@ -147,6 +156,11 @@ export class BuffContext implements IBuffContext {
     enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_magic_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_ep_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_ep_damage_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(
+      new NumericLiteralNode(1, "基数"),
+    ),
     enemy_damage_scale_phy: new ExpressionGroupNode("+", "敌人物理易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_mag: new ExpressionGroupNode("+", "敌人法术易伤").addChild(new NumericLiteralNode(1, "基数")),
     enemy_damage_scale_pure: new ExpressionGroupNode("+", "敌人真伤易伤").addChild(new NumericLiteralNode(1, "基数")),
@@ -205,6 +219,7 @@ export class BuffContext implements IBuffContext {
       atk: this.in_game_buff_add.atk.clone(),
       attack_speed: this.in_game_buff_add.attack_speed.clone(),
       sp_recovery_per_sec: this.in_game_buff_add.sp_recovery_per_sec.clone(),
+      enemy_magic_resistance: this.in_game_buff_add.enemy_magic_resistance.clone(),
     };
 
     // 深度克隆 in_game_buff_mul
@@ -224,6 +239,9 @@ export class BuffContext implements IBuffContext {
       enemy_atk: this.in_game_buff_final_mul.enemy_atk.clone(),
       enemy_def: this.in_game_buff_final_mul.enemy_def.clone(),
       enemy_max_hp: this.in_game_buff_final_mul.enemy_max_hp.clone(),
+      enemy_magic_resistance: this.in_game_buff_final_mul.enemy_magic_resistance.clone(),
+      enemy_ep_resistance: this.in_game_buff_final_mul.enemy_ep_resistance.clone(),
+      enemy_ep_damage_resistance: this.in_game_buff_final_mul.enemy_ep_damage_resistance.clone(),
       enemy_damage_scale_phy: this.in_game_buff_final_mul.enemy_damage_scale_phy.clone(),
       enemy_damage_scale_mag: this.in_game_buff_final_mul.enemy_damage_scale_mag.clone(),
       enemy_damage_scale_pure: this.in_game_buff_final_mul.enemy_damage_scale_pure.clone(),

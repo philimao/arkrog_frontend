@@ -20,10 +20,9 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
   ...intialCalcCharState,
   addCharData: () =>
     set(
-      (state) => ({
-        ...state,
-        charList: [...state.charList, undefined],
-      }),
+      (state) => {
+        state.charList = [...state.charList, undefined] as CharData[];
+      },
       undefined,
       "addCharData",
     ),

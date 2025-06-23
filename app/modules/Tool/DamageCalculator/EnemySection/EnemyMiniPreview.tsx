@@ -4,10 +4,6 @@ import { displayAttrKeys, StyledEnemyTag, StyledEnmeyLevelBadge } from "./EnemyD
 import { allowedBlackboardKeyMap, camelToSnake } from "../utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
-import { CalculatorHelper } from "../calculator/helper";
-import { useMemo } from "react";
-import { ExpressionUtil } from "../calculator/expression-util";
-import { ExpressionGroupNode, NumericLiteralNode } from "../calculator/ast";
 import ExpressionDisplay from "../../components/ExpressionDisplay";
 
 const StyledEnemyHeader = styled.div`
@@ -44,37 +40,7 @@ const StyledGridContainer = styled(GridContainer)`
 `;
 
 export default function EnemyMiniPreview() {
-  const { enemyBase, enemyInput, globalAnalysisResult } = useDamageCalculatorStore();
-
-  const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
-    if (enemyBase.name === "木桩") {
-      return {};
-    }
-
-    const enemyInput = CalculatorHelper.calculateEnemyAttr({
-      enemyBase,
-      context: globalAnalysisResult,
-    });
-
-    return {
-      maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
-      atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
-      def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
-      magicResistance: new ExpressionGroupNode("+", "法术抗性").addChild(
-        new NumericLiteralNode(enemyInput.attributes.magicResistance, "法术抗性"),
-      ),
-      epResistance: new ExpressionGroupNode("+", "损伤抵抗").addChild(
-        new NumericLiteralNode(enemyInput.attributes.epResistance, "损伤抵抗"),
-      ),
-      epDamageResistance: new ExpressionGroupNode("+", "元素伤害抗性").addChild(
-        new NumericLiteralNode(enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
-      ),
-      damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
-        enemyBase,
-        context: globalAnalysisResult,
-      }),
-    };
-  }, [enemyBase, globalAnalysisResult]);
+  const { enemyExpression, enemyBase } = useDamageCalculatorStore();
 
   return (
     <div className="flex flex-col">
@@ -97,7 +63,7 @@ export default function EnemyMiniPreview() {
               {enemyExpression[key] ? (
                 <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
               ) : (
-                <div className={className}>{enemyInput.attributes[key as never]}</div>
+                <div className={className}>{enemyBase.attributes[key as never]}</div>
               )}
             </StyledInputWrapper>
           );

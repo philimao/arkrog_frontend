@@ -3,16 +3,13 @@ import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput } from "~/types/gameData";
 import EnemySpecSelector from "./EnemySpecSelector";
-import { CalculatorHelper } from "../calculator";
 import { Tooltip } from "@heroui/react";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
 import ExpressionDisplay from "../../components/ExpressionDisplay";
-import { ExpressionUtil } from "../calculator/expression-util";
-import { ExpressionGroupNode, NumericLiteralNode } from "../calculator/ast";
 
 const StyledEnemyDisplayWrapper = styled.div`
   display: flex;
@@ -155,8 +152,7 @@ export const displayAttrKeys: Record<string, { min: number; max?: number; toolti
 };
 
 export default function EnemyDisplay() {
-  const { enemyData, enemyBase, globalAnalysisResult, setEnemySpec, setEnemyData, setEnemyBase, setEnemyInput } =
-    useDamageCalculatorStore();
+  const { enemyData, enemyBase, setEnemyData, enemyExpression, setEnemyBase } = useDamageCalculatorStore();
 
   /** 输入期间缓存敌人数据，在blur时应用到store中 */
   const [enemyCache, setEnemyCache] = useState<EnemyInput | null>(null);
@@ -169,41 +165,6 @@ export default function EnemyDisplay() {
     enemyRef.current = enemyBase;
   }, [enemyBase]);
 
-  /** 计算敌人属性 */
-  const _enemyInput = useMemo(() => {
-    const enemyInput = CalculatorHelper.calculateEnemyAttr({
-      enemyBase,
-      context: globalAnalysisResult,
-    });
-    console.log("计算敌人数据(display)", enemyInput, enemyBase);
-    return enemyInput;
-  }, [enemyBase, globalAnalysisResult]);
-
-  const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
-    if (enemyBase.name === "木桩") {
-      return {};
-    }
-
-    return {
-      maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
-      atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
-      def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
-      magicResistance: new ExpressionGroupNode("+", "法术抗性").addChild(
-        new NumericLiteralNode(_enemyInput.attributes.magicResistance, "法术抗性"),
-      ),
-      epResistance: new ExpressionGroupNode("+", "损伤抵抗").addChild(
-        new NumericLiteralNode(_enemyInput.attributes.epResistance, "损伤抵抗"),
-      ),
-      epDamageResistance: new ExpressionGroupNode("+", "元素伤害抗性").addChild(
-        new NumericLiteralNode(_enemyInput.attributes.epDamageResistance, "元素伤害抗性"),
-      ),
-      damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
-        enemyBase,
-        context: globalAnalysisResult,
-      }),
-    };
-  }, [globalAnalysisResult, enemyBase, _enemyInput]);
-
   /** 复制敌人当前面板到木桩 */
   function assignToDummy() {
     setEnemyData({
@@ -211,22 +172,9 @@ export default function EnemyDisplay() {
       id: "enemy_000_dummy",
       name: { m_value: "木桩", m_defined: true },
     });
-    setEnemySpec({
-      id: "enemy_000_dummy",
-      value: [],
-    });
-    setEnemyBase(
-      JSON.parse(
-        JSON.stringify({
-          ..._enemyInput,
-          id: "enemy_000_dummy",
-          name: "木桩",
-        }),
-      ),
-    );
   }
 
-  if (!_enemyInput || !enemyCache) return null;
+  if (!enemyCache) return null;
 
   return (
     <StyledEnemyDisplayWrapper>
@@ -272,7 +220,7 @@ export default function EnemyDisplay() {
         {enemyBase.name !== "木桩" ? (
           <StyledAttrFuncButton onClick={() => assignToDummy()}>复制到木桩</StyledAttrFuncButton>
         ) : (
-          <StyledAttrFuncButton onClick={() => setEnemyInput(enemyRef.current as EnemyInput)}>
+          <StyledAttrFuncButton onClick={() => setEnemyBase(enemyRef.current as EnemyInput)}>
             恢复初始值
           </StyledAttrFuncButton>
         )}
@@ -333,32 +281,6 @@ export default function EnemyDisplay() {
             </StyledInputWrapper>
           );
         })}
-        {/* <StyledInputWrapper>
-          <div className="flex justify-between">
-            <span>局外物理法术减伤</span>
-            <Tooltip
-              content={
-                <ul className="text-sm p-2">
-                  <li>五结局藏品终结的骨架/躯体/实相（20%减伤）</li>
-                  <li>N10以上精英领袖减伤（10%减伤）</li>
-                  <li>算法为取最大值</li>
-                </ul>
-              }
-              closeDelay={100}
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <use href="#question_circle" />
-              </svg>
-            </Tooltip>
-          </div>
-          <div>
-            <EnemyAttribute
-              attrKey="damageResistance"
-              value={_enemyDataParsed.attributes.damageResistance}
-              context={globalAnalysisResult}
-            />
-          </div>
-        </StyledInputWrapper> */}
       </StyledGridContainer>
     </StyledEnemyDisplayWrapper>
   );

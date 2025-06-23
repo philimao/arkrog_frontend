@@ -4,20 +4,18 @@ export const createUISlice: SliceCreator<SlicedCalcUIState & SlicedCalcUIActions
   showRelics: false as boolean,
   toggleShowRelics: () =>
     set(
-      (state) => ({
-        ...state,
-        showRelics: !state.showRelics,
-      }),
+      (state) => {
+        state.showRelics = !state.showRelics;
+      },
       undefined,
       "toggleShowRelics",
     ),
   showTopicSpec: false as boolean,
   toggleShowTopicSpec: () =>
     set(
-      (state) => ({
-        ...state,
-        showTopicSpec: !state.showTopicSpec,
-      }),
+      (state) => {
+        state.showTopicSpec = !state.showTopicSpec;
+      },
       undefined,
       "toggleShowTopicSpec",
     ),

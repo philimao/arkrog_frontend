@@ -190,6 +190,34 @@ export class ExpressionUtil {
     return expression;
   }
 
+  /** 敌人最终法术抗性 */
+  static enemy_final_magic_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
+    const expression = new ExpressionGroupNode("+", "敌人法术抗性");
+    expression
+      .addChild(new NumericLiteralNode(input.enemyBase.attributes.magicResistance, "基础"))
+      .addChild(input.context.in_game_buff_add.enemy_magic_resistance)
+      .addChild(input.context.in_game_buff_final_mul.enemy_magic_resistance);
+    return expression;
+  }
+
+  /** 敌人最终元素损伤抗性 */
+  static enemy_final_ep_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
+    const expression = new ExpressionGroupNode("+", "敌人元素损伤抗性");
+    expression
+      .addChild(new NumericLiteralNode(input.enemyBase.attributes.epResistance, "基础"))
+      .addChild(input.context.in_game_buff_final_mul.enemy_ep_resistance);
+    return expression;
+  }
+
+  /** 敌人最终元素伤害抗性 */
+  static enemy_final_ep_damage_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
+    const expression = new ExpressionGroupNode("+", "敌人元素伤害抗性");
+    expression
+      .addChild(new NumericLiteralNode(input.enemyBase.attributes.epDamageResistance, "基础"))
+      .addChild(input.context.in_game_buff_final_mul.enemy_ep_damage_resistance);
+    return expression;
+  }
+
   /** 敌人物理法术减伤 */
   static enemy_final_physical_magic_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
     const expression = new ExpressionGroupNode("-", "敌人物理法术减伤");

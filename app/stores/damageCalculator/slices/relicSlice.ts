@@ -86,13 +86,19 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     );
     return layerNumber.toString();
   },
-  setSelectedIds: (ids) => set((state) => ({ ...state, selectedIds: ids }), undefined, "setSelectedIds"),
+  setSelectedIds: (ids) =>
+    set(
+      (state) => {
+        state.selectedIds = ids;
+      },
+      undefined,
+      "setSelectedIds",
+    ),
   selectRelic: (id) =>
     set(
       (state) => {
         if (!state.selectedIds.includes(id)) {
-          const updated = [...state.selectedIds, id];
-          set((state) => ({ ...state, selectedIds: updated }), undefined, "selectRelic");
+          state.selectedIds.push(id);
         }
       },
       undefined,
@@ -102,14 +108,10 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         if (state.selectedIds.includes(id)) {
-          const updated = state.selectedIds.filter((i) => i !== id);
-          set(
-            (state) => {
-              state.selectedIds = updated;
-            },
-            undefined,
-            "unselectRelic",
-          );
+          const index = state.selectedIds.indexOf(id);
+          if (index > -1) {
+            state.selectedIds.splice(index, 1);
+          }
         }
       },
       undefined,

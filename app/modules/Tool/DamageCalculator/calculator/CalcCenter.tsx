@@ -1,13 +1,12 @@
 import { useMemo, useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { useGameDataStore } from "~/stores/gameDataStore";
-import type { RelicWrapper, CalculatorInput, SkillData } from "~/types/gameData";
+import type { RelicWrapper, CalculatorInput } from "~/types/gameData";
 import { calculator } from "./calculator";
 import { printRelicsInfo } from "./debug/print-relics-info";
 import { CalculatorHelper } from "./helper";
+import { ExpressionUtil } from "./expression-util";
 
 export default function CalcCenter() {
-  const { uniequip_table } = useGameDataStore();
   const {
     charData,
     charInput,
@@ -25,7 +24,7 @@ export default function CalcCenter() {
     setRelicAnalysisResult,
     setCalcOutput,
     setGlobalAnalysisResult,
-    setEnemyInput,
+    setEnemyExpression,
   } = useDamageCalculatorStore();
 
   const rogueKey = rogueInput.topic;
@@ -113,16 +112,44 @@ export default function CalcCenter() {
     topicSpecItems,
   ]);
 
+  /** 当敌人数据或buff上下文变化时，计算敌人属性表达式 */
   useEffect(() => {
-    if (!charInput || !globalAnalysisResult) return;
-    const buffContext = globalAnalysisResult;
-    const { uniEquipId } = charInput;
+    if (!globalAnalysisResult) return;
+    let expression;
+    if (enemyBase.name === "木桩") {
+      expression = {};
+    } else {
+      expression = {
+        maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
+        atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
+        def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),
+        magicResistance: ExpressionUtil.enemy_final_magic_resistance({ enemyBase, context: globalAnalysisResult }),
+        epResistance: ExpressionUtil.enemy_final_ep_resistance({ enemyBase, context: globalAnalysisResult }),
+        epDamageResistance: ExpressionUtil.enemy_final_ep_damage_resistance({
+          enemyBase,
+          context: globalAnalysisResult,
+        }),
+        damageResistance: ExpressionUtil.enemy_final_physical_magic_resistance({
+          enemyBase,
+          context: globalAnalysisResult,
+        }),
+      };
+    }
+    setEnemyExpression(expression);
+  }, [enemyBase, globalAnalysisResult, setEnemyExpression]);
 
-    const enemyInput = CalculatorHelper.calculateEnemyAttr({
+  /** 计算敌人属性，仅在当前计算组件中计算与使用，不储存到store中 */
+  const enemyInput = useMemo(() => {
+    if (!globalAnalysisResult) return;
+    return CalculatorHelper.calculateEnemyAttr({
       enemyBase,
-      context: buffContext,
+      context: globalAnalysisResult,
     });
+  }, [enemyBase, globalAnalysisResult]);
 
+  useEffect(() => {
+    if (!charInput || !globalAnalysisResult || !enemyInput) return;
+    const buffContext = globalAnalysisResult;
     const input: CalculatorInput = {
       charInput: {
         ...charInput,
@@ -132,12 +159,9 @@ export default function CalcCenter() {
       enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
-      skillData: {} as SkillData, // 技能原始解包数据
-      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: selectedRelics, // 有效藏品列表
       rogueInput,
       buffContext,
-      stageData,
     };
     const calcResult = calculator(input);
     // 标准打印
@@ -151,25 +175,20 @@ export default function CalcCenter() {
       enemyInput: enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
-      skillData: {} as SkillData, // 技能原始解包数据
-      uniEquipData: uniequip_table![uniEquipId], // 模组原始解包数据
       relics: relicsMap[rogueKey].map((r) => ({
         ...r,
         relicData: relicList.find((relic) => relic.id === r?.id)!,
       })), // 有效藏品列表
       rogueInput,
       buffContext,
-      stageData,
     });
-
-    setEnemyInput(enemyInput);
     // 计算结果
     setCalcOutput(calcResult);
   }, [
     charData,
     charInput,
-    enemyBase,
     enemyData,
+    enemyInput,
     globalAnalysisResult,
     relicList,
     relicsMap,
@@ -177,9 +196,6 @@ export default function CalcCenter() {
     rogueKey,
     selectedRelics,
     setCalcOutput,
-    setEnemyInput,
-    stageData,
-    uniequip_table,
   ]);
 
   return null;

@@ -11,9 +11,8 @@ import type {
   StageData,
   EnemyData,
   LevelData,
-  CharInput,
 } from "~/types/gameData";
-import type { CharState, RogueInput } from "~/stores/damageCalculator/calcTypes";
+import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
 import { getCharImpl, getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
@@ -64,14 +63,14 @@ export class CalculatorHelper {
   }
 
   /** 计算局外面板 */
-  static calculateOutsidePanel(input: { charInput: CharState; context: BuffContext }): CharAttributeExt {
-    const { charInput: charState, context } = input;
+  static calculateOutsidePanel(input: { charInput: CharInput; context: BuffContext }): CharAttributeExt {
+    const { charInput: charInput, context } = input;
     // 获取精英化等级属性
-    const attribute = charState.phase?.attributesKeyFrames[charState.frameIndex].data; // TODO 去掉?
+    const attribute = charInput.phase?.attributesKeyFrames[charInput.frameIndex].data; // TODO 去掉?
     const result = { ...attribute, damageScale: 1 } as CharAttributeExt;
 
     /** 覆盖自然技力回复-攻回技能不会自动回复技力 */
-    if (charState.skill.spData.spType === "INCREASE_WHEN_ATTACK") {
+    if (charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK") {
       result.spRecoveryPerSec = 0;
     }
 
@@ -134,8 +133,8 @@ export class CalculatorHelper {
   }
 
   /** 分析干员养成加成 */
-  static analyzeChar(input: { charState: CharState; charData: CharData }, context?: BuffContext) {
-    const { charState, charData } = input;
+  static analyzeChar(input: { charInput: CharInput; charData: CharData }, context?: BuffContext) {
+    const { charInput, charData } = input;
 
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
     /** 应用信赖效果 */
@@ -157,7 +156,7 @@ export class CalculatorHelper {
     }
 
     /** 应用潜能效果 */
-    for (const pot of charData.potentialRanks.slice(0, charState.potential)) {
+    for (const pot of charData.potentialRanks.slice(0, charInput.potential)) {
       pot.buff?.attributes.attributeModifiers.forEach((mod) => {
         switch (mod.attributeType) {
           case "COST": {
@@ -189,7 +188,7 @@ export class CalculatorHelper {
     }
 
     /** 应用模组效果 */
-    const uniEquip = charState.uniEquip;
+    const uniEquip = charInput.uniEquip;
     if (uniEquip) {
       // 基础值
       for (const bb of uniEquip.attributeBlackboard) {
@@ -212,7 +211,7 @@ export class CalculatorHelper {
       // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
     }
     /** 应用天赋 */
-    getCharImpl(charData.name).applyTalent({ charInput: charState as unknown as CharInput }, result);
+    getCharImpl(charData.name).applyTalent({ charInput: charInput as unknown as CharInput }, result);
 
     return result;
   }
@@ -258,7 +257,7 @@ export class CalculatorHelper {
   static analyzeRelics(
     input: {
       // charInput在计算敌人数据时难以获取，暂时不传入
-      charState?: CharState;
+      charInput?: CharInput;
       charData?: CharData;
       enemyData: EnemyData;
       relics: RelicWrapper[];
@@ -266,27 +265,27 @@ export class CalculatorHelper {
     },
     context?: BuffContext,
   ) {
-    const { charState, charData, enemyData, relics, stageData } = input;
+    const { charInput, charData, enemyData, relics, stageData } = input;
     const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
     /** 用户修正属性 */
-    if (charState && charState.attributeModifier.atkOutPercent) {
+    if (charInput && charInput.attributeModifier.atkOutPercent) {
       result.relic_rune_mul.atk.addChild(
-        new NumericLiteralNode(charState.attributeModifier.atkOutPercent / 100, "攻击力变化百分比（局外藏品）"),
+        new NumericLiteralNode(charInput.attributeModifier.atkOutPercent / 100, "攻击力变化百分比（局外藏品）"),
       );
     }
-    if (charState && charState.attributeModifier && charState.attributeModifier.atkInPercent) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkInPercent) {
       result.in_game_buff_mul.atk.addChild(
-        new NumericLiteralNode(charState.attributeModifier.atkInPercent / 100, "攻击力变化百分比（局内血怒）"),
+        new NumericLiteralNode(charInput.attributeModifier.atkInPercent / 100, "攻击力变化百分比（局内血怒）"),
       );
     }
-    if (charState && charState.attributeModifier && charState.attributeModifier.atkFinal) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkFinal) {
       result.in_game_buff_final_add.atk.addChild(
-        new NumericLiteralNode(charState.attributeModifier.atkFinal, "攻击力变化最终值（局内鼓舞）"),
+        new NumericLiteralNode(charInput.attributeModifier.atkFinal, "攻击力变化最终值（局内鼓舞）"),
       );
     }
-    if (charState && charState.attributeModifier && charState.attributeModifier.atkSpd) {
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkSpd) {
       result.in_game_buff_add.attack_speed.addChild(
-        new NumericLiteralNode(charState.attributeModifier.atkSpd, "攻击力变化百分比（局内鼓舞）"),
+        new NumericLiteralNode(charInput.attributeModifier.atkSpd, "攻击力变化百分比（局内鼓舞）"),
       );
     }
     /** 筛选藏品 */
@@ -303,7 +302,7 @@ export class CalculatorHelper {
         if (isRelicBlackboard(buff)) {
           const blackboard = getRelicBlackboard(buff, relic);
           // buff是否可以生效
-          if (blackboard.isActive({ charData, charState, enemyData, relics })) {
+          if (blackboard.isActive({ charData, charInput, enemyData, relics })) {
             // 生效 应用到上下文
             blackboard.apply({ context: result, relics });
           } else {

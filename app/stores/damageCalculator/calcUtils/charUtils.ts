@@ -1,11 +1,11 @@
 import type { CharData, CharPhase, SkillData, UniEquipData } from "~/types/gameData";
-import type { CharState, SlicedCalcCharState } from "../calcTypes";
+import type { CharInput } from "../calcTypes";
 
 const has = (value: number | string | boolean | undefined) => value !== undefined;
 
 /** 根据用户选择内容，更新干员状态 */
 export function updateCharState({
-  charState,
+  charInput,
   uniequip_table,
   charData,
   phaseLevel,
@@ -15,7 +15,7 @@ export function updateCharState({
   uniEquipId,
   uniEquipLevel,
 }: {
-  charState: SlicedCalcCharState["charState"];
+  charInput: CharInput;
   charData: CharData;
   uniequip_table: Record<string, UniEquipData>;
   phaseLevel?: number;
@@ -24,60 +24,62 @@ export function updateCharState({
   skillLevel?: number;
   uniEquipId?: string;
   uniEquipLevel?: number;
-}): CharState {
-  const phases = charState.phases;
-  const phase = has(phaseLevel) ? getPhase(phases, phaseLevel || charState.phaseLevel) : charState.phase;
-  const skills = charState.skills;
-  const skillCandidate = getSkillCandidate(skills, skillKey || charState.skillKey);
-  const skillLevels = getSkillLevels(skillCandidate, phaseLevel || charState.phaseLevel);
-  const skillItem = getSkillItem(skillCandidate, skillLevel || charState.skillLevel);
+}): CharInput {
+  const phases = charInput.phases;
+  const phase = has(phaseLevel) ? getPhase(phases, phaseLevel || charInput.phaseLevel) : charInput.phase;
+  const skills = charInput.skills;
+  const skillCandidate = getSkillCandidate(skills, skillKey || charInput.skillKey);
+  const skillLevels = getSkillLevels(skillCandidate, phaseLevel || charInput.phaseLevel);
+  const skillItem = getSkillItem(skillCandidate, skillLevel || charInput.skillLevel);
   const uniEquips = getUniEquips(
     charData,
-    phaseLevel || charState.phaseLevel,
-    frameIndex || charState.frameIndex,
+    phaseLevel || charInput.phaseLevel,
+    frameIndex || charInput.frameIndex,
     uniequip_table,
   );
-  const uniEquipCandidate = getUniEquipCandidate(uniEquips, uniEquipId || charState.uniEquipId);
+  const uniEquipCandidate = getUniEquipCandidate(uniEquips, uniEquipId || charInput.uniEquipId);
   const uniEquipName = uniEquipCandidate ? uniEquipCandidate.uniEquipName : "";
   const uniEquipItem = uniEquipCandidate
-    ? getUniEquipItem(uniEquipCandidate, uniEquipLevel || charState.uniEquipLevel)
+    ? getUniEquipItem(uniEquipCandidate, uniEquipLevel || charInput.uniEquipLevel)
     : undefined;
 
   return {
+    /** 干员名称 */
+    name: charData.name,
     /** 精英化等级 */
-    phaseLevel: phaseLevel ?? charState.phaseLevel,
+    phaseLevel: phaseLevel ?? charInput.phaseLevel,
     /** 干员精英化阶段选项 */
     phases,
     /** 干员精英化阶段 */
     phase,
     /** 干员等级 */
-    frameIndex: frameIndex ?? charState.frameIndex,
+    frameIndex: frameIndex ?? charInput.frameIndex,
     /** 干员等级选项 */
     keyFrames: phase.attributesKeyFrames,
     /** 潜能 */
-    potential: charState.potential,
+    potential: charInput.potential,
     /** 技能键名 */
-    skillKey: skillKey ?? charState.skillKey,
+    skillKey: skillKey ?? charInput.skillKey,
     /** 技能选项 */
     skills,
     /** 技能等级 */
-    skillLevel: skillLevel ?? charState.skillLevel,
+    skillLevel: skillLevel ?? charInput.skillLevel,
     /** 技能等级选项 */
     skillLevels,
     /** 技能数据 */
     skill: skillItem,
     /** 模组ID */
-    uniEquipId: uniEquipId ?? charState.uniEquipId,
+    uniEquipId: uniEquipId ?? charInput.uniEquipId,
     /** 模组选项 */
     equips: uniEquips,
     /** 模组等级 */
-    uniEquipLevel: uniEquipLevel ?? charState.uniEquipLevel,
+    uniEquipLevel: uniEquipLevel ?? charInput.uniEquipLevel,
     /** 模组数据 */
     uniEquip: uniEquipItem,
     /** 模组名称 */
     uniEquipName,
     /** 干员属性额外修改 */
-    attributeModifier: charState.attributeModifier,
+    attributeModifier: charInput.attributeModifier,
   };
 }
 

@@ -24,7 +24,7 @@ import { toast } from "react-toastify";
 import { StageLevels, StageTypes } from "~/types/constant";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { useGameDataStore } from "~/stores/gameDataStore";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const MyInput = (props: InputProps) => <Input radius="none" labelPlacement="outside" {...props}></Input>;
 const MySelect = (props: SelectProps) => (
@@ -50,7 +50,7 @@ export default function SubmitRecordForm({
   stageId: string;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { character_basic } = useGameDataStore();
+  const { character_basic } = useRelicFreeStore();
   const { userInfo } = useUserInfoStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [team, setTeam] = useState("");

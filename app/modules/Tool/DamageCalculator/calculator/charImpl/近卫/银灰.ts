@@ -1,4 +1,5 @@
-import type { CalculatorInput, CalculatorOutput, CharInput } from "~/types/gameData";
+import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
+import type { CharInput } from "~/stores/damageCalculator/calcTypes";
 import { CalculatorHelper } from "../../helper";
 import type { BuffContext } from "../../buff-context";
 import { type ApplyTalentFC, type CalculatorImpl, getByKeySafe } from "../../impls";

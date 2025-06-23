@@ -1,5 +1,5 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
-import type { RogueInput } from "~/stores/damageCalculator/calcTypes";
+import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
 
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6" | "rogue_7" | "rogue_8";
 
@@ -388,53 +388,6 @@ export interface CharAttributeModifier {
   atkSpd: number;
 }
 
-/**
- * 干员输入数据结构
- * 带*的域代表对计算非常重要
- */
-export interface CharInput {
-  /** 干员名称 */
-  name: string;
-  /** 精英化等级 */
-  phaseLevel: number;
-  /** 精英化数据 */
-  phase?: CharPhase;
-  /** 干员等级 */
-  level: number;
-  /** 干员局外面板 @deprecated */
-  attribute?: CharAttributeExt;
-  /** 技能键名 */
-  skillKey: string;
-  /** 技能等级 */
-  skillLevel: number;
-  /** 选择的技能数据 */
-  skill: SkillLevelData;
-  /** 模组ID */
-  uniEquipId: string;
-  /** 模组等级 */
-  uniEquipLevel: number;
-  /** 选择的模组数据 */
-  uniEquip: UniEquipPhaseData;
-  /** 潜能等级 */
-  potential: number;
-  /** 干员在游戏中的增益 @deprecated */
-  charsBuffInGame: CharBuffInGame;
-  /** 属性修正 */
-  attributeModifier: CharAttributeModifier;
-}
-
-/** 干员在游戏中的增益 @deprecated */
-export interface CharBuffInGame {
-  /** 攻击力 */
-  atk: number;
-  /** 最大生命值 */
-  maxHp: number;
-  /** 物理抗性 */
-  damageResistance: number;
-  /** 伤害倍率 */
-  damageScale: number;
-}
-
 /** 伤害数据 */
 export interface DamageData {
   /** 面板攻击力 */
@@ -634,7 +587,7 @@ export interface CalculatorInput {
   /** buff加成上下文 */
   buffContext: BuffContext;
   /** 干员输入数据结构 */
-  charInput: CharInput;
+  charInput: CharInput & { attribute: CharAttribute };
   /** 干员基础数据 */
   charData: CharData;
   /** 技能数据 */

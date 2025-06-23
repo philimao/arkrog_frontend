@@ -34,6 +34,7 @@ export const useRelicFreeStore = create<RelicFreeState & RelicFreeAction>()(
           if (get().relicFreeDataLoaded) return;
           console.log("fetchRelicFreeData");
           const data = await _get<RelicFreeBasic>("/relic-free/bundle");
+          console.log("relic-free data", data);
           // 提取模组基础数据
           const character_basic = data.character_basic;
           data.uniequip_basic = {};

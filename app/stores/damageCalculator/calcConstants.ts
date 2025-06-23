@@ -1,6 +1,5 @@
 import type {
   CharData,
-  CharInput,
   EnemyData,
   EnemyInput,
   LevelData,
@@ -9,7 +8,7 @@ import type {
   StageData,
   StageOfRogue,
 } from "~/types/gameData";
-import type { RogueInput, SlicedCalcRelicState } from "./calcTypes";
+import type { CharInput, RogueInput, SlicedCalcRelicState } from "./calcTypes";
 import type {
   DCalculatorState,
   SlicedCalcEnemyState,
@@ -96,7 +95,6 @@ export const intialCalcCharState: SlicedCalcCharState = {
   charsModifier: {},
   charData: undefined as unknown as CharData,
   charInput: undefined as unknown as CharInput,
-  charState: undefined as unknown as SlicedCalcCharState["charState"],
 };
 
 export const initialEnemyState: SlicedCalcEnemyState = {

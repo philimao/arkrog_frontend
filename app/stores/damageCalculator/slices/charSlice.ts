@@ -75,7 +75,9 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
         state.activeCharName = charName;
         state.charData = charData;
         state.charsModifier[charName] = charModifier;
-        state.charState = {
+        state.charInput = {
+          /** 干员名称 */
+          name: charName,
           /** 精英化等级 */
           phaseLevel,
           /** 干员精英化阶段选项 */
@@ -138,7 +140,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
     set(
       (state) => {
         state.charsModifier[charName] = modifier;
-        state.charState.attributeModifier = modifier;
+        state.charInput.attributeModifier = modifier;
       },
       undefined,
       "setCharsModifier",
@@ -149,8 +151,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       (state) => {
         const phaseLevelInt = parseInt(phaseLevel);
         if (isNaN(phaseLevelInt) || phaseLevelInt < 0 || phaseLevelInt > 1) throw new Error("Invalid phase level");
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           phaseLevel: parseInt(phaseLevel),
@@ -164,8 +166,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
     set(
       (state) => {
         if (isNaN(parseInt(frameIndex))) throw new Error("Invalid frame index");
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           frameIndex: parseInt(frameIndex),
@@ -181,7 +183,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       (state) => {
         const potentialInt = parseInt(potential);
         if (isNaN(potentialInt) || potentialInt < 0 || potentialInt > 5) throw new Error("Invalid potential");
-        state.charState.potential = potentialInt;
+        state.charInput.potential = potentialInt;
       },
       undefined,
       "setPotential",
@@ -191,8 +193,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
   setSkillKey: (skillKey: string) => {
     set(
       (state) => {
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           skillKey,
@@ -207,11 +209,11 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
     set(
       (state) => {
         const skillLevelInt = parseInt(skillLevel);
-        const skillLevels = state.charState.skillLevels;
+        const skillLevels = state.charInput.skillLevels;
         if (isNaN(skillLevelInt) || !skillLevels.find((skillLevel) => skillLevel.key === skillLevelInt))
           throw new Error("Invalid skill level");
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           skillLevel: skillLevelInt,
@@ -225,10 +227,10 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
   setUniEquipId: (uniEquipId: string) => {
     set(
       (state) => {
-        const uniEquips = state.charState.equips;
+        const uniEquips = state.charInput.equips;
         if (!uniEquips.find((uniEquip) => uniEquip.uniEquipId === uniEquipId)) throw new Error("Invalid uniEquipId");
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           uniEquipId,
@@ -245,8 +247,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
         const uniEquipLevelInt = parseInt(uniEquipLevel);
         if (isNaN(uniEquipLevelInt) || uniEquipLevelInt < 0 || uniEquipLevelInt > 2)
           throw new Error("Invalid uniEquipLevel");
-        state.charState = updateCharState({
-          charState: state.charState,
+        state.charInput = updateCharState({
+          charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           uniEquipLevel: uniEquipLevelInt,

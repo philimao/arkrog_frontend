@@ -56,7 +56,7 @@ const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION"
 export default function OperatorDisplay() {
   const {
     activeCharName,
-    charState,
+    charInput,
     charData,
     rogueInput,
     setRogueThoughtLoad,
@@ -85,7 +85,7 @@ export default function OperatorDisplay() {
     uniEquipLevel,
     uniEquip,
     uniEquipName,
-  } = charState;
+  } = charInput;
 
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");

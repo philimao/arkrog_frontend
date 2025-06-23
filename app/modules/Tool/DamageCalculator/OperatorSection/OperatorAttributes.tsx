@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { styled } from "styled-components";
-import type { CharAttribute, CharInput } from "~/types/gameData";
+import type { CharAttribute } from "~/types/gameData";
 import { BuffContext, CalculatorHelper } from "../calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
@@ -60,59 +60,59 @@ export function useCostTagGroups(props: { attribute: CharAttribute; context: Buf
 }
 
 export default function OperatorAttributes(props: { mode: "out_game" | "in_game" | "skill" }) {
-  const { charData, charState } = useDamageCalculatorStore();
+  const { charData, charInput } = useDamageCalculatorStore();
   const context = useDamageCalculatorStore((state) => state.globalAnalysisResult);
 
   const result = useMemo(
-    () => CalculatorHelper.calculateOutsidePanel({ charInput: charState, context }),
-    [charState, context],
+    () => CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context }),
+    [charInput, context],
   );
 
   const enemyExpression = useMemo((): Record<string, ExpressionGroupNode> => {
     if (props.mode === "out_game") {
       return {
-        maxHp: ExpressionUtil.operator_out_game_max_hp({ charState, context }),
-        atk: ExpressionUtil.operator_out_game_atk({ charState, context }),
-        def: ExpressionUtil.operator_out_game_def({ charState, context }),
-        attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charState, context }),
-        cost: ExpressionUtil.operator_out_game_cost({ charState, context }),
-        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charState, context }),
-        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charState, context }),
+        maxHp: ExpressionUtil.operator_out_game_max_hp({ charInput, context }),
+        atk: ExpressionUtil.operator_out_game_atk({ charInput, context }),
+        def: ExpressionUtil.operator_out_game_def({ charInput, context }),
+        attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charInput, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
       };
     } else if (props.mode === "in_game") {
       return {
-        maxHp: ExpressionUtil.operator_in_game_max_hp({ charState, context }),
-        atk: ExpressionUtil.operator_in_game_atk({ charState, context }),
-        def: ExpressionUtil.operator_in_game_def({ charState, context }),
-        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charState, context }),
-        cost: ExpressionUtil.operator_out_game_cost({ charState, context }),
-        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charState, context }),
-        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charState, context }),
+        maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: charInput, context }),
+        atk: ExpressionUtil.operator_in_game_atk({ charInput: charInput, context }),
+        def: ExpressionUtil.operator_in_game_def({ charInput: charInput, context }),
+        attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charInput: charInput, context }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context }),
+        hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
+        spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
       };
     } else if (props.mode === "skill") {
       const skillContext = context.clone();
-      getCharImpl(charData.name).applySkill({ charInput: charState as unknown as CharInput }, skillContext);
+      getCharImpl(charData.name).applySkill({ charInput: charInput }, skillContext);
       return {
-        maxHp: ExpressionUtil.operator_in_game_max_hp({ charState, context: skillContext }),
-        atk: ExpressionUtil.operator_in_game_atk({ charState, context: skillContext }),
-        def: ExpressionUtil.operator_in_game_def({ charState, context: skillContext }),
+        maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: charInput, context: skillContext }),
+        atk: ExpressionUtil.operator_in_game_atk({ charInput: charInput, context: skillContext }),
+        def: ExpressionUtil.operator_in_game_def({ charInput: charInput, context: skillContext }),
         attackSpeed: ExpressionUtil.operator_in_game_attack_speed({
-          charState,
+          charInput: charInput,
           context: skillContext,
         }),
-        cost: ExpressionUtil.operator_out_game_cost({ charState, context: skillContext }),
+        cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context: skillContext }),
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({
-          charState,
+          charInput: charInput,
           context: skillContext,
         }),
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({
-          charState,
+          charInput: charInput,
           context: skillContext,
         }),
       };
     }
     return {};
-  }, [charData.name, charState, context, props.mode]);
+  }, [charData.name, charInput, context, props.mode]);
 
   // const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
   // const className = "text-sm h-4 px-2 " + color;

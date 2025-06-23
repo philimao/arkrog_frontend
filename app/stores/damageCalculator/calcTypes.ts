@@ -7,7 +7,6 @@ import type {
   CharAttributeModifier,
   CalculatorOutput,
   CharData,
-  CharInput,
   CharPhase,
   EnemyData,
   EnemyInput,
@@ -105,7 +104,9 @@ export interface SlicedCalcGameDataActions {
   setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
 }
 
-export interface CharState {
+export interface CharInput {
+  /** 干员名称 */
+  name: string;
   /** 干员精英化阶段选项 */
   phases: CharPhase[];
   /** 精英化等级 */
@@ -151,10 +152,8 @@ export interface SlicedCalcCharState {
   charData: CharData;
   /** 干员属性额外修改 @deprecated */
   charsModifier: Record<string, CharAttributeModifier>;
-  /** 干员输入数据 @deprecated */
+  /** 干员输入数据 */
   charInput: CharInput;
-  /** 干员状态 */
-  charState: CharState;
 }
 
 export interface SlicedCalcCharActions {

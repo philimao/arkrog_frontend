@@ -172,7 +172,7 @@ registerRelicBlackboard("modify_sp[attack_or_damage]", (buff: RelicBuff, relic: 
   return {
     isActive(input) {
       // 技能类型为攻击或受击回复技能回复技力 TODO 受击回复技力没做
-      return input.charState?.skill.spData.spType === "INCREASE_WHEN_ATTACK";
+      return input.charInput?.skill.spData.spType === "INCREASE_WHEN_ATTACK";
     },
     apply(input): void {
       const { context } = input;
@@ -189,7 +189,7 @@ registerRelicBlackboard("modify_sp_recover[normal]", (buff: RelicBuff, relic: Re
   const sp_recovery_per_sec = getByKeySafe(buff.blackboard, "sp_recovery_per_sec");
   return {
     isActive(input) {
-      return input.charState?.skill.spData.spType === "INCREASE_WITH_TIME";
+      return input.charInput?.skill.spData.spType === "INCREASE_WITH_TIME";
     },
     apply(input): void {
       const { context } = input;

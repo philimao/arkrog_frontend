@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useGameDataStore } from "~/stores/gameDataStore";
-import type { CharInput, RelicWrapper, CalculatorInput, SkillData } from "~/types/gameData";
+import type { RelicWrapper, CalculatorInput, SkillData } from "~/types/gameData";
 import { calculator } from "./calculator";
 import { printRelicsInfo } from "./debug/print-relics-info";
 import { CalculatorHelper } from "./helper";
@@ -10,7 +10,7 @@ export default function CalcCenter() {
   const { uniequip_table } = useGameDataStore();
   const {
     charData,
-    charState,
+    charInput,
     topicSpecItems,
     stageData,
     rogueInput,
@@ -44,16 +44,16 @@ export default function CalcCenter() {
   useEffect(() => {
     let buffContext;
     // 干员养成加成
-    if (charState) {
+    if (charInput) {
       buffContext = CalculatorHelper.analyzeChar({
-        charState,
+        charInput,
         charData: charData,
       });
     }
     // 藏品加成
     buffContext = CalculatorHelper.analyzeRelics(
       {
-        charState,
+        charInput: charInput,
         charData,
         relics: selectedRelics,
         enemyData: enemyData,
@@ -73,7 +73,7 @@ export default function CalcCenter() {
     setGlobalAnalysisResult(buffContext);
   }, [
     charData,
-    charState,
+    charInput,
     enemyData,
     enemySpec,
     levelData,
@@ -87,7 +87,7 @@ export default function CalcCenter() {
   /** 用于展示Buff一览的加成, 区别在于不包含干员养成加成 */
   useEffect(() => {
     let buffPanelContext = CalculatorHelper.analyzeRelics({
-      charState,
+      charInput: charInput,
       charData,
       relics: selectedRelics,
       enemyData: enemyData,
@@ -103,7 +103,7 @@ export default function CalcCenter() {
     setRelicAnalysisResult(buffPanelContext);
   }, [
     charData,
-    charState,
+    charInput,
     enemyData,
     enemySpec,
     rogueInput,
@@ -114,9 +114,9 @@ export default function CalcCenter() {
   ]);
 
   useEffect(() => {
-    if (!charState || !globalAnalysisResult) return;
+    if (!charInput || !globalAnalysisResult) return;
     const buffContext = globalAnalysisResult;
-    const { uniEquipId } = charState;
+    const { uniEquipId } = charInput;
 
     const enemyInput = CalculatorHelper.calculateEnemyAttr({
       enemyBase,
@@ -125,10 +125,10 @@ export default function CalcCenter() {
 
     const input: CalculatorInput = {
       charInput: {
-        ...charState,
+        ...charInput,
         // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charState, context: buffContext }),
-      } as unknown as CharInput,
+        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
+      },
       enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
@@ -144,10 +144,10 @@ export default function CalcCenter() {
     CalculatorHelper.print(input, calcResult);
     printRelicsInfo({
       charInput: {
-        ...charState,
+        ...charInput,
         // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charState, context: buffContext }),
-      } as unknown as CharInput,
+        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
+      },
       enemyInput: enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
@@ -167,7 +167,7 @@ export default function CalcCenter() {
     setCalcOutput(calcResult);
   }, [
     charData,
-    charState,
+    charInput,
     enemyBase,
     enemyData,
     globalAnalysisResult,

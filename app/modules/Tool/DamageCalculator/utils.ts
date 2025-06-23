@@ -76,6 +76,9 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   enemy_damage_scale_pure: "敌人真伤易伤",
   enemy_damage_scale_ep: "敌人元素损伤",
   enemy_damage_resistance: "物理与法术减伤",
+  enemy_magic_resistance: "敌人法术抗性",
+  enemy_ep_resistance: "敌人元素损伤抗性",
+  enemy_ep_damage_resistance: "敌人元素伤害抗性",
 };
 
 /**

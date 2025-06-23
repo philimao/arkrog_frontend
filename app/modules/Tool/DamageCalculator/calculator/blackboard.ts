@@ -524,6 +524,25 @@ registerRelicBlackboard("rogue_4_attack_speed_up[life_point]", (buff: RelicBuff,
   };
 });
 
+/** 支柱-枯法 */
+registerRelicBlackboard("defdown[support]", (buff, relic) => {
+  const def = getByKeySafe(buff.blackboard, "def");
+  const magic_resistance = getByKeySafe(buff.blackboard, "magic_resistance");
+  return {
+    isActive() {
+      // 默认在范围内可以生效
+      return true;
+    },
+    apply(input): void {
+      const { context } = input;
+      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(def.value, relic.name));
+      context.in_game_buff_final_mul.enemy_magic_resistance.addChild(
+        new NumericLiteralNode(magic_resistance.value, relic.name),
+      );
+    },
+  };
+});
+
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
     const isActive = isRelicInBlacklist(relic.name) && isBlackboardActiveForEnemy(buff, enemyData);

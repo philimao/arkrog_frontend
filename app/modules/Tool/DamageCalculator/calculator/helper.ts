@@ -568,6 +568,7 @@ export class CalculatorHelper {
         result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
         return;
       }
+      // TODO
       const isEnemy = [
         "enemy_atk",
         "enemy_def",
@@ -577,6 +578,9 @@ export class CalculatorHelper {
         "enemy_damage_scale_pure",
         "enemy_damage_scale_ep",
         "enemy_damage_resistance",
+        "enemy_magic_resistance",
+        "enemy_ep_resistance",
+        "enemy_ep_damage_resistance",
       ].includes(key);
       if (!isEnemy && value.calculate() !== 1) {
         result.in_game_char.push(

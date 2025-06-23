@@ -142,7 +142,7 @@ export class BuffContext implements IBuffContext {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: new ExpressionGroupNode("+", "局内直接加算"),
-    enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算"),
+    enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算").addChild(new NumericLiteralNode(1, "基数")),
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),
@@ -154,11 +154,11 @@ export class BuffContext implements IBuffContext {
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_def: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_def: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_magic_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_ep_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
-    enemy_ep_damage_resistance: new ExpressionGroupNode("+", "局内最终乘算").addChild(
+    enemy_ep_resistance: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_ep_damage_resistance: new ExpressionGroupNode("*", "局内最终乘算").addChild(
       new NumericLiteralNode(1, "基数"),
     ),
     enemy_damage_scale_phy: new ExpressionGroupNode("+", "敌人物理易伤").addChild(new NumericLiteralNode(1, "基数")),

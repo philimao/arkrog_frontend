@@ -1,0 +1,116 @@
+import React from "react";
+import type { TournamentData } from "~/types/tournamentsData";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import Loading from "~/components/Loading";
+import type { RogueKey } from "~/types/gameData";
+import Markdown from "react-markdown";
+import TournamentInfo from "./TournamentInfo";
+import TournamentRanking from "./TournamentRanking";
+import TournamentFinalResult from "./TournamentFinalResult";
+import { SectionContainer } from ".";
+
+export interface TournamentViewProps {
+  tournamentData: TournamentData;
+  children?: React.ReactNode;
+  showPreviewBanner?: boolean;
+}
+
+export default function TournamentView({ tournamentData, children, showPreviewBanner = false }: TournamentViewProps) {
+  const { topics } = useGameDataStore();
+
+  if (!topics) return <Loading />;
+
+  const topicData = tournamentData.rogue ? topics[tournamentData.rogue as RogueKey] : Object.values(topics)[0];
+
+  const renderHeader = () => {
+    return (
+      <div className="flex gap-4 mb-16">
+        {tournamentData.avatar && <div className="w-full max-w-40">
+          <img
+            src={tournamentData.avatar}
+            className="rounded-xl aspect-square"
+            alt="赛事图标"
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+          />
+        </div>}
+        <div className="flex flex-col gap-4 pr-16">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
+            <div className="text-4xl lg:text-6xl font-bold">{tournamentData.name}</div>
+            <div className="flex items-center gap-6">
+              {tournamentData.ongoing && <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>}
+            </div>
+          </div>
+          <div className="text-ak-blue">
+            {topicData.name + " // " + tournamentData.edition + (tournamentData.level ? " // " + tournamentData.level : "")}
+          </div>
+          {tournamentData.labels && tournamentData.labels.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {tournamentData.labels.map((label, index) => (
+                <div key={index} className="bg-black-gray-70 px-2 rounded-sm">
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPlayer = (playerInfo: string, column?: boolean) => {
+    const player = tournamentData.players?.find((player) => player.mid === playerInfo || player.name === playerInfo);
+    return (
+      <>
+        {player && (
+          <div className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}>
+            <div className="w-16 h-16 aspect-square bg-mid-gray flex items-center justify-center">
+              {player.face ? (
+                <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+              ) : (
+                <p className="text-5xl text-white">{player.name[0]}</p>
+              )}
+            </div>
+            <div className={`text-white ${column ? "text-sm text-center" : ""}`}>{player.name}</div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="relative">
+      {showPreviewBanner && (
+        <div className="bg-ak-dark-red py-2 text-xl font-bold mb-6 text-center">预览模式</div>
+      )}
+      {children}
+      {renderHeader()}
+      <div className="mb-16">
+        <SectionContainer
+          title="比赛规则"
+          content={tournamentData.rule}
+        />
+      </div>
+
+      <div className="my-16 grid sm:grid-cols-3 gap-8">
+        <SectionContainer title="主办方" content={tournamentData.organizerName} />
+        <SectionContainer title="观赛直播间" content={<Markdown>{tournamentData.room}</Markdown>} />
+        <SectionContainer
+          title="比赛时间"
+          content={tournamentData.stages && tournamentData.stages.length > 0 ? tournamentData.stages.map((stage, index) => (
+            <div key={index} className="flex flex-wrap">
+              <div>{`${stage.name}：`}</div>
+              <div>{`${new Date(stage.startTime).getFullYear()}年${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日~${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
+            </div>
+          )) : "暂无比赛时间"}
+        />
+      </div>
+
+      <TournamentFinalResult tournamentData={tournamentData} />
+
+      <TournamentInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
+
+      <TournamentRanking tournamentData={tournamentData} />
+    </div>
+  );
+}

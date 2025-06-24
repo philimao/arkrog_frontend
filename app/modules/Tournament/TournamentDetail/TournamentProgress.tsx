@@ -325,7 +325,11 @@ export default function TournamentProgress({
   tournamentData: TournamentData;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
 }) {
-  const players = tournamentData.players!;
+  if (!tournamentData.stages || tournamentData.stages.length === 0 || !tournamentData.players || tournamentData.players.length === 0) {
+    return <div>暂无比赛进程</div>;
+  }
+
+  const players = tournamentData.players;
 
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);

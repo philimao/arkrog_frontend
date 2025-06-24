@@ -10,6 +10,7 @@ import TournamentStagesAccordionItem from "./TournamentStagesAccordionItem";
 import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
 import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
+import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 
 export const inputClassName = "bg-mid-gray w-full p-2 focus:outline-ak-blue";
 export const labelClassName = "block text-sm font-light mb-1";
@@ -25,6 +26,7 @@ export default function TournamentForm({
   const navigate = useNavigate();
   const { userInfo } = useUserInfoStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [formData, setFormData] = useState<TournamentData>(
     tournamentData
       ? structuredClone(tournamentData)
@@ -79,17 +81,42 @@ export default function TournamentForm({
   }, [formData]);
 
   useEffect(() => {
-    let formData = undefined;
+    let newFormData;
     const storedData = localStorage.getItem(`tournamentForm-${tournamentData?.id}`);
     if (storedData) {
-      formData = JSON.parse(storedData);
+      newFormData = JSON.parse(storedData);
     } else if (tournamentData) {
-      formData = structuredClone(tournamentData);
+      newFormData = structuredClone(tournamentData);
+    } else {
+      // Default data for new tournament
+      newFormData = {
+        id: "",
+        name: "",
+        groupId: "",
+        avatar: "",
+        rogue: "rogue_4",
+        edition: "初始版本",
+        type: "individual",
+        memberAlias: "",
+        keyMemberAlias: "",
+        startTime: Date.now(),
+        level: "N18",
+        labels: [],
+        rule: "",
+        organizerMid: "",
+        organizerName: "",
+        room: "",
+        stages: [],
+        players: [],
+        teams: [],
+        customPlayerKeys: {},
+        groupBy: "",
+      };
     }
 
-    setFormData(formData);
-    setEditingPlayer(formData.players?.[0]);
-    setEditingStage(formData.stages?.[0]);
+    setFormData(newFormData);
+    setEditingPlayer(newFormData.players?.[0]);
+    setEditingStage(newFormData.stages?.[0]);
 
     // 每次组件重新挂载时重置编辑开始时间
     if (tournamentData) {
@@ -185,6 +212,42 @@ export default function TournamentForm({
     }
   };
 
+  const handlePreview = () => {
+    setIsPreviewMode(true);
+    // Scroll to the top of the page when switching to preview mode
+    window.scrollTo({ top: 0 });
+  };
+
+  const handleBackToEdit = () => {
+    setIsPreviewMode(false);
+    window.scrollTo({ top: 0 });
+  };
+
+  if (isPreviewMode) {
+    return (
+      <div className="relative">
+        <TournamentPreview formData={formData} />
+        <div className="flex justify-end space-x-4 mb-6">
+          <button
+            type="button"
+            onClick={handleBackToEdit}
+            className="px-4 py-2 rounded-md text-black bg-light-gray"
+          >
+            返回编辑
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-4 py-2 rounded-md text-black bg-ak-blue"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} onClick={handleAccordionClick}>
       <Accordion
@@ -251,6 +314,14 @@ export default function TournamentForm({
           disabled={isSubmitting}
         >
           取消
+        </button>
+        <button
+          type="button"
+          onClick={handlePreview}
+          className="px-4 py-2 rounded-md text-black bg-light-gray"
+          disabled={isSubmitting}
+        >
+          预览
         </button>
         <button type="submit" className="px-4 py-2 rounded-md text-black bg-ak-blue" disabled={isSubmitting}>
           {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}

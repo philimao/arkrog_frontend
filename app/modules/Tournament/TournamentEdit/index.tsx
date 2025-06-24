@@ -51,7 +51,7 @@ export default function TournamentEdit() {
   // 加载中状态
   if (editLock.isLoading) {
     return (
-      <div className="container relative">
+      <div className="relative">
         <StyledBackButtonContainer>
           <div className="relative">
             <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
@@ -65,7 +65,7 @@ export default function TournamentEdit() {
   // 赛事不存在
   if (!tournamentData) {
     return (
-      <div className="container relative">
+      <div className="relative">
         <StyledBackButtonContainer>
           <div className="relative">
             <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
@@ -79,7 +79,7 @@ export default function TournamentEdit() {
   // 被其他用户锁定
   if (editLock.lockStatus.isLocked && !editLock.lockStatus.canEdit) {
     return (
-      <div className="container relative">
+      <div className="relative">
         <StyledBackButtonContainer>
           <div className="relative">
             <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
@@ -93,7 +93,7 @@ export default function TournamentEdit() {
   }
 
   return (
-    <div className="container relative">
+    <div className="relative">
       <StyledBackButtonContainer>
         <div className="relative">
           <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>

@@ -64,7 +64,7 @@ export type TournamentPlayer = {
   teamName?: string;
   finalRank?: number;
   note?: string;
-  customPlayerValues: Record<string, string>; // Tournament定义的key对应的values，{strategy:"简中服"}
+  customPlayerValues: Record<string, string>; // Tournament定义的key对应的values，{server:"简中服"}
   games: TournamentGame[];
 };
 

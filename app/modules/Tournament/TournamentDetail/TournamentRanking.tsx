@@ -744,6 +744,14 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
 
 // Main wrapper component
 export default function TournamentRankingWrapper({ tournamentData }: { tournamentData: TournamentData }) {
+  if (!tournamentData.stages || tournamentData.stages.length === 0) {
+    return (
+      <div>
+        <SectionContainer title="排名情况" content={<div>暂无排名</div>} />
+      </div>
+    );
+  }
+
   const renderTeam = tournamentData.type === "team" && tournamentData.teams?.length && tournamentData.players?.length;
   const renderIndividual = tournamentData.type === "individual" && tournamentData.players?.length;
 

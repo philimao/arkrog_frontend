@@ -6,7 +6,7 @@ export default function TournamentCreate() {
   const navigate = useNavigate();
 
   return (
-    <div className="container relative">
+    <div className="relative">
       <StyledBackButtonContainer>
         <div className="relative">
           <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>

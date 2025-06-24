@@ -69,6 +69,10 @@ const getTopTiers = <T extends { finalRank?: number }>(items: T[] | undefined, m
 
 // Individual tournament result component
 export function TournamentFinalResultIndividual({ tournamentData }: { tournamentData: TournamentData }) {
+  if (!tournamentData.stages || tournamentData.stages.length === 0) {
+    return <>暂无比赛结果</>;
+  }
+
   const final = tournamentData.stages[tournamentData.stages.length - 1];
   const isFinalOneOnOne = final.type === "1on1";
   const topTiers = getTopTiers(tournamentData.players, isFinalOneOnOne ? 2 : 3);
@@ -120,6 +124,32 @@ const TeamMemberRow = ({
 }) => {
   const lastGame = player?.games[player.games.length - 1];
 
+  // Determine which items are present
+  const hasName = !!player?.name;
+  const hasRole = true; // Role is always shown (keyMemberAlias or memberAlias)
+  const hasSquad = !!lastGame?.starterSquad;
+  const hasCustomStageValues = !!lastGame?.customStageValues && typeof lastGame.customStageValues === 'object' && Object.keys(lastGame.customStageValues).length > 0;
+  const hasPoint = !!lastGame?.point;
+
+  // Get custom stage values keys if they exist
+  const customStageKeys = hasCustomStageValues ? Object.keys(lastGame.customStageValues) : [];
+
+  // Count visible items to calculate widths (each custom stage value counts as one item)
+  const visibleItemsCount = [
+    hasName ? 1 : 0,
+    hasRole ? 1 : 0,
+    hasSquad ? 1 : 0,
+    customStageKeys.length,
+    hasPoint ? 1 : 0
+  ].reduce((sum, count) => sum + count, 0);
+
+  // Calculate dynamic widths based on visible items
+  // Allocate more space for name and squad as they're typically longer
+  const getWidth = (isLarger = false) => {
+    const baseWidth = 100 / visibleItemsCount;
+    return isLarger ? `${baseWidth * 1.2}%` : `${baseWidth * 0.9}%`;
+  };
+
   return (
     <div className="relative bg-black-gray flex items-center justify-between gap-4 pl-8 py-2">
       {isTeamLeader && (
@@ -127,24 +157,36 @@ const TeamMemberRow = ({
           <StarIcon className="text-ak-blue" width="1rem" />
         </span>
       )}
-      <div className="w-[25%]">{player?.name}</div>
-      <div className="w-[20%]">{isKeyMember ? keyMemberAlias : memberAlias}</div>
-      <div className="hidden lg:block w-[25%]">{lastGame?.starterSquad}</div>
-      <div className="flex justify-center items-center w-[15%] lg:hidden">
-        <img
-          src={`/images/squad/${lastGame?.starterSquad}.png`}
-          alt="squad"
-          className="h-10 aspect-square object-contain"
-        />
-      </div>
-      <div className="w-[15%]">{lastGame?.strategy}</div>
-      <div className="w-[15%]">{lastGame?.point}</div>
+      {hasName && <div style={{ width: getWidth(true) }}>{player.name}</div>}
+      {hasRole && <div style={{ width: getWidth() }}>{isKeyMember ? keyMemberAlias : memberAlias}</div>}
+      {hasSquad && (
+        <>
+          <div className="hidden lg:block" style={{ width: getWidth(true) }}>{lastGame.starterSquad}</div>
+          <div className="flex justify-center items-center lg:hidden" style={{ width: getWidth() }}>
+            <img
+              src={`/images/squad/${lastGame.starterSquad}.png`}
+              alt="squad"
+              className="h-10 aspect-square object-contain"
+            />
+          </div>
+        </>
+      )}
+      {hasCustomStageValues && customStageKeys.map((key) => (
+        <div key={key} style={{ width: getWidth() }}>
+          {lastGame.customStageValues[key]}
+        </div>
+      ))}
+      {hasPoint && <div style={{ width: getWidth() }}>{lastGame.point}</div>}
     </div>
   );
 };
 
 // Team tournament result component
 export function TournamentFinalResultTeam({ tournamentData }: { tournamentData: TournamentData }) {
+  if (!tournamentData.teams || tournamentData.teams.length === 0) {
+    return <>暂无比赛结果</>;
+  }
+
   const topTiers = getTopTiers(tournamentData.teams, 2);
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
@@ -190,6 +232,10 @@ export function TournamentFinalResultTeam({ tournamentData }: { tournamentData: 
 
 // Main wrapper component
 export default function TournamentFinalResultWrapper({ tournamentData }: { tournamentData: TournamentData }) {
+  if (!tournamentData.stages || tournamentData.stages.length === 0) {
+    return null;
+  }
+
   const lastStage = tournamentData.stages[tournamentData.stages.length - 1];
   const isResultAvailable = new Date().getTime() >= lastStage.endTime;
 

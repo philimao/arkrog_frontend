@@ -585,7 +585,7 @@ export default function TournamentProgressAccordionItem({
                           {formData.type === "team" && editingPlayerTeam && (
                             <div>
                               <label htmlFor="teamTotalPoints" className={labelWithTooltipClassName}>
-                                {editingPlayerTeam.name}队伍总分
+                                <span className="text-ak-blue">{editingPlayerTeam.name}</span>&nbsp;队伍总分
                                 <Tooltip
                                   content="根据已有数据自动计算得出"
                                   className="bg-light-mid-gray text-black"
@@ -609,7 +609,7 @@ export default function TournamentProgressAccordionItem({
 
                                   return teamPoints || "";
                                 })()}
-                                className={`${inputClassName} text-ak-blue`}
+                                className={`${inputClassName} text-ak-blue cursor-not-allowed`}
                                 readOnly
                                 disabled
                               />

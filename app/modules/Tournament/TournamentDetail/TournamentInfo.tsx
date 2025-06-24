@@ -73,9 +73,9 @@ const TeamMembersCell = ({
 );
 
 // Main components
-export function TournamentSchedule({ tournamentData, renderPlayer }: TournamentComponentProps) {
+export function TournamentPlayerInfo({ tournamentData, renderPlayer }: TournamentComponentProps) {
   const players = tournamentData.players;
-  if (!players?.length) return <div>暂无赛程</div>;
+  if (!players?.length) return <div>暂无参赛选手</div>;
 
   // Prepare data for this stage
   const schedule = new Map<string, TournamentGame>();
@@ -157,6 +157,9 @@ export function TournamentSchedule({ tournamentData, renderPlayer }: TournamentC
 }
 
 export function TournamentTeamInfo({ tournamentData, renderPlayer }: TournamentComponentProps) {
+  const teams = tournamentData.teams;
+  if (!teams?.length) return <div>暂无参赛队伍</div>;
+
   return (
     <table className="w-full border-collapse table-auto divide-y divide-mid-gray">
       <thead className="bg-black-gray">
@@ -167,7 +170,7 @@ export function TournamentTeamInfo({ tournamentData, renderPlayer }: TournamentC
         </tr>
       </thead>
       <tbody className="bg-black-gray-70 border-collapse divide-y divide-mid-gray">
-        {tournamentData.teams?.map((team, index) => (
+        {teams?.map((team, index) => (
           <tr key={index} className="divide-x divide-mid-gray">
             <td>
               <TeamAvatar avatarUrl={team.avatar} />
@@ -195,7 +198,7 @@ export default function TournamentInfoWrapper({ tournamentData, renderPlayer }: 
       return tournamentData.type === "team" ? (
         <TournamentTeamInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
       ) : (
-        <TournamentSchedule tournamentData={tournamentData} renderPlayer={renderPlayer} />
+        <TournamentPlayerInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
       );
     }
 

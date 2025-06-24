@@ -365,7 +365,8 @@ registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: Re
     },
     apply(input): void {
       const { context } = input;
-      context.global_buff_stack.damage_scale.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+      context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+      context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
     },
   };
 });

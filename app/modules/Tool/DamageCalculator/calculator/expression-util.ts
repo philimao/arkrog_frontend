@@ -193,8 +193,11 @@ export class ExpressionUtil {
   /** 敌人最终法术抗性 */
   static enemy_final_magic_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
     const expression = new ExpressionGroupNode("*", "敌人法术抗性")
-      .addChild(new NumericLiteralNode(input.enemyBase.attributes.magicResistance, "基础"))
-      .addChild(input.context.in_game_buff_add.enemy_magic_resistance)
+      .addChild(
+        new ExpressionGroupNode("+", "局内加算")
+          .addChild(new NumericLiteralNode(input.enemyBase.attributes.magicResistance, "基础"))
+          .addChild(input.context.in_game_buff_add.enemy_magic_resistance),
+      )
       .addChild(input.context.in_game_buff_final_mul.enemy_magic_resistance);
     return expression;
   }
@@ -223,12 +226,12 @@ export class ExpressionUtil {
       .addChild(
         new ExpressionGroupNode("*", "减伤计算")
           .addChild(
-            new ExpressionGroupNode("-", "")
+            new ExpressionGroupNode("-", "局外减伤")
               .addChild(new NumericLiteralNode(1, "基数"))
               .addChild(input.context.relic_rune_mul.enemy_damage_resistance),
           )
           .addChild(
-            new ExpressionGroupNode("-", "")
+            new ExpressionGroupNode("-", "局内减伤")
               .addChild(new NumericLiteralNode(1, "基数"))
               .addChild(input.context.in_game_buff_final_mul.enemy_damage_resistance),
           ),

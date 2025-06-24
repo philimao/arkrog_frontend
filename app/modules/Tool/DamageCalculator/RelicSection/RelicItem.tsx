@@ -80,7 +80,7 @@ const StyledLayerWrapper = styled.div`
 `;
 
 export default function RelicItem({
-  relicWrapper,
+  relicWrapper: relicWrapper,
   editable = false,
 }: {
   relicWrapper: RelicWrapper;

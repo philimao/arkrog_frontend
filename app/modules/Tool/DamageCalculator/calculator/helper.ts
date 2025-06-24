@@ -11,6 +11,7 @@ import type {
   StageData,
   EnemyData,
   LevelData,
+  RelicDataExt,
 } from "~/types/gameData";
 import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
@@ -260,7 +261,7 @@ export class CalculatorHelper {
       charInput?: CharInput;
       charData?: CharData;
       enemyData: EnemyData;
-      relics: RelicWrapper[];
+      relics: RelicDataExt[];
       stageData?: StageData;
     },
     context?: BuffContext,
@@ -291,7 +292,7 @@ export class CalculatorHelper {
     /** 筛选藏品 */
     for (const relic of relics) {
       // 遍历藏品buff
-      relic.relicData.buffs.forEach((buff) => {
+      relic.buffs.forEach((buff) => {
         // 藏品在黑名单中
         if (!isRelicInBlacklist(relic.name)) {
           result.invalidRelics.push(relic);
@@ -507,8 +508,8 @@ export class CalculatorHelper {
     }
     if (enemySpec) {
       enemySpec.value.forEach((spec) => {
-        const { key, value, label } = spec;
-        switch (key) {
+        const { bbKey, value, label } = spec;
+        switch (bbKey) {
           case "enemy_damage_resistance":
             context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
             break;
@@ -620,7 +621,7 @@ export class CalculatorHelper {
   /** 标准打印 */
   static print(input: CalculatorInput, output: CalculatorOutput) {
     console.log(
-      `%c 本次运行伤害计算结果 %c 版本：1.0.0 `,
+      `%c 本次运行伤害计算结果 %c 版本：1.0.0_beta `,
       "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff",
       "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff",
     );

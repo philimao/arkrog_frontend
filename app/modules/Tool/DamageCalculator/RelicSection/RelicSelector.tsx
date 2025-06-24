@@ -1,4 +1,3 @@
-import { useGameDataStore } from "~/stores/gameDataStore";
 import React, { useMemo, useState } from "react";
 import { Input } from "@heroui/react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
@@ -146,12 +145,11 @@ const StyledBuffText = styled.div`
 `;
 
 export default function RelicSelector() {
-  const { items } = useGameDataStore();
-  const { showRelics, toggleShowRelics, selectedIds, setSelectedIds, rogueInput, relicAnalysisResult } =
-    useDamageCalculatorStore();
+  const { showRelics, toggleShowRelics, setSelectedIds, rogueInput, relicAnalysisResult } = useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
   const difficulty = rogueInput[rogueKey].difficulty;
-  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
+  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey]));
 
   /** Tag筛选 */
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -166,13 +164,10 @@ export default function RelicSelector() {
   /** 用户筛选藏品id */
   const showIds = useMemo(
     () =>
-      relicWrappers
+      Object.values(relicWrappers)
         // 难度筛选
         .filter((relicWrapper) => {
-          if (
-            items![rogueKey][relicWrapper.id + "_a"] ||
-            items![rogueKey][relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]
-          ) {
+          if (relicWrappers[relicWrapper.id + "_a"] || relicWrappers[relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]) {
             // 代表随等级难度变化的藏品
             if (difficulty >= 9) return relicWrapper.id.endsWith("_c");
             else if (difficulty >= 6) return relicWrapper.id.endsWith("_b");
@@ -203,7 +198,7 @@ export default function RelicSelector() {
             ),
         )
         .map((r) => r.id),
-    [difficulty, items, relicWrappers, rogueKey, searchValue, selectedTags, valueFilter],
+    [difficulty, relicWrappers, searchValue, selectedTags, valueFilter],
   );
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
@@ -314,9 +309,10 @@ export default function RelicSelector() {
           </StyledRelicCount>
           <StyledSelectedRelicsContainer>
             {selectedIds
-              .map((id) => relicWrappers.find((relicWrapper) => relicWrapper.id === id))
+              .map((id) => relicWrappers[id])
+              .filter((i) => i)
               .map((relicWrapper) => (
-                <RelicItem key={relicWrapper!.id} relicWrapper={relicWrapper!} editable={true} />
+                <RelicItem key={relicWrapper.id} relicWrapper={relicWrapper} editable={true} />
               ))}
           </StyledSelectedRelicsContainer>
           <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>

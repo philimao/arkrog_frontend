@@ -3,6 +3,7 @@ import type {
   EnemyData,
   EnemyInput,
   LevelData,
+  RelicDataExt,
   RelicWrapper,
   RogueKey,
   StageData,
@@ -17,7 +18,7 @@ import type {
   SlicedCalcUIState,
   SlicedCalculatorState,
 } from "./calcTypes";
-import { CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
+import { BuffContext, CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
 import type { EnemySpec, EnemySpecConfig } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
 
 export const dummy: EnemyInput = {
@@ -84,6 +85,7 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
 };
 
 export const initialCalculatorState: SlicedCalculatorState = {
+  anyRelicContextMap: {} as Record<string, BuffContext>,
   relicAnalysisResult: CalculatorHelper.createAdditionContext(),
   globalAnalysisResult: CalculatorHelper.createAdditionContext(),
   calcOutput: CalculatorHelper.createCalculatorOutput(),
@@ -112,9 +114,9 @@ export const initialCalcUIState: SlicedCalcUIState = {
 };
 
 export const initialRelicState: SlicedCalcRelicState = {
-  relicList: [],
-  relicsMap: {} as Record<RogueKey, RelicWrapper[]>,
-  selectedIds: [],
+  relicDataMap: {} as Record<RogueKey, Record<string, RelicDataExt>>,
+  relicWrapperMap: {} as Record<RogueKey, Record<string, RelicWrapper>>,
+  selectedIdsMap: {} as Record<RogueKey, string[]>,
 };
 
 export const initialState: DCalculatorState = {

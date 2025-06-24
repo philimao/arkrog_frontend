@@ -15,21 +15,11 @@ import {
 
 export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRelicActions> = (set) => ({
   ...initialRelicState,
-  setRelicWrapper: (rogueKey, relics) =>
-    set(
-      (state) => {
-        state.relicsMap[rogueKey] = relics;
-      },
-      false,
-      "setRelicWrapper",
-    ),
   updateRelic: (id, key, value) =>
     set(
       (state) => {
-        const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
-        if (relicWrappers) {
-          relicWrappers.find((relicWrapper) => relicWrapper.id === id)![key as keyof RelicWrapper] = value as never;
-        }
+        const rogueKey = state.rogueInput.topic;
+        state.relicWrapperMap[rogueKey][id][key as keyof RelicWrapper] = value as never;
       },
       false,
       "updateRelic",
@@ -37,48 +27,46 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
   updateRelics: (ids, key, value) =>
     set(
       (state) => {
-        const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
-        if (relicWrappers) {
-          relicWrappers
-            .filter((relicWrapper) => ids.includes(relicWrapper.id))
-            .forEach((relicWrapper) => {
-              relicWrapper[key as keyof RelicWrapper] = value as never;
-            });
-        }
+        const rogueKey = state.rogueInput.topic;
+        const relicWrappers = state.relicWrapperMap[rogueKey];
+        Object.values(relicWrappers)
+          .filter((relicWrapper) => ids.includes(relicWrapper.id))
+          .forEach((relicWrapper) => {
+            relicWrapper[key as keyof RelicWrapper] = value as never;
+          });
       },
       false,
       "updateRelics",
     ),
   setRelicLayer: (id: string, layer: string) => {
-    const layerNumber = parseInt(layer);
+    const layerNumber = parseInt(layer) || 0;
     set(
       (state) => {
+        const rogueKey = state.rogueInput.topic;
+        const relicWrappers = state.relicWrapperMap[rogueKey];
         function updateRelics(ids: string[], key: string, value: number) {
-          const relicWrappers = state.relicsMap[state.rogueInput.topic] as RelicWrapper[];
-          if (relicWrappers) {
-            relicWrappers
-              .filter((relicWrapper) => ids.includes(relicWrapper.id))
-              .forEach((relicWrapper) => {
-                relicWrapper[key as keyof RelicWrapper] = value as never;
-              });
-          }
+          Object.values(relicWrappers)
+            .filter((relicWrapper) => ids.includes(relicWrapper.id))
+            .forEach((relicWrapper) => {
+              relicWrapper[key as keyof RelicWrapper] = value as never;
+            });
         }
         if (gin_layer_sync.includes(id)) {
-          updateRelics(gin_layer_sync, "layer", layerNumber || 0);
+          updateRelics(gin_layer_sync, "layer", layerNumber);
         } else if (thought_layer_sync.includes(id)) {
-          updateRelics(thought_layer_sync, "layer", layerNumber || 0);
+          updateRelics(thought_layer_sync, "layer", layerNumber);
         } else if (assertions_layer_sync.includes(id)) {
-          updateRelics(assertions_layer_sync, "layer", layerNumber || 0);
+          updateRelics(assertions_layer_sync, "layer", layerNumber);
         } else if (tujixieyi_layer_sync.includes(id)) {
-          updateRelics(tujixieyi_layer_sync, "layer", layerNumber || 0);
+          updateRelics(tujixieyi_layer_sync, "layer", layerNumber);
         } else if (baoleixieyi_layer_sync.includes(id)) {
-          updateRelics(baoleixieyi_layer_sync, "layer", layerNumber || 0);
+          updateRelics(baoleixieyi_layer_sync, "layer", layerNumber);
         } else if (yuanchengxieyi_layer_sync.includes(id)) {
-          updateRelics(yuanchengxieyi_layer_sync, "layer", layerNumber || 0);
+          updateRelics(yuanchengxieyi_layer_sync, "layer", layerNumber);
         } else if (pohuaixieyi_layer_sync.includes(id)) {
-          updateRelics(pohuaixieyi_layer_sync, "layer", layerNumber || 0);
+          updateRelics(pohuaixieyi_layer_sync, "layer", layerNumber);
         } else {
-          state.relicsMap[state.rogueInput.topic].find((r) => r.id === id)!.layer = layerNumber || 0;
+          state.relicWrapperMap[rogueKey][id].layer = layerNumber;
         }
       },
       undefined,
@@ -89,7 +77,8 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
   setSelectedIds: (ids) =>
     set(
       (state) => {
-        state.selectedIds = ids;
+        const rogueKey = state.rogueInput.topic;
+        state.selectedIdsMap[rogueKey] = ids;
       },
       undefined,
       "setSelectedIds",
@@ -97,8 +86,10 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
   selectRelic: (id) =>
     set(
       (state) => {
-        if (!state.selectedIds.includes(id)) {
-          state.selectedIds.push(id);
+        const rogueKey = state.rogueInput.topic;
+        const selectedIds = state.selectedIdsMap[rogueKey];
+        if (!selectedIds.includes(id)) {
+          selectedIds.push(id);
         }
       },
       undefined,
@@ -107,11 +98,11 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
   unselectRelic: (id) =>
     set(
       (state) => {
-        if (state.selectedIds.includes(id)) {
-          const index = state.selectedIds.indexOf(id);
-          if (index > -1) {
-            state.selectedIds.splice(index, 1);
-          }
+        const rogueKey = state.rogueInput.topic;
+        const selectedIds = state.selectedIdsMap[rogueKey];
+        if (selectedIds.includes(id)) {
+          const i = selectedIds.indexOf(id);
+          selectedIds.splice(i, 1);
         }
       },
       undefined,
@@ -120,14 +111,14 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
   toggleRelicSelection: (id) => {
     set(
       (state) => {
-        const updated = [...state.selectedIds];
-        if (state.selectedIds.includes(id)) {
-          const i = updated.indexOf(id);
-          updated.splice(i, 1);
+        const rogueKey = state.rogueInput.topic;
+        const selectedIds = state.selectedIdsMap[rogueKey];
+        if (selectedIds.includes(id)) {
+          const i = selectedIds.indexOf(id);
+          selectedIds.splice(i, 1);
         } else {
-          updated.push(id);
+          selectedIds.push(id);
         }
-        state.selectedIds = updated;
       },
       undefined,
       "toggleRelicSelection",

@@ -1,4 +1,4 @@
-import type { CharData, RelicWrapper } from "~/types/gameData";
+import type { CharData } from "~/types/gameData";
 import type { SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
 import { intialCalcCharState } from "../calcConstants";
 import {
@@ -14,7 +14,6 @@ import {
   getUniEquips,
   getSkillLevels,
 } from "../calcUtils/charUtils";
-import { wrapRelicData } from "~/modules/Tool/DamageCalculator/utils";
 
 export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharActions> = (set, get) => ({
   ...intialCalcCharState,
@@ -64,11 +63,6 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       atkSpd: 0,
     };
 
-    // 更新藏品状态
-    const rogueKey = state.rogueInput.topic;
-    const relicList = state.relicList;
-    const relicWrappers = relicList.map((relic) => wrapRelicData(relic, charData));
-
     set(
       (state) => {
         state.activeCharName = charName;
@@ -112,8 +106,6 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           /** 干员属性额外修改 */
           attributeModifier: charModifier,
         };
-        /** 根据干员属性，更新藏品状态 */
-        state.relicsMap[rogueKey] = relicWrappers as RelicWrapper[];
       },
       undefined,
       "setActiveCharName",

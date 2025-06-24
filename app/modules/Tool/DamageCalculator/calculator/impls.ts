@@ -3,10 +3,10 @@ import type {
   CalculatorInput,
   CalculatorOutput,
   RelicBuff,
-  RelicWrapper,
   CharData,
   StageData,
   EnemyData,
+  RelicDataExt,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
@@ -32,22 +32,22 @@ export interface CharImpl {
 /** 干员藏品黑板应用输入 */
 export type CharRelicBlackboardInput = {
   buff: RelicBuff;
-  relic: RelicWrapper;
+  relic: RelicDataExt;
   stageData?: StageData;
   charData?: CharData;
 };
 /** 敌人藏品黑板应用输入 */
 export type EnemyRelicBlackboardInput = {
   buff: RelicBuff;
-  relic: RelicWrapper;
+  relic: RelicDataExt;
   enemyData: EnemyData;
 };
 /** 藏品黑板应用输入 */
 export type RelicBlackboardApplyInput = {
   buff: RelicBuff;
-  relic: RelicWrapper;
+  relic: RelicDataExt;
   context: BuffContext;
-  relics: RelicWrapper[];
+  relics: RelicDataExt[];
 };
 /** 藏品黑板实现 */
 export type RelicBlackboard = {
@@ -55,12 +55,12 @@ export type RelicBlackboard = {
     charInput?: CharInput;
     charData?: CharData;
     enemyData?: EnemyData;
-    relics: RelicWrapper[];
+    relics: RelicDataExt[];
   }) => boolean;
-  apply(input: { context: BuffContext; relics: RelicWrapper[] }): void;
+  apply(input: { context: BuffContext; relics: RelicDataExt[] }): void;
 };
 const implMap = new Map<string, CharImpl>();
-const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard>();
+const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicDataExt) => RelicBlackboard>();
 /**
  * 注册干员计算器实现
  * @param name 干员名称
@@ -104,12 +104,12 @@ export function getCalculatorImpl(name: string): CalculatorImpl {
 }
 
 /** 注册藏品黑板 */
-export function registerRelicBlackboard(key: string, apply: (buff: RelicBuff, relic: RelicWrapper) => RelicBlackboard) {
+export function registerRelicBlackboard(key: string, apply: (buff: RelicBuff, relic: RelicDataExt) => RelicBlackboard) {
   relicBlackboardMap.set(key, apply);
 }
 
-/** 获取藏品黑板 */
-export function getRelicBlackboard(buff: RelicBuff, relic: RelicWrapper): RelicBlackboard {
+/** 获取藏品黑板，准确的说是buff的黑板实现，一个藏品可能有多个buff */
+export function getRelicBlackboard(buff: RelicBuff, relic: RelicDataExt): RelicBlackboard {
   // key为char时代表什么？没有注册 TODO
   const key = buff.blackboard.find((b) => b.key === "key")?.valueStr || "char";
   const relicBlackboard = relicBlackboardMap.get(key);

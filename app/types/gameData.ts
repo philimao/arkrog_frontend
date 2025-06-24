@@ -319,7 +319,7 @@ export interface CharData {
  * 藏品信息
  */
 export interface ItemData {
-  id: `rogue_${number}_${string}`;
+  id: string;
   name: string;
   description: string | null;
   usage: string;
@@ -335,13 +335,10 @@ export interface RelicBuff {
   blackboard: BlackboardData[];
 }
 
-export type RelicDataExt = ItemData &
-  RelicData & {
-    show: boolean;
-  };
+export type RelicDataExt = ItemData & RelicData;
 
 export interface RelicData {
-  id: `rogue_${number}_${string}`;
+  id: string;
   buffs: RelicBuff[];
   /** 藏品效果 */
   usage: string;
@@ -351,30 +348,29 @@ export interface RelicData {
   layer: number;
 }
 
-export interface RelicWrapperBuff {
-  key: string;
-  isActive: boolean;
-}
-
 export interface RelicWrapper {
+  /** 藏品ID */
   id: string;
+  /** 藏品名称 */
   name: string;
+  /** 藏品价值 */
   value: number;
+  /** 藏品效果 */
   usage: string;
-  /** 对当前干员是否生效 */
-  isActive: boolean;
-  /** 是否被用户选中生效，默认生效 */
-  userActive: boolean;
   /** 是否被用户收藏 TODO */
   isFavorite: boolean;
+  /** 是否被用户选中生效，默认生效 */
+  userActive: boolean;
   /** 是否存在层数 */
   hasLayer: boolean;
+  /** 藏品层数 */
   layer: number;
-  show: boolean;
+  /** 拼音 */
   pinyin: string;
+  /** 首字母 */
   initials: string;
-  buffs: RelicWrapperBuff[];
-  relicData: RelicData;
+  /** 是否尚未实现效果 */
+  disabled: boolean;
 }
 
 export interface CharAttributeModifier {
@@ -595,7 +591,7 @@ export interface CalculatorInput {
   /** 敌人基础数据 */
   enemyData: EnemyData;
   /** 藏品 */
-  relics: RelicWrapper[];
+  relics: (RelicDataExt & RelicWrapper)[];
   /** 肉鸽输入数据 */
   rogueInput: RogueInput;
 }

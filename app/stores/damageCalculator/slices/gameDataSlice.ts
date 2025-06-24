@@ -3,6 +3,7 @@ import type { SliceCreator, SlicedCalcGameDataActions } from "../calcTypes";
 import { initialCalcGameDataState } from "../calcConstants";
 
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
+import type { RogueKey } from "~/types/gameData";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
@@ -22,23 +23,35 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogueInput",
     ),
-  setRogueKey: (rogueKey) =>
+  setRogueKey: async (rogueKey) => {
+    const state = get();
+    const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
+    rogueInput.topic = rogueKey;
+    const renderStages = getStageList(state.stages, rogueInput);
+    const stageId = renderStages[0].id;
+    const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
+      rogueInput,
+      stages: state.stages,
+      levels: state.levels,
+      selectedIds: state.selectedIdsMap[rogueKey] || [],
+      stageId,
+    }); // immer可以获得最新的state
     set(
-      async (state) => {
+      (state) => {
         state.rogueInput.topic = rogueKey;
-        state.renderStages = getStageList(state.stages, state.rogueInput);
-        state.stageId = state.renderStages[0].id;
-        await handleUpdateStageId({
-          rogueInput: state.rogueInput,
-          stages: state.stages,
-          levels: state.levels,
-          selectedIds: state.selectedIds,
-          stageId: state.stageId,
-        }); // immer可以获得最新的state
+        state.renderStages = renderStages;
+        state.stageId = stageId;
+        state.stageData = stageData;
+        state.levelData = levelData as never;
+        state.levels = levels;
+        state.selectedIdsMap[rogueKey] = selectedIds;
+        state.enemyData = enemyData as never;
+        state.enemyBase = enemyBase;
       },
       undefined,
       "setRogueKey",
-    ),
+    );
+  },
   setRogueDifficulty: (difficulty) => {
     return set(
       (state) => {
@@ -52,24 +65,25 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     rogueInput[rogueInput.topic].zone = zone;
+    const rogueKey = rogueInput.topic as RogueKey;
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
     const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: state.selectedIds,
+      selectedIds: state.selectedIdsMap[rogueKey],
       stageId,
     });
     set(
       (state) => {
-        state.rogueInput[state.rogueInput.topic].zone = zone;
+        state.rogueInput[rogueKey].zone = zone;
         state.renderStages = renderStages;
         state.stageId = stageId;
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIds = selectedIds;
+        state.selectedIdsMap[state.rogueInput.topic] = selectedIds;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
       },
@@ -79,11 +93,12 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   },
   setRogueStageId: async (stageId) => {
     const state = get();
+    const rogueKey = state.rogueInput.topic as RogueKey;
     const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput: state.rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: state.selectedIds,
+      selectedIds: state.selectedIdsMap[rogueKey],
       stageId,
     });
     set(
@@ -92,7 +107,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIds = selectedIds;
+        state.selectedIdsMap[rogueKey] = selectedIds;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
       },

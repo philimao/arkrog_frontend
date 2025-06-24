@@ -16,7 +16,7 @@ const StyledEnemySpecSelectorInner = styled.div`
 
 export interface EnemySpec {
   id: string;
-  value: { label: string; key: string; value: number }[];
+  value: { label: string; bbKey: string; key: string; value: number }[];
 }
 
 /**
@@ -35,28 +35,20 @@ export default function EnemySpecSelector() {
       <StyledEnemySpecSelectorInner>
         {enemyConfig.selects
           .filter((select) => showSkzdwx || select.label !== Rogue4SkzdwxSelect.label)
-          .map(
-            (
-              select: {
-                label: string;
-                options: { label: string; value: number }[];
-                apply: (value: number) => { label: string; key: string; value: number };
-              },
-              index: number,
-            ) => (
-              <ToolSelect
-                key={select.label}
-                array={select.options}
-                getKey={(item) => item.value.toString()}
-                getValue={(item) => item.label}
-                label={select.label}
-                selectedKeys={[enemySpec.value[index].value.toString()]}
-                onChange={(evt) => {
-                  updateEnemySpec(index, evt.target.value);
-                }}
-              />
-            ),
-          )}
+          .map((select, index) => (
+            <ToolSelect
+              key={select.label}
+              array={select.options}
+              getKey={(item) => item.key.toString()}
+              getValue={(item) => item.label}
+              label={select.label}
+              selectedKeys={[enemySpec.value[index].key]}
+              onChange={(evt) => {
+                const result = select.apply(evt.target.value);
+                updateEnemySpec(index, result);
+              }}
+            />
+          ))}
       </StyledEnemySpecSelectorInner>
     </StyledEnemySpecSelector>
   );
@@ -67,8 +59,8 @@ export interface EnemySpecConfig {
   name: string;
   selects: {
     label: string;
-    options: { label: string; value: number }[];
-    apply: (value: number) => { label: string; key: string; value: number };
+    options: { label: string; key: number }[];
+    apply: (key: string) => { label: string; bbKey: string; key: string; value: number };
     img?: string;
   }[];
 }
@@ -86,12 +78,13 @@ export const sharedConfigs: Record<string, EnemySpecConfig> = {};
     selects: [
       {
         label: "重生造物（受到的物理和法术伤害降低90%）",
-        options: [{ label: "90%减伤", value: 0.9 }],
-        apply: (value: number) => {
+        options: [{ label: "90%减伤", key: 0.9 }],
+        apply: (key: string) => {
           return {
             label: "重生造物（受到的物理和法术伤害降低90%）",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },
@@ -102,14 +95,15 @@ export const sharedConfigs: Record<string, EnemySpecConfig> = {};
 export const Rogue4SkzdwxSelect: EnemySpecConfig["selects"][number] = {
   label: "是否位于年代印痕中（最终乘算50减伤）",
   options: [
-    { label: "否", value: 0 },
-    { label: "是", value: 0.5 },
+    { label: "否", key: 0 },
+    { label: "是", key: 0.5 },
   ],
-  apply: (value: number) => {
+  apply: (key: string) => {
     return {
       label: "是否位于年代印痕中（最终乘算50减伤）",
-      key: "enemy_damage_resistance",
-      value: value,
+      bbKey: "enemy_damage_resistance",
+      key: key,
+      value: Number(key),
     };
   },
 };
@@ -123,17 +117,18 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "根据与特蕾西亚距离获得物法减伤",
         options: [
-          { label: "90减伤 距离≤1.0", value: 0.9 },
-          { label: "75减伤 距离≤1.5", value: 0.75 },
-          { label: "60减伤 距离≤2.5", value: 0.6 },
-          { label: "50减伤 距离≤3.5", value: 0.5 },
-          { label: "35减伤 距离>3.5", value: 0.35 },
+          { label: "90减伤 距离≤1.0", key: 0.9 },
+          { label: "75减伤 距离≤1.5", key: 0.75 },
+          { label: "60减伤 距离≤2.5", key: 0.6 },
+          { label: "50减伤 距离≤3.5", key: 0.5 },
+          { label: "35减伤 距离>3.5", key: 0.35 },
         ],
-        apply: (value: number) => {
+        apply: (key: string) => {
           return {
             label: "根据与特蕾西亚距离获得物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
         img:
@@ -148,12 +143,13 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
     selects: [
       {
         label: "本关固定获得50物法减伤",
-        options: [{ label: "50减伤", value: 0.5 }],
-        apply: (value: number) => {
+        options: [{ label: "50减伤", key: 0.5 }],
+        apply: (key: string) => {
           return {
             label: "本关固定获得50物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },
@@ -166,16 +162,17 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "根据储存的攻击能量数量获得物法减伤",
         options: [
-          { label: "90减伤 3颗球", value: 0.9 },
-          { label: "60减伤 2颗球", value: 0.6 },
-          { label: "30减伤 1颗球", value: 0.3 },
-          { label: "0减伤 无球", value: 0 },
+          { label: "90减伤 3颗球", key: 0.9 },
+          { label: "60减伤 2颗球", key: 0.6 },
+          { label: "30减伤 1颗球", key: 0.3 },
+          { label: "0减伤 无球", key: 0 },
         ],
-        apply: (value: number) => {
+        apply: (key: string) => {
           return {
             label: "根据储存的攻击能量数量获得物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },
@@ -188,14 +185,15 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "伤害来源与自身距离≥2.0，获得80物法减伤",
         options: [
-          { label: "80减伤", value: 0.8 },
-          { label: "无减伤", value: 0 },
+          { label: "80减伤", key: 0.8 },
+          { label: "无减伤", key: 0 },
         ],
-        apply: (value: number) => {
+        apply: (key: string) => {
           return {
             label: "伤害来源与自身距离≥2.0，获得80物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },
@@ -208,21 +206,22 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "场上每存在一个尼卢火，获得20物法减伤",
         options: [
-          { label: "无尼卢火", value: 0 },
-          { label: "1 尼卢火", value: 1 },
-          { label: "2 尼卢火", value: 2 },
-          { label: "3 尼卢火", value: 3 },
-          { label: "4 尼卢火", value: 4 },
-          { label: "5 尼卢火", value: 5 },
+          { label: "无尼卢火", key: 0 },
+          { label: "1 尼卢火", key: 1 },
+          { label: "2 尼卢火", key: 2 },
+          { label: "3 尼卢火", key: 3 },
+          { label: "4 尼卢火", key: 4 },
+          { label: "5 尼卢火", key: 5 },
         ],
-        apply: (value: number) => {
-          const baseValue = Math.pow(0.8, value);
+        apply: (key: string) => {
+          const baseValue = Math.pow(0.8, Number(key));
           // 保留4位小数
           const percentage = Math.round((1 - baseValue) * 10000) / 10000;
           const finalValue = Math.round(percentage * 100) / 100;
           return {
             label: "场上每存在一个尼卢火，获得20物法减伤",
-            key: "enemy_damage_resistance",
+            bbKey: "enemy_damage_resistance",
+            key: key,
             value: finalValue,
           };
         },
@@ -236,14 +235,15 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "一阶段获得50物法减伤",
         options: [
-          { label: "一阶段 50减伤", value: 0.5 },
-          { label: "二阶段 无减伤", value: 0 },
+          { label: "一阶段 50减伤", key: 0.5 },
+          { label: "二阶段 无减伤", key: 0 },
         ],
-        apply: (value: number) => {
+        apply: (key: string) => {
           return {
             label: "一阶段获得50物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },
@@ -256,14 +256,15 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       {
         label: "当护盾朝向我方干员时，获得80物法减伤",
         options: [
-          { label: "80减伤", value: 0.8 },
-          { label: "无减伤", value: 0 },
+          { label: "80减伤", key: 0.8 },
+          { label: "无减伤", key: 0 },
         ],
-        apply: (value: number) => {
+        apply: (key: string) => {
           return {
             label: "当护盾朝向我方干员时，获得80物法减伤",
-            key: "enemy_damage_resistance",
-            value: value,
+            bbKey: "enemy_damage_resistance",
+            key: key,
+            value: Number(key),
           };
         },
       },

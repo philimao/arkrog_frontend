@@ -1,13 +1,12 @@
 import { styled } from "styled-components";
 import { relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
-import React, { type FormEvent, useMemo, useState } from "react";
+import React, { type FormEvent, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
 import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
-import { applyAnyRelics } from "../calculator/debug/print-relics-info";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
@@ -25,50 +24,11 @@ export default function RelicsContainer({
   relicsWrappers,
   showIds,
 }: {
-  relicsWrappers: RelicWrapper[];
+  relicsWrappers: Record<string, RelicWrapper>;
   showIds: string[];
 }) {
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
-  const { relicList } = useDamageCalculatorStore();
-
-  /** 此处通过分析藏品buff计算哪些藏品生效, 达到禁选无效藏品功能 */
-  const invalidRelicList = useMemo<string[]>(() => {
-    const result: string[] = [
-      /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
-      "烟花之手",
-      "国王的铠甲",
-    ];
-
-    // 获取应用了所有藏品的加成上下文
-    const context = applyAnyRelics(
-      relicsWrappers.map((r) => ({
-        ...r,
-        relicData: relicList.find((relic) => relic.id === r?.id)!,
-      })),
-    );
-    // 遍历生效的所有buff取藏品名
-    Object.values(context.relic_rune_add).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    Object.values(context.relic_rune_mul).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    Object.values(context.in_game_buff_add).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    Object.values(context.in_game_buff_mul).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    Object.values(context.in_game_buff_final_mul).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    Object.values(context.global_buff_stack).forEach((value) => {
-      value.children.forEach((node) => result.push(node.tooltip));
-    });
-    // 排除生效的buff
-    return relicsWrappers.filter((relic) => !result.includes(relic.name)).map((relic) => relic.name);
-  }, [relicList, relicsWrappers]);
 
   return (
     <StyledRelicsContainer>
@@ -83,16 +43,16 @@ export default function RelicsContainer({
         </StyledModeSelector>
       </StyledTitle>
       <StyledRelicsInner>
-        {relicsWrappers
-          .filter((relicWrapper) => showIds.includes(relicWrapper.id) && (showAll || relicWrapper.isActive))
+        {Object.values(relicsWrappers)
+          .filter((relicWrapper) => showIds.includes(relicWrapper.id) && (showAll || !relicWrapper.disabled))
           .sort((a, b) => {
-            const aDisabled = invalidRelicList.includes(a.name);
-            const bDisabled = invalidRelicList.includes(b.name);
+            const aDisabled = a.disabled;
+            const bDisabled = b.disabled;
             if (aDisabled === bDisabled) return 0;
             return aDisabled ? 1 : -1;
           })
           .map((relicWrapper) => (
-            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} invalidRelicList={invalidRelicList} />
+            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} />
           ))}
       </StyledRelicsInner>
     </StyledRelicsContainer>
@@ -155,8 +115,10 @@ const StyledLayerWrapper = styled.div`
   }
 `;
 
-function RelicBlock({ relicWrapper, invalidRelicList }: { relicWrapper: RelicWrapper; invalidRelicList: string[] }) {
-  const { setRelicLayer, toggleRelicSelection, selectedIds } = useDamageCalculatorStore();
+function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
+  const { rogueInput, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
+  const rogueKey = rogueInput.topic;
+  const selectedIds = useDamageCalculatorStore((state) => state.selectedIdsMap[rogueKey]);
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
   function updateRelicLayer(evt: FormEvent) {
@@ -165,14 +127,13 @@ function RelicBlock({ relicWrapper, invalidRelicList }: { relicWrapper: RelicWra
   }
 
   const selected = selectedIds.includes(relicWrapper.id);
-  const isDisabled = invalidRelicList.includes(relicWrapper.name);
 
   return (
     <StyledRelicBlock
       $selected={selected}
-      $disabled={isDisabled}
+      $disabled={relicWrapper.disabled}
       key={relicWrapper.id}
-      onClick={() => !isDisabled && toggleRelicSelection(relicWrapper.id)}
+      onClick={() => !relicWrapper.disabled && toggleRelicSelection(relicWrapper.id)}
     >
       <StyledImageWrapper>
         <LazyImage src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`} />

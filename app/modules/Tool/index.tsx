@@ -43,6 +43,9 @@ function ToolIndex() {
         <>
           <OperatorDisplay />
           <ResultDisplay />
+          <div className="text-xs mt-2 mb-4">
+            伤害计算器仍在内测快速迭代阶段，可能出现错误，请结合伤害加成面板进行数据验证
+          </div>
         </>
       )}
       <TopicSelector />

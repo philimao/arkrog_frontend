@@ -1,10 +1,10 @@
-import type { RelicWrapper } from "~/types/gameData";
+import type { RelicDataExt } from "~/types/gameData";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 
 /** 藏品分析结果 */
 export interface IBuffContext {
   /** 不生效的藏品 */
-  invalidRelics: RelicWrapper[];
+  invalidRelics: RelicDataExt[];
   stage_rune_mul: {
     /** 敌人攻击力改变来源 */
     enemy_atk: ExpressionGroupNode;
@@ -113,7 +113,7 @@ export interface IBuffContext {
 }
 
 export class BuffContext implements IBuffContext {
-  invalidRelics: RelicWrapper[] = [];
+  invalidRelics: RelicDataExt[] = [];
   stage_rune_mul: IBuffContext["stage_rune_mul"] = {
     enemy_atk: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
@@ -142,7 +142,7 @@ export class BuffContext implements IBuffContext {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: new ExpressionGroupNode("+", "局内直接加算"),
-    enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算").addChild(new NumericLiteralNode(0, "基数")),
   };
   in_game_buff_mul: IBuffContext["in_game_buff_mul"] = {
     atk: new ExpressionGroupNode("+", "局内直接乘算").addChild(new NumericLiteralNode(1, "基数")),

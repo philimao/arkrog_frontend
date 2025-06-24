@@ -4,7 +4,6 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 const StyledResultDisplay = styled.div`
   background: var(--black-gray);
   padding: 1rem;
-  margin-bottom: 2rem;
   display: flex;
   gap: 2rem;
 `;

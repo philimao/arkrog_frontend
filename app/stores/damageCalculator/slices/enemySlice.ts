@@ -29,7 +29,7 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
         state.enemyIllust = getEnemyIllust(enemyConfig);
         state.enemySpec = {
           id: enemyData.id,
-          value: enemyConfig.selects.map((select) => select.apply(select.options[0].value)),
+          value: enemyConfig.selects.map((select) => select.apply(select.options[0].key.toString())),
         };
         /** 当难度大于等于14时，为年代之刺与饮泣之刺设置年代印痕减伤 */
         if (
@@ -43,12 +43,10 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
       undefined,
       "setEnemyData",
     ),
-  updateEnemySpec: (index: number, value: string) =>
+  updateEnemySpec: (index: number, result: { label: string; bbKey: string; key: string; value: number }) =>
     set(
       (state) => {
-        const valueNum = Number(value);
-        if (isNaN(valueNum)) throw new Error("Invalid value");
-        state.enemySpec.value[index].value = valueNum;
+        state.enemySpec.value[index] = result;
       },
       undefined,
       "updateEnemySpec",

@@ -36,10 +36,10 @@ const StyledCollapseButton = styled.div`
 
 export default function FooterPanel() {
   const relicsContainerRef = useRef<HTMLDivElement>(null);
-  const { showRelics, rogueInput, toggleShowRelics, selectedIds, setSelectedIds, setTopicSpecItems } =
-    useDamageCalculatorStore();
+  const { showRelics, rogueInput, toggleShowRelics, setSelectedIds, setTopicSpecItems } = useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
-  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicsMap[rogueKey]));
+  const relicsState = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey]));
 
   const [showBuff, setShowBuff] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -112,11 +112,12 @@ export default function FooterPanel() {
               className="flex gap-2 w-full h-full p-2 overflow-auto flex-nowrap scrollbar-hide cursor-grab active:cursor-grabbing select-none"
               onMouseDown={handleMouseDown}
             >
-              {relicWrappers &&
-                selectedIds
-                  .map((id) => relicWrappers.find((relicWrapper) => relicWrapper.id === id))
-                  .filter((i) => i)
-                  .map((relicWrapper) => <RelicItem key={relicWrapper!.id} relicWrapper={relicWrapper!} />)}
+              {selectedIds
+                .map((id) => relicsState[id])
+                .filter((i) => i)
+                .map((relicWrapper) => (
+                  <RelicItem key={relicWrapper.id} relicWrapper={relicWrapper} />
+                ))}
             </div>
           </div>
           <TopicSpecTrigger />

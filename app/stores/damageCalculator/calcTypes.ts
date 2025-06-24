@@ -204,22 +204,21 @@ export interface SlicedCalcEnemyActions {
   /** 直接设置敌人基础面板（仅木桩使用） */
   setEnemyBase: (enemyBase: EnemyInput) => void;
   /** 用户修改敌人特殊配置选项 */
-  updateEnemySpec: (index: number, value: string) => void;
+  updateEnemySpec: (index: number, result: { label: string; bbKey: string; key: string; value: number }) => void;
   /** 设置敌人属性表达式，在多个显示敌人面板的组件中使用 */
   setEnemyExpression: (expression: Record<string, ExpressionGroupNode>) => void;
 }
 
 export interface SlicedCalcRelicState {
   /** 肉鸽藏品列表 */
-  relicList: RelicDataExt[];
+  relicDataMap: Record<RogueKey, Record<string, RelicDataExt>>;
   /** 预处理后的藏品列表 */
-  relicsMap: Record<RogueKey, RelicWrapper[]>;
+  relicWrapperMap: Record<RogueKey, Record<string, RelicWrapper>>;
   /** 选择的藏品ID */
-  selectedIds: string[];
+  selectedIdsMap: Record<RogueKey, string[]>;
 }
 
 export interface SlicedCalcRelicActions {
-  setRelicWrapper: (rogueKey: RogueKey, relics: RelicWrapper[]) => void;
   setRelicLayer: (id: string, layer: string) => string;
   updateRelic: (id: string, key: string, value: number | string | boolean) => void;
   updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
@@ -230,6 +229,8 @@ export interface SlicedCalcRelicActions {
 }
 
 export interface SlicedCalculatorState {
+  /** 应用所有藏品加成上下文 */
+  anyRelicContextMap: Record<RogueKey, BuffContext>;
   /** 全局加成上下文 */
   globalAnalysisResult: BuffContext;
   /** 仅有藏品的加成上下文 */
@@ -247,7 +248,7 @@ export interface SlicedCalculatorActions {
   updateGlobalAnalysisResult: (input: {
     charInput: CharInput;
     charData: CharData;
-    relics: RelicWrapper[];
+    relics: RelicDataExt[];
   }) => BuffContext;
   resetStore: () => void;
 }

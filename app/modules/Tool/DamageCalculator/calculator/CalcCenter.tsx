@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import type { RelicWrapper, CalculatorInput } from "~/types/gameData";
+import type { CalculatorInput } from "~/types/gameData";
 import { calculator } from "./calculator";
 import { printRelicsInfo } from "./debug/print-relics-info";
 import { CalculatorHelper } from "./helper";
@@ -16,30 +16,30 @@ export default function CalcCenter() {
     enemyBase,
     enemyData,
     levelData,
-    selectedIds,
-    relicsMap,
     enemySpec,
-    relicList,
     globalAnalysisResult,
     setRelicAnalysisResult,
     setCalcOutput,
     setGlobalAnalysisResult,
     setEnemyExpression,
   } = useDamageCalculatorStore();
-
   const rogueKey = rogueInput.topic;
+  const selectedIds = useDamageCalculatorStore((state) => state.selectedIdsMap[rogueKey]);
+  const relicWrappers = useDamageCalculatorStore((state) => state.relicWrapperMap[rogueKey]);
+  const relicData = useDamageCalculatorStore((state) => state.relicDataMap[rogueKey]);
 
   /** 选择的藏品 */
   const selectedRelics = useMemo(() => {
     return selectedIds
-      .map((id) => relicsMap[rogueKey]?.find((relic) => relic.id === id))
+      .map((id) => relicWrappers[id])
       .filter((r) => r?.userActive)
-      .map((r) => ({
-        relicData: relicList.find((relic) => relic.id === r?.id),
-        ...r,
-      })) as RelicWrapper[];
-  }, [relicList, relicsMap, rogueKey, selectedIds]);
+      .map((relicWrapper) => ({
+        ...relicData[relicWrapper.id],
+        ...relicWrapper,
+      }));
+  }, [relicData, relicWrappers, selectedIds]);
 
+  /** 计算全局Buff上下文 */
   useEffect(() => {
     let buffContext;
     // 干员养成加成
@@ -147,6 +147,7 @@ export default function CalcCenter() {
     });
   }, [enemyBase, globalAnalysisResult]);
 
+  /** 计算器核心计算 */
   useEffect(() => {
     if (!charInput || !globalAnalysisResult || !enemyInput) return;
     const buffContext = globalAnalysisResult;
@@ -175,28 +176,13 @@ export default function CalcCenter() {
       enemyInput: enemyInput,
       charData: charData, // 干员解包原始数据
       enemyData: enemyData, // 敌人解包原始数据
-      relics: relicsMap[rogueKey].map((r) => ({
-        ...r,
-        relicData: relicList.find((relic) => relic.id === r?.id)!,
-      })), // 有效藏品列表
+      relics: selectedRelics, // 有效藏品列表
       rogueInput,
       buffContext,
     });
     // 计算结果
     setCalcOutput(calcResult);
-  }, [
-    charData,
-    charInput,
-    enemyData,
-    enemyInput,
-    globalAnalysisResult,
-    relicList,
-    relicsMap,
-    rogueInput,
-    rogueKey,
-    selectedRelics,
-    setCalcOutput,
-  ]);
+  }, [charData, charInput, enemyData, enemyInput, globalAnalysisResult, rogueInput, selectedRelics, setCalcOutput]);
 
   return null;
 }

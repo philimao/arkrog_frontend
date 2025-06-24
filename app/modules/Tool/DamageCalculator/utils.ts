@@ -7,9 +7,6 @@ import type {
   DefinedData,
   EnemyData,
   RelicBuff,
-  RelicDataExt,
-  RelicWrapper,
-  RelicWrapperBuff,
   RogueKey,
 } from "~/types/gameData";
 
@@ -451,49 +448,6 @@ export function applyAttrModifiers(mod: AttributeModifier, result: CharAttribute
       break;
     }
   }
-}
-
-/**
- * 计算藏品相关属性
- * @param relicDataExt
- * @param charData
- */
-export function wrapRelicData(relicDataExt: RelicDataExt, charData?: CharData): Partial<RelicWrapper> {
-  const buffs: RelicWrapperBuff[] = relicDataExt.buffs.map((buff) => {
-    const isActive =
-      isRelicInBlacklist(relicDataExt.name) &&
-      isBuffActive(buff, charData) &&
-      isBlackboardActiveForChar(buff, charData);
-    return {
-      key: buff.key,
-      isActive,
-    };
-  });
-  const hasLayer = relicDataExt.buffs.some(
-    (buff) =>
-      buff.key.startsWith("layer_char") ||
-      buff.key.startsWith("char_squad") ||
-      buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!)),
-  );
-
-  return {
-    id: relicDataExt.id,
-    name: relicDataExt.name,
-    value: relicDataExt.value,
-    usage: relicDataExt.usage,
-    show: relicDataExt.show,
-    isActive: buffs.some((b) => b.isActive),
-    userActive: true,
-    isFavorite: false,
-    hasLayer: hasLayer,
-    layer: relicDataExt.layer || 1,
-    buffs: buffs,
-    pinyin: relicDataExt.pinyin.replace(/_/g, ""),
-    initials: relicDataExt.pinyin
-      .split("_")
-      .map((s) => s[0])
-      .join(""),
-  };
 }
 
 export const outBuffMap: Partial<Record<RogueKey, string[]>> = {

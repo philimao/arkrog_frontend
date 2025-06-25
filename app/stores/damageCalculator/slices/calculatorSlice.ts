@@ -14,9 +14,10 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     console.log("initStore", gameDataStore);
     const { topics, character_table, skill_table, uniequip_table, stages } = gameDataStore;
     const { rogueInput } = get();
-    const allowCharNames = Object.keys(
-      import.meta.glob("/app/modules/Tool/DamageCalculator/calculator/charImpl/**/*.ts"),
-    ).map((filename) => filename.split("/").pop()?.split(".")[0]);
+    // const allowCharNames = Object.keys(
+    //   import.meta.glob("/app/modules/Tool/DamageCalculator/calculator/charImpl/**/*.ts"),
+    // ).map((filename) => filename.split("/").pop()?.split(".")[0]);
+    const allowCharNames = Object.values(character_table).map((charData) => charData.name);
     /** 有效干员列表 */
     const charList = Object.values(character_table).filter((charData) => {
       return !["TOKEN", "TRAP"].includes(charData.profession) && allowCharNames.includes(charData.name);

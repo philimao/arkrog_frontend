@@ -36,7 +36,8 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
   const mitigation =
     1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
+  const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
@@ -75,6 +76,10 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
   const normalAtk = (atk + atkBuffInAdd) * (1 + atkBuffInMul) * traitAtkScale * atkBuffFinalMul + atkBuffFinalAdd;
   const normalDph = normalAtk;
   const normalCritDph = normalAtk * talentScale;
+  const normalFireDph = normalAtk * 2;
+  const normalFireDamage = Math.max(normalFireDph - enemyDef, 0.05 * normalFireDph) *
+    damage_scale *
+    damage_scale_phy;
 
   switch (skillKey) {
     case "skchr_kroos2_1": {
@@ -89,22 +94,31 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
       // 技能期间攻击力提升，2连射
       const skillAtkMul = 1 + atkScale + atkBuffInMul;
       const skillAtk = (atk + atkBuffInAdd) * skillAtkMul * traitAtkScale * atkBuffFinalMul + atkBuffFinalAdd;
-      const skillDph = skillAtk * 2; // 2连射
-      const skillCritDph = skillAtk * talentScale * 2; // 天赋暴击的2连射
+      const skillDph = skillAtk; // 2连射
+      const skillCritDph = skillAtk * talentScale; // 天赋暴击的2连射
+      const skillFireDph = skillAtk * 2;
 
       // 普攻期望伤害
-      const normalPhysicalDamage =
+      let normalPhysicalDamage =
         (Math.max(normalDph - enemyDef, 0.05 * normalDph) * (1 - talentProb) +
           Math.max(normalCritDph - enemyDef, 0.05 * normalCritDph) * talentProb) *
         damage_scale *
         damage_scale_phy;
 
       // 技能期望伤害
-      const skillPhysicalDamage =
+      let skillPhysicalDamage =
         (Math.max(skillDph - enemyDef, 0.05 * skillDph) * (1 - talentProb) +
-          Math.max(skillCritDph - enemyDef, 0.05 * skillCritDph) * talentProb) *
+          Math.max(skillCritDph - enemyDef, 0.05 * skillCritDph) * talentProb) * 2 *
         damage_scale *
         damage_scale_phy;
+      const skillFireDamage = Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) * 2 *
+        damage_scale *
+        damage_scale_phy;
+
+      if (fire) {
+        normalPhysicalDamage += normalFireDamage * 0.25;
+        skillPhysicalDamage += skillFireDamage * 0.25;
+      }
 
       // 攻击速度
       const totalAttackSpeed = Math.min(100 + atkSpeedBuff, 600);
@@ -132,7 +146,7 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
 
     case "skchr_kroos2_2": {
       // 二技能：封喉
-      const baseAttackTimeReductions = [-0.15, -0.15, -0.15, -0.22, -0.22, -0.22, -0.3, -0.3, -0.3, -0.375];
+      const baseAttackTimeReductions = [-0.15, -0.15, -0.15, -0.22, -0.22, -0.22, -0.3, -0.3, -0.3, -0.367];
       const baseAttackTimeReduction = baseAttackTimeReductions[skillLevel];
       const durations = [22, 22, 22, 24, 24, 24, 26, 28, 28, 30];
       const duration = durations[skillLevel];
@@ -149,40 +163,57 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
       const normalAtkFrame = Math.round((baseAttackTime * 3000.0) / totalAttackSpeed);
       const normalAttackTime = normalAtkFrame / 30.0;
       const skillAtkFrame = Math.round((skillAttackTime * 3000.0) / totalAttackSpeed);
+      let skillAtkFrame4 = skillAtkFrame;
+      if (skillAtkFrame < 8) {
+        skillAtkFrame4 = Math.max(skillAtkFrame + 1, 6);
+      }
       const skillAttackTimeActual = skillAtkFrame / 30.0;
+      const skillAttackTimeActual4 = skillAtkFrame4 / 30.0;
 
       // 技能阶段的伤害
-      const skillDph2 = normalAtk * 2; // 2连射
-      const skillCritDph2 = normalAtk * talentScale * 2;
-      const skillDph4 = normalAtk * 4; // 4连射
-      const skillCritDph4 = normalAtk * talentScale * 4;
+      const skillDph2 = normalAtk; // 2连射
+      const skillCritDph2 = normalAtk * talentScale;
+      const skillDph4 = normalAtk; // 4连射
+      const skillCritDph4 = normalAtk * talentScale;
+      const skillFireDph = normalAtk * 2;
 
       // 计算达到maxStackCount需要的时间和击数
       const hitsToMaxStack = Math.ceil(maxStackCount / 2); // 每次攻击2发
       const timeToMaxStack = hitsToMaxStack * skillAttackTimeActual;
       const remaining4ShotTime = Math.max(0, duration - timeToMaxStack);
-      const hits4Shot = Math.ceil(remaining4ShotTime / skillAttackTimeActual);
+      const hits4Shot = Math.ceil(remaining4ShotTime / skillAttackTimeActual4);
 
       // 2连射期间的伤害
-      const skill2ShotPhysicalDamage =
+      let skill2ShotPhysicalDamage =
         (Math.max(skillDph2 - enemyDef, 0.05 * skillDph2) * (1 - talentProb) +
-          Math.max(skillCritDph2 - enemyDef, 0.05 * skillCritDph2) * talentProb) *
+          Math.max(skillCritDph2 - enemyDef, 0.05 * skillCritDph2) * talentProb) * 2 *
         damage_scale *
         damage_scale_phy;
 
       // 4连射期间的伤害
-      const skill4ShotPhysicalDamage =
+      let skill4ShotPhysicalDamage =
         (Math.max(skillDph4 - enemyDef, 0.05 * skillDph4) * (1 - talentProb) +
-          Math.max(skillCritDph4 - enemyDef, 0.05 * skillCritDph4) * talentProb) *
+          Math.max(skillCritDph4 - enemyDef, 0.05 * skillCritDph4) * talentProb) * 4 *
+        damage_scale *
+        damage_scale_phy;
+
+      //烟花伤害
+      const skillFireDamage = Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) *
         damage_scale *
         damage_scale_phy;
 
       // 普攻期间的伤害
-      const normalPhysicalDamage =
+      let normalPhysicalDamage =
         (Math.max(normalDph - enemyDef, 0.05 * normalDph) * (1 - talentProb) +
           Math.max(normalCritDph - enemyDef, 0.05 * normalCritDph) * talentProb) *
         damage_scale *
         damage_scale_phy;
+
+      if (fire) {
+        normalPhysicalDamage += normalFireDamage * 0.25;
+        skill2ShotPhysicalDamage += normalFireDamage * 0.25 * 2;
+        skill4ShotPhysicalDamage += normalFireDamage * 0.25 * 4;
+      }
 
       const normalHitCount = Math.ceil(spCost / normalAttackTime);
 

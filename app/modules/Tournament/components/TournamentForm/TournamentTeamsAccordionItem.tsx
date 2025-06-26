@@ -1,6 +1,6 @@
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
-import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
+import { getInputClassName, inputClassName, labelClassName, labelWithTooltipClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import { Tooltip } from "@heroui/react";
 
@@ -8,12 +8,16 @@ interface TournamentTeamsAccordionItemProps {
   formData: TournamentData;
   setFormData: React.Dispatch<React.SetStateAction<TournamentData>>;
   handleKeyDown: (e: React.KeyboardEvent) => void;
+  touchedFields: Set<string>;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export default function TournamentTeamsAccordionItem({
   formData,
   setFormData,
   handleKeyDown,
+  touchedFields,
+  handleBlur,
 }: TournamentTeamsAccordionItemProps) {
   if (formData.type !== "team") {
     return null;
@@ -21,9 +25,9 @@ export default function TournamentTeamsAccordionItem({
 
   return (
     <>
-      {formData.teams && formData.teams.length > 0 && (
+      {(formData.teams || []).length > 0 && (
         <div className="mb-4">
-          {formData.teams.map((team, index) => (
+          {(formData.teams || []).map((team, index) => (
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
@@ -36,7 +40,7 @@ export default function TournamentTeamsAccordionItem({
                     value={team.name}
                     placeholder="例：紧集授课"
                     onChange={(e) => {
-                      const newTeams = [...formData.teams!];
+                      const newTeams = [...(formData.teams || [])];
                       newTeams[index].name = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
@@ -44,7 +48,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`teamName-${index}`, touchedFields, { [`teamName-${index}`]: team.name })}
+                    onBlur={handleBlur}
                     required
                   />
                 </div>
@@ -58,7 +63,7 @@ export default function TournamentTeamsAccordionItem({
                     value={team.id}
                     placeholder="例：ET"
                     onChange={(e) => {
-                      const newTeams = [...formData.teams!];
+                      const newTeams = [...(formData.teams || [])];
                       newTeams[index].id = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
@@ -66,7 +71,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`teamId-${index}`, touchedFields, { [`teamId-${index}`]: team.id })}
+                    onBlur={handleBlur}
                     required
                   />
                 </div>
@@ -85,7 +91,7 @@ export default function TournamentTeamsAccordionItem({
                       type="text"
                       value={team.avatar}
                       onChange={(e) => {
-                        const newTeams = [...formData.teams!];
+                        const newTeams = [...(formData.teams || [])];
                         newTeams[index].avatar = e.target.value;
                         setFormData((prev) => ({
                           ...prev,
@@ -93,7 +99,8 @@ export default function TournamentTeamsAccordionItem({
                         }));
                       }}
                       onKeyDown={handleKeyDown}
-                      className={`${inputClassName} pr-12`}
+                      className={`${getInputClassName(`teamAvatar-${index}`, touchedFields, { [`teamAvatar-${index}`]: team.avatar })} pr-12`}
+                      onBlur={handleBlur}
                     />
                     <UploadCenterTrigger
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray"
@@ -110,7 +117,7 @@ export default function TournamentTeamsAccordionItem({
                     type="text"
                     value={team.leader}
                     onChange={(e) => {
-                      const newTeams = [...formData.teams!];
+                      const newTeams = [...(formData.teams || [])];
                       newTeams[index].leader = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
@@ -118,7 +125,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`teamLeader-${index}`, touchedFields, { [`teamLeader-${index}`]: team.leader })}
+                    onBlur={handleBlur}
                   />
                 </div>
                 <div>
@@ -130,7 +138,7 @@ export default function TournamentTeamsAccordionItem({
                     type="text"
                     value={team.keyMember}
                     onChange={(e) => {
-                      const newTeams = [...formData.teams!];
+                      const newTeams = [...(formData.teams || [])];
                       newTeams[index].keyMember = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
@@ -138,7 +146,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`teamKeyMember-${index}`, touchedFields, { [`teamKeyMember-${index}`]: team.keyMember })}
+                    onBlur={handleBlur}
                   />
                 </div>
                 <div>
@@ -150,7 +159,7 @@ export default function TournamentTeamsAccordionItem({
                     type="number"
                     value={team.finalRank || ""}
                     onChange={(e) => {
-                      const newTeams = [...formData.teams!];
+                      const newTeams = [...(formData.teams || [])];
                       newTeams[index].finalRank = e.target.value ? parseInt(e.target.value) : undefined;
                       setFormData((prev) => ({
                         ...prev,
@@ -158,7 +167,8 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`teamFinalRank-${index}`, touchedFields, { [`teamFinalRank-${index}`]: team.finalRank })}
+                    onBlur={handleBlur}
                   />
                 </div>
               </div>
@@ -166,7 +176,7 @@ export default function TournamentTeamsAccordionItem({
                 <button
                   type="button"
                   onClick={() => {
-                    const newTeams = formData.teams!.filter((_, i) => i !== index);
+                    const newTeams = (formData.teams || []).filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, teams: newTeams }));
                   }}
                   className="rounded-md p-1 hover:bg-ak-red"

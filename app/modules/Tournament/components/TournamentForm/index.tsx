@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
@@ -12,9 +12,27 @@ import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 
-export const inputClassName = "bg-mid-gray w-full p-2 focus:outline-ak-blue";
+export const getInputClassName = (fieldName: string, touchedFields: Set<string>, formData: any, customInputClass?: string) => {
+  const isRequired = document.getElementById(fieldName)?.hasAttribute("required");
+  const isEmpty = !formData[fieldName] && formData[fieldName] !== 0;
+  const defaultClass = customInputClass ? customInputClass : inputClassName
+
+  if (isRequired && touchedFields.has(fieldName) && isEmpty) {
+    return `${defaultClass} outline outline-2 outline-ak-red`;
+  }
+
+  return defaultClass;
+};
+
+export const inputClassName = "bg-mid-gray w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 export const labelClassName = "block text-sm font-light mb-1";
 export const labelWithTooltipClassName = "flex items-center text-sm font-light mb-1";
+export const selectClassName = {
+  trigger: "bg-mid-gray rounded-none",
+  value: "",
+  popoverContent: "bg-mid-gray rounded-none",
+  listbox: "rounded-none",
+}
 
 export default function TournamentForm({
   edit = false,
@@ -27,38 +45,17 @@ export default function TournamentForm({
   const { userInfo } = useUserInfoStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [formData, setFormData] = useState<TournamentData>(
-    tournamentData
-      ? structuredClone(tournamentData)
-      : {
-          id: "",
-          name: "",
-          groupId: "",
-          avatar: "",
-          rogue: "",
-          edition: "初始版本",
-          type: "individual",
-          memberAlias: "",
-          keyMemberAlias: "",
-          startTime: Date.now(),
-          level: "",
-          labels: [],
-          rule: "",
-          organizerMid: "",
-          organizerName: "",
-          room: "",
-          stages: [],
-          customPlayerKeys: {},
-          groupBy: "",
-        },
-  );
+  const [formData, setFormData] = useState<TournamentData>({} as TournamentData);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>();
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
   const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
   const [editingStage, setEditingStage] = useState<TournamentStage | undefined>();
+  const [expandedKeys, setExpandedKeys] = useState<Set<React.Key>>(new Set(["赛事信息"]));
   const formDataRef = useRef<TournamentData>(formData);
   const saveToStorageRef = useRef<boolean>(true);
   const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
+  const accordionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const saveFormData = () => {
@@ -130,57 +127,81 @@ export default function TournamentForm({
     }
   };
 
+  // Handle accordion selection change
+  const handleSelectionChange = useCallback((keys: any) => {
+    setExpandedKeys(keys);
+  }, []);
+
+  // Expand all accordion items
+  const expandAllAccordionItems = useCallback(() => {
+    const allKeys = ["赛事信息", "赛事阶段", "参赛队伍", "参赛选手", "比赛进程"];
+    setExpandedKeys(new Set(allKeys));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    if (!userInfo?.username) {
-      toast.error("请先登录");
-      setIsSubmitting(false);
-      return;
-    }
+    // Expand all accordion items to ensure all form fields are rendered for validation
+    expandAllAccordionItems();
 
-    try {
-      // 提交赛事数据
-      const response = await _post<{
-        success: boolean;
-        message: string;
-        data?: TournamentData;
-        needSync?: boolean;
-        latestData?: TournamentData;
-        lockedBy?: string;
-      }>("/tournament/save", {
-        tournament: formData,
-        editStartTime: tournamentData ? editStartTimeRef.current : undefined, // 记录进入编辑的时间
-        username: userInfo.username,
-      });
-
-      if (response.success) {
-        toast.success(response.message);
-        returnToPrevPage();
-      } else {
-        toast.error(response.message);
+    // Use setTimeout to ensure the DOM is updated before validation
+    setTimeout(async () => {
+      // Check form validity after accordion items are expanded
+      if (e.target instanceof HTMLFormElement && !e.target.checkValidity()) {
+        e.target.reportValidity();
+        return;
       }
-    } catch (error) {
-      const errorMessage = (error as Error).message;
 
-      // 尝试解析错误响应
+      setIsSubmitting(true);
+
+      if (!userInfo || !userInfo.username) {
+        toast.error("请先登录");
+        setIsSubmitting(false);
+        return;
+      }
+
       try {
-        const errorData = JSON.parse(errorMessage);
-        if (errorData.needSync && errorData.latestData) {
-          toast.error("数据已被其他用户更新，需要同步本地编辑数据");
-          // 这里可以添加数据同步的逻辑
-        } else if (errorData.lockedBy) {
-          toast.error(`赛事正在被用户 ${errorData.lockedBy} 编辑中`);
+        // 提交赛事数据
+        const response = await _post<{
+          success: boolean;
+          message: string;
+          data?: TournamentData;
+          needSync?: boolean;
+          latestData?: TournamentData;
+          lockedBy?: string;
+        }>("/tournament/save", {
+          tournament: formData,
+          editStartTime: tournamentData ? editStartTimeRef.current : undefined, // 记录进入编辑的时间
+          username: userInfo.username,
+        });
+
+        if (response.success) {
+          toast.success(response.message);
+          returnToPrevPage();
         } else {
-          toast.error(errorData.message || "保存失败");
+          toast.error(response.message);
         }
-      } catch {
-        toast.error(`保存失败: ${errorMessage}`);
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+
+        // 尝试解析错误响应
+        try {
+          const errorData = JSON.parse(errorMessage);
+          if (errorData.needSync && errorData.latestData) {
+            toast.error("数据已被其他用户更新，需要同步本地编辑数据");
+            // 这里可以添加数据同步的逻辑
+          } else if (errorData.lockedBy) {
+            toast.error(`赛事正在被用户 ${errorData.lockedBy} 编辑中`);
+          } else {
+            toast.error(errorData.message || "保存失败");
+          }
+        } catch {
+          toast.error(`保存失败: ${errorMessage}`);
+        }
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, 100);
   };
 
   const returnToPrevPage = () => {
@@ -196,6 +217,19 @@ export default function TournamentForm({
   const handleFormKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
       e.preventDefault();
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<Element>) => {
+    // Check if the event target has a name property and is an HTMLElement
+    const target = e.target as HTMLElement & { name?: string };
+    if (target.name && typeof target.name === 'string') {
+      const fieldName = target.name;
+      setTouchedFields(prev => {
+        const newSet = new Set(prev);
+        newSet.add(fieldName);
+        return newSet;
+      });
     }
   };
 
@@ -251,8 +285,12 @@ export default function TournamentForm({
   return (
     <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} onClick={handleAccordionClick}>
       <Accordion
+        ref={accordionRef}
         className="px-0"
         defaultExpandedKeys={["赛事信息"]}
+        // Use any type to bypass TypeScript errors with the Accordion component
+        selectedKeys={Array.from(expandedKeys) as any}
+        onSelectionChange={handleSelectionChange}
         itemClasses={{
           base: "bg-dark-gray",
           title: "text-xl",
@@ -270,16 +308,30 @@ export default function TournamentForm({
             setAddingLabel={setAddingLabel}
             editingLabelIndex={editingLabelIndex}
             setEditingLabelIndex={setEditingLabelIndex}
+            touchedFields={touchedFields}
+            handleBlur={handleBlur}
           />
         </AccordionItem>
 
         <AccordionItem key="赛事阶段" aria-label="赛事阶段" title="赛事阶段">
-          <TournamentStagesAccordionItem formData={formData} setFormData={setFormData} handleKeyDown={handleKeyDown} />
+          <TournamentStagesAccordionItem
+            formData={formData}
+            setFormData={setFormData}
+            handleKeyDown={handleKeyDown}
+            touchedFields={touchedFields}
+            handleBlur={handleBlur}
+          />
         </AccordionItem>
 
         {formData.type === "team" ? (
           <AccordionItem key="参赛队伍" aria-label="参赛队伍" title="参赛队伍">
-            <TournamentTeamsAccordionItem formData={formData} setFormData={setFormData} handleKeyDown={handleKeyDown} />
+            <TournamentTeamsAccordionItem
+              formData={formData}
+              setFormData={setFormData}
+              handleKeyDown={handleKeyDown}
+              touchedFields={touchedFields}
+              handleBlur={handleBlur}
+            />
           </AccordionItem>
         ) : (
           <></>
@@ -292,6 +344,8 @@ export default function TournamentForm({
             handleKeyDown={handleKeyDown}
             editingPlayer={editingPlayer}
             setEditingPlayer={setEditingPlayer}
+            touchedFields={touchedFields}
+            handleBlur={handleBlur}
           />
         </AccordionItem>
 
@@ -302,6 +356,8 @@ export default function TournamentForm({
             handleKeyDown={handleKeyDown}
             editingStage={editingStage}
             setEditingStage={setEditingStage}
+            touchedFields={touchedFields}
+            handleBlur={handleBlur}
           />
         </AccordionItem>
       </Accordion>

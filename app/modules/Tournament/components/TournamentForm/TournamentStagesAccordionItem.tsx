@@ -1,24 +1,28 @@
 import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
-import { inputClassName, labelClassName } from ".";
+import { getInputClassName, inputClassName, labelClassName, selectClassName } from ".";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
   setFormData: React.Dispatch<React.SetStateAction<TournamentData>>;
   handleKeyDown: (e: React.KeyboardEvent) => void;
+  touchedFields: Set<string>;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export default function TournamentStagesAccordionItem({
   formData,
   setFormData,
   handleKeyDown,
+  touchedFields,
+  handleBlur,
 }: TournamentStagesAccordionItemProps) {
   return (
     <>
-      {formData.stages.length > 0 && (
+      {formData.stages?.length > 0 && (
         <div className="mb-4">
-          {formData.stages.map((stage, index) => (
+          {formData.stages?.map((stage, index) => (
             <div key={index} className="flex py-4 first:pt-0 border-b-1 border-b-mid-gray gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <div>
@@ -31,7 +35,7 @@ export default function TournamentStagesAccordionItem({
                     value={stage.name}
                     placeholder="例：初赛"
                     onChange={(e) => {
-                      const newStages = [...formData.stages];
+                      const newStages = [...(formData.stages || [])];
                       newStages[index].name = e.target.value;
                       setFormData((prev) => ({
                         ...prev,
@@ -39,7 +43,8 @@ export default function TournamentStagesAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={inputClassName}
+                    className={getInputClassName(`stageName-${index}`, touchedFields, { [`stageName-${index}`]: stage.name })}
+                    onBlur={handleBlur}
                     required
                   />
                 </div>
@@ -53,14 +58,15 @@ export default function TournamentStagesAccordionItem({
                     value={new Date(stage.startTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
-                      const newStages = [...formData.stages];
+                      const newStages = [...(formData.stages || [])];
                       newStages[index].startTime = date.getTime();
                       setFormData((prev) => ({
                         ...prev,
                         stages: newStages,
                       }));
                     }}
-                    className={inputClassName}
+                    className={getInputClassName(`stageStartTime-${index}`, touchedFields, { [`stageStartTime-${index}`]: stage.startTime })}
+                    onBlur={handleBlur}
                     required
                   />
                 </div>
@@ -74,14 +80,15 @@ export default function TournamentStagesAccordionItem({
                     value={new Date(stage.endTime).toISOString().slice(0, 10)}
                     onChange={(e) => {
                       const date = new Date(e.target.value);
-                      const newStages = [...formData.stages];
+                      const newStages = [...(formData.stages || [])];
                       newStages[index].endTime = date.getTime();
                       setFormData((prev) => ({
                         ...prev,
                         stages: newStages,
                       }));
                     }}
-                    className={inputClassName}
+                    className={getInputClassName(`stageEndTime-${index}`, touchedFields, { [`stageEndTime-${index}`]: stage.endTime })}
+                    onBlur={handleBlur}
                     required
                   />
                 </div>
@@ -94,19 +101,14 @@ export default function TournamentStagesAccordionItem({
                     name="type"
                     selectedKeys={[stage.type]}
                     onChange={(e) => {
-                      const newStages = [...formData.stages];
+                      const newStages = [...(formData.stages || [])];
                       newStages[index].type = e.target.value as TournamentStage["type"];
                       setFormData((prev) => ({
                         ...prev,
                         stages: newStages,
                       }));
                     }}
-                    classNames={{
-                      trigger: "bg-mid-gray rounded-none",
-                      value: "",
-                      popoverContent: "bg-mid-gray rounded-none",
-                      listbox: "rounded-none",
-                    }}
+                    classNames={selectClassName}
                     aria-label="赛制"
                     required
                   >
@@ -123,7 +125,7 @@ export default function TournamentStagesAccordionItem({
                 <button
                   type="button"
                   onClick={() => {
-                    const newStages = formData.stages.filter((_, i) => i !== index);
+                    const newStages = (formData.stages || []).filter((_, i) => i !== index);
                     setFormData((prev) => ({ ...prev, stages: newStages }));
                   }}
                   className="rounded-md p-1 hover:bg-ak-red"
@@ -141,7 +143,7 @@ export default function TournamentStagesAccordionItem({
         onClick={() => {
           const now = Date.now();
           const newStage = {
-            name: `阶段${formData.stages.length + 1}`,
+            name: `阶段${formData.stages?.length + 1 || 1}`,
             startTime: now,
             endTime: now + 86400000, // +1 day
             type: "rank" as const,
@@ -149,7 +151,7 @@ export default function TournamentStagesAccordionItem({
           };
           setFormData((prev) => ({
             ...prev,
-            stages: [...prev.stages, newStage],
+            stages: [...(prev.stages || []), newStage],
           }));
         }}
         className="w-full px-4 py-2 mb-2 text-ak-blue rounded-md hover:bg-mid-gray"

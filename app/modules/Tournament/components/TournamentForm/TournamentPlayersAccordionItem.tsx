@@ -3,7 +3,7 @@ import { AddIcon, CloseIcon, InformationIcon, LinkIcon } from "~/components/Icon
 import { useState } from "react";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
-import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
+import { getInputClassName, inputClassName, labelClassName, labelWithTooltipClassName, selectClassName } from ".";
 
 interface TournamentPlayersAccordionItemProps {
   formData: TournamentData;
@@ -11,6 +11,8 @@ interface TournamentPlayersAccordionItemProps {
   handleKeyDown: (e: React.KeyboardEvent) => void;
   editingPlayer: TournamentPlayer | undefined;
   setEditingPlayer: React.Dispatch<React.SetStateAction<TournamentPlayer | undefined>>;
+  touchedFields: Set<string>;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export default function TournamentPlayersAccordionItem({
@@ -19,6 +21,8 @@ export default function TournamentPlayersAccordionItem({
   handleKeyDown,
   editingPlayer,
   setEditingPlayer,
+  touchedFields,
+  handleBlur,
 }: TournamentPlayersAccordionItemProps) {
   const [newCustomKey, setNewCustomKey] = useState("");
   const [newCustomValue, setNewCustomValue] = useState("");
@@ -82,7 +86,8 @@ export default function TournamentPlayersAccordionItem({
                 value={newCustomKey}
                 onChange={handleKeyChange}
                 placeholder="例：server"
-                className={inputClassName}
+                className={getInputClassName("customKey", touchedFields, { customKey: newCustomKey })}
+                onBlur={handleBlur}
                 maxLength={20}
               />
               {keyError && <span className="text-xs text-ak-red">{keyError}</span>}
@@ -97,7 +102,8 @@ export default function TournamentPlayersAccordionItem({
                 value={newCustomValue}
                 onChange={(e) => setNewCustomValue(e.target.value)}
                 placeholder="例：服务器"
-                className={inputClassName}
+                className={getInputClassName("customKeyValue", touchedFields, { customKeyValue: newCustomValue })}
+                onBlur={handleBlur}
                 maxLength={20}
               />
             </div>
@@ -114,7 +120,7 @@ export default function TournamentPlayersAccordionItem({
             </button>
           </div>
         </div>
-        {formData.customPlayerKeys && Object.keys(formData.customPlayerKeys).length > 0 && (
+        {formData.customPlayerKeys && Object.keys(formData.customPlayerKeys || {}).length > 0 && (
           <div className="pb-4">
             <p className={labelWithTooltipClassName}>
               已有自定义选手信息:
@@ -130,7 +136,7 @@ export default function TournamentPlayersAccordionItem({
               )}
             </p>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(formData.customPlayerKeys).map(([key, value]) => (
+              {Object.entries(formData.customPlayerKeys || {}).map(([key, value]) => (
                 <div key={key} className="flex items-center gap-1 bg-mid-gray p-2 rounded">
                   <span className="text-sm">
                     {key}: {value}
@@ -149,14 +155,14 @@ export default function TournamentPlayersAccordionItem({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const newCustomKeys = { ...formData.customPlayerKeys };
+                      const newCustomKeys = { ...(formData.customPlayerKeys || {}) };
                       delete newCustomKeys[key];
 
                       // If this was the groupBy key, reset groupBy
                       const newGroupBy = formData.groupBy === key ? "" : formData.groupBy;
 
                       // Need to delete corresponding value from all players
-                      const newPlayers = formData.players!.map((player) => {
+                      const newPlayers = (formData.players || []).map((player) => {
                         const newPlayer = { ...player };
                         delete newPlayer.customPlayerValues[key];
                         return newPlayer;
@@ -181,9 +187,8 @@ export default function TournamentPlayersAccordionItem({
         )}
       </div>
       <div className="flex flex-wrap gap-2 my-4">
-        {formData.players &&
-          formData.players.length > 0 &&
-          formData.players.map((player, index) => (
+        {(formData.players || []).length > 0 &&
+          (formData.players || []).map((player, index) => (
             <div
               key={index}
               className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer?.mid === player.mid ? "bg-ak-blue text-black" : !player.name.trim() ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
@@ -208,7 +213,7 @@ export default function TournamentPlayersAccordionItem({
                   e.preventDefault();
                   e.stopPropagation();
                   if (editingPlayer?.mid === player.mid) setEditingPlayer(undefined);
-                  const newPlayers = formData.players!.filter((_, i) => i !== index);
+                  const newPlayers = (formData.players || []).filter((_, i) => i !== index);
                   setFormData((prev) => ({
                     ...prev,
                     players: newPlayers,
@@ -261,12 +266,13 @@ export default function TournamentPlayersAccordionItem({
                 value={editingPlayer.name}
                 placeholder="例：棋棋Steins"
                 onChange={(e) => {
-                  const newPlayers = [...formData.players!];
+                  const newPlayers = [...(formData.players || [])];
                   newPlayers.find((p) => p.mid === editingPlayer.mid)!.name = e.target.value.trim();
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
                 onKeyDown={handleKeyDown}
-                className="p-2 focus:outline-ak-blue grow"
+                className={`${getInputClassName("playerName", touchedFields, { playerName: editingPlayer.name })} grow`}
+                onBlur={handleBlur}
                 maxLength={32}
                 required
               />
@@ -275,7 +281,7 @@ export default function TournamentPlayersAccordionItem({
                 onClick={(e) => {
                   // call bilibili API
                 }}
-                className="rounded-md px-2 text-black bg-ak-blue inline-flex items-center gap-1 h-6"
+                className="rounded-md px-2 text-black bg-ak-blue inline-flex items-center gap-1 h-6 flex-shrink-0"
                 aria-label="连接bilibili账号"
               >
                 <LinkIcon /> 连接bilibili
@@ -289,7 +295,7 @@ export default function TournamentPlayersAccordionItem({
             </div>
           </div>
 
-          {formData.type === "team" && formData.teams && (
+          {formData.type === "team" && (formData.teams || []).length > 0 && (
             <div>
               <label htmlFor="playerTeam" className={labelClassName}>
                 所属队伍 <span className="text-ak-red">*</span>
@@ -297,9 +303,9 @@ export default function TournamentPlayersAccordionItem({
               <Select
                 id="playerTeam"
                 name="playerTeam"
-                selectedKeys={[formData.teams.find((team) => team.members.includes(editingPlayer.name))?.id ?? ""]}
+                selectedKeys={[formData.teams?.find((team) => team.members.includes(editingPlayer.name))?.id ?? ""]}
                 onChange={(e) => {
-                  const newTeams = [...formData.teams!];
+                  const newTeams = [...(formData.teams || [])];
                   newTeams
                     .find((t) => t.members.includes(editingPlayer.name))
                     ?.members.splice(
@@ -314,16 +320,11 @@ export default function TournamentPlayersAccordionItem({
                     teams: newTeams,
                   }));
                 }}
-                classNames={{
-                  trigger: "bg-mid-gray rounded-none",
-                  value: "",
-                  popoverContent: "bg-mid-gray rounded-none",
-                  listbox: "rounded-none",
-                }}
+                classNames={selectClassName}
                 aria-label="所属队伍"
                 required
               >
-                {formData.teams.map((team) => {
+                {(formData.teams || []).map((team) => {
                   return (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
@@ -334,7 +335,7 @@ export default function TournamentPlayersAccordionItem({
             </div>
           )}
 
-          {Object.entries(formData.customPlayerKeys).map(([key, value]) => (
+          {Object.entries(formData.customPlayerKeys || {}).map(([key, value]) => (
             <div key={key}>
               <label htmlFor="customPlayerValue" className={labelClassName}>
                 {value}
@@ -344,14 +345,15 @@ export default function TournamentPlayersAccordionItem({
                 type="text"
                 value={editingPlayer.customPlayerValues[key] ?? ""}
                 onChange={(e) => {
-                  const newPlayers = [...formData.players!];
+                  const newPlayers = [...(formData.players || [])];
                   const player = newPlayers.find((p) => p.mid === editingPlayer.mid);
                   if (player) {
                     player.customPlayerValues[key] = e.target.value.trim();
                   }
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
-                className={inputClassName}
+                className={getInputClassName(`customPlayerValue-${key}`, touchedFields, { [`customPlayerValue-${key}`]: editingPlayer.customPlayerValues[key] })}
+                onBlur={handleBlur}
                 maxLength={32}
               />
             </div>

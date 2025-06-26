@@ -3,9 +3,15 @@ import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/
 import { generateDateArray } from "~/utils/date";
 import { useEffect, useState } from "react";
 import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
-import { labelClassName, labelWithTooltipClassName } from ".";
+import { getInputClassName, labelClassName, labelWithTooltipClassName } from ".";
 
-const inputClassName = "bg-[#00000033] w-full p-2 focus:outline-ak-blue";
+const inputClassName = "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
+const selectClassName = {
+  trigger: "bg-[#00000033] rounded-none w-full",
+  value: "",
+  popoverContent: "bg-mid-gray rounded-none",
+  listbox: "rounded",
+}
 
 interface TournamentProgressAccordionItemProps {
   formData: TournamentData;
@@ -13,6 +19,8 @@ interface TournamentProgressAccordionItemProps {
   handleKeyDown: (e: React.KeyboardEvent) => void;
   editingStage: TournamentStage | undefined;
   setEditingStage: React.Dispatch<React.SetStateAction<TournamentStage | undefined>>;
+  touchedFields: Set<string>;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export default function TournamentProgressAccordionItem({
@@ -21,8 +29,10 @@ export default function TournamentProgressAccordionItem({
   handleKeyDown,
   editingStage,
   setEditingStage,
+  touchedFields,
+  handleBlur,
 }: TournamentProgressAccordionItemProps) {
-  if (formData.stages.length === 0) {
+  if (!formData.stages?.length) {
     return <div className="mb-4 text-ak-red">请先添加赛事阶段</div>;
   }
 
@@ -145,7 +155,8 @@ export default function TournamentProgressAccordionItem({
                 value={newCustomKey}
                 onChange={handleKeyChange}
                 placeholder="例：session"
-                className={inputClassName}
+                className={getInputClassName("customSessionKey", touchedFields, { customSessionKey: newCustomKey })}
+                onBlur={handleBlur}
                 maxLength={20}
               />
               {keyError && <span className="text-xs text-ak-red">{keyError}</span>}
@@ -160,7 +171,8 @@ export default function TournamentProgressAccordionItem({
                 value={newCustomValue}
                 onChange={(e) => setNewCustomValue(e.target.value)}
                 placeholder="例：场地"
-                className={inputClassName}
+                className={getInputClassName("customSessionKeyValue", touchedFields, { customSessionKeyValue: newCustomValue })}
+                onBlur={handleBlur}
                 maxLength={20}
               />
             </div>
@@ -225,7 +237,7 @@ export default function TournamentProgressAccordionItem({
                         // const newGroupBy = newStages[stageIndex].groupBy === key ? "" : newStages[stageIndex].groupBy;
 
                         // Need to delete corresponding value from all players' games
-                        const newPlayers = formData.players!.map((player) => {
+                        const newPlayers = (formData.players || []).map((player) => {
                           const newPlayer = { ...player };
                           newPlayer.games = newPlayer.games.map((game) => {
                             if (game.stage === editingStage.name) {
@@ -318,7 +330,7 @@ export default function TournamentProgressAccordionItem({
                             if (player.mid === editingPlayer?.mid) {
                               setEditingPlayer(undefined);
                             }
-                            const newPlayers = [...formData.players!];
+                            const newPlayers = [...(formData.players || [])];
 
                             // Check if there was a rival and clear that relationship
                             if (editingStage?.type === '1on1') {
@@ -419,12 +431,7 @@ export default function TournamentProgressAccordionItem({
                         <Select
                           id="editingPlayer"
                           name="editingPlayer"
-                          classNames={{
-                            trigger: "bg-[#00000033] rounded-none",
-                            value: "",
-                            popoverContent: "bg-mid-gray rounded-none",
-                            listbox: "rounded",
-                          }}
+                          classNames={selectClassName}
                           aria-label="选择选手"
                           onChange={(e) => {
                             if (!e.target.value || e.target.value === "请选择选手") return;
@@ -486,7 +493,7 @@ export default function TournamentProgressAccordionItem({
                                 return `${gameDate.getHours().toString().padStart(2, "0")}:${gameDate.getMinutes().toString().padStart(2, "0")}`;
                               })()}
                               onChange={(e) => {
-                                const newPlayers = [...formData.players!];
+                                const newPlayers = [...(formData.players || [])];
                                 const game = newPlayers
                                   .find((p) => p.mid === editingPlayer.mid)!
                                   .games.find((g) => new Date(g.date).getDate() === date.getDate());
@@ -503,14 +510,15 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={inputClassName}
+                              className={getInputClassName("gameTime", touchedFields, { gameTime: editingGame?.date }, inputClassName)}
+                              onBlur={handleBlur}
                               required
                             />
                           </div>
 
                           <div>
                             <label htmlFor="starterSquad" className={labelClassName}>
-                              开局分队
+                              开局分队 <span className="text-ak-red">*</span>
                             </label>
                             <input
                               id="starterSquad"
@@ -529,7 +537,9 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={inputClassName}
+                              className={getInputClassName("starterSquad", touchedFields, { starterSquad: editingGame?.starterSquad }, inputClassName)}
+                              onBlur={handleBlur}
+                              required
                             />
                           </div>
 
@@ -554,7 +564,8 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={inputClassName}
+                              className={getInputClassName("starterOp", touchedFields, { starterOp: editingGame?.starterOp }, inputClassName)}
+                              onBlur={handleBlur}
                             />
                           </div>
 
@@ -578,7 +589,8 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={inputClassName}
+                              className={getInputClassName("point", touchedFields, { point: editingGame?.point }, inputClassName)}
+                              onBlur={handleBlur}
                             />
                           </div>
 
@@ -628,7 +640,7 @@ export default function TournamentProgressAccordionItem({
                                   selectedKeys={editingGame?.rivalMid ? [editingGame?.rivalMid.toString()] : [""]}
                                   onChange={(e) => {
                                     const rivalMid = e.target.value;
-                                    const newPlayers = [...formData.players!];
+                                    const newPlayers = [...(formData.players || [])];
 
                                     // Find the current player's game
                                     const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
@@ -689,12 +701,7 @@ export default function TournamentProgressAccordionItem({
                                       setFormData((prev) => ({ ...prev, players: newPlayers }));
                                     }
                                   }}
-                                  classNames={{
-                                    trigger: "bg-[#00000033] rounded-none w-full",
-                                    value: "",
-                                    popoverContent: "bg-mid-gray rounded-none",
-                                    listbox: "rounded-none",
-                                  }}
+                                  classNames={selectClassName}
                                   aria-label="选择对手"
                                 >
                                   <SelectItem key="" value="">
@@ -734,7 +741,7 @@ export default function TournamentProgressAccordionItem({
                                     selectedKeys={[editingGame?.result || "win"]}
                                     onChange={(e) => {
                                       const result = e.target.value as "win" | "lose";
-                                      const newPlayers = [...formData.players!];
+                                      const newPlayers = [...(formData.players || [])];
 
                                       // Find the current player's game
                                       const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
@@ -767,12 +774,7 @@ export default function TournamentProgressAccordionItem({
                                         setFormData((prev) => ({ ...prev, players: newPlayers }));
                                       }
                                     }}
-                                    classNames={{
-                                      trigger: "bg-[#00000033] rounded-none w-full",
-                                      value: "",
-                                      popoverContent: "bg-mid-gray rounded-none",
-                                      listbox: "rounded-none",
-                                    }}
+                                    classNames={selectClassName}
                                     aria-label="选择比赛结果"
                                   >
                                     <SelectItem key="win" value="win">
@@ -812,7 +814,8 @@ export default function TournamentProgressAccordionItem({
                                     }
                                   }}
                                   onKeyDown={handleKeyDown}
-                                  className={inputClassName}
+                                  className={getInputClassName(`customStageValue-${key}`, touchedFields, { [`customStageValue-${key}`]: editingGame?.customStageValues?.[key] }, inputClassName)}
+                                  onBlur={handleBlur}
                                   maxLength={32}
                                 />
                               </div>

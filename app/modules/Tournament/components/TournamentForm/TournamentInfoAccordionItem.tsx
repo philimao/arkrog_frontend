@@ -3,7 +3,7 @@ import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
-import { inputClassName, labelClassName, labelWithTooltipClassName } from ".";
+import { getInputClassName, labelClassName, labelWithTooltipClassName, selectClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 
 interface TournamentInfoAccordionItemProps {
@@ -14,6 +14,8 @@ interface TournamentInfoAccordionItemProps {
   setAddingLabel: React.Dispatch<React.SetStateAction<boolean>>;
   editingLabelIndex: number | null;
   setEditingLabelIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  touchedFields: Set<string>;
+  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 export default function TournamentInfoAccordionItem({
@@ -24,6 +26,8 @@ export default function TournamentInfoAccordionItem({
   setAddingLabel,
   editingLabelIndex,
   setEditingLabelIndex,
+  touchedFields,
+  handleBlur,
 }: TournamentInfoAccordionItemProps) {
   const { topics } = useGameDataStore();
 
@@ -50,7 +54,8 @@ export default function TournamentInfoAccordionItem({
             placeholder="例：仙术杯#5"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className={inputClassName}
+            className={getInputClassName("name", touchedFields, formData)}
+            onBlur={handleBlur}
             required
           />
         </div>
@@ -64,12 +69,7 @@ export default function TournamentInfoAccordionItem({
             name="type"
             selectedKeys={[formData.type]}
             onChange={handleChange}
-            classNames={{
-              trigger: "bg-mid-gray rounded-none",
-              value: "",
-              popoverContent: "bg-mid-gray rounded-none",
-              listbox: "rounded-none",
-            }}
+            classNames={selectClassName}
             aria-label="赛事类型"
             required
           >
@@ -99,7 +99,8 @@ export default function TournamentInfoAccordionItem({
               value={formData.avatar}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className={`${inputClassName} pr-12`}
+              className={`${getInputClassName("avatar", touchedFields, formData)} pr-12`}
+              onBlur={handleBlur}
             />
             <UploadCenterTrigger
               className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray"
@@ -120,12 +121,7 @@ export default function TournamentInfoAccordionItem({
                 formData.rogue ? topics[formData.rogue as RogueKey].id : Object.values(topics).reverse()[0].id,
               ]}
               onChange={handleChange}
-              classNames={{
-                trigger: "bg-mid-gray rounded-none",
-                value: "",
-                popoverContent: "bg-mid-gray rounded-none",
-                listbox: "rounded-none",
-              }}
+              classNames={selectClassName}
               aria-label="肉鸽"
               required
             >
@@ -149,12 +145,7 @@ export default function TournamentInfoAccordionItem({
             name="edition"
             selectedKeys={[formData.edition]}
             onChange={handleChange}
-            classNames={{
-              trigger: "bg-mid-gray rounded-none",
-              value: "",
-              popoverContent: "bg-mid-gray rounded-none",
-              listbox: "rounded-none",
-            }}
+            classNames={selectClassName}
             aria-label="肉鸽版本"
             required
           >
@@ -182,7 +173,8 @@ export default function TournamentInfoAccordionItem({
             placeholder="例：N18"
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className={inputClassName}
+            className={getInputClassName("level", touchedFields, formData)}
+            onBlur={handleBlur}
             required
           />
         </div>
@@ -198,7 +190,8 @@ export default function TournamentInfoAccordionItem({
             value={formData.organizerName}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className={inputClassName}
+            className={getInputClassName("organizerName", touchedFields, formData)}
+            onBlur={handleBlur}
             required
           />
         </div>
@@ -220,7 +213,8 @@ export default function TournamentInfoAccordionItem({
             value={formData.room}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className={inputClassName}
+            className={getInputClassName("room", touchedFields, formData)}
+            onBlur={handleBlur}
             required
           />
         </div>
@@ -238,7 +232,8 @@ export default function TournamentInfoAccordionItem({
               placeholder="例：讲述者"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className={inputClassName}
+              className={getInputClassName("memberAlias", touchedFields, formData)}
+              onBlur={handleBlur}
             />
           </div>
         )}
@@ -256,7 +251,8 @@ export default function TournamentInfoAccordionItem({
               placeholder="例：创想家"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className={inputClassName}
+              className={getInputClassName("keyMemberAlias", touchedFields, formData)}
+              onBlur={handleBlur}
             />
           </div>
         )}
@@ -265,7 +261,7 @@ export default function TournamentInfoAccordionItem({
       <div className="mb-4">
         <label className={labelClassName}>标签</label>
         <div className="flex flex-wrap gap-2">
-          {formData.labels.map((label, index) =>
+          {formData.labels?.map((label, index) =>
             editingLabelIndex === index ? (
               <input
                 key={index}
@@ -278,7 +274,7 @@ export default function TournamentInfoAccordionItem({
                     e.preventDefault();
                     const value = e.currentTarget.value.trim();
                     if (value) {
-                      const newLabels = [...formData.labels];
+                      const newLabels = [...(formData.labels || [])];
                       newLabels[index] = value;
                       setFormData((prev) => ({
                         ...prev,
@@ -293,7 +289,7 @@ export default function TournamentInfoAccordionItem({
                 onBlur={(e) => {
                   const value = e.currentTarget.value.trim();
                   if (value) {
-                    const newLabels = [...formData.labels];
+                    const newLabels = [...(formData.labels || [])];
                     newLabels[index] = value;
                     setFormData((prev) => ({
                       ...prev,
@@ -319,7 +315,7 @@ export default function TournamentInfoAccordionItem({
                     e.stopPropagation();
                     setFormData((prev) => ({
                       ...prev,
-                      labels: formData.labels.filter((_, i) => i !== index),
+                      labels: (formData.labels || []).filter((_, i) => i !== index),
                     }));
                   }}
                   className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
@@ -342,7 +338,7 @@ export default function TournamentInfoAccordionItem({
                   if (value) {
                     setFormData((prev) => ({
                       ...prev,
-                      labels: [...prev.labels, value],
+                      labels: [...(prev.labels || []), value],
                     }));
                     setAddingLabel(false);
                   }
@@ -352,18 +348,18 @@ export default function TournamentInfoAccordionItem({
               }}
               onBlur={(e) => {
                 const value = e.currentTarget.value.trim();
-                if (value) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    labels: [...prev.labels, value],
-                  }));
-                }
+                  if (value) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      labels: [...(prev.labels || []), value],
+                    }));
+                  }
                 setAddingLabel(false);
               }}
               maxLength={20}
             />
           )}
-          {formData.labels.length < (addingLabel ? 9 : 10) && (
+          {(formData.labels?.length || 0) < (addingLabel ? 9 : 10) && (
             <button
               type="button"
               onClick={() => {
@@ -392,7 +388,8 @@ export default function TournamentInfoAccordionItem({
           name="rule"
           value={formData.rule}
           onChange={handleChange}
-          className={inputClassName}
+          className={getInputClassName("rule", touchedFields, formData)}
+          onBlur={handleBlur}
           rows={4}
         />
       </div>
@@ -411,7 +408,8 @@ export default function TournamentInfoAccordionItem({
           name="detailRule"
           value={formData.detailRule}
           onChange={handleChange}
-          className={inputClassName}
+          className={getInputClassName("detailRule", touchedFields, formData)}
+          onBlur={handleBlur}
           rows={4}
         />
       </div>

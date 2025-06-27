@@ -17,7 +17,7 @@ import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes"
 import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
 import { getCharImpl, getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
-import { BaseNode, NumericLiteralNode } from "./ast";
+import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
 import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
 import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "./blackboard";
 import type { EnemySpec } from "../EnemySection/EnemySpecSelector";
@@ -301,11 +301,11 @@ export class CalculatorHelper {
 
         // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
         if (isRelicBlackboard(buff)) {
-          const blackboard = getRelicBlackboard(buff, relic);
+          const blackboard = getRelicBlackboard(buff);
           // buff是否可以生效
-          if (blackboard.isActive({ charData, charInput, enemyData, relics })) {
+          if (blackboard.isActive({ buff, relic, charData, charInput, enemyData, relics })) {
             // 生效 应用到上下文
-            blackboard.apply({ context: result, relics });
+            blackboard.apply({ buff, relic, context: result, relics });
           } else {
             // 不生效 无效藏品
             result.invalidRelics.push(relic);
@@ -322,7 +322,7 @@ export class CalculatorHelper {
           commonEnemyRelicBlackboard.apply({ relic, context: result, buff, relics });
         } else {
           // 判断是否适用干员通用黑板
-          if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, relic })) {
+          if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, relic, relics })) {
             result.invalidRelics.push(relic);
             return;
           }
@@ -376,12 +376,12 @@ export class CalculatorHelper {
       const zoneValue = zoneLayerMap[zone]!;
       // 根据肉鸽难度，计算敌人属性加成
       if (enemyAttrMultiplier) {
-        const value = Math.pow(enemyAttrMultiplier / 100 + 1, zoneValue);
+        const pow = new Array(zoneValue).fill(new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, "每层+22%"));
         context.in_game_buff_final_mul.enemy_atk.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}% | 层数${zoneValue}`),
+          new ExpressionGroupNode("*", `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
         );
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
-          new NumericLiteralNode(value, `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}% | 层数${zoneValue}`),
+          new ExpressionGroupNode("*", `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
         );
       }
       // 低难度下有加成

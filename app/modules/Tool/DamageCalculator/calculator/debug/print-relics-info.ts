@@ -2,7 +2,7 @@ import type { CalculatorInput, RelicDataExt, RelicWrapper } from "~/types/gameDa
 import { CalculatorHelper } from "../helper";
 import { getRelicBlackboard, isRelicBlackboard } from "../impls";
 import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "../blackboard";
-import { isBuffForEnemy } from "../../utils";
+import { isBuffForEnemy, isRelicInBlacklist } from "../../utils";
 
 /**
  * 打印藏品信息
@@ -18,6 +18,10 @@ export function printRelicsInfo(input: CalculatorInput) {
 export function applyAnyRelics(relics: (RelicDataExt & RelicWrapper)[]) {
   const context = CalculatorHelper.createAdditionContext();
   for (const relic of relics) {
+    if (!isRelicInBlacklist(relic.name)) {
+      context.invalidRelics.push(relic);
+      continue;
+    }
     for (const buff of relic.buffs) {
       const key = buff.blackboard.find((b) => b.key === "key")?.valueStr;
       // 该buff有专用的黑板实现

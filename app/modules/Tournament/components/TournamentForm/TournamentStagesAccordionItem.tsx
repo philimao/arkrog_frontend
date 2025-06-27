@@ -1,7 +1,8 @@
 import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
-import { getInputClassName, inputClassName, labelClassName, selectClassName } from ".";
+import { formatDateForInput } from "~/utils/date";
+import { getInputClassName, labelClassName, selectClassName } from ".";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
@@ -43,7 +44,9 @@ export default function TournamentStagesAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={getInputClassName(`stageName-${index}`, touchedFields, { [`stageName-${index}`]: stage.name })}
+                    className={getInputClassName(`stageName-${index}`, touchedFields, {
+                      [`stageName-${index}`]: stage.name,
+                    })}
                     onBlur={handleBlur}
                     required
                   />
@@ -55,17 +58,24 @@ export default function TournamentStagesAccordionItem({
                   <input
                     id={`stageStartTime-${index}`}
                     type="date"
-                    value={new Date(stage.startTime).toISOString().slice(0, 10)}
+                    value={formatDateForInput(stage.startTime)}
                     onChange={(e) => {
-                      const date = new Date(e.target.value);
-                      const newStages = [...(formData.stages || [])];
-                      newStages[index].startTime = date.getTime();
-                      setFormData((prev) => ({
-                        ...prev,
-                        stages: newStages,
-                      }));
+                      // Check if the date string is valid before creating a Date object
+                      if (e.target.value) {
+                        const date = new Date(e.target.value);
+                        if (!isNaN(date.getTime())) {
+                          const newStages = [...(formData.stages || [])];
+                          newStages[index].startTime = date.getTime();
+                          setFormData((prev) => ({
+                            ...prev,
+                            stages: newStages,
+                          }));
+                        }
+                      }
                     }}
-                    className={getInputClassName(`stageStartTime-${index}`, touchedFields, { [`stageStartTime-${index}`]: stage.startTime })}
+                    className={getInputClassName(`stageStartTime-${index}`, touchedFields, {
+                      [`stageStartTime-${index}`]: stage.startTime,
+                    })}
                     onBlur={handleBlur}
                     required
                   />
@@ -77,17 +87,24 @@ export default function TournamentStagesAccordionItem({
                   <input
                     id={`stageEndTime-${index}`}
                     type="date"
-                    value={new Date(stage.endTime).toISOString().slice(0, 10)}
+                    value={formatDateForInput(stage.endTime)}
                     onChange={(e) => {
-                      const date = new Date(e.target.value);
-                      const newStages = [...(formData.stages || [])];
-                      newStages[index].endTime = date.getTime();
-                      setFormData((prev) => ({
-                        ...prev,
-                        stages: newStages,
-                      }));
+                      // Check if the date string is valid before creating a Date object
+                      if (e.target.value) {
+                        const date = new Date(e.target.value);
+                        if (!isNaN(date.getTime())) {
+                          const newStages = [...(formData.stages || [])];
+                          newStages[index].endTime = date.getTime();
+                          setFormData((prev) => ({
+                            ...prev,
+                            stages: newStages,
+                          }));
+                        }
+                      }
                     }}
-                    className={getInputClassName(`stageEndTime-${index}`, touchedFields, { [`stageEndTime-${index}`]: stage.endTime })}
+                    className={getInputClassName(`stageEndTime-${index}`, touchedFields, {
+                      [`stageEndTime-${index}`]: stage.endTime,
+                    })}
                     onBlur={handleBlur}
                     required
                   />

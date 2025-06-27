@@ -352,7 +352,9 @@ export default function TournamentPlayersAccordionItem({
                   }
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
-                className={getInputClassName(`customPlayerValue-${key}`, touchedFields, { [`customPlayerValue-${key}`]: editingPlayer.customPlayerValues[key] })}
+                className={getInputClassName(`customPlayerValue-${key}`, touchedFields, {
+                  [`customPlayerValue-${key}`]: editingPlayer.customPlayerValues[key],
+                })}
                 onBlur={handleBlur}
                 maxLength={32}
               />

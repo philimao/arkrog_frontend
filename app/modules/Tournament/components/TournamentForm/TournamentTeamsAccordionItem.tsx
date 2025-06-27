@@ -1,6 +1,6 @@
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import type { TournamentData } from "~/types/tournamentsData";
-import { getInputClassName, inputClassName, labelClassName, labelWithTooltipClassName } from ".";
+import { getInputClassName, labelClassName, labelWithTooltipClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import { Tooltip } from "@heroui/react";
 
@@ -48,7 +48,9 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={getInputClassName(`teamName-${index}`, touchedFields, { [`teamName-${index}`]: team.name })}
+                    className={getInputClassName(`teamName-${index}`, touchedFields, {
+                      [`teamName-${index}`]: team.name,
+                    })}
                     onBlur={handleBlur}
                     required
                   />
@@ -125,7 +127,9 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={getInputClassName(`teamLeader-${index}`, touchedFields, { [`teamLeader-${index}`]: team.leader })}
+                    className={getInputClassName(`teamLeader-${index}`, touchedFields, {
+                      [`teamLeader-${index}`]: team.leader,
+                    })}
                     onBlur={handleBlur}
                   />
                 </div>
@@ -146,7 +150,9 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={getInputClassName(`teamKeyMember-${index}`, touchedFields, { [`teamKeyMember-${index}`]: team.keyMember })}
+                    className={getInputClassName(`teamKeyMember-${index}`, touchedFields, {
+                      [`teamKeyMember-${index}`]: team.keyMember,
+                    })}
                     onBlur={handleBlur}
                   />
                 </div>
@@ -167,7 +173,9 @@ export default function TournamentTeamsAccordionItem({
                       }));
                     }}
                     onKeyDown={handleKeyDown}
-                    className={getInputClassName(`teamFinalRank-${index}`, touchedFields, { [`teamFinalRank-${index}`]: team.finalRank })}
+                    className={getInputClassName(`teamFinalRank-${index}`, touchedFields, {
+                      [`teamFinalRank-${index}`]: team.finalRank,
+                    })}
                     onBlur={handleBlur}
                   />
                 </div>

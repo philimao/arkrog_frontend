@@ -3,7 +3,7 @@
   "semi": true,
   "singleQuote": false,
   "arrowParens": "always",
-  "prettier.bracketSpacing": true,
+  "bracketSpacing": true,
   "tabWidth": 2,
   "printWidth": 120
 }

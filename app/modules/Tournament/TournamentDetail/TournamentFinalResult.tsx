@@ -128,7 +128,10 @@ const TeamMemberRow = ({
   const hasName = !!player?.name;
   const hasRole = true; // Role is always shown (keyMemberAlias or memberAlias)
   const hasSquad = !!lastGame?.starterSquad;
-  const hasCustomStageValues = !!lastGame?.customStageValues && typeof lastGame.customStageValues === 'object' && Object.keys(lastGame.customStageValues).length > 0;
+  const hasCustomStageValues =
+    !!lastGame?.customStageValues &&
+    typeof lastGame.customStageValues === "object" &&
+    Object.keys(lastGame.customStageValues).length > 0;
   const hasPoint = !!lastGame?.point;
 
   // Get custom stage values keys if they exist
@@ -140,7 +143,7 @@ const TeamMemberRow = ({
     hasRole ? 1 : 0,
     hasSquad ? 1 : 0,
     customStageKeys.length,
-    hasPoint ? 1 : 0
+    hasPoint ? 1 : 0,
   ].reduce((sum, count) => sum + count, 0);
 
   // Calculate dynamic widths based on visible items
@@ -161,7 +164,9 @@ const TeamMemberRow = ({
       {hasRole && <div style={{ width: getWidth() }}>{isKeyMember ? keyMemberAlias : memberAlias}</div>}
       {hasSquad && (
         <>
-          <div className="hidden lg:block" style={{ width: getWidth(true) }}>{lastGame.starterSquad}</div>
+          <div className="hidden lg:block" style={{ width: getWidth(true) }}>
+            {lastGame.starterSquad}
+          </div>
           <div className="flex justify-center items-center lg:hidden" style={{ width: getWidth() }}>
             <img
               src={`/images/squad/${lastGame.starterSquad}.png`}
@@ -171,11 +176,12 @@ const TeamMemberRow = ({
           </div>
         </>
       )}
-      {hasCustomStageValues && customStageKeys.map((key) => (
-        <div key={key} style={{ width: getWidth() }}>
-          {lastGame.customStageValues[key]}
-        </div>
-      ))}
+      {hasCustomStageValues &&
+        customStageKeys.map((key) => (
+          <div key={key} style={{ width: getWidth() }}>
+            {lastGame.customStageValues[key]}
+          </div>
+        ))}
       {hasPoint && <div style={{ width: getWidth() }}>{lastGame.point}</div>}
     </div>
   );

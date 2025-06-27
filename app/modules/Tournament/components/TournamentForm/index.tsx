@@ -12,10 +12,15 @@ import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 
-export const getInputClassName = (fieldName: string, touchedFields: Set<string>, formData: any, customInputClass?: string) => {
+export const getInputClassName = (
+  fieldName: string,
+  touchedFields: Set<string>,
+  formData: any,
+  customInputClass?: string,
+) => {
   const isRequired = document.getElementById(fieldName)?.hasAttribute("required");
   const isEmpty = !formData[fieldName] && formData[fieldName] !== 0;
-  const defaultClass = customInputClass ? customInputClass : inputClassName
+  const defaultClass = customInputClass ? customInputClass : inputClassName;
 
   if (isRequired && touchedFields.has(fieldName) && isEmpty) {
     return `${defaultClass} outline outline-2 outline-ak-red`;
@@ -32,7 +37,7 @@ export const selectClassName = {
   value: "",
   popoverContent: "bg-mid-gray rounded-none",
   listbox: "rounded-none",
-}
+};
 
 export default function TournamentForm({
   edit = false,
@@ -223,9 +228,9 @@ export default function TournamentForm({
   const handleBlur = (e: React.FocusEvent<Element>) => {
     // Check if the event target has a name property and is an HTMLElement
     const target = e.target as HTMLElement & { name?: string };
-    if (target.name && typeof target.name === 'string') {
+    if (target.name && typeof target.name === "string") {
       const fieldName = target.name;
-      setTouchedFields(prev => {
+      setTouchedFields((prev) => {
         const newSet = new Set(prev);
         newSet.add(fieldName);
         return newSet;
@@ -262,11 +267,7 @@ export default function TournamentForm({
       <div className="relative">
         <TournamentPreview formData={formData} />
         <div className="flex justify-end space-x-4 mb-6">
-          <button
-            type="button"
-            onClick={handleBackToEdit}
-            className="px-4 py-2 rounded-md text-black bg-light-gray"
-          >
+          <button type="button" onClick={handleBackToEdit} className="px-4 py-2 rounded-md text-black bg-light-gray">
             返回编辑
           </button>
           <button

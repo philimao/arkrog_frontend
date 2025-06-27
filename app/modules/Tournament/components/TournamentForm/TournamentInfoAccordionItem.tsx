@@ -348,12 +348,12 @@ export default function TournamentInfoAccordionItem({
               }}
               onBlur={(e) => {
                 const value = e.currentTarget.value.trim();
-                  if (value) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      labels: [...(prev.labels || []), value],
-                    }));
-                  }
+                if (value) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    labels: [...(prev.labels || []), value],
+                  }));
+                }
                 setAddingLabel(false);
               }}
               maxLength={20}

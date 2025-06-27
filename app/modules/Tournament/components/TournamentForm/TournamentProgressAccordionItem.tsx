@@ -1,6 +1,6 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
 import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/tournamentsData";
-import { generateDateArray } from "~/utils/date";
+import { generateDateArray, isSameDay } from "~/utils/date";
 import { useEffect, useState } from "react";
 import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
 import { getInputClassName, labelClassName, labelWithTooltipClassName } from ".";
@@ -11,7 +11,7 @@ const selectClassName = {
   value: "",
   popoverContent: "bg-mid-gray rounded-none",
   listbox: "rounded",
-}
+};
 
 interface TournamentProgressAccordionItemProps {
   formData: TournamentData;
@@ -171,7 +171,9 @@ export default function TournamentProgressAccordionItem({
                 value={newCustomValue}
                 onChange={(e) => setNewCustomValue(e.target.value)}
                 placeholder="例：场地"
-                className={getInputClassName("customSessionKeyValue", touchedFields, { customSessionKeyValue: newCustomValue })}
+                className={getInputClassName("customSessionKeyValue", touchedFields, {
+                  customSessionKeyValue: newCustomValue,
+                })}
                 onBlur={handleBlur}
                 maxLength={20}
               />
@@ -279,10 +281,15 @@ export default function TournamentProgressAccordionItem({
       </div>
       {dates.map((date, index) => {
         const playersForDate = formData.players?.filter((player) =>
-          player.games.find((game) => new Date(game.date).getDate() === date.getDate()),
+          player.games.find((game) => game.stage === editingStage?.name && isSameDay(game.date, date)),
         );
-        const editingGame = editingPlayer?.games.find((game) => new Date(game.date).getDate() === date.getDate());
-        const editingPlayerTeam = (formData.type === "team" && editingPlayer) ? formData.teams?.find((t) => t.members.includes(editingPlayer.name)) : undefined;
+        const editingGame = editingPlayer?.games.find(
+          (game) => game.stage === editingStage?.name && isSameDay(game.date, date),
+        );
+        const editingPlayerTeam =
+          formData.type === "team" && editingPlayer
+            ? formData.teams?.find((t) => t.members.includes(editingPlayer.name))
+            : undefined;
         const tempNewPlayer = {
           mid: `newPlayer-${index}`,
           name: "点击选择选手",
@@ -333,13 +340,15 @@ export default function TournamentProgressAccordionItem({
                             const newPlayers = [...(formData.players || [])];
 
                             // Check if there was a rival and clear that relationship
-                            if (editingStage?.type === '1on1') {
+                            if (editingStage?.type === "1on1") {
                               const rivalMid = newPlayers
                                 .find((p) => p === player)!
-                                .games.find((g) => new Date(g.date).getDate() === date.getDate())?.rivalMid;
+                                .games.find((g) => isSameDay(g.date, date))?.rivalMid;
 
                               if (rivalMid) {
-                                const rivalIndex = newPlayers.findIndex((p) => p.mid.toString() === rivalMid.toString());
+                                const rivalIndex = newPlayers.findIndex(
+                                  (p) => p.mid.toString() === rivalMid.toString(),
+                                );
                                 if (rivalIndex !== -1) {
                                   const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
                                     (g) => g.stage === editingStage.name,
@@ -356,7 +365,7 @@ export default function TournamentProgressAccordionItem({
 
                             newPlayers.find((p) => p === player)!.games = newPlayers
                               .find((p) => p === player)!
-                              .games.filter((g) => new Date(g.date).getDate() !== date.getDate());
+                              .games.filter((g) => !isSameDay(g.date, date));
                             setFormData((prev) => ({ ...prev, players: newPlayers }));
                           }}
                           className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red absolute top-1 right-1"
@@ -485,32 +494,44 @@ export default function TournamentProgressAccordionItem({
                               type="time"
                               name="gameTime"
                               value={(() => {
-                                const game = editingPlayer.games.find(
-                                  (g) => new Date(g.date).getDate() === date.getDate(),
-                                );
+                                const game = editingPlayer.games.find((g) => isSameDay(g.date, date));
                                 if (!game) return "";
                                 const gameDate = new Date(game.date);
                                 return `${gameDate.getHours().toString().padStart(2, "0")}:${gameDate.getMinutes().toString().padStart(2, "0")}`;
                               })()}
                               onChange={(e) => {
-                                const newPlayers = [...(formData.players || [])];
-                                const game = newPlayers
-                                  .find((p) => p.mid === editingPlayer.mid)!
-                                  .games.find((g) => new Date(g.date).getDate() === date.getDate());
-                                if (game) {
-                                  const currentDate = new Date(game.date);
-                                  const [hours, minutes] = e.target.value.split(":").map(Number);
+                                // Check if the time string is valid
+                                if (e.target.value && /^\d{1,2}:\d{1,2}$/.test(e.target.value)) {
+                                  const newPlayers = [...(formData.players || [])];
+                                  const game = newPlayers
+                                    .find((p) => p.mid === editingPlayer.mid)!
+                                    .games.find((g) => isSameDay(g.date, date));
+                                  if (game) {
+                                    const currentDate = new Date(game.date);
+                                    const [hours, minutes] = e.target.value.split(":").map(Number);
 
-                                  // Create new date with same date but updated time
-                                  const newDate = new Date(currentDate);
-                                  newDate.setHours(hours, minutes, 0, 0);
+                                    // Additional validation to ensure hours and minutes are valid numbers
+                                    if (!isNaN(hours) && !isNaN(minutes)) {
+                                      // Create new date with same date but updated time
+                                      const newDate = new Date(currentDate);
+                                      newDate.setHours(hours, minutes, 0, 0);
 
-                                  game.date = newDate.getTime();
-                                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                      // Ensure the date is valid before updating
+                                      if (!isNaN(newDate.getTime())) {
+                                        game.date = newDate.getTime();
+                                        setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                      }
+                                    }
+                                  }
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={getInputClassName("gameTime", touchedFields, { gameTime: editingGame?.date }, inputClassName)}
+                              className={getInputClassName(
+                                "gameTime",
+                                touchedFields,
+                                { gameTime: editingGame?.date },
+                                inputClassName,
+                              )}
                               onBlur={handleBlur}
                               required
                             />
@@ -530,14 +551,19 @@ export default function TournamentProgressAccordionItem({
                                 const newPlayers = [...formData.players!];
                                 const game = newPlayers
                                   .find((p) => p.mid === editingPlayer.mid)!
-                                  .games.find((g) => new Date(g.date).getDate() === date.getDate());
+                                  .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
                                   game.starterSquad = e.target.value;
                                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={getInputClassName("starterSquad", touchedFields, { starterSquad: editingGame?.starterSquad }, inputClassName)}
+                              className={getInputClassName(
+                                "starterSquad",
+                                touchedFields,
+                                { starterSquad: editingGame?.starterSquad },
+                                inputClassName,
+                              )}
                               onBlur={handleBlur}
                               required
                             />
@@ -557,14 +583,19 @@ export default function TournamentProgressAccordionItem({
                                 const newPlayers = [...formData.players!];
                                 const game = newPlayers
                                   .find((p) => p.mid === editingPlayer.mid)!
-                                  .games.find((g) => new Date(g.date).getDate() === date.getDate());
+                                  .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
                                   game.starterOp = e.target.value;
                                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={getInputClassName("starterOp", touchedFields, { starterOp: editingGame?.starterOp }, inputClassName)}
+                              className={getInputClassName(
+                                "starterOp",
+                                touchedFields,
+                                { starterOp: editingGame?.starterOp },
+                                inputClassName,
+                              )}
                               onBlur={handleBlur}
                             />
                           </div>
@@ -582,14 +613,19 @@ export default function TournamentProgressAccordionItem({
                                 const newPlayers = [...formData.players!];
                                 const game = newPlayers
                                   .find((p) => p.mid === editingPlayer.mid)!
-                                  .games.find((g) => new Date(g.date).getDate() === date.getDate());
+                                  .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
                                   game.point = e.target.value ? Number(e.target.value) : undefined;
                                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
-                              className={getInputClassName("point", touchedFields, { point: editingGame?.point }, inputClassName)}
+                              className={getInputClassName(
+                                "point",
+                                touchedFields,
+                                { point: editingGame?.point },
+                                inputClassName,
+                              )}
                               onBlur={handleBlur}
                             />
                           </div>
@@ -598,10 +634,7 @@ export default function TournamentProgressAccordionItem({
                             <div>
                               <label htmlFor="teamTotalPoints" className={labelWithTooltipClassName}>
                                 <span className="text-ak-blue">{editingPlayerTeam.name}</span>&nbsp;队伍总分
-                                <Tooltip
-                                  content="根据已有数据自动计算得出"
-                                  className="bg-light-mid-gray text-black"
-                                >
+                                <Tooltip content="根据已有数据自动计算得出" className="bg-light-mid-gray text-black">
                                   <span className="px-1">
                                     <InformationIcon width="0.75rem" height="0.75rem" />
                                   </span>
@@ -614,9 +647,9 @@ export default function TournamentProgressAccordionItem({
                                 value={(() => {
                                   // Calculate sum of points for all players in the same team
                                   const teamPoints = formData.players
-                                    ?.filter(player => editingPlayerTeam.members.includes(player.name))
-                                    .flatMap(player => player.games)
-                                    .filter(game => game.stage === editingStage?.name && game.point !== undefined)
+                                    ?.filter((player) => editingPlayerTeam.members.includes(player.name))
+                                    .flatMap((player) => player.games)
+                                    .filter((game) => game.stage === editingStage?.name && game.point !== undefined)
                                     .reduce((sum, game) => sum + (game.point || 0), 0);
 
                                   return teamPoints || "";
@@ -662,8 +695,10 @@ export default function TournamentProgressAccordionItem({
                                           );
                                           if (previousRivalGameIndex !== -1) {
                                             // Clear the previous rival's rivalMid and result
-                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].rivalMid = undefined;
-                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].result = undefined;
+                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].rivalMid =
+                                              undefined;
+                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].result =
+                                              undefined;
                                           }
                                         }
                                       }
@@ -804,7 +839,7 @@ export default function TournamentProgressAccordionItem({
                                     const newPlayers = [...formData.players!];
                                     const game = newPlayers
                                       .find((p) => p.mid === editingPlayer.mid)!
-                                      .games.find((g) => new Date(g.date).getDate() === date.getDate());
+                                      .games.find((g) => isSameDay(g.date, date));
                                     if (game) {
                                       game.customStageValues = {
                                         ...game.customStageValues,
@@ -814,7 +849,12 @@ export default function TournamentProgressAccordionItem({
                                     }
                                   }}
                                   onKeyDown={handleKeyDown}
-                                  className={getInputClassName(`customStageValue-${key}`, touchedFields, { [`customStageValue-${key}`]: editingGame?.customStageValues?.[key] }, inputClassName)}
+                                  className={getInputClassName(
+                                    `customStageValue-${key}`,
+                                    touchedFields,
+                                    { [`customStageValue-${key}`]: editingGame?.customStageValues?.[key] },
+                                    inputClassName,
+                                  )}
                                   onBlur={handleBlur}
                                   maxLength={32}
                                 />
@@ -834,7 +874,7 @@ export default function TournamentProgressAccordionItem({
                               const newPlayers = [...formData.players!];
                               const game = newPlayers
                                 .find((p) => p.mid === editingPlayer.mid)!
-                                .games.find((g) => new Date(g.date).getDate() === date.getDate());
+                                .games.find((g) => isSameDay(g.date, date));
                               if (game) {
                                 game.ending = e.target.value;
                                 setFormData((prev) => ({ ...prev, players: newPlayers }));

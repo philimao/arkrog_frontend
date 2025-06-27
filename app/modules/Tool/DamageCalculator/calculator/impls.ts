@@ -7,6 +7,7 @@ import type {
   StageData,
   EnemyData,
   RelicDataExt,
+  RelicWrapper,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
@@ -45,9 +46,9 @@ export type EnemyRelicBlackboardInput = {
 /** 藏品黑板应用输入 */
 export type RelicBlackboardApplyInput = {
   buff: RelicBuff;
-  relic: RelicDataExt;
+  relic: RelicDataExt & RelicWrapper;
   context: BuffContext;
-  relics: RelicDataExt[];
+  relics: (RelicDataExt & RelicWrapper)[];
 };
 /** 藏品黑板实现 */
 export type RelicBlackboard = {
@@ -55,12 +56,12 @@ export type RelicBlackboard = {
     charInput?: CharInput;
     charData?: CharData;
     enemyData?: EnemyData;
-    relics: RelicDataExt[];
+    relics: (RelicDataExt & RelicWrapper)[];
   }) => boolean;
-  apply(input: { context: BuffContext; relics: RelicDataExt[] }): void;
+  apply(input: { context: BuffContext; relics: (RelicDataExt & RelicWrapper)[] }): void;
 };
 const implMap = new Map<string, CharImpl>();
-const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicDataExt) => RelicBlackboard>();
+const relicBlackboardMap = new Map<string, (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => RelicBlackboard>();
 /**
  * 注册干员计算器实现
  * @param name 干员名称
@@ -104,12 +105,15 @@ export function getCalculatorImpl(name: string): CalculatorImpl {
 }
 
 /** 注册藏品黑板 */
-export function registerRelicBlackboard(key: string, apply: (buff: RelicBuff, relic: RelicDataExt) => RelicBlackboard) {
+export function registerRelicBlackboard(
+  key: string,
+  apply: (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => RelicBlackboard,
+) {
   relicBlackboardMap.set(key, apply);
 }
 
 /** 获取藏品黑板，准确的说是buff的黑板实现，一个藏品可能有多个buff */
-export function getRelicBlackboard(buff: RelicBuff, relic: RelicDataExt): RelicBlackboard {
+export function getRelicBlackboard(buff: RelicBuff, relic: RelicDataExt & RelicWrapper): RelicBlackboard {
   // key为char时代表什么？没有注册 TODO
   const key = buff.blackboard.find((b) => b.key === "key")?.valueStr || "char";
   const relicBlackboard = relicBlackboardMap.get(key);

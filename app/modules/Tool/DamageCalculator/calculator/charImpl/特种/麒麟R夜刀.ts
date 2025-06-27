@@ -81,7 +81,8 @@ export default function KirinRYato(input: CalculatorInput): CalculatorOutput {
       /** 技能攻击间隔(秒) */
       const skillAttackTime = skillAtkFrame / 30.0;
       /** 技能持续时间(秒) */
-      const skillDuration = input.skillData.levels[skillLevel].duration;
+      const skillDuration = input.charInput.skills.find((skill) => skill.skillId === skillKey)!.levels[skillLevel]
+        .duration;
       /** 技能期望普攻次数 */
       const skillHit = Math.ceil(skillDuration / skillAttackTime);
 

@@ -1,4 +1,4 @@
-import type { CalculatorInput, RelicDataExt } from "~/types/gameData";
+import type { CalculatorInput, RelicDataExt, RelicWrapper } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
 import { getRelicBlackboard, isRelicBlackboard } from "../impls";
 import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "../blackboard";
@@ -15,7 +15,7 @@ export function printRelicsInfo(input: CalculatorInput) {
 /**
  * 不执行藏品生效条件去生效所有藏品buff
  */
-export function applyAnyRelics(relics: RelicDataExt[]) {
+export function applyAnyRelics(relics: (RelicDataExt & RelicWrapper)[]) {
   const context = CalculatorHelper.createAdditionContext();
   for (const relic of relics) {
     for (const buff of relic.buffs) {

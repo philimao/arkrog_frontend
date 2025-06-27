@@ -1,5 +1,4 @@
-import type { RelicDataExt } from "~/types/gameData";
-import type { RelicBuff } from "~/types/gameData";
+import type { RelicBuff, RelicDataExt, RelicWrapper } from "~/types/gameData";
 import {
   getByKey,
   getByKeySafe,
@@ -265,7 +264,7 @@ registerRelicBlackboard("damage_scale[caster]", (buff: RelicBuff, relic: RelicDa
 });
 
 /** 断杖-波纹 */
-registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const damage_scale = getByKeySafe(buff.blackboard, "damage_scale_factor");
   return {
     isActive: () => true,
@@ -279,23 +278,26 @@ registerRelicBlackboard("rogue_3_relic_book_7", (buff: RelicBuff, relic: RelicDa
 });
 
 /** 未叙魔王残片 */
-registerRelicBlackboard("modify_fragment_carry_char_attribute[atk]", (buff: RelicBuff, relic: RelicDataExt) => {
-  const atk = getByKeySafe(buff.blackboard, "atk");
-  const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
-  return {
-    isActive(input) {
-      // 在没有干员数据时，默认生效 TODO
-      if (selector_profession && input.charData) {
-        return selector_profession.includes(input.charData.profession.toLowerCase());
-      }
-      return true;
-    },
-    apply(input): void {
-      const { context } = input;
-      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
-    },
-  };
-});
+registerRelicBlackboard(
+  "modify_fragment_carry_char_attribute[atk]",
+  (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
+    const atk = getByKeySafe(buff.blackboard, "atk");
+    const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
+    return {
+      isActive(input) {
+        // 在没有干员数据时，默认生效 TODO
+        if (selector_profession && input.charData) {
+          return selector_profession.includes(input.charData.profession.toLowerCase());
+        }
+        return true;
+      },
+      apply(input): void {
+        const { context } = input;
+        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      },
+    };
+  },
+);
 
 /** 生命越高，攻击越高 （古乔治营养原浆） */
 registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, relic: RelicDataExt) => {
@@ -317,7 +319,7 @@ registerRelicBlackboard("rogue_2_hp_ratio_to_attr_add[atk]", (buff: RelicBuff, r
 });
 
 /** 岩角号 */
-registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
   return {
@@ -335,7 +337,7 @@ registerRelicBlackboard("rogue_3_rangedATKUp", (buff: RelicBuff, relic: RelicDat
 });
 
 /** 锈刃-遗世独立 */
-registerRelicBlackboard("AtkUp[NoAllyInRange]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("AtkUp[NoAllyInRange]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const selector_profession = getByKey(buff.blackboard, "selector.profession")?.valueStr;
   return {
@@ -353,7 +355,7 @@ registerRelicBlackboard("AtkUp[NoAllyInRange]", (buff: RelicBuff, relic: RelicDa
 });
 
 /** 文学的开端 */
-registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
   const tag = getByKey(buff.blackboard, "tag")?.valueStr;
   return {
@@ -372,7 +374,7 @@ registerRelicBlackboard("rogue_4_damage_scale[tag]", (buff: RelicBuff, relic: Re
 });
 
 /** 久居之手 */
-registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
   const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
     .split("|")
@@ -392,26 +394,29 @@ registerRelicBlackboard("rogue_4_special_hand[time]", (buff: RelicBuff, relic: R
 });
 
 /** 轰鸣之手 */
-registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", (buff: RelicBuff, relic: RelicDataExt) => {
-  const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
-    .split("|")
-    .filter((s) => s.trim());
-  return {
-    isActive(input) {
-      if (sub_profession.length > 0 && input.charData) {
-        return sub_profession.includes(input.charData.subProfessionId);
-      }
-      return true;
-    },
-    apply(input): void {
-      const { context } = input;
-      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(1.5, relic.name));
-    },
-  };
-});
+registerRelicBlackboard(
+  "rogue_2_atk_up_on_output_damage[stack]",
+  (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
+    const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
+      .split("|")
+      .filter((s) => s.trim());
+    return {
+      isActive(input) {
+        if (sub_profession.length > 0 && input.charData) {
+          return sub_profession.includes(input.charData.subProfessionId);
+        }
+        return true;
+      },
+      apply(input): void {
+        const { context } = input;
+        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(1.5, relic.name));
+      },
+    };
+  },
+);
 
 /** 波纹之手 */
-registerRelicBlackboard("rogue_4_caster_hand[pair]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_4_caster_hand[pair]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
   const reliance_relics = getByKeySafe(buff.blackboard, "reliance_relics");
   const sub_profession = (getByKey(buff.blackboard, "selector.sub_profession")?.valueStr || "")
@@ -437,21 +442,24 @@ registerRelicBlackboard("rogue_4_caster_hand[pair]", (buff: RelicBuff, relic: Re
 });
 
 /** 湖中神盾 */
-registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", (buff: RelicBuff, relic: RelicDataExt) => {
-  const max_hp = getByKeySafe(buff.blackboard, "max_hp");
-  return {
-    isActive() {
-      return true;
-    },
-    apply(input): void {
-      const { context } = input;
-      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
-    },
-  };
-});
+registerRelicBlackboard(
+  "rogue_3_increaseMaxHPWhenHavingShield",
+  (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
+    const max_hp = getByKeySafe(buff.blackboard, "max_hp");
+    return {
+      isActive() {
+        return true;
+      },
+      apply(input): void {
+        const { context } = input;
+        context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+      },
+    };
+  },
+);
 
 /** 城墙之子 */
-registerRelicBlackboard("rogue_4_finalDefense[end_tile]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_4_finalDefense[end_tile]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const max_hp = getByKeySafe(buff.blackboard, "max_hp");
 
   return {
@@ -466,7 +474,7 @@ registerRelicBlackboard("rogue_4_finalDefense[end_tile]", (buff: RelicBuff, reli
 });
 
 /** 折戟-裂岩 */
-registerRelicBlackboard("rogue_3_relic_book_4", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("rogue_3_relic_book_4", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
 
   return {
@@ -481,7 +489,7 @@ registerRelicBlackboard("rogue_3_relic_book_4", (buff: RelicBuff, relic: RelicDa
 });
 
 /** 荣耀绶带 */
-registerRelicBlackboard("AtkUp[BlockJustOne]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("AtkUp[BlockJustOne]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const atk = getByKeySafe(buff.blackboard, "atk");
 
   return {
@@ -496,7 +504,7 @@ registerRelicBlackboard("AtkUp[BlockJustOne]", (buff: RelicBuff, relic: RelicDat
 });
 
 /** 丝契之谜 */
-registerRelicBlackboard("AttackSpeedUp[NoCharInRange]", (buff: RelicBuff, relic: RelicDataExt) => {
+registerRelicBlackboard("AttackSpeedUp[NoCharInRange]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
 
   return {
@@ -511,22 +519,25 @@ registerRelicBlackboard("AttackSpeedUp[NoCharInRange]", (buff: RelicBuff, relic:
 });
 
 /** 丝契之谜 */
-registerRelicBlackboard("rogue_4_attack_speed_up[life_point]", (buff: RelicBuff, relic: RelicDataExt) => {
-  const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
+registerRelicBlackboard(
+  "rogue_4_attack_speed_up[life_point]",
+  (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
+    const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
 
-  return {
-    isActive(input) {
-      return isBlackboardActiveForChar(buff, input.charData);
-    },
-    apply(input): void {
-      const { context } = input;
-      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
-    },
-  };
-});
+    return {
+      isActive(input) {
+        return isBlackboardActiveForChar(buff, input.charData);
+      },
+      apply(input): void {
+        const { context } = input;
+        context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+      },
+    };
+  },
+);
 
 /** 支柱-枯法 */
-registerRelicBlackboard("defdown[support]", (buff, relic) => {
+registerRelicBlackboard("defdown[support]", (buff: RelicBuff, relic: RelicDataExt & RelicWrapper) => {
   const def = getByKeySafe(buff.blackboard, "def");
   const magic_resistance = getByKeySafe(buff.blackboard, "magic_resistance");
   return {
@@ -614,6 +625,10 @@ export const commonCharRelicBlackboard = {
     const multiplier_atk = getByKey(buff.blackboard, "multiplier@atk");
     const multiplier_max_hp = getByKey(buff.blackboard, "multiplier@max_hp");
     const multiplier_def = getByKey(buff.blackboard, "multiplier@def");
+    if (relic.name === "异铁小圆盾") {
+      console.log(max_hp, atk, def, attack_speed, respawn_time, multiplier_atk, multiplier_max_hp, multiplier_def);
+      debugger;
+    }
     /** 最大生命值 */
     if (max_hp) {
       context.relic_rune_mul.max_hp.addChild(

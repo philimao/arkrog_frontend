@@ -34,7 +34,12 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     for (const topicId of Object.keys(topics)) {
       const relicsData = getRelicsData(gameDataStore.relics, gameDataStore.items, topicId as RogueKey);
       const relicWrappers = getRelicWrappers(relicsData);
-      const anyRelicContext = applyAnyRelics(Object.values(relicsData));
+      const relicList = Object.entries(relicWrappers).map(([id, relicWrapper]) => ({
+        ...relicsData[id],
+        ...relicWrapper,
+      }));
+      const anyRelicContext = applyAnyRelics(relicList);
+      CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
       const validRelicList = [
         /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
         "烟花之手",

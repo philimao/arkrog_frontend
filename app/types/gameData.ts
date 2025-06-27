@@ -344,8 +344,6 @@ export interface RelicData {
   usage: string;
   /** 藏品名称 */
   name: string;
-  /** 藏品层数 */
-  layer: number;
 }
 
 export interface RelicWrapper {

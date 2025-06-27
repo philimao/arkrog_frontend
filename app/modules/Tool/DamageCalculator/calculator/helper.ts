@@ -261,7 +261,7 @@ export class CalculatorHelper {
       charInput?: CharInput;
       charData?: CharData;
       enemyData: EnemyData;
-      relics: RelicDataExt[];
+      relics: (RelicDataExt & RelicWrapper)[];
       stageData?: StageData;
     },
     context?: BuffContext,

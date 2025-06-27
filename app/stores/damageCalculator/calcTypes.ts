@@ -248,7 +248,7 @@ export interface SlicedCalculatorActions {
   updateGlobalAnalysisResult: (input: {
     charInput: CharInput;
     charData: CharData;
-    relics: RelicDataExt[];
+    relics: (RelicDataExt & RelicWrapper)[];
   }) => BuffContext;
   resetStore: () => void;
 }

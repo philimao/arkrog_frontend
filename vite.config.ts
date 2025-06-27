@@ -20,5 +20,8 @@ export default defineConfig({
     },
     devSourcemap: true,
   },
+  build: {
+    sourcemap: "hidden",
+  },
   plugins: [reactRouter(), tsconfigPaths()],
 });

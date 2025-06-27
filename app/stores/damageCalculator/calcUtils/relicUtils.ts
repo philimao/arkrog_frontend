@@ -51,7 +51,7 @@ export function wrapRelicData(relicDataExt: RelicDataExt): RelicWrapper {
     userActive: true,
     isFavorite: false,
     hasLayer: hasLayer,
-    layer: relicDataExt.layer || 1,
+    layer: 1,
     pinyin: relicDataExt.pinyin.replace(/_/g, ""),
     initials: relicDataExt.pinyin
       .split("_")

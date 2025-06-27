@@ -536,9 +536,12 @@ registerRelicBlackboard("defdown[support]", (buff, relic) => {
     },
     apply(input): void {
       const { context } = input;
-      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(def.value, relic.name));
+      const defValue = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
+      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(defValue, relic.name));
+      const magicResistanceValue =
+        Math.sign(magic_resistance.value) === 1 ? magic_resistance.value : 1 + magic_resistance.value;
       context.in_game_buff_final_mul.enemy_magic_resistance.addChild(
-        new NumericLiteralNode(magic_resistance.value, relic.name),
+        new NumericLiteralNode(magicResistanceValue, relic.name),
       );
     },
   };
@@ -556,12 +559,14 @@ export const commonEnemyRelicBlackboard = {
     // 目前只处理了雕词錾刀和十戒，但敌人通用面板应该也重构到此处 TODO
     const max_hp = getByKey(buff.blackboard, "max_hp");
     if (max_hp) {
-      context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+      const maxHpValue = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
+      context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(maxHpValue, relic.name));
       is_invalid = false;
     }
     const def = getByKey(buff.blackboard, "def");
     if (def) {
-      context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(def.value, relic.name));
+      const defValue = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
+      context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(defValue, relic.name));
       is_invalid = false;
     }
     if (is_invalid) {

@@ -625,10 +625,6 @@ export const commonCharRelicBlackboard = {
     const multiplier_atk = getByKey(buff.blackboard, "multiplier@atk");
     const multiplier_max_hp = getByKey(buff.blackboard, "multiplier@max_hp");
     const multiplier_def = getByKey(buff.blackboard, "multiplier@def");
-    if (relic.name === "异铁小圆盾") {
-      console.log(max_hp, atk, def, attack_speed, respawn_time, multiplier_atk, multiplier_max_hp, multiplier_def);
-      debugger;
-    }
     /** 最大生命值 */
     if (max_hp) {
       context.relic_rune_mul.max_hp.addChild(

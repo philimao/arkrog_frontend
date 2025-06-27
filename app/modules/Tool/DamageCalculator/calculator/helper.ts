@@ -672,7 +672,7 @@ export class CalculatorHelper {
    * @param context
    * @param relics
    */
-  static printAdditionContext(context: BuffContext, relics: RelicWrapper[]) {
+  static printAdditionContext(context: BuffContext, relics: (RelicDataExt & RelicWrapper)[]) {
     interface StringRow {
       藏品名称: string;
       rune_add?: string;
@@ -684,10 +684,12 @@ export class CalculatorHelper {
     }
     interface ObjectRow {
       藏品名称: string;
+      key: string;
       rune_add: string[];
       rune_mul: string[];
       in_game_add: string[];
       in_game_mul: string[];
+      in_game_final_add: string[];
       in_game_final_mul: string[];
       usage: string;
     }
@@ -699,66 +701,59 @@ export class CalculatorHelper {
     console.log(flagLogMap);
     console.log(objectLogMap);
 
-    context.relic_rune_add.def.children.forEach((node) => set_row("rune_add", `防御+${node.calculate()}`, node));
-    context.relic_rune_add.attack_speed.children.forEach((node) =>
-      set_row("rune_add", `攻速+${node.calculate()}`, node),
-    );
+    /** 用于debug时获取自定义内容 */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const getKey = (relic?: RelicDataExt & RelicWrapper) => "";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const filterKey = (row: ObjectRow) => true;
+    /** 获取所有key: key的黑板 */
+    // const getKey = (relic?: RelicDataExt & RelicWrapper) =>
+    //   relic?.buffs
+    //     .find((buff) => buff.blackboard.find((bb) => bb.key === "key"))
+    //     ?.blackboard.find((bb) => bb.key === "key")?.valueStr || "";
+    // const filterKey = (row: ObjectRow) => !!row.key;
 
-    context.relic_rune_mul.max_hp.children.forEach((node) =>
-      set_row("rune_mul", `血量*${toPercent(node.calculate())}`, node),
-    );
-    context.relic_rune_mul.atk.children.forEach((node) =>
-      set_row("rune_mul", `攻击*${toPercent(node.calculate())}`, node),
-    );
-    context.relic_rune_mul.def.children.forEach((node) =>
-      set_row("rune_mul", `防御*${toPercent(node.calculate())}`, node),
-    );
+    // 局外加算
+    Object.entries(context.relic_rune_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("rune_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
 
-    context.in_game_buff_add.attack_speed.children.forEach((node) =>
-      set_row("in_game_add", `攻速+${node.calculate()}`, node),
-    );
+    // 局外乘算
+    Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("rune_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
 
-    context.in_game_buff_mul.atk.children.forEach((node) =>
-      set_row("in_game_mul", `攻击*${toPercent(node.calculate())}`, node),
-    );
+    // 直接加算
+    Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
+
+    // 直接乘算
+    Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
+
+    // 最终加算
+    Object.entries(context.in_game_buff_final_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_final_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
 
     // 最终乘算
-    context.in_game_buff_final_mul.enemy_max_hp.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方血量*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_atk.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方攻击*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_def.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方防御*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_scale_phy.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方物理易伤*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_scale_mag.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方法术易伤*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_scale_pure.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方真伤易伤*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_scale_pure.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方真伤易伤*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_scale_ep.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方元素损伤*${toPercent(node.calculate())}`, node),
-    );
-    context.in_game_buff_final_mul.enemy_damage_resistance.children.forEach((node) =>
-      set_row("in_game_final_mul", `敌方减伤*${toPercent(node.calculate())}`, node),
-    );
-    context.global_buff_stack.damage_scale_phy.children.forEach((node) =>
-      set_row("in_game_final_mul", `物理增伤*${toPercent(node.calculate())}`, node),
-    );
-    context.global_buff_stack.damage_scale_mag.children.forEach((node) =>
-      set_row("in_game_final_mul", `法术增伤*${toPercent(node.calculate())}`, node),
-    );
-    context.global_buff_stack.damage_scale_pure.children.forEach((node) =>
-      set_row("in_game_final_mul", `真伤增伤*${toPercent(node.calculate())}`, node),
-    );
+    Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_final_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
 
     /** 转为百分比 */
     function toPercent(value: number): string {
@@ -766,18 +761,22 @@ export class CalculatorHelper {
     }
 
     function set_row(
-      target: "rune_add" | "rune_mul" | "in_game_add" | "in_game_mul" | "in_game_final_mul",
+      target: "rune_add" | "rune_mul" | "in_game_add" | "in_game_mul" | "in_game_final_add" | "in_game_final_mul",
       key: string,
       node: BaseNode,
     ) {
+      // 部分藏品在多个乘区有效
       if (!flagLogMap[node.tooltip]) {
+        const relic = relics.find((relic) => relic.name === node.tooltip);
         flagLogMap[node.tooltip] = { 藏品名称: node.tooltip };
         objectLogMap[node.tooltip] = {
           藏品名称: node.tooltip,
+          key: getKey(relic),
           rune_add: [],
           rune_mul: [],
           in_game_add: [],
           in_game_mul: [],
+          in_game_final_add: [],
           in_game_final_mul: [],
           usage: "",
         };
@@ -787,14 +786,17 @@ export class CalculatorHelper {
     }
 
     for (const relic of relics) {
+      // 添加未生效的藏品
       if (!flagLogMap[relic.name]) {
         flagLogMap[relic.name] = { 藏品名称: relic.name };
         objectLogMap[relic.name] = {
           藏品名称: relic.name,
+          key: getKey(relic),
           rune_add: [],
           rune_mul: [],
           in_game_add: [],
           in_game_mul: [],
+          in_game_final_add: [],
           in_game_final_mul: [],
           usage: "",
         };
@@ -802,17 +804,21 @@ export class CalculatorHelper {
       objectLogMap[relic.name].usage = relic.usage;
     }
     console.table(
-      Object.values(objectLogMap).map((row) => {
-        return {
-          藏品名称: row.藏品名称,
-          局外加算: row.rune_add.join("|"),
-          局外乘算: row.rune_mul.join("|"),
-          直接加算: row.in_game_add.join("|"),
-          直接乘算: row.in_game_mul.join("|"),
-          最终乘算: row.in_game_final_mul.join("|"),
-          描述: row.usage,
-        };
-      }),
+      Object.values(objectLogMap)
+        .filter(filterKey)
+        .map((row) => {
+          return {
+            藏品名称: row.藏品名称,
+            词条: row.key,
+            局外加算: row.rune_add.join("|"),
+            局外乘算: row.rune_mul.join("|"),
+            直接加算: row.in_game_add.join("|"),
+            直接乘算: row.in_game_mul.join("|"),
+            最终乘算: row.in_game_final_mul.join("|"),
+            // 最终加算: row.in_game_final_add.join("|"),
+            描述: row.usage,
+          };
+        }),
     );
 
     console.groupEnd();

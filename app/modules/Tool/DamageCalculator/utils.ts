@@ -183,7 +183,7 @@ export const pohuaixieyi_layer_sync = ["rogue_4_relic_legacy_7", "rogue_4_relic_
 /**
  * 藏品黑名单（价值低或难以计入）
  */
-export const disallowedRelicNames = ["黑色郁金香", "古堡的子嗣", "衣卡兹", "Scout的狙击镜", "奴隶猎捕器"];
+export const disallowedRelicNames = ["黑色郁金香", "古堡的子嗣", "衣卡兹", "Scout的狙击镜", "奴隶猎捕器", "戈渎不语"];
 
 /**
  * valueStr黑名单（用于判断isBuffActive)

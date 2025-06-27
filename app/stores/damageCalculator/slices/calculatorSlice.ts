@@ -39,7 +39,6 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
         ...relicWrapper,
       }));
       const anyRelicContext = applyAnyRelics(relicList);
-      CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
       const validRelicList = [
         /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
         "烟花之手",
@@ -59,6 +58,9 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       anyRelicContextMap[topicId as RogueKey] = anyRelicContext;
       relicDataMap[topicId as RogueKey] = relicsData;
       relicWrapperMap[topicId as RogueKey] = relicWrappers;
+      if (import.meta.env.DEV && topicId === "rogue_4") {
+        CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
+      }
     }
     /** 渲染关卡列表 */
     const renderStages = getStageList(stages, rogueInput);

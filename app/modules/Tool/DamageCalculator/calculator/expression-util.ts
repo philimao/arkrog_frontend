@@ -2,6 +2,82 @@ import { type CalculatorInput, type EnemyInput } from "~/types/gameData";
 import { BuffContext } from "./buff-context";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 import type { CharInput } from "~/stores/damageCalculator/calcTypes";
+import { allowedBlackboardKeyMap } from "../utils";
+
+const common_out_game_expression = (input: { charInput: CharInput; context: BuffContext }, key: string) => {
+  const baseValue = (input.charInput.phase.attributesKeyFrames[input.charInput.frameIndex].data[key as never] ??
+    0) as number;
+  let expression;
+  if (input.context.relic_rune_add[key as keyof typeof input.context.relic_rune_add]) {
+    expression = new ExpressionGroupNode("*", "局外" + allowedBlackboardKeyMap[key]).addChild(
+      new ExpressionGroupNode("+", "局外加成")
+        .addChild(new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]))
+        .addChild(...input.context.relic_rune_add[key as keyof typeof input.context.relic_rune_add].children),
+    );
+  } else {
+    expression = new ExpressionGroupNode("*", "局外" + allowedBlackboardKeyMap[key]).addChild(
+      new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]),
+    );
+  }
+  if (input.context.relic_rune_mul[key as keyof typeof input.context.relic_rune_mul]) {
+    expression.addChild(input.context.relic_rune_mul[key as keyof typeof input.context.relic_rune_mul]);
+  }
+  return expression;
+};
+
+const common_in_game_expression = (input: { charInput: CharInput; context: BuffContext }, key: string) => {
+  let expression = new ExpressionGroupNode("*", "直接加算&直接乘算");
+  if (input.context.in_game_buff_add[key as keyof typeof input.context.in_game_buff_add]) {
+    // console.log(
+    //   "in_game_buff_add",
+    //   key,
+    //   input.context.in_game_buff_add[key as keyof typeof input.context.in_game_buff_add].calculate(),
+    // );
+    expression = expression.addChild(
+      new ExpressionGroupNode("+", "直接加算")
+        .addChild(common_out_game_expression(input, key)) // 没做取整 TODO
+        .addChild(input.context.in_game_buff_add[key as keyof typeof input.context.in_game_buff_add]),
+    );
+  } else {
+    expression = expression.addChild(common_out_game_expression(input, key));
+  }
+  if (input.context.in_game_buff_mul[key as keyof typeof input.context.in_game_buff_mul]) {
+    // console.log(
+    //   "in_game_buff_mul",
+    //   key,
+    //   input.context.in_game_buff_mul[key as keyof typeof input.context.in_game_buff_mul].calculate(),
+    // );
+    expression = expression.addChild(
+      input.context.in_game_buff_mul[key as keyof typeof input.context.in_game_buff_mul],
+    );
+  }
+  let expressFinal = new ExpressionGroupNode("*", "最终加算&最终乘算");
+  if (input.context.in_game_buff_final_add[key as keyof typeof input.context.in_game_buff_final_add]) {
+    // console.log(
+    //   "in_game_buff_final_add",
+    //   key,
+    //   input.context.in_game_buff_final_add[key as keyof typeof input.context.in_game_buff_final_add].calculate(),
+    // );
+    expressFinal = expressFinal.addChild(
+      new ExpressionGroupNode("+", "最终加算")
+        .addChild(expression)
+        .addChild(input.context.in_game_buff_final_add[key as keyof typeof input.context.in_game_buff_final_add]),
+    );
+  } else {
+    expressFinal = expressFinal.addChild(expression);
+  }
+  if (input.context.in_game_buff_final_mul[key as keyof typeof input.context.in_game_buff_final_mul]) {
+    // console.log(
+    //   "in_game_buff_final_mul",
+    //   key,
+    //   input.context.in_game_buff_final_mul[key as keyof typeof input.context.in_game_buff_final_mul].calculate(),
+    // );
+    expressFinal = expressFinal.addChild(
+      input.context.in_game_buff_final_mul[key as keyof typeof input.context.in_game_buff_final_mul],
+    );
+  }
+  return expressFinal;
+};
 
 /**
  * 公式工具
@@ -76,21 +152,12 @@ export class ExpressionUtil {
 
   /** 防御力 - 局外 干员防御力 */
   static operator_out_game_def(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
-    const baseDef = attribute?.def ?? 0;
-
-    return new ExpressionGroupNode("*", "局外防御力")
-      .addChild(
-        new ExpressionGroupNode("+", "局外加成")
-          .addChild(new NumericLiteralNode(baseDef, "基础防御力"))
-          .addChild(...input.context.relic_rune_add.def.children),
-      )
-      .addChild(input.context.relic_rune_mul.def);
+    return common_out_game_expression(input, "def");
   }
 
   /** 防御力 - 局内 干员防御力 */
   static operator_in_game_def(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_out_game_def({ charInput: input.charInput, context: input.context });
+    return common_in_game_expression(input, "def");
   }
 
   /** 攻击速度 - 局外 干员攻击速度 */

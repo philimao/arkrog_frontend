@@ -7,6 +7,7 @@ import { ExpressionGroupNode, NumericLiteralNode, BaseNode } from "../DamageCalc
 import { mergeClassNameSafe } from "~/utils/tools";
 
 interface ExpressionDisplayProps {
+  mode: "out_game" | "in_game" | "skill";
   expression: ExpressionGroupNode;
   className?: string;
 }
@@ -111,7 +112,7 @@ const ExpressionStructure: React.FC<ExpressionStructureProps> = ({ node, default
 };
 
 // 表达式显示组件
-export const ExpressionDisplay: React.FC<ExpressionDisplayProps> = ({ expression, className = "" }) => {
+export const ExpressionDisplay: React.FC<ExpressionDisplayProps> = ({ mode, expression, className = "" }) => {
   if (!expression) {
     return null;
   }
@@ -120,7 +121,9 @@ export const ExpressionDisplay: React.FC<ExpressionDisplayProps> = ({ expression
     <div className={mergeClassNameSafe("bg-black-gray px-3 leading-8 h-8 font-bold text-xl", className)}>
       <Popover placement="top">
         <PopoverTrigger>
-          <span className="cursor-pointer">{Math.round(expression.calculate() * 100) / 100}</span>
+          <span className="cursor-pointer">
+            {mode === "out_game" ? Math.round(expression.calculate()) : Math.round(expression.calculate() * 100) / 100}
+          </span>
         </PopoverTrigger>
         <PopoverContent>
           <div className="px-1 py-2">

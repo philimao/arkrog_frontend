@@ -528,86 +528,104 @@ export class CalculatorHelper {
       out_game_char: [],
       enemy: [],
     };
-    const parse = (key: string, value: number) =>
-      `${allowedBlackboardKeyMap[key] || key}: ${value > 1 ? value : Math.round(value * 100) + "%"}`;
-    Object.entries(context.relic_rune_add).forEach(([key, value]) => {
-      if (value.calculate() > 0) {
-        result.out_game_char.push(parse(key, value.calculate()));
-      }
-    });
-    Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
-      if (key === "enemy_damage_resistance") {
-        if (value.calculate() === 0) {
-          return;
-        }
-        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
-        return;
-      }
-      if (value.calculate() !== 1) {
-        result.out_game_char.push(
-          `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-        );
-      }
-    });
-    Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
-      if (value.calculate() > 0) {
-        result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value.calculate()}`);
-      }
-    });
-    Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
-      if (value.calculate() !== 1) {
-        result.in_game_char.push(
-          `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-        );
-      }
-    });
-    Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
-      if (key === "enemy_damage_resistance") {
-        if (value.calculate() === 0) {
-          return;
-        }
-        result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
-        return;
-      }
-      // TODO
-      const isEnemy = [
-        "enemy_atk",
-        "enemy_def",
-        "enemy_max_hp",
-        "enemy_damage_scale_phy",
-        "enemy_damage_scale_mag",
-        "enemy_damage_scale_pure",
-        "enemy_damage_scale_ep",
-        "enemy_damage_resistance",
-        "enemy_magic_resistance",
-        "enemy_ep_resistance",
-        "enemy_ep_damage_resistance",
-      ].includes(key);
-      if (!isEnemy && value.calculate() !== 1) {
-        result.in_game_char.push(
-          `最终乘算${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-        );
-      }
-      if (isEnemy && value.calculate() !== 1) {
-        // 减伤描述特殊
-        if (key === "enemy_damage_resistance") {
-          result.enemy.push(
-            `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-          );
+    const parse = (buffKey: string, key: string, value: number) =>
+      `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+    Object.entries(context).forEach(([buffKey, buffValue]) => {
+      if (Array.isArray(buffValue)) return;
+      Object.entries(buffValue).forEach(([key, value]) => {
+        const node = value as ExpressionGroupNode;
+        // 加算与减伤的基数为0，乘算的基数为1
+        const effectiveValue =
+          buffKey.endsWith("_add") || key === "enemy_damage_resistance" ? node.calculate() : node.calculate() - 1;
+        if (!effectiveValue) return;
+        const log = parse(buffKey, key, node.calculate());
+        if (key.startsWith("enemy_")) {
+          result.enemy.push(log);
+        } else if (buffKey.includes("in_game_")) {
+          result.in_game_char.push(log);
         } else {
-          result.enemy.push(
-            `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-          );
+          result.out_game_char.push(log);
         }
-      }
+      });
     });
-    Object.entries(context.global_buff_stack).forEach(([key, value]) => {
-      if (value.calculate() !== 1) {
-        result.in_game_char.push(
-          `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
-        );
-      }
-    });
+    // Object.entries(context.relic_rune_add).forEach(([key, value]) => {
+    //   if (value.calculate() > 0) {
+    //     result.out_game_char.push(parse(key, value.calculate()));
+    //   }
+    // });
+    // Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+    //   if (key === "enemy_damage_resistance") {
+    //     if (value.calculate() === 0) {
+    //       return;
+    //     }
+    //     result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+    //     return;
+    //   }
+    //   if (value.calculate() !== 1) {
+    //     result.out_game_char.push(
+    //       `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
+    //   if (value.calculate() > 0) {
+    //     result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value.calculate()}`);
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
+    //   if (value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+    //   if (key === "enemy_damage_resistance") {
+    //     if (value.calculate() === 0) {
+    //       return;
+    //     }
+    //     result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+    //     return;
+    //   }
+    //   // TODO
+    //   const isEnemy = [
+    //     "enemy_atk",
+    //     "enemy_def",
+    //     "enemy_max_hp",
+    //     "enemy_damage_scale_phy",
+    //     "enemy_damage_scale_mag",
+    //     "enemy_damage_scale_pure",
+    //     "enemy_damage_scale_ep",
+    //     "enemy_damage_resistance",
+    //     "enemy_magic_resistance",
+    //     "enemy_ep_resistance",
+    //     "enemy_ep_damage_resistance",
+    //   ].includes(key);
+    //   if (!isEnemy && value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `最终乘算${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    //   if (isEnemy && value.calculate() !== 1) {
+    //     // 减伤描述特殊
+    //     if (key === "enemy_damage_resistance") {
+    //       result.enemy.push(
+    //         `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //       );
+    //     } else {
+    //       result.enemy.push(
+    //         `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //       );
+    //     }
+    //   }
+    // });
+    // Object.entries(context.global_buff_stack).forEach(([key, value]) => {
+    //   if (value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
     return result;
   }
 

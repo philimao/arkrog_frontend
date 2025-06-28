@@ -221,10 +221,10 @@ registerRelicBlackboard("rogue_2_block_cnt[life_point]", {
   },
 });
 
-/** 术师增伤 */
+/** 术师增伤，苦难巫咒 */
 registerRelicBlackboard("damage_scale[caster]", {
   isActive(input) {
-    return !input.charData || input.charData.profession === "CASTER";
+    return !input.charData || isBlackboardActiveForChar(input.buff, input.charData);
   },
   apply(input): void {
     const { context, buff, relic } = input;
@@ -488,6 +488,19 @@ registerRelicBlackboard("defdown[support]", {
   },
 });
 
+registerRelicBlackboard("attr_up_on_trigger[def&mag_resist]", {
+  isActive(input) {
+    return !input.charData || isBlackboardActiveForChar(input.buff, input.charData);
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const def = getByKeySafe(buff.blackboard, "def");
+    const magic_resistance = getByKeySafe(buff.blackboard, "magic_resistance");
+    context.in_game_buff_add.def.addChild(new NumericLiteralNode(def.value, relic.name));
+    context.in_game_buff_add.magic_resistance.addChild(new NumericLiteralNode(magic_resistance.value, relic.name));
+  },
+});
+
 /** 通用敌人藏品黑板 */
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
@@ -555,6 +568,8 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     const multiplier_atk = getByKey(buff.blackboard, "multiplier@atk");
     const multiplier_max_hp = getByKey(buff.blackboard, "multiplier@max_hp");
     const multiplier_def = getByKey(buff.blackboard, "multiplier@def");
+    const cost = getByKey(buff.blackboard, "cost");
+    const magic_resistance = getByKey(buff.blackboard, "magic_resistance");
     /** 最大生命值 */
     if (max_hp) {
       context.relic_rune_mul.max_hp.addChild(
@@ -622,10 +637,22 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       );
       is_invalid = false;
     }
+    if (magic_resistance) {
+      context.relic_rune_add.magic_resistance.addChild(
+        new NumericLiteralNode(magic_resistance.value * relic.layer, relic.name, { relic, buff }),
+      );
+      is_invalid = false;
+    }
+    /** 再部署时间 */
     if (respawn_time) {
       context.relic_rune_mul.respawn_time.addChild(
         new NumericLiteralNode(respawn_time.value, relic.name, { relic, buff }),
       );
+      is_invalid = false;
+    }
+    /** 费用 */
+    if (cost) {
+      context.relic_rune_add.cost.addChild(new NumericLiteralNode(cost.value, relic.name, { relic, buff }));
       is_invalid = false;
     }
     if (is_invalid) {

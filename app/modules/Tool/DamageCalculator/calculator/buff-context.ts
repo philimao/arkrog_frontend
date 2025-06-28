@@ -23,6 +23,8 @@ export interface IBuffContext {
     attack_speed: ExpressionGroupNode;
     /** 防御力 */
     def: ExpressionGroupNode;
+    /** 法术抗性 */
+    magic_resistance: ExpressionGroupNode;
     /** 部署费用 */
     cost: ExpressionGroupNode;
     /** 每秒生命回复 */
@@ -53,6 +55,10 @@ export interface IBuffContext {
   in_game_buff_add: {
     /** 攻击力 */
     atk: ExpressionGroupNode;
+    /** 防御力 */
+    def: ExpressionGroupNode;
+    /** 法术抗性 */
+    magic_resistance: ExpressionGroupNode;
     /** 攻击速度 */
     attack_speed: ExpressionGroupNode;
     /** 每秒技力回复 */
@@ -124,6 +130,7 @@ export class BuffContext implements IBuffContext {
     atk: new ExpressionGroupNode("+", "局外加算"),
     attack_speed: new ExpressionGroupNode("+", "局外加算"),
     def: new ExpressionGroupNode("+", "局外加算"),
+    magic_resistance: new ExpressionGroupNode("+", "局外加算"),
     cost: new ExpressionGroupNode("+", "局外加算"),
     hp_recovery_per_sec: new ExpressionGroupNode("+", "局外加算"),
     respawn_time: new ExpressionGroupNode("+", "局外加算"),
@@ -140,6 +147,8 @@ export class BuffContext implements IBuffContext {
   };
   in_game_buff_add: IBuffContext["in_game_buff_add"] = {
     atk: new ExpressionGroupNode("+", "局内直接加算"),
+    def: new ExpressionGroupNode("+", "局内直接加算"),
+    magic_resistance: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: new ExpressionGroupNode("+", "局内直接加算"),
     enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算").addChild(new NumericLiteralNode(0, "基数")),
@@ -197,6 +206,7 @@ export class BuffContext implements IBuffContext {
       atk: this.relic_rune_add.atk.clone(),
       attack_speed: this.relic_rune_add.attack_speed.clone(),
       def: this.relic_rune_add.def.clone(),
+      magic_resistance: this.relic_rune_add.magic_resistance.clone(),
       cost: this.relic_rune_add.cost.clone(),
       hp_recovery_per_sec: this.relic_rune_add.hp_recovery_per_sec.clone(),
       respawn_time: this.relic_rune_add.respawn_time.clone(),
@@ -217,6 +227,8 @@ export class BuffContext implements IBuffContext {
     // 深度克隆 in_game_buff_add
     clone.in_game_buff_add = {
       atk: this.in_game_buff_add.atk.clone(),
+      def: this.in_game_buff_add.def.clone(),
+      magic_resistance: this.in_game_buff_add.magic_resistance.clone(),
       attack_speed: this.in_game_buff_add.attack_speed.clone(),
       sp_recovery_per_sec: this.in_game_buff_add.sp_recovery_per_sec.clone(),
       enemy_magic_resistance: this.in_game_buff_add.enemy_magic_resistance.clone(),

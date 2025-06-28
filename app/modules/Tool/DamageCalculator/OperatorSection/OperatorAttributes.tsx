@@ -122,16 +122,24 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         <>
           <div>
             <span>最大生命值</span>
-            <ExpressionDisplay expression={enemyExpression.maxHp} className="text-sm h-4 px-2 text-ak-blue" />
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={enemyExpression.maxHp}
+              className="text-sm h-4 px-2 text-ak-blue"
+            />
           </div>
 
           <div>
             <span>攻击力</span>
-            <ExpressionDisplay expression={enemyExpression.atk} className="text-sm h-4 px-2 text-ak-red" />
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={enemyExpression.atk}
+              className="text-sm h-4 px-2 text-ak-red"
+            />
           </div>
           <div>
             <span>防御</span>
-            <ExpressionDisplay expression={enemyExpression.def} className="text-sm h-4 px-2" />
+            <ExpressionDisplay mode={props.mode} expression={enemyExpression.def} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>法术抗性</span>
@@ -139,7 +147,7 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           </div>
           <div>
             <span>费用</span>
-            <ExpressionDisplay expression={enemyExpression.cost} className="text-sm h-4 px-2" />
+            <ExpressionDisplay mode={props.mode} expression={enemyExpression.cost} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>阻挡数</span>
@@ -147,7 +155,11 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           </div>
           <div>
             <span>攻击速度</span>
-            <ExpressionDisplay expression={enemyExpression.attackSpeed} className="text-sm h-4 px-2" />
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={enemyExpression.attackSpeed}
+              className="text-sm h-4 px-2"
+            />
           </div>
           <div>
             <span>攻击间隔</span>
@@ -159,11 +171,19 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           </div>
           <div>
             <span>每秒生命回复</span>
-            <ExpressionDisplay expression={enemyExpression.hpRecoveryPerSec} className="text-sm h-4 px-2" />
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={enemyExpression.hpRecoveryPerSec}
+              className="text-sm h-4 px-2"
+            />
           </div>
           <div>
             <span>每秒技力回复</span>
-            <ExpressionDisplay expression={enemyExpression.spRecoveryPerSec} className="text-sm h-4 px-2" />
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={enemyExpression.spRecoveryPerSec}
+              className="text-sm h-4 px-2"
+            />
           </div>
           <div>
             <span>伤害倍率</span>

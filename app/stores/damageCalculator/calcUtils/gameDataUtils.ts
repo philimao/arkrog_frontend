@@ -62,6 +62,16 @@ export async function handleUpdateStageId(state: {
     if (stageWithBoatIds.includes(stageId) && !state.selectedIds.includes("rogue_4_relic_final_6")) {
       selectedIds.push("rogue_4_relic_final_6");
     }
+    const stageWithRollingAncestorIds = [
+      "ro4_b_4_b", // 思维矫正
+      "ro4_b_4_d", // 带船思维矫正
+      "ro4_b_5_b", // 魂灵朝谒
+      "ro4_b_5_d", // 带船魂灵朝谒
+    ];
+    // 异格关卡自动添加滚动先祖
+    if (stageWithRollingAncestorIds.includes(stageId) && !state.selectedIds.includes("rogue_4_relic_explore_7")) {
+      selectedIds.push("rogue_4_relic_explore_7");
+    }
   } else {
     levelData = undefined;
   }

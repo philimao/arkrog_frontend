@@ -2,6 +2,7 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import reactHooksPlugin from "eslint-plugin-react-hooks"; // 新增插件导入[1,6](@ref)
+import reactRefresh from "eslint-plugin-react-refresh";
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -11,8 +12,12 @@ export default tseslint.config(
     files: ["**/*.tsx"], // 仅针对 TSX 文件生效
     plugins: {
       "react-hooks": reactHooksPlugin, // 注册 React Hooks 插件[4,6](@ref)
+      "react-refresh": reactRefresh,
     },
-    rules: reactHooksPlugin.configs.recommended.rules, // 启用推荐规则集
+    rules: {
+      ...reactHooksPlugin.configs.recommended.rules, // 启用推荐规则集
+      ...reactRefresh.configs.recommended.rules,
+    },
     settings: {
       react: {
         version: "detect", // 自动检测 React 版本[4,5](@ref)

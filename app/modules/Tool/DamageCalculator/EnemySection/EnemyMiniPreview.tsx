@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { GridContainer } from "../../components/Shared";
-import { displayAttrKeys, StyledEnemyTag, StyledEnmeyLevelBadge } from "./EnemyDisplay";
+import { StyledEnemyTag, StyledEnmeyLevelBadge } from "./EnemyDisplay";
+import { displayAttrKeys } from "~/stores/damageCalculator/calcUtils/enemyUtils";
 import { allowedBlackboardKeyMap, camelToSnake } from "../utils";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { enemyTagMap, levelTypeMap } from "./enemyUtils";
@@ -61,7 +62,11 @@ export default function EnemyMiniPreview() {
             <StyledInputWrapper key={key}>
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
               {enemyExpression[key] ? (
-                <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
+                <ExpressionDisplay
+                  mode="out_game"
+                  className={className}
+                  expression={enemyExpression[key]}
+                ></ExpressionDisplay>
               ) : (
                 <div className={className}>{enemyBase.attributes[key as never]}</div>
               )}

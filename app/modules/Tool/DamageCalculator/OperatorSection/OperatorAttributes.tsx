@@ -1,9 +1,7 @@
 import React, { useMemo } from "react";
 import { styled } from "styled-components";
-import type { CharAttribute } from "~/types/gameData";
-import { BuffContext, CalculatorHelper } from "../calculator";
+import { CalculatorHelper } from "../calculator";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { AttrTag, type AttrCalcToken } from "~/modules/Tool/components/AttrDisplay";
 import { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
 import ExpressionDisplay from "~/modules/Tool/components/ExpressionDisplay";
 import { ExpressionUtil } from "~/modules/Tool/DamageCalculator/calculator/expression-util";
@@ -36,28 +34,6 @@ const StyledAttributeWrapper = styled.div`
     }
   }
 `;
-
-/** 部署费用属性计算公式 */
-export function useCostTagGroups(props: { attribute: CharAttribute; context: BuffContext }): AttrCalcToken[] {
-  const { attribute, context } = props;
-
-  const tokens: AttrCalcToken[] = [
-    {
-      tooltip: "局外",
-      tags: [
-        <AttrTag tooltip="基础">{attribute?.cost}</AttrTag>,
-        ...context.relic_rune_add.cost.children.map((item) => (
-          <AttrTag tooltip={item.tooltip}>{item.calculate()}</AttrTag>
-        )),
-      ],
-    },
-  ];
-
-  if (tokens[0].tags.length < 2) {
-    return [];
-  }
-  return tokens;
-}
 
 export default function OperatorAttributes(props: { mode: "out_game" | "in_game" | "skill" }) {
   const { charData, charInput } = useDamageCalculatorStore();

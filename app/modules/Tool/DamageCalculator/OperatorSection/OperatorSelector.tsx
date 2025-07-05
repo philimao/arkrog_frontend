@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Listbox, ListboxItem } from "@heroui/react";
+import { Listbox, ListboxItem } from "~/modules/Tool/components/SafeHeroPortal";
 import type { CharData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { debounce } from "@heroui/shared-utils";

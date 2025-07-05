@@ -1,4 +1,4 @@
-import { Tooltip } from "@heroui/react";
+import { Tooltip } from "~/modules/Tool/components/SafeHeroPortal";
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { cosHost } from "~/utils/tools";

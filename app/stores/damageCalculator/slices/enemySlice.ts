@@ -1,7 +1,7 @@
 import { parseEnemyData } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 import { initialEnemyState } from "../calcConstants";
 import type { SliceCreator, SlicedCalcEnemyActions, SlicedCalcEnemyState } from "../calcTypes";
-import { EnemySpecConfigs, Rogue4SkzdwxSelect } from "~/modules/Tool/DamageCalculator/EnemySection/EnemySpecSelector";
+import { EnemySpecConfigs, Rogue4SkzdwxSelect } from "~/modules/Tool/DamageCalculator/EnemySection/enemySpecConfigs";
 import { getEnemyIllust } from "../calcUtils/enemyUtils";
 
 export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEnemyActions> = (set) => ({

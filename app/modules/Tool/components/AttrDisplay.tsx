@@ -1,6 +1,6 @@
 import { Chip } from "@heroui/react";
 
-import { Popover, PopoverContent, PopoverTrigger, Tooltip } from "@heroui/react";
+import { Popover, PopoverContent, PopoverTrigger, Tooltip } from "~/modules/Tool/components/SafeHeroPortal";
 
 /** 属性计算公式Token */
 export interface AttrCalcToken {

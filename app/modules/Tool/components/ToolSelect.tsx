@@ -1,9 +1,11 @@
-import { Select, SelectItem, type SelectProps } from "@heroui/react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Select, ListboxItem as SelectItem } from "~/modules/Tool/components/SafeHeroPortal";
+import type { SelectProps } from "@heroui/react";
 
 export default function ToolSelect<T>({
   array,
-  getKey = (item) => item as string,
-  getValue = (item) => item as string,
+  getKey = (item: T, _index: number) => item as unknown as string,
+  getValue = (item: T, _index: number) => item as unknown as string,
   ...props
 }: {
   /** 选项数组 */
@@ -26,7 +28,6 @@ export default function ToolSelect<T>({
         listbox: "rounded-none",
         ...props.classNames,
       }}
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       {...(({ classNames, ...rest }) => rest)(props)}
     >
       {array.map((item, index) => (

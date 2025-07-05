@@ -2,7 +2,8 @@
  * 表达式展示组件
  */
 import React, { useState } from "react";
-import { Chip, PopoverContent, PopoverTrigger, Popover, Tooltip } from "@heroui/react";
+import { Chip } from "@heroui/react";
+import { PopoverContent, PopoverTrigger, Popover, Tooltip } from "~/modules/Tool/components/SafeHeroPortal";
 import { ExpressionGroupNode, NumericLiteralNode, BaseNode } from "../DamageCalculator/calculator/ast";
 import { mergeClassNameSafe } from "~/utils/tools";
 

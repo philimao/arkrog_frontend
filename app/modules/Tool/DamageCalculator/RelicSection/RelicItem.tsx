@@ -4,7 +4,7 @@ import { assetsHost } from "~/utils/tools";
 import type { RelicWrapper } from "~/types/gameData";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useState } from "react";
-import { Tooltip } from "@heroui/react";
+import { Tooltip } from "~/modules/Tool/components/SafeHeroPortal";
 
 const StyledRelicItem = styled.div<{
   $editable: boolean;

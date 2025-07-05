@@ -101,7 +101,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     );
   },
   resetStore: () => {
-    console.log("resetStore");
+    console.log("reset111123123123123123123123");
     // set(() => initialCalculatorState, undefined, "resetStore");
   },
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) =>

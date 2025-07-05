@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
+import type { RelicWrapper } from "~/types/gameData";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { Badge } from "@heroui/badge";
+import { Badge } from "~/modules/Tool/components/SafeHeroPortal";
 import BuffPanel from "~/modules/Tool/DamageCalculator/RelicSection/BuffPanel";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
@@ -38,8 +39,9 @@ export default function FooterPanel() {
   const relicsContainerRef = useRef<HTMLDivElement>(null);
   const { showRelics, rogueInput, toggleShowRelics, setSelectedIds, setTopicSpecItems } = useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
-  const relicsState = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
-  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey]));
+  const relicsState = (useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey])) ??
+    {}) as Record<string, RelicWrapper>;
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey])) || [];
 
   const [showBuff, setShowBuff] = useState(false);
   const [isDragging, setIsDragging] = useState(false);

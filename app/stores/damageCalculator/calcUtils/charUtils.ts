@@ -40,7 +40,7 @@ export function updateCharState({
   const uniEquipCandidate = getUniEquipCandidate(uniEquips, uniEquipId || charInput.uniEquipId);
   const uniEquipName = uniEquipCandidate ? uniEquipCandidate.uniEquipName : "";
   const uniEquipItem = uniEquipCandidate
-    ? getUniEquipItem(uniEquipCandidate, uniEquipLevel || charInput.uniEquipLevel)
+    ? getUniEquipItem(uniEquipCandidate, has(uniEquipLevel) ? uniEquipLevel! : charInput.uniEquipLevel)
     : undefined;
 
   return {

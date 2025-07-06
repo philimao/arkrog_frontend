@@ -37,7 +37,9 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
           difficulty >= 14 &&
           ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)
         ) {
+          // 年代之刺与饮泣之刺的年代印痕减伤被强制设置为"是"
           state.enemySpec.value[0].value = 0.5;
+          state.enemySpec.value[0].key = "0.5";
         }
       },
       undefined,

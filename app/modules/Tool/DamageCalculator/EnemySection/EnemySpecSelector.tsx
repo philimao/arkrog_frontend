@@ -28,6 +28,7 @@ export default function EnemySpecSelector() {
   // 显示年代印痕选项
   const rogueKey = rogueInput.topic;
   const difficulty = rogueInput[rogueKey].difficulty;
+  const isSpecialEnemy = ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id);
   const showSkzdwx = rogueKey === "rogue_4" && enemyData.name.m_value !== "木桩" && difficulty >= 14;
 
   return (
@@ -35,20 +36,27 @@ export default function EnemySpecSelector() {
       <StyledEnemySpecSelectorInner>
         {enemyConfig.selects
           .filter((select) => showSkzdwx || select.label !== Rogue4SkzdwxSelect.label)
-          .map((select, index) => (
-            <ToolSelect
-              key={select.label}
-              array={select.options}
-              getKey={(item) => item.key.toString()}
-              getValue={(item) => item.label}
-              label={select.label}
-              selectedKeys={[enemySpec.value[index].key]}
-              onChange={(evt) => {
-                const result = select.apply(evt.target.value);
-                updateEnemySpec(index, result);
-              }}
-            />
-          ))}
+          .map((select, index) => {
+            // 为年代之刺和饮泣之刺的年代印痕选择器禁用"否"选项
+            const isSkzdwxSelect = select.label.includes("年代印痕");
+            const disabledKeys = isSpecialEnemy && isSkzdwxSelect ? ["0"] : undefined; // 禁用"否"选项（key为0）
+            
+            return (
+              <ToolSelect
+                key={select.label}
+                array={select.options}
+                getKey={(item) => item.key.toString()}
+                getValue={(item) => item.label}
+                label={select.label}
+                selectedKeys={[enemySpec.value[index].key]}
+                disabledKeys={disabledKeys}
+                onChange={(evt) => {
+                  const result = select.apply(evt.target.value);
+                  updateEnemySpec(index, result);
+                }}
+              />
+            );
+          })}
       </StyledEnemySpecSelectorInner>
     </StyledEnemySpecSelector>
   );

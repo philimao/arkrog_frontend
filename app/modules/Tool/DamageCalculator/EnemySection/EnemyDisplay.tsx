@@ -241,7 +241,11 @@ export default function EnemyDisplay() {
                 )}
               </div>
               {enemyCache.name !== "木桩" ? (
-                <ExpressionDisplay className={color} expression={enemyExpression[key]}></ExpressionDisplay>
+                <ExpressionDisplay
+                  mode="in_game"
+                  className={color}
+                  expression={enemyExpression[key]}
+                ></ExpressionDisplay>
               ) : (
                 <ToolInput
                   className={"h-8 font-bold text-xl " + color}

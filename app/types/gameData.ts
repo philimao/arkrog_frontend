@@ -71,10 +71,11 @@ export interface LevelData {
 }
 
 export interface LevelDataRune {
-  blackboard: BlackboardData[];
-  difficultyMask: "ALL";
-  key: "enemy_attribute_mul";
+  difficultyMask: "ALL" | "FOUR_STAR";
+  key: string;
   professionMask: number;
+  buildableMask: "ALL";
+  blackboard: BlackboardData[];
 }
 
 export type StagePreview = Record<string, StagePreviewData>;

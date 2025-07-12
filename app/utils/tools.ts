@@ -47,6 +47,29 @@ async function _post<T>(url: string, data: object): Promise<T> {
   );
 }
 
+export async function _delete<T>(url: string): Promise<T> {
+  return fetch(`${import.meta.env.VITE_API_BASE_URL}` + url, {
+    method: "DELETE",
+    credentials: "include",
+  }).then(
+    async (response: Response) => {
+      if (response.ok) {
+        return response
+          .clone()
+          .json()
+          .catch(() => response.text());
+      } else {
+        const text = await response.text();
+        throw new Error(text);
+      }
+    },
+    (err: Error) => {
+      console.log(err);
+      throw err;
+    },
+  );
+}
+
 /**
  * 生成32位随机字符串
  * @returns {string} 随机字符串

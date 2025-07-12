@@ -78,6 +78,9 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   enemy_ep_damage_resistance: "敌人元素伤害抗性",
 };
 
+export const parseBlackboardEntry = (blackboard: BlackboardData, percent?: boolean) =>
+  `${allowedBlackboardKeyMap[blackboard.key] || blackboard.key}: ${percent ? blackboard.value * 100 + "%" : blackboard.value}`;
+
 /**
  * buff.key以global开头的，注册的valueStr
  */

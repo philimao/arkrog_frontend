@@ -5,6 +5,7 @@ import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { navOfZone } from "./enemyUtils";
+import { parseBlackboardEntry } from "../utils";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -91,8 +92,17 @@ const StyledEnemyName = styled.div`
 const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标"];
 
 export default function StageSelector() {
-  const { renderStages, setRogueStageId, levelData, enemyData, rogueInput, stageId, setEnemyData, setRogueZone } =
-    useDamageCalculatorStore();
+  const {
+    renderStages,
+    setRogueStageId,
+    levelData,
+    enemyData,
+    rogueInput,
+    stageId,
+    stageData,
+    setEnemyData,
+    setRogueZone,
+  } = useDamageCalculatorStore();
 
   return (
     <StyledStageSelector>
@@ -122,6 +132,22 @@ export default function StageSelector() {
           selectedKeys={[stageId]}
           onChange={(evt) => setRogueStageId(evt.target.value)}
         />
+        {stageData.eliteDesc && (
+          <div className="flex flex-col whitespace-nowrap" style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}>
+            <div style={{ height: "calc(0.875rem + 10px)" }}>紧急条件</div>
+            <div className="relative">
+              <div className="absolute top-0 left-0 flex flex-col justify-center bg-dark-gray h-12 px-2">
+                <div>{stageData.eliteDesc}</div>
+                <div>
+                  {levelData.runes
+                    .find((rune) => rune.key === "enemy_attribute_mul")
+                    ?.blackboard.map((bb) => parseBlackboardEntry(bb, true))
+                    .join(", ")}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </GridContainer>
       {levelData && (
         <StyledStageSelectorBody>

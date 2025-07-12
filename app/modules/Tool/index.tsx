@@ -50,6 +50,7 @@ function ToolIndex() {
       )}
       <TopicSelector />
       <EnemySelector />
+      <DebugInfoWrapper />
       <FooterPanel />
       <RelicSelector />
       <TopicSpecSelector />
@@ -72,3 +73,16 @@ function ToolIndex() {
     </div>
   );
 }
+
+// 条件导入 DebugInfo，只在开发环境中导入
+const DebugInfoWrapper = () => {
+  if (!import.meta.env.DEV) return null;
+
+  const DebugInfo = React.lazy(() => import("./DamageCalculator/DebugInfo/DebugInfo"));
+
+  return (
+    <React.Suspense fallback={<div>Loading debug info...</div>}>
+      <DebugInfo />
+    </React.Suspense>
+  );
+};

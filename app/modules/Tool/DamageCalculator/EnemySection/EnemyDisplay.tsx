@@ -173,6 +173,8 @@ export default function EnemyDisplay() {
       name: { m_value: "木桩", m_defined: true },
     });
   }
+  // TODO 免疫状态展示
+  // const immunes = Object.entries(enemyBase.attributes).filter(([key, value]) => key.endsWith("Immune") && value);
 
   if (!enemyCache) return null;
 

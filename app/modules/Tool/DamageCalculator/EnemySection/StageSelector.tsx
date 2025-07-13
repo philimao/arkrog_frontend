@@ -82,14 +82,18 @@ const StyledEnemy = styled.div<{ $selected: boolean }>`
   width: 4rem;
 `;
 
-const StyledEnemyName = styled.div`
+const StyledEnemyName = styled.div<{ $color: string }>`
   padding: 0.1rem 0.15rem;
   font-size: 0.65rem;
   background: var(--black-gray);
   text-align: center;
+  color: ${({ $color }) => ($color === "red" ? "var(--ak-red)" : "inherit")};
 `;
 
-const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标"];
+const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标", "仅剩的创意"];
+const ignoreEnemyIds = [
+  "enemy_1324_wdsdw", //萨卡兹悖谬裂变学徒（虚像）
+];
 
 export default function StageSelector() {
   const {
@@ -154,12 +158,18 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
-              {/* <span>红名代表死亡后会生成恐卡兹</span> TODO */}
+              <span>红名代表死亡后会生成恐卡兹</span>
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
-                .filter((enemy) => !ignoreEnemyNames.includes(enemy.name.m_value!))
+                .filter(
+                  (enemy) => !ignoreEnemyNames.includes(enemy.name.m_value!) && !ignoreEnemyIds.includes(enemy.id),
+                )
                 .map((_enemyData) => {
+                  // 被恐卡兹寄生（小红点）
+                  const parasitized = _enemyData.talentBlackboard?.find(
+                    (bb) => bb.key === "parasitic" && bb.valueStr === "true",
+                  );
                   return (
                     <StyledEnemy
                       key={_enemyData.id}
@@ -169,7 +179,9 @@ export default function StageSelector() {
                       }}
                     >
                       <EnemyAvatar name={_enemyData.name.m_value} />
-                      <StyledEnemyName>{_enemyData.name.m_value}</StyledEnemyName>
+                      <StyledEnemyName $color={parasitized ? "red" : "inherit"}>
+                        {_enemyData.name.m_value}
+                      </StyledEnemyName>
                     </StyledEnemy>
                   );
                 })}

@@ -37,7 +37,7 @@ const StyledSelectWrapper = styled.div`
   }
 `;
 
-const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION" }>`
+const StyledSwitchButton = styled.div`
   width: 100%;
   height: 100%;
   display: flex;
@@ -46,6 +46,9 @@ const StyledThoughtLoadInner = styled.div<{ $thoughtLoad: "NORMAL" | "CONFUSION"
   color: white;
   padding: 0 1rem;
   font-weight: 600;
+`;
+
+const StyledThoughtLoadInner = styled(StyledSwitchButton)<{ $thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION" }>`
   background: ${({ $thoughtLoad }) => `url("${cosHost}/images%2Frogue_4%2Fthought_load_${$thoughtLoad}.png")`};
   background-size: cover;
   background-repeat: no-repeat;
@@ -58,6 +61,7 @@ export default function OperatorDisplay() {
     charInput,
     charData,
     rogueInput,
+    charSpecConfigs,
     setRogueThoughtLoad,
     setPhaseLevel,
     setFrameIndex,
@@ -66,6 +70,7 @@ export default function OperatorDisplay() {
     setSkillLevel,
     setUniEquipId,
     setUniEquipLevel,
+    setCharSpec,
   } = useDamageCalculatorStore();
 
   const {
@@ -84,7 +89,10 @@ export default function OperatorDisplay() {
     uniEquipLevel,
     uniEquip,
     uniEquipName,
+    charSpec,
   } = charInput;
+
+  console.log(charSpecConfigs, charSpec);
 
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
@@ -220,6 +228,38 @@ export default function OperatorDisplay() {
               </ToolButton>
             </div>
           )}
+          {charSpecConfigs.map((config, index) => {
+            const charSpecItem = charSpec[index]!;
+            const optionIndex = config.options.findIndex((option) => option.key === charSpecItem.key);
+            return (
+              <div key={config.label}>
+                <div className="flex items-center justify-between h-6">
+                  <span className="text-light-gray text-[0.8rem]">{config.label}</span>
+                  <Tooltip content={config.desc} closeDelay={100}>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" color="#9A9A9A">
+                      <use href="#question_circle" />
+                    </svg>
+                  </Tooltip>
+                </div>
+                {config.type === "switch" ? (
+                  <ToolButton
+                    key={config.label}
+                    className="px-3 font-bold"
+                    onPress={() =>
+                      setCharSpec(
+                        config.label,
+                        config.options[optionIndex === 0 ? 1 : 0].key,
+                        config.options[optionIndex === 0 ? 1 : 0].value,
+                      )
+                    }
+                    disabled={!charSpecItem.active}
+                  >
+                    <div className="text-left w-full">{charSpecItem.key}</div>
+                  </ToolButton>
+                ) : null}
+              </div>
+            );
+          })}
         </StyledSelectWrapper>
         <div className="flex flex-col gap-4 grow">
           {skill && <SkillDisplay skill={skill} />}

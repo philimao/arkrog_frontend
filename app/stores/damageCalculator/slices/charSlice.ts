@@ -1,5 +1,5 @@
 import type { CharData } from "~/types/gameData";
-import type { SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
+import type { CharSpec, SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
 import { intialCalcCharState } from "../calcConstants";
 import {
   updateCharState,
@@ -13,7 +13,9 @@ import {
   getUniEquipItem,
   getUniEquips,
   getSkillLevels,
+  updateCharSpec,
 } from "../calcUtils/charUtils";
+import { getCharImpl } from "~/modules/Tool/DamageCalculator/calculator/impls";
 
 export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharActions> = (set, get) => ({
   ...intialCalcCharState,
@@ -63,11 +65,29 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       atkSpd: 0,
     };
 
+    const configs = getCharImpl(charName).charSpecConfigs;
+    const charSpecConfigs = ["default", skillKey, uniEquipId]
+      .map((key) => configs[key])
+      .filter((i) => i)
+      .flat();
+    const charSpec = updateCharSpec(
+      {
+        skillKey,
+        uniEquipId,
+        phaseLevel,
+        level: phase.attributesKeyFrames[frameIndex].level,
+        potential,
+        charSpec: [], // 初始化时可以传入空数组，但后续必须传入包含key的配置
+      },
+      charSpecConfigs,
+    );
+
     set(
       (state) => {
         state.activeCharName = charName;
         state.charData = charData;
         state.charsModifier[charName] = charModifier;
+        state.charSpecConfigs = charSpecConfigs;
         state.charInput = {
           /** 干员名称 */
           name: charName,
@@ -105,6 +125,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           uniEquipName,
           /** 干员属性额外修改 */
           attributeModifier: charModifier,
+          /** 干员特殊配置 */
+          charSpec,
         };
       },
       undefined,
@@ -147,6 +169,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           phaseLevel: parseInt(phaseLevel),
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
@@ -162,6 +185,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           frameIndex: parseInt(frameIndex),
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
@@ -189,6 +213,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           skillKey,
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
@@ -208,6 +233,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           skillLevel: skillLevelInt,
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
@@ -225,6 +251,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           uniEquipId,
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
@@ -243,10 +270,30 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           uniEquipLevel: uniEquipLevelInt,
+          charSpecConfigs: state.charSpecConfigs,
         });
       },
       undefined,
       "setUniEquipLevel",
+    );
+  },
+  setCharSpec: (label: string, key: string) => {
+    set(
+      (state) => {
+        const charSpec = state.charInput.charSpec;
+        const spec: CharSpec[] = JSON.parse(JSON.stringify(charSpec));
+        const specItem = spec.find((spec) => spec.label === label);
+        if (specItem) specItem.key = key;
+        state.charInput.charSpec = spec;
+        state.charInput = updateCharState({
+          charInput: state.charInput,
+          charData: state.charData,
+          uniequip_table: state.uniequip_table,
+          charSpecConfigs: state.charSpecConfigs,
+        });
+      },
+      undefined,
+      "setCharSpec",
     );
   },
 });

@@ -126,7 +126,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     const { charInput, charData, relics } = input;
     let globalContext = CalculatorHelper.createAdditionContext();
     // 干员养成加成
-    if (charInput.attributeModifier) {
+    if (charInput) {
       globalContext = CalculatorHelper.analyzeChar({
         charInput: input.charInput,
         charData: input.charData,

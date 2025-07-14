@@ -20,6 +20,7 @@ import type {
   StageOfRogue,
   UniEquipData,
   UniEquipPhaseData,
+  BlackboardData,
 } from "~/types/gameData";
 import type { GameDataState } from "../gameDataStore";
 import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
@@ -105,6 +106,33 @@ export interface SlicedCalcGameDataActions {
   setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
 }
 
+export type CharSpecConfig = {
+  /** 配置类型 */
+  type: "switch" | "select";
+  /** 配置名称（短） */
+  label: string;
+  /** 效果描述（长） */
+  desc: string;
+  /** 解锁条件 */
+  unlockCondition: {
+    phase: number;
+    level: number;
+  };
+  /** 潜能要求 */
+  requiredPotentialRank: number;
+  /** 选项 */
+  options: { key: string; value: number }[];
+  /** 应用函数 */
+  apply: (key: string, value: number, active: boolean) => CharSpec;
+};
+
+export type CharSpec = {
+  active: boolean;
+  label: string;
+  key: string;
+  blackboard: BlackboardData[];
+};
+
 export interface CharInput {
   /** 干员名称 */
   name: string;
@@ -142,6 +170,8 @@ export interface CharInput {
   uniEquipName: string;
   /** 干员属性额外修改 */
   attributeModifier: CharAttributeModifier;
+  /** 干员特殊配置 */
+  charSpec: CharSpec[];
 }
 
 export interface SlicedCalcCharState {
@@ -153,6 +183,8 @@ export interface SlicedCalcCharState {
   charData: CharData;
   /** 干员属性额外修改 @deprecated */
   charsModifier: Record<string, CharAttributeModifier>;
+  /** 干员特殊配置 */
+  charSpecConfigs: CharSpecConfig[];
   /** 干员输入数据 */
   charInput: CharInput;
 }
@@ -181,6 +213,8 @@ export interface SlicedCalcCharActions {
   setUniEquipId: (uniEquipId: string) => void;
   /** 设置模组等级 */
   setUniEquipLevel: (uniEquipLevel: string) => void;
+  /** 设置干员特殊配置 */
+  setCharSpec: (label: string, key: string, value: number) => void;
 }
 
 export interface SlicedCalcEnemyState {

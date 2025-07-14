@@ -11,7 +11,7 @@ import type {
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
-import type { CharInput } from "~/stores/damageCalculator/calcTypes";
+import type { CharInput, CharSpecConfig } from "~/stores/damageCalculator/calcTypes";
 
 /** 干员计算器实现 */
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
@@ -29,6 +29,7 @@ export interface CharImpl {
   calculator: CalculatorImpl;
   applyTalent: ApplyTalentFC;
   applySkill: ApplySkillFC;
+  charSpecConfigs: Record<string, CharSpecConfig[]>;
 }
 /** 敌人藏品黑板应用输入 */
 export type EnemyRelicBlackboardInput = {
@@ -80,6 +81,7 @@ export function getCharImpl(name: string): CharImpl {
       applySkill: (input) => {
         console.warn(`[${input.charInput.name}] 未实现技能buff应用`);
       },
+      charSpecConfigs: {},
     };
   }
   return impl;

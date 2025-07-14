@@ -214,6 +214,24 @@ export class CalculatorHelper {
     /** 应用天赋 */
     getCharImpl(charData.name).applyTalent({ charInput: charInput as unknown as CharInput }, result);
 
+    /** 应用干员特殊配置 */
+    const { charSpec } = charInput;
+    charSpec.forEach((spec) => {
+      if (!spec.active) return;
+      const { blackboard } = spec;
+      blackboard.forEach((bb) => {
+        switch (bb.key) {
+          case "atk_scale":
+            console.log(bb.value, spec.label);
+            result.in_game_buff_final_mul.atk_scale.addChild(new NumericLiteralNode(bb.value, spec.label));
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    console.log(result);
     return result;
   }
 

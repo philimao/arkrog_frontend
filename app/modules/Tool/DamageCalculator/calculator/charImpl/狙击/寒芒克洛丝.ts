@@ -1,5 +1,6 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../../helper";
+import type { CharSpecConfig } from "~/stores/damageCalculator/calcTypes";
 
 /** 寒芒克洛丝伤害计算器 */
 export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOutput {
@@ -36,7 +37,7 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
   const mitigation =
     1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
+      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
@@ -69,17 +70,19 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
     talentScale += 0.1; // 5潜时攻击力倍率+10%
   }
 
-  // 模组特性：攻击空中单位时攻击力提升，空中单位较少暂时不实现
-  const traitAtkScale = 1.0;
+  // 模组特性：攻击空中单位时攻击力提升
+  const traitAtkScale = input.charInput.charSpec.find((spec) => spec.label === "攻击空中单位" && spec.key === "是")
+    ? 1.1
+    : 1;
+  console.log("charSpec", input.charInput.charSpec);
+  console.log("空中", traitAtkScale);
 
   // 普攻计算
   const normalAtk = (atk + atkBuffInAdd) * (1 + atkBuffInMul) * traitAtkScale * atkBuffFinalMul + atkBuffFinalAdd;
   const normalDph = normalAtk;
   const normalCritDph = normalAtk * talentScale;
   const normalFireDph = normalAtk * 2;
-  const normalFireDamage = Math.max(normalFireDph - enemyDef, 0.05 * normalFireDph) *
-    damage_scale *
-    damage_scale_phy;
+  const normalFireDamage = Math.max(normalFireDph - enemyDef, 0.05 * normalFireDph) * damage_scale * damage_scale_phy;
 
   switch (skillKey) {
     case "skchr_kroos2_1": {
@@ -108,12 +111,12 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
       // 技能期望伤害
       let skillPhysicalDamage =
         (Math.max(skillDph - enemyDef, 0.05 * skillDph) * (1 - talentProb) +
-          Math.max(skillCritDph - enemyDef, 0.05 * skillCritDph) * talentProb) * 2 *
+          Math.max(skillCritDph - enemyDef, 0.05 * skillCritDph) * talentProb) *
+        2 *
         damage_scale *
         damage_scale_phy;
-      const skillFireDamage = Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) * 2 *
-        damage_scale *
-        damage_scale_phy;
+      const skillFireDamage =
+        Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) * 2 * damage_scale * damage_scale_phy;
 
       if (fire) {
         normalPhysicalDamage += normalFireDamage * 0.25;
@@ -186,21 +189,21 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
       // 2连射期间的伤害
       let skill2ShotPhysicalDamage =
         (Math.max(skillDph2 - enemyDef, 0.05 * skillDph2) * (1 - talentProb) +
-          Math.max(skillCritDph2 - enemyDef, 0.05 * skillCritDph2) * talentProb) * 2 *
+          Math.max(skillCritDph2 - enemyDef, 0.05 * skillCritDph2) * talentProb) *
+        2 *
         damage_scale *
         damage_scale_phy;
 
       // 4连射期间的伤害
       let skill4ShotPhysicalDamage =
         (Math.max(skillDph4 - enemyDef, 0.05 * skillDph4) * (1 - talentProb) +
-          Math.max(skillCritDph4 - enemyDef, 0.05 * skillCritDph4) * talentProb) * 4 *
+          Math.max(skillCritDph4 - enemyDef, 0.05 * skillCritDph4) * talentProb) *
+        4 *
         damage_scale *
         damage_scale_phy;
 
       //烟花伤害
-      const skillFireDamage = Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) *
-        damage_scale *
-        damage_scale_phy;
+      const skillFireDamage = Math.max(skillFireDph - enemyDef, 0.05 * skillFireDph) * damage_scale * damage_scale_phy;
 
       // 普攻期间的伤害
       let normalPhysicalDamage =
@@ -238,3 +241,42 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
 
   return result;
 }
+
+export const charSpecConfigs: Record<string, CharSpecConfig[]> = {
+  uniequip_002_kroos2: [
+    {
+      type: "switch",
+      label: "攻击空中单位",
+      desc: "攻击空中单位时攻击力提升至110%",
+      unlockCondition: {
+        phase: 2,
+        level: 50,
+      },
+      requiredPotentialRank: 0,
+      options: [
+        {
+          key: "否",
+          value: 1,
+        },
+        {
+          key: "是",
+          value: 1.1,
+        },
+      ],
+      apply: (key: string, value: number, active: boolean) => {
+        return {
+          active,
+          label: "攻击空中单位",
+          key: key,
+          blackboard: [
+            {
+              key: "atk_scale",
+              value: value,
+              valueStr: null,
+            },
+          ],
+        };
+      },
+    },
+  ],
+};

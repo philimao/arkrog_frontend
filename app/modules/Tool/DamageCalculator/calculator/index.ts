@@ -27,11 +27,13 @@ Object.entries(modules).forEach(([path, _module]) => {
   const calc = module.calculator || ((module as any).default as CalculatorImpl);
   const applyTalent = module.applyTalent;
   const applySkill = module.applySkill;
+  const charSpecConfigs = module.charSpecConfigs;
   if (calc) {
     registerCalculatorImpl(name, {
       calculator: calc,
       applyTalent: applyTalent || voidApplyTalent,
       applySkill: applySkill || voidApplySkill,
+      charSpecConfigs: charSpecConfigs || {},
     });
   }
 });

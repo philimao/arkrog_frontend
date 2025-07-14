@@ -1,5 +1,5 @@
 import type { CharData, CharPhase, SkillData, UniEquipData } from "~/types/gameData";
-import type { CharInput } from "../calcTypes";
+import type { CharInput, CharSpec, CharSpecConfig } from "../calcTypes";
 
 const has = (value: number | string | boolean | undefined) => value !== undefined;
 
@@ -14,6 +14,7 @@ export function updateCharState({
   skillLevel,
   uniEquipId,
   uniEquipLevel,
+  charSpecConfigs,
 }: {
   charInput: CharInput;
   charData: CharData;
@@ -24,6 +25,7 @@ export function updateCharState({
   skillLevel?: number;
   uniEquipId?: string;
   uniEquipLevel?: number;
+  charSpecConfigs: CharSpecConfig[];
 }): CharInput {
   const phases = charInput.phases;
   const phase = has(phaseLevel) ? getPhase(phases, phaseLevel || charInput.phaseLevel) : charInput.phase;
@@ -42,6 +44,18 @@ export function updateCharState({
   const uniEquipItem = uniEquipCandidate
     ? getUniEquipItem(uniEquipCandidate, has(uniEquipLevel) ? uniEquipLevel! : charInput.uniEquipLevel)
     : undefined;
+
+  const charSpec = updateCharSpec(
+    {
+      skillKey: skillKey ?? charInput.skillKey,
+      uniEquipId: uniEquipId ?? charInput.uniEquipId,
+      phaseLevel: phaseLevel ?? charInput.phaseLevel,
+      level: phase.attributesKeyFrames[frameIndex ?? charInput.frameIndex].level,
+      potential: charInput.potential,
+      charSpec: charInput.charSpec,
+    },
+    charSpecConfigs,
+  );
 
   return {
     /** 干员名称 */
@@ -80,6 +94,8 @@ export function updateCharState({
     uniEquipName,
     /** 干员属性额外修改 */
     attributeModifier: charInput.attributeModifier,
+    /** 干员特殊配置 */
+    charSpec,
   };
 }
 
@@ -176,4 +192,27 @@ export function getUniEquipCandidate(uniEquips: UniEquipData[], uniEquipId: stri
 /** 获取干员模组 */
 export function getUniEquipItem(uniEquipCandidate: UniEquipData, uniEquipLevel: number) {
   return uniEquipCandidate.phases?.[uniEquipLevel];
+}
+
+export function updateCharSpec(
+  charInput: {
+    skillKey: string;
+    uniEquipId: string;
+    phaseLevel: number;
+    level: number;
+    potential: number;
+    charSpec: CharSpec[];
+  },
+  charSpecConfigs: CharSpecConfig[],
+) {
+  const { phaseLevel, potential, level, charSpec } = charInput;
+  return charSpecConfigs.map((config, index) => {
+    const active =
+      config.requiredPotentialRank <= potential &&
+      config.unlockCondition.phase <= phaseLevel &&
+      config.unlockCondition.level <= level;
+    const key = charSpec[index]?.key || config.options[0].key;
+    const value = config.options.find((option) => option.key === key)?.value || config.options[0].value;
+    return config.apply(key, value, active);
+  });
 }

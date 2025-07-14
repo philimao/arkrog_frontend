@@ -208,12 +208,20 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
   setSkillKey: (skillKey: string) => {
     set(
       (state) => {
+        const charName = state.charInput.name;
+        const uniEquipId = state.charInput.uniEquipId;
+        const configs = getCharImpl(charName).charSpecConfigs;
+        const charSpecConfigs = ["default", skillKey, uniEquipId]
+          .map((key) => configs[key])
+          .filter((i) => i)
+          .flat();
+        state.charSpecConfigs = charSpecConfigs;
         state.charInput = updateCharState({
           charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           skillKey,
-          charSpecConfigs: state.charSpecConfigs,
+          charSpecConfigs: charSpecConfigs,
         });
       },
       undefined,
@@ -246,12 +254,20 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       (state) => {
         const uniEquips = state.charInput.equips;
         if (!uniEquips.find((uniEquip) => uniEquip.uniEquipId === uniEquipId)) throw new Error("Invalid uniEquipId");
+        const charName = state.charInput.name;
+        const skillKey = state.charInput.skillKey;
+        const configs = getCharImpl(charName).charSpecConfigs;
+        const charSpecConfigs = ["default", skillKey, uniEquipId]
+          .map((key) => configs[key])
+          .filter((i) => i)
+          .flat();
+        state.charSpecConfigs = charSpecConfigs;
         state.charInput = updateCharState({
           charInput: state.charInput,
           charData: state.charData,
           uniequip_table: state.uniequip_table,
           uniEquipId,
-          charSpecConfigs: state.charSpecConfigs,
+          charSpecConfigs: charSpecConfigs,
         });
       },
       undefined,

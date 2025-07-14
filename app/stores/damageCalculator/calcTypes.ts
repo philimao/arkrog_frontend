@@ -130,6 +130,7 @@ export type CharSpec = {
   active: boolean;
   label: string;
   key: string;
+  value: number;
   blackboard: BlackboardData[];
 };
 

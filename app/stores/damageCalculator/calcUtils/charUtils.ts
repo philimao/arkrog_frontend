@@ -211,7 +211,7 @@ export function updateCharSpec(
       config.requiredPotentialRank <= potential &&
       config.unlockCondition.phase <= phaseLevel &&
       config.unlockCondition.level <= level;
-    const key = charSpec[index]?.key || config.options[0].key;
+    const key = config.options.find((option) => option.key === charSpec[index]?.key)?.key || config.options[0].key;
     const value = config.options.find((option) => option.key === key)?.value || config.options[0].value;
     return config.apply(key, value, active);
   });

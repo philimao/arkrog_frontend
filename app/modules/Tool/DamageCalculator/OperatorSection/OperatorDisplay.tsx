@@ -92,8 +92,6 @@ export default function OperatorDisplay() {
     charSpec,
   } = charInput;
 
-  console.log(charSpecConfigs, charSpec);
-
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
 
@@ -256,7 +254,17 @@ export default function OperatorDisplay() {
                   >
                     <div className="text-left w-full">{charSpecItem.key}</div>
                   </ToolButton>
-                ) : null}
+                ) : (
+                  <ToolSelect
+                    disallowEmptySelection={true}
+                    aria-label={config.label}
+                    array={config.options}
+                    getKey={(option) => option.key}
+                    getValue={(option) => option.key}
+                    selectedKeys={[charSpecItem.key]}
+                    onChange={(evt) => setCharSpec(config.label, evt.target.value, config.options[optionIndex].value)}
+                  />
+                )}
               </div>
             );
           })}

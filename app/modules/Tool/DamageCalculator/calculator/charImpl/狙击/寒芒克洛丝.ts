@@ -74,8 +74,6 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
   const traitAtkScale = input.charInput.charSpec.find((spec) => spec.label === "攻击空中单位" && spec.key === "是")
     ? 1.1
     : 1;
-  console.log("charSpec", input.charInput.charSpec);
-  console.log("空中", traitAtkScale);
 
   // 普攻计算
   const normalAtk = (atk + atkBuffInAdd) * (1 + atkBuffInMul) * traitAtkScale * atkBuffFinalMul + atkBuffFinalAdd;
@@ -268,6 +266,7 @@ export const charSpecConfigs: Record<string, CharSpecConfig[]> = {
           active,
           label: "攻击空中单位",
           key: key,
+          value: value,
           blackboard: [
             {
               key: "atk_scale",

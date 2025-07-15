@@ -123,33 +123,50 @@ export const navOfZone = [
       return false;
     },
   },
-  {
-    id: "zone_6",
-    name: "第六层 · 爱国者",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
-      if (args[1] === "b" && ["6"].includes(args[2])) return true;
-      return false;
-    },
-  },
-  {
-    id: "zone_7",
-    name: "第六层 · 奎隆",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
-      if (args[1] === "b" && ["7"].includes(args[2])) return true;
-      return false;
-    },
-  },
-  {
-    id: "zone_8",
-    name: "第七层 · 魔王阿米娅",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if (args[1] === "b" && ["8"].includes(args[2])) return true;
-      return false;
-    },
-  },
 ];
+
+export const zoneOfTopic = {
+  rogue_4: [
+    {
+      id: "zone_6",
+      name: "第六层 · 爱国者",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
+        if (args[1] === "b" && ["6"].includes(args[2])) return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_7",
+      name: "第六层 · 奎隆",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
+        if (args[1] === "b" && ["7"].includes(args[2])) return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_8",
+      name: "第七层 · 魔王阿米娅",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "b" && ["8"].includes(args[2])) return true;
+        return false;
+      },
+    },
+  ],
+  rogue_5: [
+    {
+      id: "zone_6",
+      name: "第六层 · “望”",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && args[2] === "6") return true;
+        if (args[1] === "b" && ["6"].includes(args[2])) return true;
+        return false;
+      },
+    },
+  ],
+};

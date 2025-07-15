@@ -4,7 +4,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { navOfZone } from "./enemyUtils";
+import { navOfZone, zoneOfTopic } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 
 const StyledStageSelector = styled.div`
@@ -108,13 +108,15 @@ export default function StageSelector() {
     setRogueZone,
   } = useDamageCalculatorStore();
 
+  const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
+
   return (
     <StyledStageSelector>
       <GridContainer>
         <ToolSelect
           disallowEmptySelection={true}
           label="选择区域"
-          array={navOfZone}
+          array={zones}
           getKey={(zone) => zone.id}
           getValue={(zone) => zone.name}
           selectedKeys={[rogueInput[rogueInput.topic].zone]}

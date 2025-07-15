@@ -1,4 +1,4 @@
-import { navOfZone } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
+import { navOfZone, zoneOfTopic } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 import type { LevelData, RogueKey, StageOfRogue } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import { dummy } from "../calcConstants";
@@ -7,7 +7,8 @@ import type { RogueInput } from "../calcTypes";
 /** 获取渲染关卡列表 */
 export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput: RogueInput) {
   const stageOfRogue = stages[rogueInput.topic as RogueKey];
-  const zone = navOfZone.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+  const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
+  const zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
   return (
     Object.values(stageOfRogue)
       // 过滤区域关卡

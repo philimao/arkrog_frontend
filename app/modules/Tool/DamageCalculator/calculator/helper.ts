@@ -447,6 +447,89 @@ export class CalculatorHelper {
           new NumericLiteralNode(2, `直面魂灵·15 | “放逐的黑棺”的最大生命值提升至200%`),
         );
       }
+    } else if (rogueInput.topic === "rogue_5") {
+      /** 科技树加成 */
+      const tech = parseFloat(rogueInput.rogue_5.tech);
+      if (tech > 1) {
+        context.relic_rune_mul.atk.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.def.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+      }
+      const { difficulty, zone } = rogueInput.rogue_5;
+      /** 肉鸽难度加成 */
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 15];
+      console.log(enemyAttrMultipliers, difficulty);
+      const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
+      /** 肉鸽层数 */
+      const zoneLayerMap: Record<string, number> = {
+        zone_1: 1,
+        zone_2: 2,
+        zone_3: 3,
+        zone_4: 4,
+        zone_5: 5,
+        zone_6: 6,
+        zone_7: 6,
+        zone_8: 7,
+      };
+      const zoneValue = zoneLayerMap[zone]!;
+      console.log(enemyAttrMultiplier, zoneValue);
+      if (enemyAttrMultiplier) {
+        const pow = new Array(zoneValue).fill(
+          new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, `每层+${enemyAttrMultiplier}%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new ExpressionGroupNode("*", `请君入园·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new ExpressionGroupNode("*", `请君入园·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+      }
+      /** N4 所有敌人的生命值+40%，便符的生命值+50% */
+      if (difficulty >= 4) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.4, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
+        );
+        if (enemyData && enemyData.id === "enemy_2101_dyspll") {
+          context.in_game_buff_final_mul.enemy_max_hp.addChild(
+            new NumericLiteralNode(1.5, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
+          );
+        }
+      }
+      /** N5 所有敌人受到物理和法术伤害降低10％ */
+      if (difficulty >= 5) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.1, `请君入园·5 | 所有敌人受到物理和法术伤害降低10%`),
+        );
+      }
+      /** N8 精英和领袖敌人防御力、生命值+20% */
+      if (difficulty >= 8 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.in_game_buff_final_mul.enemy_def.addChild(
+          new NumericLiteralNode(1.2, `请君入园·8 | 精英和领袖敌人防御力+20%`),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.2, `请君入园·8 | 精英和领袖敌人生命值+20%`),
+        );
+      }
+      /** N11 所有敌人的攻击力+20% */
+      if (difficulty >= 11) {
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(1.2, `请君入园·11 | 所有敌人的攻击力+20%`),
+        );
+      }
+      /** N13 <雕伥>的最大生命值+50% */
+      if (difficulty >= 13 && enemyData && enemyData.id === "trap_222_rgdysm") {
+        // trap_222_rgdysm
+      }
+      /** N14 领袖敌人受到伤害降低20％ */
+      if (difficulty >= 14 && enemyData && ["BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.2, `请君入园·14 | 领袖敌人受到伤害降低20％`),
+        );
+      }
+      /** N15 “瑕”的攻击力和生命值+50% */
+      if (difficulty >= 15 && enemyData && enemyData.id === "trap_226_dychss") {
+        // trap_226_dychss
+      }
     }
     return context;
   }

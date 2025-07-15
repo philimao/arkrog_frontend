@@ -327,7 +327,6 @@ export interface ItemData {
   type: string;
   subType: string;
   rarity: string;
-  value: number;
   pinyin: string;
 }
 
@@ -352,8 +351,8 @@ export interface RelicWrapper {
   id: string;
   /** 藏品名称 */
   name: string;
-  /** 藏品价值 */
-  value: number;
+  /** 藏品稀有度 */
+  rarity: string;
   /** 藏品效果 */
   usage: string;
   /** 是否被用户收藏 TODO */

@@ -157,9 +157,9 @@ export default function RelicSelector() {
   /** 藏品关键字筛选 */
   const [searchValue, setSearchValue] = useState("");
 
-  const relicValues = ["16", "12", "8", "1"];
+  const relicValues = ["SUPER_RARE", "RARE", "NORMAL"];
   /** 藏品价值筛选 */
-  const [valueFilter, setValueFilter] = useState<Set<string>>(new Set(["16", "12", "8"]));
+  const [valueFilter, setValueFilter] = useState<Set<string>>(new Set(["SUPER_RARE", "RARE", "NORMAL"]));
 
   /** 用户筛选藏品id */
   const showIds = useMemo(
@@ -181,7 +181,7 @@ export default function RelicSelector() {
         // Tag筛选
         .filter(
           (relicWrapper) =>
-            !(valueFilter.size && !valueFilter.has(relicWrapper.value.toString())) &&
+            !(valueFilter.size && !valueFilter.has(relicWrapper.rarity)) &&
             (!searchValue ||
               relicWrapper.name.includes(searchValue) ||
               relicWrapper.pinyin.includes(searchValue) ||
@@ -295,6 +295,13 @@ export default function RelicSelector() {
             label="藏品价值"
             labelPlacement="inside"
             array={relicValues}
+            getValue={(item) =>
+              ({
+                SUPER_RARE: "超稀有",
+                RARE: "稀有",
+                NORMAL: "普通",
+              })[item]!
+            }
             selectedKeys={valueFilter}
             onSelectionChange={setValueFilter as never}
           />

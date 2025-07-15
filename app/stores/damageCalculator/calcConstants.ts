@@ -72,6 +72,11 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
       thoughtLoad: "NORMAL",
       tech: "1.3",
     },
+    rogue_5: {
+      zone: "zone_5",
+      difficulty: 15,
+      tech: "1.2",
+    },
   } as RogueInput,
   topicSpecItems: [],
   skill_table: {},

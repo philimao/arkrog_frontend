@@ -46,7 +46,7 @@ export function wrapRelicData(relicDataExt: RelicDataExt): RelicWrapper {
   return {
     id: relicDataExt.id,
     name: relicDataExt.name,
-    value: relicDataExt.value,
+    rarity: relicDataExt.rarity,
     usage: relicDataExt.usage,
     userActive: true,
     isFavorite: false,

@@ -458,6 +458,7 @@ export const outBuffMap: Partial<Record<RogueKey, string[]>> = {
   rogue_2: ["1", "1.2"],
   rogue_3: ["1", "1.23"],
   rogue_4: ["1", "1.2", "1.3"],
+  rogue_5: ["1", "1.2"],
 };
 
 export const professions = [

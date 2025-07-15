@@ -501,6 +501,62 @@ registerRelicBlackboard("attr_up_on_trigger[def&mag_resist]", {
   },
 });
 
+/** 编队中每有一名【伺烛客】属性增加 (岁花,飞驮客运) */
+registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff[stack]", {
+  isActive(input) {
+    return !input.charData || isBlackboardActiveForChar(input.buff, input.charData);
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    const atk = getByKey(buff.blackboard, "atk");
+    const def = getByKey(buff.blackboard, "def");
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (attack_speed) {
+      context.relic_rune_add.attack_speed.addChild(
+        new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
+      );
+    }
+    if (atk) {
+      context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    }
+    if (def) {
+      context.relic_rune_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+    }
+    if (max_hp) {
+      context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
+    }
+  },
+});
+
+/** 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) */
+registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff", {
+  isActive(input) {
+    return !input.charData || isBlackboardActiveForChar(input.buff, input.charData);
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    const atk = getByKey(buff.blackboard, "atk");
+    const def = getByKey(buff.blackboard, "def");
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (attack_speed) {
+      context.relic_rune_add.attack_speed.addChild(
+        new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
+      );
+    }
+    if (atk) {
+      context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    }
+    if (def) {
+      context.relic_rune_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+    }
+    if (max_hp) {
+      context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
+    }
+  },
+});
+
 /** 通用敌人藏品黑板 */
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {

@@ -129,6 +129,7 @@ export const layerValueStrs = [
   "rogue_3_relic_book_7", // 波纹
   "rogue_3_relic_book_10", // 久居
   "rogue_4_special_hand[time]", // 久居之手
+  "rogue_5_character_in_candle_holder_common_buff[stack]", // 伺烛客编队
 ];
 
 /**
@@ -183,6 +184,9 @@ export const baoleixieyi_layer_sync = ["rogue_4_relic_legacy_3", "rogue_4_relic_
 export const yuanchengxieyi_layer_sync = ["rogue_4_relic_legacy_5", "rogue_4_relic_legacy_6"];
 /** 破坏协议 */
 export const pohuaixieyi_layer_sync = ["rogue_4_relic_legacy_7", "rogue_4_relic_legacy_8"];
+/** 编队伺烛客系列 */
+export const sizhuke_layer_sync = ["rogue_5_relic_custog_11", "rogue_5_relic_explore_6"];
+
 /**
  * 藏品黑名单（价值低或难以计入）
  */

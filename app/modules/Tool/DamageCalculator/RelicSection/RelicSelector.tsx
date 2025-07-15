@@ -185,7 +185,8 @@ export default function RelicSelector() {
             (!searchValue ||
               relicWrapper.name.includes(searchValue) ||
               relicWrapper.pinyin.includes(searchValue) ||
-              relicWrapper.initials.includes(searchValue)),
+              relicWrapper.initials.includes(searchValue) ||
+              relicWrapper.usage.includes(searchValue)),
         )
         // 藏品价值与关键字筛选
         .filter(

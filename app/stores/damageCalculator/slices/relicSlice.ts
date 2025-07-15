@@ -8,6 +8,7 @@ import {
   baoleixieyi_layer_sync,
   gin_layer_sync,
   pohuaixieyi_layer_sync,
+  sizhuke_layer_sync,
   thought_layer_sync,
   tujixieyi_layer_sync,
   yuanchengxieyi_layer_sync,
@@ -65,6 +66,8 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
           updateRelics(yuanchengxieyi_layer_sync, "layer", layerNumber);
         } else if (pohuaixieyi_layer_sync.includes(id)) {
           updateRelics(pohuaixieyi_layer_sync, "layer", layerNumber);
+        } else if (sizhuke_layer_sync.includes(id)) {
+          updateRelics(sizhuke_layer_sync, "layer", layerNumber);
         } else {
           state.relicWrapperMap[rogueKey][id].layer = layerNumber;
         }

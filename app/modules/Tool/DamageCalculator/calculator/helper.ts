@@ -458,7 +458,6 @@ export class CalculatorHelper {
       const { difficulty, zone } = rogueInput.rogue_5;
       /** 肉鸽难度加成 */
       const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 15];
-      console.log(enemyAttrMultipliers, difficulty);
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       /** 肉鸽层数 */
       const zoneLayerMap: Record<string, number> = {
@@ -472,7 +471,6 @@ export class CalculatorHelper {
         zone_8: 7,
       };
       const zoneValue = zoneLayerMap[zone]!;
-      console.log(enemyAttrMultiplier, zoneValue);
       if (enemyAttrMultiplier) {
         const pow = new Array(zoneValue).fill(
           new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, `每层+${enemyAttrMultiplier}%`),

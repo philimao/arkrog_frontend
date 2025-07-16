@@ -37,6 +37,17 @@ const StyledSelectWrapper = styled.div`
   }
 `;
 
+const StyledGridLabel = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 1.5rem;
+  & > span {
+    color: var(--light-gray);
+    font-size: 0.8rem;
+  }
+`;
+
 const StyledSwitchButton = styled.div`
   width: 100%;
   height: 100%;
@@ -55,6 +66,15 @@ const StyledThoughtLoadInner = styled(StyledSwitchButton)<{ $thoughtLoad: "NORMA
   background-position: center;
 `;
 
+const StyledCandleHolderInner = styled(StyledSwitchButton)<{ $candleHolder: boolean }>`
+  background: ${({ $candleHolder }) => `url("${cosHost}/images%2Frogue_5%2Fcandle_holder_${$candleHolder}.png")`};
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center right;
+  width: 100%;
+  text-align: left;
+`;
+
 export default function OperatorDisplay() {
   const {
     activeCharName,
@@ -71,6 +91,7 @@ export default function OperatorDisplay() {
     setUniEquipId,
     setUniEquipLevel,
     setCharSpec,
+    setCandleHolder,
   } = useDamageCalculatorStore();
 
   const {
@@ -90,7 +111,10 @@ export default function OperatorDisplay() {
     uniEquip,
     uniEquipName,
     charSpec,
+    candleHolder,
   } = charInput;
+
+  console.log(candleHolder);
 
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
@@ -185,10 +209,11 @@ export default function OperatorDisplay() {
               />
             </>
           )}
+
           {rogueKey === "rogue_4" && (
             <div>
-              <div className="flex items-center justify-between h-6">
-                <span className="text-light-gray text-[0.8rem]">思维负荷</span>
+              <StyledGridLabel>
+                <span>思维负荷</span>
                 <Tooltip
                   content={
                     <div>
@@ -204,7 +229,7 @@ export default function OperatorDisplay() {
                     <use href="#question_circle" />
                   </svg>
                 </Tooltip>
-              </div>
+              </StyledGridLabel>
               <ToolButton
                 onPress={() =>
                   setRogueThoughtLoad(rogueInput.rogue_4.thoughtLoad === "NORMAL" ? "CONFUSION" : "NORMAL")
@@ -226,6 +251,25 @@ export default function OperatorDisplay() {
               </ToolButton>
             </div>
           )}
+
+          {rogueKey === "rogue_5" && (
+            <div>
+              <StyledGridLabel>
+                <span>是否为伺烛客</span>
+                <Tooltip content={<div>成为伺烛客的干员将享受部分藏品效果加成</div>} closeDelay={100}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" color="#9A9A9A">
+                    <use href="#question_circle" />
+                  </svg>
+                </Tooltip>
+              </StyledGridLabel>
+              <ToolButton onPress={() => setCandleHolder(!candleHolder)} className="px-0">
+                <StyledCandleHolderInner $candleHolder={candleHolder}>
+                  {candleHolder ? "是" : "否"}
+                </StyledCandleHolderInner>
+              </ToolButton>
+            </div>
+          )}
+
           {charSpecConfigs.map((config, index) => {
             const charSpecItem = charSpec[index]!;
             const optionIndex = config.options.findIndex((option) => option.key === charSpecItem.key);

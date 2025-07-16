@@ -94,6 +94,8 @@ export function updateCharState({
     uniEquipName,
     /** 干员属性额外修改 */
     attributeModifier: charInput.attributeModifier,
+    /** 是否为伺烛客 rogue_5限定 */
+    candleHolder: charInput.candleHolder,
     /** 干员特殊配置 */
     charSpec,
   };

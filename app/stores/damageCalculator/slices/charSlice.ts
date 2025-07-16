@@ -125,6 +125,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           uniEquipName,
           /** 干员属性额外修改 */
           attributeModifier: charModifier,
+          /** 是否为伺烛客 rogue_5限定 */
+          candleHolder: false,
           /** 干员特殊配置 */
           charSpec,
         };
@@ -291,6 +293,21 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       },
       undefined,
       "setUniEquipLevel",
+    );
+  },
+  setCandleHolder: (candleHolder: boolean) => {
+    set(
+      (state) => {
+        state.charInput.candleHolder = candleHolder;
+        state.charInput = updateCharState({
+          charInput: state.charInput,
+          charData: state.charData,
+          uniequip_table: state.uniequip_table,
+          charSpecConfigs: state.charSpecConfigs,
+        });
+      },
+      undefined,
+      "setCandleHolder",
     );
   },
   setCharSpec: (label: string, key: string) => {

@@ -171,6 +171,8 @@ export interface CharInput {
   uniEquipName: string;
   /** 干员属性额外修改 */
   attributeModifier: CharAttributeModifier;
+  /** 是否为伺烛客 rogue_5限定 */
+  candleHolder: boolean;
   /** 干员特殊配置 */
   charSpec: CharSpec[];
 }
@@ -216,6 +218,8 @@ export interface SlicedCalcCharActions {
   setUniEquipLevel: (uniEquipLevel: string) => void;
   /** 设置干员特殊配置 */
   setCharSpec: (label: string, key: string, value: number) => void;
+  /** 设置是否为伺烛客 rogue_5限定 */
+  setCandleHolder: (candleHolder: boolean) => void;
 }
 
 export interface SlicedCalcEnemyState {

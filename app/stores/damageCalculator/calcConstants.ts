@@ -64,7 +64,7 @@ export const dummy: EnemyInput = {
 
 export const initialCalcGameDataState: SlicedCalcGameDataState = {
   rogueInput: {
-    topic: "rogue_4",
+    topic: "rogue_5",
     // TODO 预设其他肉鸽的初始值
     rogue_4: {
       zone: "zone_5",
@@ -75,7 +75,7 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
     rogue_5: {
       zone: "zone_5",
       difficulty: 15,
-      tech: "1.2",
+      tech: "1",
     },
   } as RogueInput,
   topicSpecItems: [],

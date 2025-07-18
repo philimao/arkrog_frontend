@@ -29,10 +29,10 @@ registerRelicBlackboard("enemy_atk_down", {
       return false;
     }
     const tag = getByKey(buff.blackboard, "tag")?.valueStr;
-    if (tag && !enemyData.enemyTags.m_value?.includes(tag)) {
-      return false;
+    if (tag && enemyData.enemyTags.m_value?.includes(tag)) {
+      return true;
     }
-    return true;
+    return false;
   },
   apply(input): void {
     const { context, buff, relic } = input;
@@ -66,12 +66,19 @@ registerRelicBlackboard("enemy_def_down", {
 registerRelicBlackboard("enemy_max_hp_down", {
   isActive(input) {
     const { buff, enemyData } = input;
+    if (!enemyData) return true;
     const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
       | "BOSS"
       | "ELITE"
       | "NORMAL";
-    if (!enemyData) return true;
-    return enemy_level_type ? parseDefinedData(enemyData.levelType) === enemy_level_type : true;
+    if (enemy_level_type && parseDefinedData(enemyData?.levelType) !== enemy_level_type) {
+      return false;
+    }
+    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
+    if (tag && enemyData.enemyTags.m_value?.includes(tag)) {
+      return true;
+    }
+    return false;
   },
   apply(input): void {
     const { context, buff, relic } = input;

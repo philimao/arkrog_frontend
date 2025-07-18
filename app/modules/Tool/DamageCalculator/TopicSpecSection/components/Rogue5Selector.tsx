@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import {
   StyledGridContainer,
@@ -13,10 +13,11 @@ import { StyledTitle } from "~/modules/Tool/components/Shared";
 import { getPath, imageHost } from "~/utils/tools";
 import type { BlackboardData, RelicDataExt, RelicWrapper } from "~/types/gameData";
 import { applyAnyRelics } from "../../calculator/debug/print-relics-info";
-// import { CalculatorHelper } from "../../calculator";
+import { BuffContext, CalculatorHelper } from "../../calculator";
 import { wrapRelicData } from "~/stores/damageCalculator/calcUtils/relicUtils";
 import type { ExpressionGroupNode } from "../../calculator/ast";
 import { styled } from "styled-components";
+import { allowedBlackboardKeyMap } from "../../utils";
 
 export default function Rogue5Selector() {
   const { items, relics } = useGameDataStore();
@@ -33,6 +34,8 @@ export default function Rogue5Selector() {
     return result;
   }, [items.rogue_5, relics.rogue_5]);
 
+  const anyRelicContext = useRef<BuffContext>({} as BuffContext);
+
   const [coppersWrapper, setCoppersWrapper] = useState<RelicWrapper[]>(() => {
     const result = coppers.map((copper) => wrapRelicData(copper));
     const copperList = result.map((copperWrapper) => ({
@@ -40,9 +43,9 @@ export default function Rogue5Selector() {
       ...coppers.find((copper) => copper.id === copperWrapper.id)!,
     }));
     /** 应用所有通宝buff，标注无效的通宝 */
-    const anyRelicContext = applyAnyRelics(copperList);
+    anyRelicContext.current = applyAnyRelics(copperList);
     const validCopperList: string[] = [];
-    Object.values(anyRelicContext).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
+    Object.values(anyRelicContext.current).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
       if (Array.isArray(value)) return;
       Object.values(value).forEach((node: ExpressionGroupNode) =>
         node.children.forEach((child) => validCopperList.push(child.tooltip)),
@@ -53,7 +56,8 @@ export default function Rogue5Selector() {
         copper.disabled = true;
       }
     });
-    // CalculatorHelper.printAdditionContext(anyRelicContext, copperList);
+    // CalculatorHelper.printAdditionContext(anyRelicContext.current, copperList);
+    console.log(anyRelicContext.current);
     return result;
   });
 
@@ -143,6 +147,26 @@ export default function Rogue5Selector() {
                     return updated;
                   });
                 };
+                const buffStrs: string[] = [];
+                const parse = (buffKey: string, key: string, value: number) =>
+                  `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+                Object.entries(anyRelicContext.current!).forEach(([buffKey, buffValue]) => {
+                  if (Array.isArray(buffValue)) return;
+                  Object.entries(buffValue).forEach(([key, value]) => {
+                    const node = value as ExpressionGroupNode;
+                    for (const child of node.children) {
+                      if (child.tooltip === copperWrapper.name) {
+                        // 加算与减伤的基数为0，乘算的基数为1
+                        const effectiveValue =
+                          buffKey.endsWith("_add") || key === "enemy_damage_resistance"
+                            ? child.calculate()
+                            : child.calculate() - 1;
+                        if (!effectiveValue) return;
+                        buffStrs.push(parse(buffKey, key, child.calculate()));
+                      }
+                    }
+                  });
+                });
                 return (
                   <StyledGridItem
                     key={copperWrapper.id}
@@ -156,6 +180,14 @@ export default function Rogue5Selector() {
                           <span>{copperWrapper.name}</span>
                         </StyledGridItemTitle>
                         <div className="text-tiny">{copperWrapper.usage}</div>
+                        {buffStrs.length > 0 && (
+                          <div
+                            className="text-tiny mt-2 pt-2 whitespace-pre-wrap"
+                            style={{ borderTop: "1px solid var(--ak-blue)" }}
+                          >
+                            {buffStrs.join("\n")}
+                          </div>
+                        )}
                       </div>
                       {copperWrapper.hasLayer && (
                         <LayerInput
@@ -380,15 +412,16 @@ const wrath: Record<string, ITopicSpecConfig> = {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_atk_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "atk", value: 1.1, valueStr: null },
+            { key: "max_hp", value: 1.1, valueStr: null },
           ],
         },
         {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "max_hp", value: 1.1, valueStr: null },
           ],
         },
@@ -398,7 +431,7 @@ const wrath: Record<string, ITopicSpecConfig> = {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_atk_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "atk", value: 1.2, valueStr: null },
           ],
         },
@@ -406,7 +439,7 @@ const wrath: Record<string, ITopicSpecConfig> = {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "max_hp", value: 1.2, valueStr: null },
           ],
         },
@@ -416,7 +449,7 @@ const wrath: Record<string, ITopicSpecConfig> = {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_atk_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "atk", value: 1.3, valueStr: null },
           ],
         },
@@ -424,7 +457,7 @@ const wrath: Record<string, ITopicSpecConfig> = {
           key: "",
           blackboard: [
             { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
-            { key: "selector.tag", value: 0, valueStr: "animated" },
+            { key: "tag", value: 0, valueStr: "animated" },
             { key: "max_hp", value: 1.3, valueStr: null },
           ],
         },

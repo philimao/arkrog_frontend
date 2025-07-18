@@ -114,8 +114,6 @@ export default function OperatorDisplay() {
     candleHolder,
   } = charInput;
 
-  console.log(candleHolder);
-
   // 面板显示模式
   const [mode, setMode] = useState<"out_game" | "in_game" | "skill">("in_game");
 

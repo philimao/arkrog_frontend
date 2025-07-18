@@ -222,7 +222,6 @@ export class CalculatorHelper {
       blackboard.forEach((bb) => {
         switch (bb.key) {
           case "atk_scale":
-            console.log(bb.value, spec.label);
             result.in_game_buff_final_mul.atk_scale.addChild(new NumericLiteralNode(bb.value, spec.label));
             break;
           default:
@@ -533,47 +532,88 @@ export class CalculatorHelper {
   }
 
   /** 分析肉鸽主题特殊效果，例如萨卡兹的年代、萨米的密文板 */
-  static analyzeTopicSpec(input: { topicSpecItems: ITopicSpecItem[]; enemyData?: EnemyData }, context: BuffContext) {
-    const { topicSpecItems, enemyData } = input;
+  static analyzeTopicSpec(
+    input: {
+      topicSpecItems: ITopicSpecItem[];
+      charData?: CharData;
+      charInput?: CharInput;
+      enemyData?: EnemyData;
+      stageData?: StageData;
+    },
+    context: BuffContext,
+  ) {
+    const { topicSpecItems, charData, charInput, enemyData, stageData } = input;
     topicSpecItems
       .filter((item) => item && item.userActive)
-      .forEach((item) => {
-        item.buffs.forEach((buff) => {
-          const { key, value, selector } = buff;
-          if (selector) {
-            const [type, filter, filterTarget] = selector.split(":");
-            if (type === "enemy") {
-              if (!enemyData) return;
-              // 对特定敌人类型生效，如爆破对刺
-              if (filter === "id" && !filterTarget.split("|").includes(enemyData.id)) return;
-              // 对特定敌人标签生效，如魔王年代对萨卡兹
-              if (filter === "tag" && !enemyData.enemyTags.m_value?.includes(filterTarget)) return;
+      .forEach((item, _, array) => {
+        for (const buff of item.buffs) {
+          /** 查找特殊黑板实现 */
+          if (isRelicBlackboard(buff)) {
+            const blackboard = getRelicBlackboard(buff);
+            if (
+              blackboard.isActive({
+                buff,
+                relic: item as unknown as RelicDataExt & RelicWrapper,
+                charData: charData,
+                charInput: charInput,
+                enemyData,
+                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+              })
+            ) {
+              // 生效 应用到上下文
+              blackboard.apply({
+                buff,
+                relic: item as unknown as RelicDataExt & RelicWrapper,
+                context,
+                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+              });
+            } else {
+              // 不生效 无效效果
+              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
             }
           }
-          switch (key) {
-            case "atk":
-              context.relic_rune_mul.atk.addChild(new NumericLiteralNode(value, item.name));
-              break;
-            case "attack_speed":
-              context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(value, item.name));
-              break;
-            case "max_hp":
-              context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(value, item.name));
-              break;
-            case "enemy_max_hp":
-              if (buff.target === "rune_mul") {
-                context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
-              } else {
-                context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, item.name));
-              }
-              break;
-            case "enemy_atk":
-              context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, item.name));
-              break;
-            default:
-              break;
+          // 藏品可能对双方生效，但单个Buff只对一方生效
+          if (isBuffForEnemy(buff)) {
+            // 对敌人生效
+            if (
+              !enemyData ||
+              !commonEnemyRelicBlackboard.isActive({
+                buff,
+                enemyData,
+                relic: item as unknown as RelicDataExt & RelicWrapper,
+              })
+            ) {
+              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
+              return;
+            }
+            commonEnemyRelicBlackboard.apply({
+              relic: item as unknown as RelicDataExt & RelicWrapper,
+              context,
+              buff,
+              relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+            });
+          } else {
+            // 判断是否适用干员通用黑板
+            if (
+              !commonCharRelicBlackboard.isActive({
+                buff,
+                stageData,
+                charData,
+                relic: item as unknown as RelicDataExt & RelicWrapper,
+                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+              })
+            ) {
+              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
+              return;
+            }
+            commonCharRelicBlackboard.apply({
+              relic: item as unknown as RelicDataExt & RelicWrapper,
+              context,
+              buff,
+              relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+            });
           }
-        });
+        }
       });
     return context;
   }

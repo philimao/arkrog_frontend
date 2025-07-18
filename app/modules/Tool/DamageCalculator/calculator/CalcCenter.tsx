@@ -64,7 +64,7 @@ export default function CalcCenter() {
     buffContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffContext);
     // 肉鸽主题加成（年代、灵感、密文板）
     buffContext = CalculatorHelper.analyzeTopicSpec(
-      { topicSpecItems: topicSpecItems, enemyData: enemyData },
+      { topicSpecItems: topicSpecItems, enemyData: enemyData, charData, charInput, stageData },
       buffContext,
     );
     // 敌人特殊配置加成
@@ -94,7 +94,7 @@ export default function CalcCenter() {
     });
     buffPanelContext = CalculatorHelper.analyzeRogueDifficulty({ rogueInput, enemyData }, buffPanelContext);
     buffPanelContext = CalculatorHelper.analyzeTopicSpec(
-      { topicSpecItems: topicSpecItems, enemyData: enemyData },
+      { topicSpecItems: topicSpecItems, enemyData: enemyData, charData, charInput, stageData },
       buffPanelContext,
     );
     buffPanelContext = CalculatorHelper.analyzeEnemySpec({ enemySpec }, buffPanelContext);

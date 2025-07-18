@@ -68,50 +68,52 @@ export default function Rogue5Selector() {
     <>
       <StyledTitle>岁时</StyledTitle>
       <StyledGridContainer $cols={4}>
-        {Object.values(wrath).map((wr) => {
-          const buffs = wr.values[level];
-          const desc = wr.functionDesc(buffs.map((buff) => buff.blackboard).flat());
-          const url = imageHost + getPath(`集成战略_6_岁时_${wr.name}.png`);
-          const onClick = () => {
-            setTopicSpecItems((nodes) => {
-              const updated = [...nodes];
-              let index;
-              if ((index = updated.findIndex((node) => node.id === wr.id)) > -1) updated.splice(index, 1);
-              else {
-                updated.unshift({
-                  ...wr,
-                  description: desc,
-                  url,
-                  userActive: true,
-                  invert: 0,
-                  buffs,
-                  rows: 1,
-                  layer: 1,
-                });
-              }
-              return updated;
-            });
-          };
-          return (
-            <StyledGridItem
-              key={wr.id}
-              $selected={!!topicSpecItems.find((node) => node.id === wr.id)}
-              onClick={onClick}
-              $disabled={wr.disabled}
-            >
-              <StyledGridItemInner>
-                <StyledGridItemIcon $url={url} />
-                <div className="flex flex-col gap-0.5 justify-center">
-                  <StyledGridItemTitle>
-                    <span>{wr.name}</span>
-                    <span>{levelStr}</span>
-                  </StyledGridItemTitle>
-                  <div className="text-tiny">{desc}</div>
-                </div>
-              </StyledGridItemInner>
-            </StyledGridItem>
-          );
-        })}
+        {Object.values(wrath)
+          .sort((a, b) => wrathOrder.indexOf(a.name) - wrathOrder.indexOf(b.name))
+          .map((wr) => {
+            const buffs = wr.values[level];
+            const desc = wr.functionDesc(buffs.map((buff) => buff.blackboard).flat());
+            const url = imageHost + getPath(`集成战略_6_岁时_${wr.name}.png`);
+            const onClick = () => {
+              setTopicSpecItems((nodes) => {
+                const updated = [...nodes];
+                let index;
+                if ((index = updated.findIndex((node) => node.id === wr.id)) > -1) updated.splice(index, 1);
+                else {
+                  updated.unshift({
+                    ...wr,
+                    description: desc,
+                    url,
+                    userActive: true,
+                    invert: 0,
+                    buffs,
+                    rows: 1,
+                    layer: 1,
+                  });
+                }
+                return updated;
+              });
+            };
+            return (
+              <StyledGridItem
+                key={wr.id}
+                $selected={!!topicSpecItems.find((node) => node.id === wr.id)}
+                onClick={onClick}
+                $disabled={wr.disabled}
+              >
+                <StyledGridItemInner>
+                  <StyledGridItemIcon $url={url} />
+                  <div className="flex flex-col gap-0.5 justify-center">
+                    <StyledGridItemTitle>
+                      <span>{wr.name}</span>
+                      <span>{levelStr}</span>
+                    </StyledGridItemTitle>
+                    <div className="text-tiny">{desc}</div>
+                  </div>
+                </StyledGridItemInner>
+              </StyledGridItem>
+            );
+          })}
       </StyledGridContainer>
       {["厉", "花", "衡"].map((type) => (
         <div key={type}>
@@ -226,6 +228,9 @@ function LayerInput({ updateLayer }: { updateLayer: (layer: number) => void }) {
 
 /** 岁时天象 */
 const levels = ["朦胧", "真切", "入髓"];
+
+/** 地支顺序 */
+const wrathOrder = ["子武", "丑谋", "寅诗", "卯律", "辰■", "巳农", "午商", "未建", "申铸", "酉疗", "戌绘", "亥食"];
 
 /** 秉烛岁谱 */
 const wrath: Record<string, ITopicSpecConfig> = {

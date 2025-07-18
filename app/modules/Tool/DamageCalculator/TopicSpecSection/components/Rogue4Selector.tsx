@@ -33,7 +33,11 @@ export default function Rogue4Selector() {
               const updated = [...nodes];
               let index;
               if ((index = updated.findIndex((node) => node.id === fragment.id)) > -1) updated.splice(index, 1);
-              else
+              else {
+                const otherFragmentIndex = updated.findIndex((node) => node.id.includes("rogue_4_fragment_"));
+                if (otherFragmentIndex > -1) {
+                  updated.splice(otherFragmentIndex, 1);
+                }
                 updated.unshift({
                   ...fragment,
                   buffs: fragment.values[0],
@@ -44,11 +48,16 @@ export default function Rogue4Selector() {
                   userActive: true,
                   rows: 2,
                 } as ITopicSpecItem);
+              }
               return updated;
             });
           };
           return (
-            <StyledGridItem key={fragment.id} $selected={topicSpecItems[0]?.id === fragment.id} onClick={onClick}>
+            <StyledGridItem
+              key={fragment.id}
+              $selected={!!topicSpecItems.find((item) => item?.id === fragment.id)}
+              onClick={onClick}
+            >
               <StyledGridItemInner>
                 <StyledGridItemIcon $url={url} />
                 <div className="flex flex-col gap-0.5 justify-center">
@@ -65,16 +74,21 @@ export default function Rogue4Selector() {
       <StyledTitle>选择年代</StyledTitle>
       <StyledGridContainer>
         {Object.values(disasters).map((disaster) => {
-          const buffs = disaster.values[disasterLevel];
+          const buffs = disaster.values?.[disasterLevel] ?? [];
+          const flatBuffs = buffs.map((buff) => buff.blackboard).flat();
           const disasterIndex = Array.from(disaster.id).pop();
           const url = imageHost + getPath(`集成战略_5_年代_${disasterIndex}.png`);
-          const description = disaster.functionDesc(buffs.map((buff) => buff.blackboard).flat());
+          const description = disaster.functionDesc(flatBuffs);
           const onClick = () => {
             setTopicSpecItems((nodes) => {
               const updated = [...nodes];
               let index;
               if ((index = updated.findIndex((node) => node.id === disaster.id)) > -1) updated.splice(index, 1);
               else {
+                const otherDisasterIndex = updated.findIndex((node) => node.id.includes("rogue_4_disaster_"));
+                if (otherDisasterIndex > -1) {
+                  updated.splice(otherDisasterIndex, 1);
+                }
                 updated.push({
                   ...disaster,
                   description,
@@ -90,7 +104,11 @@ export default function Rogue4Selector() {
             });
           };
           return (
-            <StyledGridItem key={disaster.id} $selected={disaster.id === topicSpecItems[1]?.id} onClick={onClick}>
+            <StyledGridItem
+              key={disaster.id}
+              $selected={!!topicSpecItems.find((item) => item?.id === disaster.id)}
+              onClick={onClick}
+            >
               <StyledGridItemInner>
                 <StyledGridItemIcon $url={url} $invert={1} />
                 <div className="flex flex-col gap-0.5 justify-center">
@@ -118,13 +136,14 @@ const disasters: Record<string, ITopicSpecConfig> = {
     id: "rogue_4_disaster_1",
     name: "天灾年代",
     functionDesc: (blackboard: BlackboardData[]) =>
-      `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${((blackboard.find((item) => item.key === "enemy_max_hp")?.value ?? 1) - 1) * 100}%`,
+      `出现额外的<年代之刺>，<年代之刺>与<饮泣之刺>的最大生命值提升${(blackboard.find((item) => item.key === "max_hp")?.value ?? 1) * 100}%`,
     values: [
       [
         {
           key: "global_buff_normal",
           blackboard: [
-            { key: "enemy_max_hp", value: 2, valueStr: null },
+            { key: "key", value: 0, valueStr: "rune_mul_enemy_max_hp" },
+            { key: "max_hp", value: 1, valueStr: null },
             { key: "selector.enemy", value: 0, valueStr: "trap_760_skztzs|enemy_2073_skzrck" },
           ],
         },
@@ -133,7 +152,8 @@ const disasters: Record<string, ITopicSpecConfig> = {
         {
           key: "global_buff_normal",
           blackboard: [
-            { key: "enemy_max_hp", value: 1.5, valueStr: null },
+            { key: "key", value: 0, valueStr: "rune_mul_enemy_max_hp" },
+            { key: "max_hp", value: 1.5, valueStr: null },
             { key: "selector.enemy", value: 0, valueStr: "trap_760_skztzs|enemy_2073_skzrck" },
           ],
         },
@@ -142,7 +162,8 @@ const disasters: Record<string, ITopicSpecConfig> = {
         {
           key: "global_buff_normal",
           blackboard: [
-            { key: "enemy_max_hp", value: 3, valueStr: null },
+            { key: "key", value: 0, valueStr: "rune_mul_enemy_max_hp" },
+            { key: "max_hp", value: 2, valueStr: null },
             { key: "selector.enemy", value: 0, valueStr: "trap_760_skztzs|enemy_2073_skzrck" },
           ],
         },
@@ -218,7 +239,7 @@ const disasters: Record<string, ITopicSpecConfig> = {
     id: "rogue_4_disaster_4",
     name: "金融年代",
     functionDesc: (blackboard: BlackboardData[]) =>
-      `诡意行商中的物品将涨价${(blackboard.find((item) => item.key === "price")?.value ?? 0) * 100}%出售，所有友方单位部署费用+${blackboard.find((item) => item.key === "cost")?.value ?? 0}`,
+      `诡意行商中的物品将涨价${blackboard.find((item) => item.key === "price")?.value ?? 0}%出售，所有友方单位部署费用+${blackboard.find((item) => item.key === "cost")?.value ?? 0}`,
     values: [
       [
         { key: "global_buff_normal", blackboard: [{ key: "price", value: 50, valueStr: null }] },
@@ -238,19 +259,37 @@ const disasters: Record<string, ITopicSpecConfig> = {
     id: "rogue_4_disaster_5",
     name: "奇观年代",
     functionDesc: (blackboard: BlackboardData[]) =>
-      `构想的负荷+${blackboard.find((item) => item.key === "load")?.value ?? 0}，所有敌人生命值+${((blackboard.find((item) => item.key === "enemy_max_hp")?.value ?? 1) - 1) * 100}%`,
+      `构想的负荷+${blackboard.find((item) => item.key === "load")?.value ?? 0}，所有敌人生命值+${((blackboard.find((item) => item.key === "max_hp")?.value ?? 1) - 1) * 100}%`,
     values: [
       [
         { key: "global_buff_normal", blackboard: [{ key: "load", value: 1, valueStr: null }] },
-        { key: "global_buff_normal", blackboard: [{ key: "enemy_max_hp_down", value: 1.2, valueStr: null }] },
+        {
+          key: "global_buff_normal",
+          blackboard: [
+            { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
+            { key: "max_hp", value: 1.2, valueStr: null },
+          ],
+        },
       ],
       [
         { key: "global_buff_normal", blackboard: [{ key: "load", value: 2, valueStr: null }] },
-        { key: "global_buff_normal", blackboard: [{ key: "enemy_max_hp_down", value: 1.3, valueStr: null }] },
+        {
+          key: "global_buff_normal",
+          blackboard: [
+            { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
+            { key: "max_hp", value: 1.3, valueStr: null },
+          ],
+        },
       ],
       [
         { key: "global_buff_normal", blackboard: [{ key: "load", value: 3, valueStr: null }] },
-        { key: "global_buff_normal", blackboard: [{ key: "enemy_max_hp_down", value: 1.5, valueStr: null }] },
+        {
+          key: "global_buff_normal",
+          blackboard: [
+            { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
+            { key: "max_hp", value: 1.5, valueStr: null },
+          ],
+        },
       ],
     ],
   },
@@ -357,7 +396,7 @@ const fragments: Record<string, ITopicSpecConfig> = {
     id: "rogue_4_fragment_F_20",
     name: "驱城",
     functionDesc: () => "使用后下次战斗所有我方单位再部署时间-20%",
-    values: [[{ key: "char_attribute_mul", blackboard: [{ key: "respawn_time", value: 0.8, valueStr: null }] }]],
+    values: [[{ key: "char_attribute_mul", blackboard: [{ key: "respawn_time", value: -0.2, valueStr: null }] }]],
   },
   rogue_4_fragment_F_21: {
     id: "rogue_4_fragment_F_21",
@@ -406,9 +445,9 @@ const fragments: Record<string, ITopicSpecConfig> = {
         {
           key: "global_buff_normal",
           blackboard: [
-            { key: "key", value: 0, valueStr: "enemy_max_hp_down" },
-            // TODO
+            { key: "key", value: 0, valueStr: "rune_mul_enemy_max_hp" },
             { key: "max_hp", value: -0.5, valueStr: null },
+            { key: "selector.enemy", value: 0, valueStr: "trap_760_skztzs" },
           ],
         },
       ],
@@ -424,7 +463,7 @@ const fragments: Record<string, ITopicSpecConfig> = {
           key: "char_attribute_add",
           blackboard: [
             { key: "attack_speed", value: 100, valueStr: null },
-            { key: "magical_resistance", value: 25, valueStr: null },
+            { key: "magic_resistance", value: 25, valueStr: null },
           ],
         },
         {

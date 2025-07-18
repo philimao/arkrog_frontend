@@ -571,6 +571,7 @@ export class CalculatorHelper {
               // 不生效 无效效果
               context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
             }
+            continue;
           }
           // 藏品可能对双方生效，但单个Buff只对一方生效
           if (isBuffForEnemy(buff)) {
@@ -584,7 +585,7 @@ export class CalculatorHelper {
               })
             ) {
               context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
-              return;
+              continue;
             }
             commonEnemyRelicBlackboard.apply({
               relic: item as unknown as RelicDataExt & RelicWrapper,
@@ -604,7 +605,7 @@ export class CalculatorHelper {
               })
             ) {
               context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
-              return;
+              continue;
             }
             commonCharRelicBlackboard.apply({
               relic: item as unknown as RelicDataExt & RelicWrapper,

@@ -20,13 +20,19 @@ import {
 registerRelicBlackboard("enemy_atk_down", {
   isActive(input) {
     const { buff, enemyData } = input;
+    if (!enemyData) return true;
     const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
       | "BOSS"
       | "ELITE"
       | "NORMAL";
-    // 无敌人数据时，默认生效 TODO
-    if (!enemyData) return true;
-    return enemy_level_type ? parseDefinedData(enemyData.levelType) === enemy_level_type : true;
+    if (enemy_level_type && parseDefinedData(enemyData?.levelType) !== enemy_level_type) {
+      return false;
+    }
+    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
+    if (tag && !enemyData.enemyTags.m_value?.includes(tag)) {
+      return false;
+    }
+    return true;
   },
   apply(input): void {
     const { context, buff, relic } = input;
@@ -498,6 +504,23 @@ registerRelicBlackboard("attr_up_on_trigger[def&mag_resist]", {
     const magic_resistance = getByKeySafe(buff.blackboard, "magic_resistance");
     context.in_game_buff_add.def.addChild(new NumericLiteralNode(def.value, relic.name));
     context.in_game_buff_add.magic_resistance.addChild(new NumericLiteralNode(magic_resistance.value, relic.name));
+  },
+});
+
+registerRelicBlackboard("rune_mul_enemy_max_hp", {
+  isActive(input) {
+    const { enemyData, buff } = input;
+    // 判断是否有敌人选择器
+    const selector_enemy = getByKey(buff.blackboard, "selector.enemy")?.valueStr;
+    if (selector_enemy && enemyData && !selector_enemy.includes(enemyData.id)) {
+      return false;
+    }
+    return true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const max_hp = getByKeySafe(buff.blackboard, "max_hp");
+    context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
   },
 });
 

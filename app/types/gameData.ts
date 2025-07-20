@@ -160,7 +160,7 @@ export interface SkillData {
   levels: SkillLevelData[];
 }
 
-export type CharId = `char_${number}_${string}`;
+export type CharId = `char_${number}_${string}` | `trap_${number}_${string}`;
 
 type SkillId = `skchr_${string}`;
 

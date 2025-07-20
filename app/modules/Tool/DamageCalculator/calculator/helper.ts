@@ -513,7 +513,7 @@ export class CalculatorHelper {
       }
       /** N13 <雕伥>的最大生命值+50% */
       if (difficulty >= 13 && enemyData && enemyData.id === "trap_222_rgdysm") {
-        // trap_222_rgdysm
+        context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(0.5, `请君入园·13 | 雕伥的最大生命值+50%`));
       }
       /** N14 领袖敌人受到伤害降低20％ */
       if (difficulty >= 14 && enemyData && ["BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {

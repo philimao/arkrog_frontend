@@ -228,6 +228,7 @@ export function isBuffForEnemy(buff: RelicBuff) {
   return (
     buff.key.startsWith("enemy") ||
     buff.blackboard.some((bb) => bb.valueStr?.startsWith("enemy_")) ||
+    buff.blackboard.some((bb) => bb.valueStr?.startsWith("trap_")) ||
     buff.blackboard.some((bb) => trapEnemies.includes(bb.valueStr!))
   );
 }

@@ -6,6 +6,7 @@ import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisp
 import { GridContainer } from "~/modules/Tool/components/Shared";
 import { navOfZone, zoneOfTopic } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
+import { cosHost } from "~/utils/tools";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -80,6 +81,7 @@ const StyledEnemies = styled.div`
 const StyledEnemy = styled.div<{ $selected: boolean }>`
   box-shadow: ${({ $selected }) => ($selected ? "0px 0px 10px 2px #FFF" : "none")};
   width: 4rem;
+  position: relative;
 `;
 
 const StyledEnemyName = styled.div<{ $color: string }>`
@@ -90,7 +92,18 @@ const StyledEnemyName = styled.div<{ $color: string }>`
   color: ${({ $color }) => ($color === "red" ? "var(--ak-red)" : "inherit")};
 `;
 
-const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标", "仅剩的创意"];
+/** 恐卡兹标记 */
+const StyledEnemyBadge = styled.div`
+  position: absolute;
+  top: -0.3rem;
+  right: -0.3rem;
+  width: 1rem;
+  height: 1rem;
+  background: url(${cosHost + "/images/rogue_4/恐卡兹标记.webp"}) no-repeat center center;
+  background-size: contain;
+`;
+
+const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标", "仅剩的创意", "受符"];
 const ignoreEnemyIds = [
   "enemy_1324_wdsdw", //萨卡兹悖谬裂变学徒（虚像）
 ];
@@ -160,7 +173,7 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
-              <span>红名代表死亡后会生成恐卡兹</span>
+              <span>红点代表死亡后会生成恐卡兹</span>
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
@@ -181,9 +194,8 @@ export default function StageSelector() {
                       }}
                     >
                       <EnemyAvatar name={_enemyData.name.m_value} />
-                      <StyledEnemyName $color={parasitized ? "red" : "inherit"}>
-                        {_enemyData.name.m_value}
-                      </StyledEnemyName>
+                      <StyledEnemyName $color={"inherit"}>{_enemyData.name.m_value}</StyledEnemyName>
+                      {parasitized && <StyledEnemyBadge />}
                     </StyledEnemy>
                   );
                 })}

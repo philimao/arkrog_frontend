@@ -14,6 +14,17 @@ const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”
   {} as Record<string, string>,
 );
 
+Object.assign(
+  preset,
+  ["“岁躯”", "雕伥"].reduce(
+    (acc, name) => {
+      acc[name] = cosHost + `/images/rogue_5/${encodeURI(name)}.webp`;
+      return acc;
+    },
+    {} as Record<string, string>,
+  ),
+);
+
 export default function EnemyAvatar({ name, className = "w-full", ...props }: EnemyAvatarProps) {
   if (!name) return null;
 

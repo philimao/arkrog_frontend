@@ -5,7 +5,7 @@ import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "../blackb
 import { isBuffForEnemy, isRelicInBlacklist } from "../../utils";
 
 /**
- * 打印藏品信息
+ * 打印藏品信息 @deprecated applyAnyRelics无法判断藏品是否生效，可能存在多个buff同时生效的情况，仅能用于判断藏品是否实现黑板
  */
 export function printRelicsInfo(input: CalculatorInput) {
   const context = applyAnyRelics(input.relics);
@@ -18,7 +18,7 @@ export function printRelicsInfo(input: CalculatorInput) {
 export function applyAnyRelics(relics: (RelicDataExt & RelicWrapper)[]) {
   const context = CalculatorHelper.createAdditionContext();
   for (const relic of relics) {
-    if (!isRelicInBlacklist(relic.name)) {
+    if (isRelicInBlacklist(relic.name)) {
       context.invalidRelics.push(relic);
       continue;
     }

@@ -168,5 +168,32 @@ export const zoneOfTopic = {
         return false;
       },
     },
+    {
+      id: "zone_7",
+      name: "岁兽残识",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "sv") return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_8",
+      name: "特殊挑战",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "t") return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_9",
+      name: "鸭爵与雇员",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "e" && args[2] === "t") return true;
+        return false;
+      },
+    },
   ],
 };

@@ -230,7 +230,6 @@ export class CalculatorHelper {
       });
     });
 
-    console.log(result);
     return result;
   }
 
@@ -315,7 +314,6 @@ export class CalculatorHelper {
           result.invalidRelics.push(relic);
           return;
         }
-
         // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
         if (isRelicBlackboard(buff)) {
           const blackboard = getRelicBlackboard(buff);
@@ -332,7 +330,7 @@ export class CalculatorHelper {
         // 藏品可能对双方生效，但单个Buff只对一方生效
         if (isBuffForEnemy(buff)) {
           // 对敌人生效
-          if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic })) {
+          if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic, stageData })) {
             result.invalidRelics.push(relic);
             return;
           }
@@ -546,10 +544,24 @@ export class CalculatorHelper {
     topicSpecItems
       .filter((item) => item && item.userActive)
       .forEach((item, _, array) => {
+        // console.groupCollapsed(item.name);
         for (const buff of item.buffs) {
           /** 查找特殊黑板实现 */
+          // console.log("isRelicBlackboard", isRelicBlackboard(buff));
           if (isRelicBlackboard(buff)) {
             const blackboard = getRelicBlackboard(buff);
+            // console.log(
+            //   "isActive",
+            //   blackboard.isActive({
+            //     buff,
+            //     relic: item as unknown as RelicDataExt & RelicWrapper,
+            //     charData: charData,
+            //     charInput: charInput,
+            //     enemyData,
+            //     relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+            //     stageData,
+            //   }),
+            // );
             if (
               blackboard.isActive({
                 buff,
@@ -558,6 +570,7 @@ export class CalculatorHelper {
                 charInput: charInput,
                 enemyData,
                 relics: array as unknown as (RelicDataExt & RelicWrapper)[],
+                stageData,
               })
             ) {
               // 生效 应用到上下文
@@ -573,6 +586,7 @@ export class CalculatorHelper {
             }
             continue;
           }
+          // console.log("isBuffForEnemy", isBuffForEnemy(buff));
           // 藏品可能对双方生效，但单个Buff只对一方生效
           if (isBuffForEnemy(buff)) {
             // 对敌人生效
@@ -582,6 +596,7 @@ export class CalculatorHelper {
                 buff,
                 enemyData,
                 relic: item as unknown as RelicDataExt & RelicWrapper,
+                stageData,
               })
             ) {
               context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
@@ -615,6 +630,7 @@ export class CalculatorHelper {
             });
           }
         }
+        // console.groupEnd();
       });
     return context;
   }
@@ -796,6 +812,7 @@ export class CalculatorHelper {
     );
     console.log(output);
     console.groupEnd();
+    console.log("printAdditionContext in helper");
     CalculatorHelper.printAdditionContext(input.buffContext, input.relics);
     console.groupEnd();
     console.groupCollapsed("查看结构化输出");

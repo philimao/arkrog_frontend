@@ -2,7 +2,7 @@ import { useMemo, useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { CalculatorInput } from "~/types/gameData";
 import { calculator } from "./calculator";
-import { printRelicsInfo } from "./debug/print-relics-info";
+// import { printRelicsInfo } from "./debug/print-relics-info";
 import { CalculatorHelper } from "./helper";
 import { ExpressionUtil } from "./expression-util";
 
@@ -167,19 +167,19 @@ export default function CalcCenter() {
     const calcResult = calculator(input);
     // 标准打印
     CalculatorHelper.print(input, calcResult);
-    printRelicsInfo({
-      charInput: {
-        ...charInput,
-        // 局外面板
-        attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
-      },
-      enemyInput: enemyInput,
-      charData: charData, // 干员解包原始数据
-      enemyData: enemyData, // 敌人解包原始数据
-      relics: selectedRelics, // 有效藏品列表
-      rogueInput,
-      buffContext,
-    });
+    // printRelicsInfo({
+    //   charInput: {
+    //     ...charInput,
+    //     // 局外面板
+    //     attribute: CalculatorHelper.calculateOutsidePanel({ charInput: charInput, context: buffContext }),
+    //   },
+    //   enemyInput: enemyInput,
+    //   charData: charData, // 干员解包原始数据
+    //   enemyData: enemyData, // 敌人解包原始数据
+    //   relics: selectedRelics, // 有效藏品列表
+    //   rogueInput,
+    //   buffContext,
+    // });
     // 计算结果
     setCalcOutput(calcResult);
   }, [charData, charInput, enemyData, enemyInput, globalAnalysisResult, rogueInput, selectedRelics, setCalcOutput]);

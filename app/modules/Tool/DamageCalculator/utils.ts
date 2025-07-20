@@ -15,9 +15,9 @@ import type {
  */
 export const allowedBlackboardKeyMap: Record<string, string> = {
   atk: "攻击力",
-  "multiplier@atk": "局内攻击力", // 几丁质刺刃
-  "multiplier@def": "局内防御力", // 佣兵饰物
-  "multiplier@max_hp": "局内生命上限", // 佣兵饰物
+  "multiplier@atk": "攻击力", // 几丁质刺刃
+  "multiplier@def": "防御力", // 佣兵饰物
+  "multiplier@max_hp": "生命上限", // 佣兵饰物
   "rogue_2_atk_up[king_suit][bonus].atk": "国王套攻击力", // 诸王的冠冕
   "rogue_2_block_cnt[life_point]": "国王套获得1技力间隔",
   "rogue_4_maxhp_up[lordoffiends_suit][bonus].max_hp": "魔王套生命上限", // 魔王的祭器
@@ -68,6 +68,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   enemy_atk: "敌人攻击力",
   enemy_def: "敌人防御力",
   enemy_max_hp: "敌人生命上限",
+  enemy_attack_speed: "敌人攻击速度",
   enemy_damage_scale_phy: "敌人物理易伤",
   enemy_damage_scale_mag: "敌人法术易伤",
   enemy_damage_scale_pure: "敌人真伤易伤",
@@ -190,7 +191,15 @@ export const sizhuke_layer_sync = ["rogue_5_relic_custog_11", "rogue_5_relic_exp
 /**
  * 藏品黑名单（价值低或难以计入）
  */
-export const disallowedRelicNames = ["黑色郁金香", "衣卡兹", "Scout的狙击镜", "奴隶猎捕器", "戈渎不语"];
+export const disallowedRelicNames = [
+  "黑色郁金香",
+  "衣卡兹",
+  "Scout的狙击镜",
+  "奴隶猎捕器",
+  "戈渎不语",
+  "厉-移山难",
+  "衡-移山繁",
+];
 
 /**
  * valueStr黑名单（用于判断isBuffActive)
@@ -204,7 +213,7 @@ export const disallowedValueStrs = [
  * @param relicDataExt
  */
 export function isRelicInBlacklist(name: string) {
-  return !disallowedRelicNames.includes(name);
+  return disallowedRelicNames.includes(name);
 }
 
 const trapEnemies = [
@@ -217,6 +226,7 @@ const trapEnemies = [
  **/
 export function isBuffForEnemy(buff: RelicBuff) {
   return (
+    buff.key.startsWith("enemy") ||
     buff.blackboard.some((bb) => bb.valueStr?.startsWith("enemy_")) ||
     buff.blackboard.some((bb) => trapEnemies.includes(bb.valueStr!))
   );

@@ -180,12 +180,7 @@ export class ExpressionUtil {
 
   /** 部署费用 - 局外 干员部署费用 */
   static operator_out_game_cost(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
-    const baseCost = attribute?.cost ?? 0;
-
-    return new ExpressionGroupNode("+", "部署费用")
-      .addChild(new NumericLiteralNode(baseCost, "基础部署费用"))
-      .addChild(...input.context.relic_rune_add.cost.children);
+    return common_in_game_expression(input, "cost");
   }
 
   /** 每秒生命回复 - 局外 干员每秒生命回复 */

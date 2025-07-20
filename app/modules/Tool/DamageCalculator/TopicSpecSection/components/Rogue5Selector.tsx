@@ -10,10 +10,10 @@ import {
 } from "../TopicSpecSelector";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
-import { getPath, imageHost } from "~/utils/tools";
+import { assetsHost, getPath, imageHost } from "~/utils/tools";
 import type { BlackboardData, RelicDataExt, RelicWrapper } from "~/types/gameData";
 import { applyAnyRelics } from "../../calculator/debug/print-relics-info";
-import { BuffContext, CalculatorHelper } from "../../calculator";
+import { BuffContext } from "../../calculator";
 import { wrapRelicData } from "~/stores/damageCalculator/calcUtils/relicUtils";
 import type { ExpressionGroupNode } from "../../calculator/ast";
 import { styled } from "styled-components";
@@ -42,7 +42,10 @@ export default function Rogue5Selector() {
       ...copperWrapper,
       ...coppers.find((copper) => copper.id === copperWrapper.id)!,
     }));
-    /** 应用所有通宝buff，标注无效的通宝 */
+    /**
+     * 应用所有通宝buff，标注无效的通宝
+     * 注意，部分通宝会有多个互相冲突的buff同时生效，因此不能用于展示该通宝的具体效果
+     */
     anyRelicContext.current = applyAnyRelics(copperList);
     const validCopperList: string[] = [];
     Object.values(anyRelicContext.current).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
@@ -56,8 +59,7 @@ export default function Rogue5Selector() {
         copper.disabled = true;
       }
     });
-    // CalculatorHelper.printAdditionContext(anyRelicContext.current, copperList);
-    console.log(anyRelicContext.current);
+    console.log("anyCopperContext", anyRelicContext.current);
     return result;
   });
 
@@ -126,6 +128,9 @@ export default function Rogue5Selector() {
             {coppersWrapper
               .filter((copperWrapper) => copperWrapper.name.startsWith(type))
               .map((copperWrapper) => {
+                const copper = coppers.find((copper) => copper.id === copperWrapper.id)!;
+                const url =
+                  assetsHost + `roguelike_topic_itempic/${copper.id.replace("_buff", "").replace(/_[abcd]$/, "")}.png`;
                 const onClick = () => {
                   setTopicSpecItems((nodes) => {
                     const updated = [...nodes];
@@ -133,40 +138,39 @@ export default function Rogue5Selector() {
                     if ((index = updated.findIndex((node) => node.id === copperWrapper.id)) > -1)
                       updated.splice(index, 1);
                     else {
-                      const copper = coppers.find((copper) => copper.id === copperWrapper.id)!;
                       updated.push({
                         ...copperWrapper,
                         description: copperWrapper.usage,
-                        url: "#",
+                        url,
                         userActive: true,
                         invert: 0,
                         buffs: copper.buffs,
-                        rows: 1,
+                        rows: 2,
                       });
                     }
                     return updated;
                   });
                 };
                 const buffStrs: string[] = [];
-                const parse = (buffKey: string, key: string, value: number) =>
-                  `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
-                Object.entries(anyRelicContext.current!).forEach(([buffKey, buffValue]) => {
-                  if (Array.isArray(buffValue)) return;
-                  Object.entries(buffValue).forEach(([key, value]) => {
-                    const node = value as ExpressionGroupNode;
-                    for (const child of node.children) {
-                      if (child.tooltip === copperWrapper.name) {
-                        // 加算与减伤的基数为0，乘算的基数为1
-                        const effectiveValue =
-                          buffKey.endsWith("_add") || key === "enemy_damage_resistance"
-                            ? child.calculate()
-                            : child.calculate() - 1;
-                        if (!effectiveValue) return;
-                        buffStrs.push(parse(buffKey, key, child.calculate()));
+                const showBuffs = false;
+                if (import.meta.env.DEV && showBuffs) {
+                  const parse = (buffKey: string, key: string, value: number) =>
+                    `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+                  Object.entries(anyRelicContext.current!).forEach(([buffKey, buffValue]) => {
+                    if (Array.isArray(buffValue)) return;
+                    Object.entries(buffValue).forEach(([key, value]) => {
+                      const node = value as ExpressionGroupNode;
+                      for (const child of node.children) {
+                        if (child.tooltip === copperWrapper.name) {
+                          // 此处计算的是child的计算结果，因此不含基数
+                          const effectiveValue = child.calculate();
+                          if (!effectiveValue) return;
+                          buffStrs.push(parse(buffKey, key, effectiveValue));
+                        }
                       }
-                    }
+                    });
                   });
-                });
+                }
                 return (
                   <StyledGridItem
                     key={copperWrapper.id}
@@ -175,6 +179,7 @@ export default function Rogue5Selector() {
                     $disabled={copperWrapper.disabled}
                   >
                     <StyledGridItemInner>
+                      <StyledGridItemIcon $url={url} />
                       <div className="flex flex-col gap-0.5 justify-center">
                         <StyledGridItemTitle>
                           <span>{copperWrapper.name}</span>
@@ -197,6 +202,14 @@ export default function Rogue5Selector() {
                               const updated = [...coppersWrapper];
                               const index = updated.findIndex((copper) => copper.id === copperWrapper.id);
                               if (index > -1) updated[index].layer = layer;
+                              return updated;
+                            });
+                            setTopicSpecItems((nodes) => {
+                              let index;
+                              if ((index = nodes.findIndex((node) => node.id === copperWrapper.id)) === -1)
+                                return nodes;
+                              const updated = [...nodes];
+                              updated[index].layer = layer;
                               return updated;
                             });
                           }}
@@ -241,7 +254,7 @@ function LayerInput({ updateLayer }: { updateLayer: (layer: number) => void }) {
   const [layer, setLayer] = useState("1");
   return (
     <StyledLayerWrapper>
-      <span>层数</span>
+      <span>共计投出</span>
       <input
         type="text"
         value={layer}

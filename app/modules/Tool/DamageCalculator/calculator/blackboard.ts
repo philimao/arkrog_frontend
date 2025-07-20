@@ -10,93 +10,10 @@ import { NumericLiteralNode } from "./ast";
 import {
   inGameRelicNames,
   isBlackboardActiveForChar,
-  isBlackboardActiveForEnemy,
   isBuffActive,
   isRelicInBlacklist,
   parseDefinedData,
 } from "../utils";
-
-/** 敌人攻击力改变 */
-registerRelicBlackboard("enemy_atk_down", {
-  isActive(input) {
-    const { buff, enemyData } = input;
-    if (!enemyData) return true;
-    const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
-      | "BOSS"
-      | "ELITE"
-      | "NORMAL";
-    if (enemy_level_type && parseDefinedData(enemyData?.levelType) !== enemy_level_type) {
-      return false;
-    }
-    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
-    if (tag && enemyData.enemyTags.m_value?.includes(tag)) {
-      return true;
-    }
-    return false;
-  },
-  apply(input): void {
-    const { context, buff, relic } = input;
-    const atk = getByKeySafe(buff.blackboard, "atk");
-    /** 当value为正数时必然>1，例如攻击力+20%显示为1.2，当value为负数时，表示减攻，例如攻击力-10%显示为-0.1 */
-    const value = Math.sign(atk.value) === 1 ? atk.value : 1 + atk.value;
-    context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
-  },
-});
-
-/** 敌人防御力改变 */
-registerRelicBlackboard("enemy_def_down", {
-  isActive(input) {
-    const { buff, enemyData } = input;
-    const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
-      | "BOSS"
-      | "ELITE"
-      | "NORMAL";
-    if (!enemyData) return true;
-    return enemy_level_type ? parseDefinedData(enemyData.levelType) === enemy_level_type : true;
-  },
-  apply(input): void {
-    const { context, buff, relic } = input;
-    const def = getByKeySafe(buff.blackboard, "def");
-    const value = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
-    context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(value, relic.name));
-  },
-});
-
-/** 敌人最大生命值改变 */
-registerRelicBlackboard("enemy_max_hp_down", {
-  isActive(input) {
-    const { buff, enemyData } = input;
-    if (!enemyData) return true;
-    const enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr as
-      | "BOSS"
-      | "ELITE"
-      | "NORMAL";
-    if (enemy_level_type && parseDefinedData(enemyData?.levelType) !== enemy_level_type) {
-      return false;
-    }
-    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
-    if (tag && enemyData.enemyTags.m_value?.includes(tag)) {
-      return true;
-    }
-    return false;
-  },
-  apply(input): void {
-    const { context, buff, relic } = input;
-    const max_hp = getByKeySafe(buff.blackboard, "max_hp");
-    const value = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
-    context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, relic.name));
-  },
-});
-
-/** 敌人攻击速度减少 */
-registerRelicBlackboard("enemy_attack_speed_down", {
-  isActive() {
-    return true;
-  },
-  apply(): void {
-    // TODO 暂不实现敌方攻击速度
-  },
-});
 
 /** 敌人物理易伤 */
 registerRelicBlackboard("enemy_damage_scale[phy]", {
@@ -587,26 +504,163 @@ registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff", {
   },
 });
 
-/** 通用敌人藏品黑板 */
-export const commonEnemyRelicBlackboard = {
-  isActive({ buff, enemyData, relic }: EnemyRelicBlackboardInput) {
-    /** 同时对敌我生效的藏品不应该在此处理 */
-    const isActive = isRelicInBlacklist(relic.name) && isBlackboardActiveForEnemy(buff, enemyData);
-    return isActive;
+/** 画人间 - 岁兽残识 */
+registerRelicBlackboard("rogue_5_character_sp_zone_attri_up", {
+  isActive(input) {
+    return !!input.stageData?.id.includes("ro5_sv");
   },
-  apply({ relic, context, buff }: RelicBlackboardApplyInput): void {
-    let is_invalid = true;
-    // 目前只处理了雕词錾刀和十戒，但敌人通用面板应该也重构到此处 TODO
-    const max_hp = getByKey(buff.blackboard, "max_hp");
-    if (max_hp) {
-      const maxHpValue = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
-      context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(maxHpValue, relic.name));
-      is_invalid = false;
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const attack_speed = getByKeySafe(buff.blackboard, "attack_speed");
+    context.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+  },
+});
+
+/** 厉-无皎之昧 - 投出时，战斗中刮起随机方向的沙尘暴，位于沙尘暴中的我方单位攻击力降低60％。所有我方单位攻击速度 */
+registerRelicBlackboard("env_001_storm", {
+  isActive() {
+    return true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const atk = getByKeySafe(buff.blackboard, "atk");
+    context.in_game_buff_final_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
+  },
+});
+
+/** 花-驰道长 - 投出时，使战斗中位于最左边和最右边一列化境地块上的干员攻击力+30%，攻击速度+30*/
+registerRelicBlackboard("rogue_5_left_or_right_most_tile_col[attri_up]", {
+  isActive(input) {
+    const { buff } = input;
+    const sequence_select = getByKey(buff.blackboard, "sequence_select");
+    /** 右侧 0 左侧 1 */
+    return sequence_select?.value === 1.0;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const atk = getByKey(buff.blackboard, "atk");
+    if (atk) {
+      context.in_game_buff_final_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
     }
     const def = getByKey(buff.blackboard, "def");
     if (def) {
+      context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value, relic.name));
+    }
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (max_hp) {
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+    }
+    const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    if (attack_speed) {
+      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+    }
+  },
+});
+
+/** 通用敌人藏品黑板 */
+export const commonEnemyRelicBlackboard = {
+  isActive({ buff, enemyData, relic, stageData }: EnemyRelicBlackboardInput) {
+    // console.log("buff", buff.blackboard);
+    /** 同时对敌我生效的藏品不应该在此处理，敌人不存在时默认不生效 */
+    // console.log("enemyData", enemyData);
+    if (!enemyData) return false;
+    /** 黑名单藏品不生效 */
+    // console.log("isRelicInBlacklist", isRelicInBlacklist(relic.name));
+    if (isRelicInBlacklist(relic.name)) return false;
+    /** 敌人ID选择器 */
+    const selector_enemy = getByKey(buff.blackboard, "selector.enemy")?.valueStr;
+    // console.log("selector_enemy", selector_enemy, selector_enemy && !selector_enemy.includes(enemyData.id));
+    if (selector_enemy && !selector_enemy.includes(enemyData.id)) return false;
+    /** trap类敌人ID选择器 */
+    const selector_char = getByKey(buff.blackboard, "selector.char")?.valueStr;
+    // console.log("selector_char", selector_char, selector_char && !selector_char.includes(enemyData.id));
+    if (selector_char && !selector_char.includes(enemyData.id)) return false;
+    /** 敌人等级选择器 */
+    const selector_enemy_level_type = getByKey(buff.blackboard, "selector.enemy_level_type")?.valueStr;
+    // console.log(
+    //   "selector_enemy_level_type",
+    //   selector_enemy_level_type,
+    //   parseDefinedData(enemyData?.levelType),
+    //   selector_enemy_level_type && parseDefinedData(enemyData?.levelType) !== selector_enemy_level_type,
+    // );
+    if (selector_enemy_level_type && parseDefinedData(enemyData?.levelType) !== selector_enemy_level_type) {
+      return false;
+    }
+    /** 敌人TAG选择器 */
+    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
+    // console.log(
+    //   "tag",
+    //   tag,
+    //   parseDefinedData(enemyData.enemyTags),
+    //   tag && !parseDefinedData(enemyData.enemyTags)?.includes(tag),
+    // );
+    if (tag && !parseDefinedData(enemyData.enemyTags)?.includes(tag)) {
+      return false;
+    }
+    /** 关卡类型选择器 */
+    const validator_roguelike_event_type = getByKey(buff.blackboard, "validator.roguelike_event_type")?.valueStr as
+      | "BATTLE_BOSS"
+      | "DUEL";
+    // console.log("validator_roguelike_event_type", validator_roguelike_event_type);
+    if (
+      (validator_roguelike_event_type === "BATTLE_BOSS" && !stageData?.isBoss) ||
+      (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel"))
+    ) {
+      return false;
+    }
+    /** 界园肉鸽中，检测是否为天空关卡作战 */
+    const validator_roguelike_sky_zone_event_type = getByKey(buff.blackboard, "validator.roguelike_sky_zone_event_type")
+      ?.valueStr as "BATTLE" | "BATTLE_HARD";
+    // console.log(
+    //   "validator_roguelike_sky_zone_event_type",
+    //   validator_roguelike_sky_zone_event_type,
+    //   stageData?.id.includes("ro5_sv"),
+    // );
+    if (
+      validator_roguelike_sky_zone_event_type &&
+      (validator_roguelike_sky_zone_event_type === "BATTLE_HARD" || !stageData || !stageData.id.includes("ro5_sv"))
+    ) {
+      return false;
+    }
+    // console.log("*** active ***");
+    return true;
+  },
+  apply({ relic, context, buff }: RelicBlackboardApplyInput): void {
+    let is_invalid = true;
+    /** 敌人攻击力改变 */
+    const atk = getByKey(buff.blackboard, "atk");
+    if (atk) {
+      const value = Math.sign(atk.value) === 1 ? atk.value : 1 + atk.value;
+      context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, relic.name));
+      is_invalid = false;
+    }
+    /** 敌人最大生命值改变 */
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (max_hp) {
+      const maxHpValue = Math.sign(max_hp.value) === 1 ? max_hp.value : 1 + max_hp.value;
+      context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(maxHpValue, relic.name));
+      is_invalid = false;
+    }
+    // 雕刀不确定是什么乘区
+    /** 敌人防御力改变 */
+    const def = getByKey(buff.blackboard, "def");
+    if (def) {
       const defValue = Math.sign(def.value) === 1 ? def.value : 1 + def.value;
-      context.relic_rune_mul.enemy_def.addChild(new NumericLiteralNode(defValue, relic.name));
+      context.in_game_buff_final_mul.enemy_def.addChild(new NumericLiteralNode(defValue, relic.name));
+      is_invalid = false;
+    }
+    /** 敌人法术抗性改变 */
+    const magic_resistance = getByKey(buff.blackboard, "magic_resistance");
+    if (magic_resistance) {
+      const value = magic_resistance.value;
+      context.in_game_buff_add.enemy_magic_resistance.addChild(new NumericLiteralNode(value, relic.name));
+      is_invalid = false;
+    }
+    /** 敌人攻击速度改变 */
+    const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    if (attack_speed) {
+      const value = attack_speed.value;
+      context.in_game_buff_add.enemy_attack_speed.addChild(new NumericLiteralNode(value, relic.name));
       is_invalid = false;
     }
     if (is_invalid) {
@@ -618,30 +672,30 @@ export const commonEnemyRelicBlackboard = {
 /** 通用干员藏品黑板 */
 export const commonCharRelicBlackboard: RelicBlackboard = {
   isActive({ buff, stageData, charData, relic }) {
+    // console.log("buff", buff);
     // 判断藏品是否可以生效（旧逻辑）
     const isActive =
-      isRelicInBlacklist(relic.name) && isBuffActive(buff, charData) && isBlackboardActiveForChar(buff, charData);
+      !isRelicInBlacklist(relic.name) && isBuffActive(buff, charData) && isBlackboardActiveForChar(buff, charData);
+    // console.log(
+    //   "isActive",
+    //   !isRelicInBlacklist(relic.name),
+    //   isBuffActive(buff, charData),
+    //   isBlackboardActiveForChar(buff, charData),
+    // );
     if (!isActive) return false;
 
+    /** 关卡类型选择器 */
     const validator_roguelike_event_type = getByKey(buff.blackboard, "validator.roguelike_event_type")?.valueStr as
       | "BATTLE_BOSS"
       | "DUEL";
-    // 藏品仅在部分关卡类型中生效
-    if (validator_roguelike_event_type) {
-      let validator = false;
-      // 是否为BOSS关
-      if (validator_roguelike_event_type === "BATTLE_BOSS" && stageData?.isBoss) {
-        validator = true;
-      }
-      // 是否为狭路相逢（判断关卡ID是否包含duel）
-      if (validator_roguelike_event_type === "DUEL" && stageData?.id.includes("duel")) {
-        validator = true;
-      }
-      // 不满足条件 无效藏品
-      if (!validator) {
-        return false;
-      }
+    // console.log("validator_roguelike_event_type", validator_roguelike_event_type);
+    if (
+      (validator_roguelike_event_type === "BATTLE_BOSS" && !stageData?.isBoss) ||
+      (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel"))
+    ) {
+      return false;
     }
+    // console.log("*** active ***");
     return true;
   },
   apply({ relic, context, buff }) {
@@ -654,13 +708,18 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     const multiplier_atk = getByKey(buff.blackboard, "multiplier@atk");
     const multiplier_max_hp = getByKey(buff.blackboard, "multiplier@max_hp");
     const multiplier_def = getByKey(buff.blackboard, "multiplier@def");
+    const multiplier_cost = getByKey(buff.blackboard, "multiplier@cost");
     const cost = getByKey(buff.blackboard, "cost");
     const magic_resistance = getByKey(buff.blackboard, "magic_resistance");
+
+    // 是否加算
+    const is_add = buff.key.includes("_attribute_add");
+    /** 如果buff不含层数效果，忽视用户填写的层数 */
+    const layer = buff.key.startsWith("layer_char_attribute") ? relic.layer : 1;
+
     /** 最大生命值 */
     if (max_hp) {
-      context.relic_rune_mul.max_hp.addChild(
-        new NumericLiteralNode(max_hp.value * relic.layer, relic.name, { relic, buff }),
-      );
+      context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * layer, relic.name, { relic, buff }));
       is_invalid = false;
     }
     /** 攻击力 */
@@ -669,17 +728,13 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       if (inGame) {
         context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
       } else {
-        context.relic_rune_mul.atk.addChild(
-          new NumericLiteralNode(atk.value * relic.layer, relic.name, { relic, buff }),
-        );
+        context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * layer, relic.name, { relic, buff }));
       }
       is_invalid = false;
     }
     /** 防御力 */
     if (def) {
-      // 是否加算
-      const is_add = ["char_attribute_add"].includes(buff.key);
-      const node = new NumericLiteralNode(def.value * relic.layer, relic.name, { relic, buff });
+      const node = new NumericLiteralNode(def.value * layer, relic.name, { relic, buff });
       if (is_add) {
         context.relic_rune_add.def.addChild(node);
       } else {
@@ -689,23 +744,15 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     }
     /** 攻击速度 */
     if (attack_speed) {
-      // 是否层数藏品
-      const is_layer = ["layer_char_attribute_add", "char_squad_attribute_add"].includes(buff.key);
-      if (is_layer) {
-        context.relic_rune_add.attack_speed.addChild(
-          new NumericLiteralNode(attack_speed.value * relic.layer, relic.name, { relic, buff }),
-        );
-      } else {
-        context.relic_rune_add.attack_speed.addChild(
-          new NumericLiteralNode(attack_speed.value, relic.name, { relic, buff }),
-        );
-      }
+      context.relic_rune_add.attack_speed.addChild(
+        new NumericLiteralNode(attack_speed.value * layer, relic.name, { relic, buff }),
+      );
       is_invalid = false;
     }
     /** 攻击力 multiplier@atk 来源(几丁质刺刃/佣兵的饰物/生还者合约) */
     if (multiplier_atk) {
       context.relic_rune_mul.atk.addChild(
-        new NumericLiteralNode(multiplier_atk.value * relic.layer, relic.name, { relic, buff }),
+        new NumericLiteralNode(multiplier_atk.value * layer, relic.name, { relic, buff }),
       );
       is_invalid = false;
     }
@@ -738,7 +785,12 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     }
     /** 费用 */
     if (cost) {
-      context.relic_rune_add.cost.addChild(new NumericLiteralNode(cost.value, relic.name, { relic, buff }));
+      context.relic_rune_add.cost.addChild(new NumericLiteralNode(cost.value + 1, relic.name, { relic, buff }));
+      is_invalid = false;
+    }
+    /** 费用（局外百分比） */
+    if (multiplier_cost) {
+      context.relic_rune_mul.cost.addChild(new NumericLiteralNode(multiplier_cost.value, relic.name, { relic, buff }));
       is_invalid = false;
     }
     if (is_invalid) {

@@ -36,6 +36,7 @@ export type EnemyRelicBlackboardInput = {
   buff: RelicBuff;
   relic: RelicDataExt;
   enemyData: EnemyData;
+  stageData?: StageData;
 };
 /** 藏品黑板是否生效 */
 export type RelicBlackboardIsActiveInput = {

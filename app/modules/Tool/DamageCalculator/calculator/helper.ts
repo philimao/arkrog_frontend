@@ -32,6 +32,15 @@ export interface AdditionEntry {
   enemy: string[];
 }
 
+/** 打印藏品计算过程 */
+export const debugRelic = true;
+
+/** 以下敌人不计算通用加成 */
+const enemiesIgnore = [
+  "trap_222_rgdysm", //雕伥
+  "enemy_2101_dyspll", // 便符
+];
+
 /**
  * 计算器的一些辅助函数
  */
@@ -263,6 +272,84 @@ export class CalculatorHelper {
     }
   }
 
+  static applyRelic(
+    input: {
+      relic: RelicDataExt & RelicWrapper;
+      relics: (RelicDataExt & RelicWrapper)[];
+      charData?: CharData;
+      charInput?: CharInput;
+      enemyData?: EnemyData;
+      stageData?: StageData;
+    },
+    result: BuffContext,
+  ) {
+    const { relic, relics, charData, charInput, enemyData, stageData } = input;
+    if (debugRelic) console.groupCollapsed("藏品", relic.name);
+    // 遍历藏品buff
+    relic.buffs.forEach((buff) => {
+      // 藏品在黑名单中
+      if (debugRelic) console.log("位于黑名单中", isRelicInBlacklist(relic.name));
+      if (isRelicInBlacklist(relic.name)) {
+        result.invalidRelics.push(relic);
+        return;
+      }
+      if (debugRelic) console.log("有特殊黑板实现", isRelicBlackboard(buff));
+      // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
+      if (isRelicBlackboard(buff)) {
+        const blackboard = getRelicBlackboard(buff);
+        // buff是否可以生效
+        if (blackboard.isActive({ buff, relic, charData, charInput, enemyData, relics })) {
+          // 生效 应用到上下文
+          blackboard.apply({ buff, relic, context: result, relics });
+        } else {
+          // 不生效 无效藏品
+          result.invalidRelics.push(relic);
+        }
+        return;
+      }
+      // 藏品可能对双方生效，但单个Buff只对一方生效
+      if (isBuffForEnemy(buff)) {
+        if (debugRelic) console.log("使用敌人通用黑板");
+        // 对敌人生效
+        if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic, stageData })) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+        commonEnemyRelicBlackboard.apply({ relic, context: result, buff, relics });
+      } else {
+        if (debugRelic) console.log("使用干员通用黑板");
+        // 判断是否适用干员通用黑板
+        if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, charInput, relic, relics })) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+        commonCharRelicBlackboard.apply({ relic, context: result, buff, relics });
+      }
+    });
+    if (debugRelic) console.groupEnd();
+  }
+
+  static printRelic(relicName: string, context: BuffContext) {
+    const buffStrs: string[] = [];
+    const parse = (buffKey: string, key: string, value: number) =>
+      `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+    Object.entries(context).forEach(([buffKey, buffValue]) => {
+      if (Array.isArray(buffValue)) return;
+      Object.entries(buffValue).forEach(([key, value]) => {
+        const node = value as ExpressionGroupNode;
+        for (const child of node.children) {
+          if (child.tooltip === relicName) {
+            // 此处计算的是child的计算结果，因此不含基数
+            const effectiveValue = child.calculate();
+            if (!effectiveValue) return;
+            buffStrs.push(parse(buffKey, key, effectiveValue));
+          }
+        }
+      });
+    });
+    return buffStrs;
+  }
+
   /**
    * 分析藏品加成
    * @param input 输入
@@ -305,45 +392,9 @@ export class CalculatorHelper {
         new NumericLiteralNode(charInput.attributeModifier.atkSpd, "攻击力变化百分比（局内鼓舞）"),
       );
     }
-    /** 筛选藏品 */
+    /** 筛选并应用藏品 */
     for (const relic of relics) {
-      // 遍历藏品buff
-      relic.buffs.forEach((buff) => {
-        // 藏品在黑名单中
-        if (!isRelicInBlacklist(relic.name)) {
-          result.invalidRelics.push(relic);
-          return;
-        }
-        // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
-        if (isRelicBlackboard(buff)) {
-          const blackboard = getRelicBlackboard(buff);
-          // buff是否可以生效
-          if (blackboard.isActive({ buff, relic, charData, charInput, enemyData, relics })) {
-            // 生效 应用到上下文
-            blackboard.apply({ buff, relic, context: result, relics });
-          } else {
-            // 不生效 无效藏品
-            result.invalidRelics.push(relic);
-          }
-          return;
-        }
-        // 藏品可能对双方生效，但单个Buff只对一方生效
-        if (isBuffForEnemy(buff)) {
-          // 对敌人生效
-          if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic, stageData })) {
-            result.invalidRelics.push(relic);
-            return;
-          }
-          commonEnemyRelicBlackboard.apply({ relic, context: result, buff, relics });
-        } else {
-          // 判断是否适用干员通用黑板
-          if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, relic, relics })) {
-            result.invalidRelics.push(relic);
-            return;
-          }
-          commonCharRelicBlackboard.apply({ relic, context: result, buff, relics });
-        }
-      });
+      this.applyRelic({ relic, relics, charData, charInput, enemyData, stageData }, result);
     }
 
     result.global_buff_stack.damage_scale_phy.addChild(result.in_game_buff_final_mul.enemy_damage_scale_phy);
@@ -468,7 +519,8 @@ export class CalculatorHelper {
         zone_8: 7,
       };
       const zoneValue = zoneLayerMap[zone]!;
-      if (enemyAttrMultiplier) {
+
+      if (enemyAttrMultiplier && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
         const pow = new Array(zoneValue).fill(
           new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, `每层+${enemyAttrMultiplier}%`),
         );
@@ -480,18 +532,18 @@ export class CalculatorHelper {
         );
       }
       /** N4 所有敌人的生命值+40%，便符的生命值+50% */
-      if (difficulty >= 4) {
+      if (difficulty >= 4 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new NumericLiteralNode(1.4, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
         );
-        if (enemyData && enemyData.id === "enemy_2101_dyspll") {
-          context.in_game_buff_final_mul.enemy_max_hp.addChild(
-            new NumericLiteralNode(1.5, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
-          );
-        }
+      }
+      if (difficulty >= 4 && enemyData && enemyData.id === "enemy_2101_dyspll") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.5, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
+        );
       }
       /** N5 所有敌人受到物理和法术伤害降低10％ */
-      if (difficulty >= 5) {
+      if (difficulty >= 5 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
         context.relic_rune_mul.enemy_damage_resistance.addChild(
           new NumericLiteralNode(0.1, `请君入园·5 | 所有敌人受到物理和法术伤害降低10%`),
         );
@@ -506,7 +558,7 @@ export class CalculatorHelper {
         );
       }
       /** N11 所有敌人的攻击力+20% */
-      if (difficulty >= 11) {
+      if (difficulty >= 11 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
         context.in_game_buff_final_mul.enemy_atk.addChild(
           new NumericLiteralNode(1.2, `请君入园·11 | 所有敌人的攻击力+20%`),
         );
@@ -541,97 +593,20 @@ export class CalculatorHelper {
     context: BuffContext,
   ) {
     const { topicSpecItems, charData, charInput, enemyData, stageData } = input;
-    topicSpecItems
-      .filter((item) => item && item.userActive)
-      .forEach((item, _, array) => {
-        // console.groupCollapsed(item.name);
-        for (const buff of item.buffs) {
-          /** 查找特殊黑板实现 */
-          // console.log("isRelicBlackboard", isRelicBlackboard(buff));
-          if (isRelicBlackboard(buff)) {
-            const blackboard = getRelicBlackboard(buff);
-            // console.log(
-            //   "isActive",
-            //   blackboard.isActive({
-            //     buff,
-            //     relic: item as unknown as RelicDataExt & RelicWrapper,
-            //     charData: charData,
-            //     charInput: charInput,
-            //     enemyData,
-            //     relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-            //     stageData,
-            //   }),
-            // );
-            if (
-              blackboard.isActive({
-                buff,
-                relic: item as unknown as RelicDataExt & RelicWrapper,
-                charData: charData,
-                charInput: charInput,
-                enemyData,
-                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-                stageData,
-              })
-            ) {
-              // 生效 应用到上下文
-              blackboard.apply({
-                buff,
-                relic: item as unknown as RelicDataExt & RelicWrapper,
-                context,
-                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-              });
-            } else {
-              // 不生效 无效效果
-              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
-            }
-            continue;
-          }
-          // console.log("isBuffForEnemy", isBuffForEnemy(buff));
-          // 藏品可能对双方生效，但单个Buff只对一方生效
-          if (isBuffForEnemy(buff)) {
-            // 对敌人生效
-            if (
-              !enemyData ||
-              !commonEnemyRelicBlackboard.isActive({
-                buff,
-                enemyData,
-                relic: item as unknown as RelicDataExt & RelicWrapper,
-                stageData,
-              })
-            ) {
-              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
-              continue;
-            }
-            commonEnemyRelicBlackboard.apply({
-              relic: item as unknown as RelicDataExt & RelicWrapper,
-              context,
-              buff,
-              relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-            });
-          } else {
-            // 判断是否适用干员通用黑板
-            if (
-              !commonCharRelicBlackboard.isActive({
-                buff,
-                stageData,
-                charData,
-                relic: item as unknown as RelicDataExt & RelicWrapper,
-                relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-              })
-            ) {
-              context.invalidRelics.push(item as unknown as RelicDataExt & RelicWrapper);
-              continue;
-            }
-            commonCharRelicBlackboard.apply({
-              relic: item as unknown as RelicDataExt & RelicWrapper,
-              context,
-              buff,
-              relics: array as unknown as (RelicDataExt & RelicWrapper)[],
-            });
-          }
-        }
-        // console.groupEnd();
-      });
+    const activeItems = topicSpecItems.filter((item) => item && item.userActive);
+    for (const item of activeItems) {
+      this.applyRelic(
+        {
+          relic: item as unknown as RelicDataExt & RelicWrapper,
+          relics: activeItems as unknown as (RelicDataExt & RelicWrapper)[],
+          charData,
+          charInput,
+          enemyData,
+          stageData,
+        },
+        context,
+      );
+    }
     return context;
   }
 
@@ -641,27 +616,29 @@ export class CalculatorHelper {
     context: BuffContext,
   ) {
     const { enemySpec, enemyData, stageData, levelData } = input;
+    /** 计算关卡rune加成 */
     if (enemyData && stageData && levelData) {
       const stageDifficulty = stageData.difficulty;
-      const runes = levelData.runes || [];
-      const rune = runes.find(
-        (rune) =>
-          rune.key === "enemy_attribute_mul" &&
-          (rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL"),
-      )?.blackboard;
-      const atk_mul = rune?.find((bb) => bb.key === "atk")?.value || 1;
-      const def_mul = rune?.find((bb) => bb.key === "def")?.value || 1;
-      const hp_mul = rune?.find((bb) => bb.key === "max_hp")?.value || 1;
-      if (atk_mul !== 1) {
-        context.stage_rune_mul.enemy_atk.addChild(new NumericLiteralNode(atk_mul, "关卡加成"));
-      }
-      if (def_mul !== 1) {
-        context.stage_rune_mul.enemy_def.addChild(new NumericLiteralNode(def_mul, "关卡加成"));
-      }
-      if (hp_mul !== 1) {
-        context.stage_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(hp_mul, "关卡加成"));
-      }
+      const levelRunes = levelData.runes || [];
+      const runes = levelRunes.filter(
+        (rune) => rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL",
+      );
+      const runeWrap = {
+        name: "关卡加成",
+        layer: 1,
+        buffs: runes,
+      };
+      this.applyRelic(
+        {
+          relic: runeWrap as unknown as RelicDataExt & RelicWrapper,
+          relics: [runeWrap as unknown as RelicDataExt & RelicWrapper],
+          enemyData,
+          stageData,
+        },
+        context,
+      );
     }
+    /** 计算敌人特殊加成 */
     if (enemySpec) {
       enemySpec.value.forEach((spec) => {
         const { bbKey, value, label } = spec;

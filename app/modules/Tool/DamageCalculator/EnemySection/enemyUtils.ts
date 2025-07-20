@@ -179,19 +179,10 @@ export const zoneOfTopic = {
     },
     {
       id: "zone_8",
-      name: "特殊挑战",
+      name: "不期而遇",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
-        if (args[1] === "t") return true;
-        return false;
-      },
-    },
-    {
-      id: "zone_9",
-      name: "鸭爵与雇员",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        if (args[1] === "e" && args[2] === "t") return true;
+        if (args[1] === "t" || args[2] === "t") return true;
         return false;
       },
     },

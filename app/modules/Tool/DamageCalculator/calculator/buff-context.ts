@@ -65,6 +65,8 @@ export interface IBuffContext {
     attack_speed: ExpressionGroupNode;
     /** 每秒技力回复 */
     sp_recovery_per_sec: ExpressionGroupNode;
+    /** 阻挡数 */
+    block_cnt: ExpressionGroupNode;
     /** 敌人法术抗性 */
     enemy_magic_resistance: ExpressionGroupNode;
     /** 敌人攻击速度改变 */
@@ -160,6 +162,7 @@ export class BuffContext implements IBuffContext {
     magic_resistance: new ExpressionGroupNode("+", "局内直接加算"),
     attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
     sp_recovery_per_sec: new ExpressionGroupNode("+", "局内直接加算"),
+    block_cnt: new ExpressionGroupNode("+", "局内直接加算"),
     enemy_magic_resistance: new ExpressionGroupNode("+", "局内直接加算"),
     enemy_attack_speed: new ExpressionGroupNode("+", "局内直接加算"),
   };
@@ -244,6 +247,7 @@ export class BuffContext implements IBuffContext {
       magic_resistance: this.in_game_buff_add.magic_resistance.clone(),
       attack_speed: this.in_game_buff_add.attack_speed.clone(),
       sp_recovery_per_sec: this.in_game_buff_add.sp_recovery_per_sec.clone(),
+      block_cnt: this.in_game_buff_add.block_cnt.clone(),
       enemy_magic_resistance: this.in_game_buff_add.enemy_magic_resistance.clone(),
       enemy_attack_speed: this.in_game_buff_add.enemy_attack_speed.clone(),
     };

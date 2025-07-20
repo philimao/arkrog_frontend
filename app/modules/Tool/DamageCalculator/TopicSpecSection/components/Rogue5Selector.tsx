@@ -18,6 +18,7 @@ import { wrapRelicData } from "~/stores/damageCalculator/calcUtils/relicUtils";
 import type { ExpressionGroupNode } from "../../calculator/ast";
 import { styled } from "styled-components";
 import { allowedBlackboardKeyMap } from "../../utils";
+import { LazyImage } from "~/components/LazyImage";
 
 export default function Rogue5Selector() {
   const { items, relics } = useGameDataStore();
@@ -59,7 +60,6 @@ export default function Rogue5Selector() {
         copper.disabled = true;
       }
     });
-    console.log("anyCopperContext", anyRelicContext.current);
     return result;
   });
 
@@ -108,7 +108,9 @@ export default function Rogue5Selector() {
                 $disabled={wr.disabled}
               >
                 <StyledGridItemInner>
-                  <StyledGridItemIcon $url={url} />
+                  <StyledGridItemIcon>
+                    <LazyImage src={url} alt={wr.name} />
+                  </StyledGridItemIcon>
                   <div className="flex flex-col gap-0.5 justify-center">
                     <StyledGridItemTitle>
                       <span>{wr.name}</span>
@@ -179,7 +181,9 @@ export default function Rogue5Selector() {
                     $disabled={copperWrapper.disabled}
                   >
                     <StyledGridItemInner>
-                      <StyledGridItemIcon $url={url} />
+                      <StyledGridItemIcon>
+                        <LazyImage src={url} alt={copperWrapper.name} />
+                      </StyledGridItemIcon>
                       <div className="flex flex-col gap-0.5 justify-center">
                         <StyledGridItemTitle>
                           <span>{copperWrapper.name}</span>

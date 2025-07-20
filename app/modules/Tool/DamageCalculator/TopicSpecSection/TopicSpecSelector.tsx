@@ -89,12 +89,15 @@ export const StyledGridItemTitle = styled.div`
   }
 `;
 
-export const StyledGridItemIcon = styled.div<{ $url: string; $invert?: number }>`
+export const StyledGridItemIcon = styled.div<{ $invert?: number }>`
   width: 4rem;
-  background: url(${(props) => props.$url}) no-repeat center center;
-  background-size: contain;
   flex-shrink: 0;
   filter: invert(${(props) => props.$invert || 0});
+  & > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 `;
 
 export default function TopicSpecSelector() {

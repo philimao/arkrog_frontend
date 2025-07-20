@@ -59,7 +59,6 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       relicDataMap[topicId as RogueKey] = relicsData;
       relicWrapperMap[topicId as RogueKey] = relicWrappers;
       if (import.meta.env.DEV && ["rogue_4", "rogue_5"].includes(topicId)) {
-        console.log("printAdditionContext in createCalculaotrSlice");
         CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
       }
     }

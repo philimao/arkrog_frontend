@@ -31,18 +31,25 @@ export function getRelicWrappers(relicsData: Record<string, RelicDataExt>): Reco
   return relicWrappers;
 }
 
+/** 藏品是否可叠层 */
+export function relicHasLayer(relicDataExt: RelicDataExt): boolean {
+  return relicDataExt.buffs.some(
+    (buff) =>
+      buff.key.startsWith("layer_char") ||
+      buff.key.startsWith("char_squad") ||
+      buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!) || bb.key.includes("stack")),
+  );
+}
+
+const zeroInitLayerRelicNames = ["家常小炒"];
+
 /**
  * 计算藏品相关属性
  * @param relicDataExt
  * @param charData
  */
 export function wrapRelicData(relicDataExt: RelicDataExt): RelicWrapper {
-  const hasLayer = relicDataExt.buffs.some(
-    (buff) =>
-      buff.key.startsWith("layer_char") ||
-      buff.key.startsWith("char_squad") ||
-      buff.blackboard.some((bb) => layerValueStrs.includes(bb.valueStr!)),
-  );
+  const hasLayer = relicHasLayer(relicDataExt);
   return {
     id: relicDataExt.id,
     name: relicDataExt.name,
@@ -51,7 +58,7 @@ export function wrapRelicData(relicDataExt: RelicDataExt): RelicWrapper {
     userActive: true,
     isFavorite: false,
     hasLayer: hasLayer,
-    layer: 1,
+    layer: zeroInitLayerRelicNames.includes(relicDataExt.name) ? 0 : 1,
     pinyin: relicDataExt.pinyin.replace(/_/g, ""),
     initials: relicDataExt.pinyin
       .split("_")

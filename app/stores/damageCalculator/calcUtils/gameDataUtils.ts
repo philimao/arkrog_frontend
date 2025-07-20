@@ -13,18 +13,28 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
     Object.values(stageOfRogue)
       // 过滤区域关卡
       .filter((stage) => zone!.filter(stage))
-      // 排序 BOSS > 普通+紧急
+      // 排序 紧急 > 普通
       .sort((a, b) => {
-        const argsA = a.id.split("_");
-        const argsB = b.id.split("_");
-        const softMap: Record<string, number> = {
-          b: 1,
-          duel: 2,
-          e: 4,
-          n: 4,
-        };
-        if (softMap[argsA[1]] !== softMap[argsB[1]]) return softMap[argsA[1]] - softMap[argsB[1]];
-        return parseInt(argsA[3]) - parseInt(argsB[3]);
+        const isEliteA = a.isElite;
+        const isEliteB = b.isElite;
+        if (isEliteA !== isEliteB) return isEliteA ? -1 : 1;
+        return 0;
+      })
+      // 相同关卡排列在一起
+      .sort((a, b) => {
+        const argsA = a.id.match(/.*_(\d{1,2})/)?.[1] || "0";
+        const argsB = b.id.match(/.*_(\d{1,2})/)?.[1] || "0";
+        return parseInt(argsA) - parseInt(argsB);
+      })
+      // // Boss关在最前，狭路在最后
+      .sort((a, b) => {
+        const isBossA = a.isBoss;
+        const isBossB = b.isBoss;
+        if (isBossA !== isBossB) return isBossA ? -1 : 1;
+        const isDuelA = a.id.includes("duel");
+        const isDuelB = b.id.includes("duel");
+        if (isDuelA !== isDuelB) return isDuelA ? 1 : -1;
+        return 0;
       })
   );
 }

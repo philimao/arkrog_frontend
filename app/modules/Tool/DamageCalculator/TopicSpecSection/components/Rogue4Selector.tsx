@@ -11,6 +11,7 @@ import {
   type ITopicSpecConfig,
 } from "../TopicSpecSelector";
 import type { BlackboardData } from "~/types/gameData";
+import { LazyImage } from "~/components/LazyImage";
 
 export default function Rogue4Selector() {
   const { rogueInput, topicSpecItems, setTopicSpecItems } = useDamageCalculatorStore();
@@ -59,7 +60,9 @@ export default function Rogue4Selector() {
               onClick={onClick}
             >
               <StyledGridItemInner>
-                <StyledGridItemIcon $url={url} />
+                <StyledGridItemIcon>
+                  <LazyImage src={url} alt={fragment.name} />
+                </StyledGridItemIcon>
                 <div className="flex flex-col gap-0.5 justify-center">
                   <StyledGridItemTitle>
                     <span>{fragment.name}</span>
@@ -110,7 +113,9 @@ export default function Rogue4Selector() {
               onClick={onClick}
             >
               <StyledGridItemInner>
-                <StyledGridItemIcon $url={url} $invert={1} />
+                <StyledGridItemIcon $invert={1}>
+                  <LazyImage src={url} alt={disaster.name} />
+                </StyledGridItemIcon>
                 <div className="flex flex-col gap-0.5 justify-center">
                   <StyledGridItemTitle>
                     <span>{disaster.name}</span>

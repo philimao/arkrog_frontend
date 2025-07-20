@@ -1,16 +1,17 @@
 import { styled } from "styled-components";
 import { relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
-import React, { type FormEvent, useState } from "react";
+import React, { type FormEvent, useMemo, useState } from "react";
 import { LazyImage } from "~/components/LazyImage";
 import { assetsHost } from "~/utils/tools";
 import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
+import { CalculatorHelper } from "../calculator";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
-  max-height: calc(100vh - 23rem);
+  max-height: calc(100vh - 20.5rem);
   overflow-y: auto;
 `;
 
@@ -115,9 +116,14 @@ const StyledLayerWrapper = styled.div`
   }
 `;
 
+/** 在藏品下方显示对当前干员、关卡、敌人的生效情况，此时不要打开藏品生效过程的debugRelic */
+const debugRelic = false;
+
 function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
-  const { rogueInput, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
+  const { charData, charInput, enemyData, stageData, rogueInput, setRelicLayer, toggleRelicSelection } =
+    useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
+  const relicMap = useDamageCalculatorStore((state) => state.relicDataMap[rogueKey]);
   const selectedIds = useDamageCalculatorStore((state) => state.selectedIdsMap[rogueKey]);
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
@@ -127,6 +133,25 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
   }
 
   const selected = selectedIds.includes(relicWrapper.id);
+
+  const buffStrs = useMemo(() => {
+    if (!debugRelic) return [];
+    const context = CalculatorHelper.createAdditionContext();
+    const relicData = relicMap[relicWrapper.id];
+    const relic = { ...relicData, ...relicWrapper };
+    CalculatorHelper.applyRelic(
+      {
+        relic,
+        relics: [relic],
+        charData,
+        charInput,
+        enemyData,
+        stageData,
+      },
+      context,
+    );
+    return CalculatorHelper.printRelic(relic.name, context);
+  }, [charData, charInput, enemyData, relicMap, relicWrapper, stageData]);
 
   return (
     <StyledRelicBlock
@@ -156,6 +181,11 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
       <div>
         <div className="font-bold mb-1">{relicWrapper.name}</div>
         <div className="text-xs font-light">{relicWrapper.usage}</div>
+        {buffStrs.length > 0 && (
+          <div className="text-tiny mt-2 pt-2 whitespace-pre-wrap" style={{ borderTop: "1px solid var(--ak-blue)" }}>
+            {buffStrs.join("\n")}
+          </div>
+        )}
       </div>
     </StyledRelicBlock>
   );

@@ -23,6 +23,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   "rogue_4_maxhp_up[lordoffiends_suit][bonus].max_hp": "魔王套生命上限", // 魔王的祭器
   def: "防御力",
   max_hp: "生命上限",
+  block_cnt: "阻挡数",
   damage_scale: "易伤",
   "damage_scale[phy]": "物理易伤",
   "damage_scale[mag]": "法术易伤",
@@ -131,6 +132,8 @@ export const layerValueStrs = [
   "rogue_3_relic_book_10", // 久居
   "rogue_4_special_hand[time]", // 久居之手
   "rogue_5_character_in_candle_holder_common_buff[stack]", // 伺烛客编队
+  "rogue_5_character_atk_up[extend_by_candle]", // 岁厉 攻击提升时间层数
+  "rogue_5_character_in_candle_holder_buff[battle_god]", // 契心聆铃
 ];
 
 /**
@@ -197,8 +200,14 @@ export const disallowedRelicNames = [
   "Scout的狙击镜",
   "奴隶猎捕器",
   "戈渎不语",
-  "厉-移山难",
-  "衡-移山繁",
+  "厉-移山难", // 投出时，所有敌方单位防御力+2000，但每次受到伤害时防御力-100（最多叠加25次），可在筹谋中升级<color=#2fac78>\\n入幻：投出时，每完成一场战斗，获得1点希望</color>
+  "衡-移山繁", // 投出时，所有敌方单位防御力+2000，但每次受到伤害时防御力-150（最多叠加25次）
+  "“岁厉”", // 【伺烛客】部署后10秒内攻击力+100%，每有干员通过作战成为【伺烛客】时，持续时间+5秒(最多提升15次)
+  "绿叶菜罐头",
+  "叙拉古人的愤怒",
+  "073号安全试剂",
+  "三尺万象", // 干员开启弹药类技能时，攻击速度+100，持续15秒
+  "传芳雕版", // 干员开启弹药类技能后，每次造成伤害时，攻击力+2%（最多叠加30层）
 ];
 
 /**
@@ -206,6 +215,7 @@ export const disallowedRelicNames = [
  */
 export const disallowedValueStrs = [
   "rogue_4_recover_hp[life_point]", // 国王的延伸回血
+  "atk_up_on_skill_start", // 罐头、叙拉古
 ];
 
 /**
@@ -216,46 +226,29 @@ export function isRelicInBlacklist(name: string) {
   return disallowedRelicNames.includes(name);
 }
 
-const trapEnemies = [
-  "trap_760_skztzs", // 年代之刺
-  "trap_761_skzthx", // 尊主的残影
-];
 /**
- * 藏品是否对敌人生效
- * 例外：十戒（大特的影子是trap）
+ * 检查Buff是否被禁用
+ * @param buff
+ */
+export function isBuffInBlacklist(buff: RelicBuff): boolean {
+  return buff.blackboard.some((bb) => disallowedValueStrs.includes(bb.valueStr!));
+}
+
+// 以下陷阱类敌人不计算加成
+export const allyTraps = [
+  "trap_251_buftrp", // 似乎是待部署区
+];
+
+/**
+ * 藏品是否对敌人生效（非特定敌人）
  **/
 export function isBuffForEnemy(buff: RelicBuff) {
   return (
     buff.key.startsWith("enemy") ||
     buff.blackboard.some((bb) => bb.valueStr?.startsWith("enemy_")) ||
-    buff.blackboard.some((bb) => bb.valueStr?.startsWith("trap_")) ||
-    buff.blackboard.some((bb) => trapEnemies.includes(bb.valueStr!))
+    // trap类吃不到buff.key为enemy开头的效果，例如关卡rune
+    buff.blackboard.some((bb) => bb.valueStr?.startsWith("trap_") && !allyTraps.includes(bb.valueStr!))
   );
-}
-
-/**
- * 检查Buff是否对该干员生效
- * 部分藏品与战斗无关，或位于黑名单中
- * @param buff
- * @param charData
- */
-export function isBuffActive(buff: RelicBuff, charData?: CharData): boolean {
-  if (buff.blackboard.some((bb) => disallowedValueStrs.includes(bb.valueStr!))) return false;
-  // 使用buff的外层key判断
-  if (["char", "layer_char"].some((prefix) => buff.key.startsWith(prefix))) {
-    // layer_char_xxx为可叠层藏品，如米诺斯，金杯
-    return true;
-  } else if (buff.key.startsWith("global")) {
-    // 使用首个bb的valueStr判断
-    const valueStr = buff.blackboard[0].valueStr;
-    return (
-      valueStr?.startsWith("enemy") ||
-      !charData ||
-      allowedBlackboardValueStrs.some((item) => (typeof item === "function" ? item(charData) : item) === valueStr)
-    );
-  }
-  // 均不匹配，不生效
-  else return false;
 }
 
 /** 检查黑板效果是否对敌人生效 */
@@ -287,11 +280,17 @@ export function isBlackboardActiveForChar(buff: RelicBuff, charData?: CharData):
   )
     return false;
 
-  if (!charData) {
-    return getActiveBlackboard(buff).length !== 0;
-  }
+  // if (!charData) {
+  //   return getActiveBlackboard(buff).length !== 0;
+  // }
+  if (!charData) return true;
 
   let bbSelector = buff.blackboard.find((bb) => bb.key === "selector.profession");
+
+  // 对于陷阱类，默认干员部署在陷阱地块上 TODO
+  if (bbSelector?.valueStr === "trap") {
+    return true;
+  }
 
   // 迷迭香逻辑
   if (charData.name === "迷迭香" && bbSelector) {

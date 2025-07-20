@@ -43,7 +43,7 @@ const StyledRelicSelectorInner = styled.div`
   padding: 5rem 8rem 1rem 8rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
 `;
 
 const StyledTagContainer = styled.div`
@@ -75,6 +75,7 @@ const filterFuncMap: Record<string, (relic: RelicWrapper) => boolean> = {
   攻速: (relic: RelicWrapper) => relic.usage.includes("攻击速度"),
   美愿: (relic: RelicWrapper) => ["国王", "诸王", "之手", "金酒之杯", "投币玩具"].some((kw) => relic.name.includes(kw)),
   伺烛: (relic: RelicWrapper) => relic.usage.includes("伺烛"),
+  化境: (relic: RelicWrapper) => relic.usage.includes("化境"),
 };
 
 const StyledSelectedRelics = styled.div`
@@ -158,6 +159,7 @@ export default function RelicSelector() {
     if (rogueKey === "rogue_4") {
       result[0].unshift("美愿");
     } else if (rogueKey === "rogue_5") {
+      result[0].unshift("化境");
       result[0].unshift("伺烛");
     }
     return result;

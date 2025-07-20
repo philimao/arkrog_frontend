@@ -23,14 +23,13 @@ export function applyAnyRelics(relics: (RelicDataExt & RelicWrapper)[]) {
       continue;
     }
     for (const buff of relic.buffs) {
-      const key = buff.blackboard.find((b) => b.key === "key")?.valueStr;
       // 该buff有专用的黑板实现
       if (isRelicBlackboard(buff)) {
         const relicBlackboard = getRelicBlackboard(buff);
         relicBlackboard.apply({ context, relics, buff, relic });
       } else if (isBuffForEnemy(buff)) {
         commonEnemyRelicBlackboard.apply({ context, relics: relics, buff: buff, relic: relic });
-      } else if (!key) {
+      } else {
         commonCharRelicBlackboard.apply({ context, relics: relics, buff: buff, relic: relic });
       }
     }

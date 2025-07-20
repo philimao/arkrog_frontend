@@ -80,14 +80,17 @@ export default function FooterPanel() {
   return (
     <StyledFooterPanel>
       {showRelics ? (
-        <StyledCollapseButton>
-          <StyledRelicCount onClick={toggleShowRelics}>
-            <StyledRelicCountInner>
-              <div className="text-lg">↓</div>
-              <div>收起</div>
-            </StyledRelicCountInner>
-          </StyledRelicCount>
-        </StyledCollapseButton>
+        <>
+          <StyledCollapseButton>
+            <StyledRelicCount onClick={toggleShowRelics}>
+              <StyledRelicCountInner>
+                <div className="text-lg">↓</div>
+                <div>收起</div>
+              </StyledRelicCountInner>
+            </StyledRelicCount>
+          </StyledCollapseButton>
+          <div className="flex-auto" />
+        </>
       ) : (
         <>
           <StyledRelicCount onClick={toggleShowRelics}>
@@ -120,18 +123,18 @@ export default function FooterPanel() {
                 ))}
             </div>
           </div>
-          <TopicSpecTrigger />
-          <BuffPanel show={showBuff} setShow={setShowBuff} />
-          <StyledClearRelicsButton
-            onClick={() => {
-              setSelectedIds([]);
-              setTopicSpecItems(() => []);
-            }}
-          >
-            清空
-          </StyledClearRelicsButton>
         </>
       )}
+      <TopicSpecTrigger />
+      <BuffPanel show={showBuff} setShow={setShowBuff} />
+      <StyledClearRelicsButton
+        onClick={() => {
+          setSelectedIds([]);
+          setTopicSpecItems(() => []);
+        }}
+      >
+        清空
+      </StyledClearRelicsButton>
     </StyledFooterPanel>
   );
 }

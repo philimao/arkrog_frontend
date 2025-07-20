@@ -5,6 +5,9 @@ export const createUISlice: SliceCreator<SlicedCalcUIState & SlicedCalcUIActions
   toggleShowRelics: () =>
     set(
       (state) => {
+        if (!state.showRelics && state.showTopicSpec) {
+          state.showTopicSpec = false;
+        }
         state.showRelics = !state.showRelics;
       },
       undefined,
@@ -14,6 +17,9 @@ export const createUISlice: SliceCreator<SlicedCalcUIState & SlicedCalcUIActions
   toggleShowTopicSpec: () =>
     set(
       (state) => {
+        if (!state.showTopicSpec && state.showRelics) {
+          state.showRelics = false;
+        }
         state.showTopicSpec = !state.showTopicSpec;
       },
       undefined,

@@ -73,6 +73,8 @@ const filterTags = [
 const filterFuncMap: Record<string, (relic: RelicWrapper) => boolean> = {
   结局: (relic: RelicWrapper) => relic.id.includes("final"),
   攻速: (relic: RelicWrapper) => relic.usage.includes("攻击速度"),
+  美愿: (relic: RelicWrapper) => ["国王", "诸王", "之手", "金酒之杯", "投币玩具"].some((kw) => relic.name.includes(kw)),
+  伺烛: (relic: RelicWrapper) => relic.usage.includes("伺烛"),
 };
 
 const StyledSelectedRelics = styled.div`
@@ -150,6 +152,16 @@ export default function RelicSelector() {
   const difficulty = rogueInput[rogueKey].difficulty;
   const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey]));
+
+  const filterTagsMemo: string[][] = useMemo(() => {
+    const result = JSON.parse(JSON.stringify(filterTags));
+    if (rogueKey === "rogue_4") {
+      result[0].unshift("美愿");
+    } else if (rogueKey === "rogue_5") {
+      result[0].unshift("伺烛");
+    }
+    return result;
+  }, [rogueKey]);
 
   /** Tag筛选 */
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -257,7 +269,7 @@ export default function RelicSelector() {
         {/*  </Button>*/}
         {/*</div>*/}
         <StyledTagContainer>
-          {filterTags.map((keys, i) => (
+          {filterTagsMemo.map((keys, i) => (
             <StyledTagRow key={i}>
               {keys.map((key) => (
                 <StyledTagButton

@@ -103,6 +103,7 @@ export interface SlicedCalcGameDataActions {
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   /** 设置肉鸽幕后加成 */
   setRogueTech: (tech: string) => void;
+  /** 设置肉鸽主题特殊效果列表 */
   setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
 }
 

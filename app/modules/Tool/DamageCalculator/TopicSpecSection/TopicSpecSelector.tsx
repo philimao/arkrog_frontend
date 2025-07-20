@@ -5,7 +5,7 @@ import Rogue5Selector from "./components/Rogue5Selector";
 import Rogue4Selector from "./components/Rogue4Selector";
 import type { BlackboardData, RelicBuff } from "~/types/gameData";
 
-/** 主题特殊效果，模拟藏品 */
+/** 主题特殊效果，模拟藏品relicWrapper结构 */
 export interface ITopicSpecItem {
   id: string;
   name: string;

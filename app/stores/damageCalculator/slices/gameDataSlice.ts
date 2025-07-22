@@ -3,7 +3,8 @@ import type { SliceCreator, SlicedCalcGameDataActions } from "../calcTypes";
 import { initialCalcGameDataState } from "../calcConstants";
 
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
-import type { RogueKey } from "~/types/gameData";
+import { RogueTopic, type RogueKey } from "~/types/gameData";
+import { calculatorStorage, type Rouge4State } from "../localStorage";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
@@ -23,30 +24,50 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogueInput",
     ),
-  setRogueKey: async (rogueKey) => {
+  setRogueKey: async (rogueTopic: RogueTopic) => {
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
-    rogueInput.topic = rogueKey;
+    rogueInput.topic = rogueTopic;
+    const localState = calculatorStorage.read();
+    const localRogueTopic = localState?.rougeTopic[rogueTopic];
+    const difficulty = localRogueTopic?.difficulty ?? rogueInput[rogueTopic].difficulty;
+    const zone = localRogueTopic?.zone ?? rogueInput[rogueTopic].zone;
+    const tech = localRogueTopic?.tech ?? rogueInput[rogueTopic].tech;
+
+    rogueInput[rogueTopic].zone = zone;
     const renderStages = getStageList(state.stages, rogueInput);
-    const stageId = renderStages[0].id;
+    const stageId = localRogueTopic?.stage ?? renderStages[0].id;
     const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: state.selectedIdsMap[rogueKey] || [],
+      selectedIds: localRogueTopic?.relics || [],
       stageId,
     }); // immer可以获得最新的state
     set(
       (state) => {
-        state.rogueInput.topic = rogueKey;
+        state.rogueInput.topic = rogueTopic;
+        state.rogueInput[rogueTopic].difficulty = difficulty;
+        state.rogueInput[rogueTopic].zone = zone;
+        state.rogueInput[rogueTopic].tech = tech;
         state.renderStages = renderStages;
         state.stageId = stageId;
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIdsMap[rogueKey] = selectedIds;
+        state.selectedIdsMap[rogueTopic] = selectedIds;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
+        // 萨卡兹肉鸽 设置思维负荷和灵感
+        if (rogueTopic === RogueTopic.ROGUE_4) {
+          state.rogueInput[rogueTopic].thoughtLoad = (localRogueTopic as Rouge4State).thoughtLoad;
+          state.rogueInput[rogueTopic].inspiration = (localRogueTopic as Rouge4State).inspiration;
+        }
+        // 界园肉鸽 设置岁时和通宝
+        if (rogueTopic === RogueTopic.ROGUE_5) {
+          // state.rogueInput[topic].era = (rogueState as Rouge5State).era;
+          // state.rogueInput[topic].treasure = (rogueState as Rouge5State).treasure;
+        }
       },
       undefined,
       "setRogueKey",
@@ -55,7 +76,9 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueDifficulty: (difficulty) => {
     return set(
       (state) => {
-        state.rogueInput[state.rogueInput.topic].difficulty = difficulty;
+        console.log("setRogueDifficulty", get().rogueInput.topic);
+        console.log("setRogueDifficulty", state.rogueInput.topic);
+        state.rogueInput[get().rogueInput.topic].difficulty = difficulty;
       },
       undefined,
       "setRogueDifficulty",

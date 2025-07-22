@@ -165,7 +165,7 @@ export const inGameRelicNames = [
   "几丁质刺刃",
 ];
 
-/** 金酒之本系列 */
+/** 金酒之杯系列 */
 export const gin_layer_sync = ["rogue_4_relic_legacy_146", "rogue_4_relic_legacy_174", "rogue_4_relic_legacy_175"];
 /** 论断系列 */
 export const assertions_layer_sync = [

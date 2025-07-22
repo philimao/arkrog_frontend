@@ -1,13 +1,17 @@
 import { useMemo, useEffect } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import type { CalculatorInput } from "~/types/gameData";
+import { RogueTopic, type CalculatorInput } from "~/types/gameData";
 import { calculator } from "./calculator";
 // import { printRelicsInfo } from "./debug/print-relics-info";
 import { CalculatorHelper } from "./helper";
 import { ExpressionUtil } from "./expression-util";
+import { calculatorStorage, createBaseState } from "~/stores/damageCalculator/localStorage";
+
+let localStateInited = false;
 
 export default function CalcCenter() {
   const {
+    stageId,
     charData,
     charInput,
     topicSpecItems,
@@ -18,6 +22,7 @@ export default function CalcCenter() {
     levelData,
     enemySpec,
     globalAnalysisResult,
+    setRogueKey,
     setRelicAnalysisResult,
     setCalcOutput,
     setGlobalAnalysisResult,
@@ -183,6 +188,54 @@ export default function CalcCenter() {
     // 计算结果
     setCalcOutput(calcResult);
   }, [charData, charInput, enemyData, enemyInput, globalAnalysisResult, rogueInput, selectedRelics, setCalcOutput]);
+
+  /** 保存状态到本地 */
+  useEffect(() => {
+    if (!localStateInited) return;
+    console.log("setRogueTopic", rogueInput);
+    const localState = calculatorStorage.read() || createBaseState();
+    localState.topic = rogueInput.topic as RogueTopic;
+    if (localState.topic === RogueTopic.ROGUE_4) {
+      localState.rougeTopic[RogueTopic.ROGUE_4] = {
+        tech: rogueInput[rogueKey].tech,
+        difficulty: rogueInput[rogueKey].difficulty,
+        zone: rogueInput[rogueKey].zone,
+        stage: stageId,
+        enemyName: enemyBase.id,
+        relics: selectedIds,
+        thoughtLoad: rogueInput[rogueKey].thoughtLoad,
+        inspiration: rogueInput[rogueKey].inspiration,
+        // era: rogueInput[rogueKey].era,
+        era: "1",
+      };
+    }
+    if (localState.topic === RogueTopic.ROGUE_5) {
+      localState.rougeTopic[RogueTopic.ROGUE_5] = {
+        tech: rogueInput[rogueKey].tech,
+        difficulty: rogueInput[rogueKey].difficulty,
+        zone: rogueInput[rogueKey].zone,
+        stage: stageId,
+        enemyName: enemyBase.id,
+        relics: selectedIds,
+        // era: rogueInput[rogueKey].era,
+        // treasure: rogueInput[rogueKey].treasure,
+        era: "1",
+        treasure: "1",
+      };
+    }
+    calculatorStorage.write(localState);
+  }, [charInput, enemyBase, rogueInput, stageId, rogueKey, selectedIds]);
+
+  /** 初始化从本地恢复状态 */
+  useEffect(() => {
+    if (localStateInited) return;
+    localStateInited = true;
+    const localState = calculatorStorage.read();
+    // 如果本地有保存的主题，则设置为当前主题
+    if (localState && localState.topic) {
+      setRogueKey(localState.topic);
+    }
+  }, []);
 
   return null;
 }

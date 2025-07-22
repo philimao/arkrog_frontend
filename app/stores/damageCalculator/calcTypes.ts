@@ -21,6 +21,7 @@ import type {
   UniEquipData,
   UniEquipPhaseData,
   BlackboardData,
+  RogueTopic,
 } from "~/types/gameData";
 import type { GameDataState } from "../gameDataStore";
 import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
@@ -92,13 +93,13 @@ export interface SlicedCalcGameDataState {
 export interface SlicedCalcGameDataActions {
   setRogueInput: (rogueInput: RogueInput) => void;
   /** 设置肉鸽主题 */
-  setRogueKey: (key: RogueKey) => void;
+  setRogueKey: (rogueTopic: RogueTopic) => Promise<void>;
   /** 设置肉鸽难度 */
   setRogueDifficulty: (difficulty: number) => void;
   /** 设置肉鸽区域 */
-  setRogueZone: (zone: string) => void;
+  setRogueZone: (zone: string) => Promise<void>;
   /** 设置肉鸽关卡 */
-  setRogueStageId: (stageId: string) => void;
+  setRogueStageId: (stageId: string) => Promise<void>;
   /** 设置肉鸽思维负荷 */
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   /** 设置肉鸽幕后加成 */

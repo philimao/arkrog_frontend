@@ -44,7 +44,7 @@ export async function handleUpdateStageId(state: {
   rogueInput: RogueInput;
   stages: Record<RogueKey, StageOfRogue>;
   levels: Record<string, LevelData>;
-  selectedIds: string[];
+  relics: string[];
   stageId: string;
 }) {
   const rogueKey = state.rogueInput.topic;
@@ -53,7 +53,7 @@ export async function handleUpdateStageId(state: {
   // 如果stageData存在，则判断是否需要加载levelData
   let levelData;
   const levels = { ...state.levels };
-  const selectedIds = [...state.selectedIds];
+  const relics = [...state.relics];
   if (stageData) {
     // 读取缓存
     if (state.levels[stageId]) levelData = state.levels[stageId];
@@ -70,8 +70,8 @@ export async function handleUpdateStageId(state: {
       "ro4_b_7", // 授法
     ];
     // 带船关卡自动添加阿纳萨
-    if (stageWithBoatIds.includes(stageId) && !state.selectedIds.includes("rogue_4_relic_final_6")) {
-      selectedIds.push("rogue_4_relic_final_6");
+    if (stageWithBoatIds.includes(stageId) && !state.relics.includes("rogue_4_relic_final_6")) {
+      relics.push("rogue_4_relic_final_6");
     }
     const stageWithRollingAncestorIds = [
       "ro4_b_4_b", // 思维矫正
@@ -80,8 +80,8 @@ export async function handleUpdateStageId(state: {
       "ro4_b_5_d", // 带船魂灵朝谒
     ];
     // 异格关卡自动添加滚动先祖
-    if (stageWithRollingAncestorIds.includes(stageId) && !state.selectedIds.includes("rogue_4_relic_explore_7")) {
-      selectedIds.push("rogue_4_relic_explore_7");
+    if (stageWithRollingAncestorIds.includes(stageId) && !state.relics.includes("rogue_4_relic_explore_7")) {
+      relics.push("rogue_4_relic_explore_7");
     }
   } else {
     levelData = undefined;
@@ -90,7 +90,7 @@ export async function handleUpdateStageId(state: {
     stageData,
     levelData,
     levels,
-    selectedIds,
+    relics,
     enemyData: undefined,
     enemyBase: dummy,
   };

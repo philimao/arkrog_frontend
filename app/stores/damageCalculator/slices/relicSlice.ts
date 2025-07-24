@@ -81,7 +81,7 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        state.selectedIdsMap[rogueKey] = ids;
+        state.rogueInput[rogueKey].relics = ids;
       },
       undefined,
       "setSelectedIds",
@@ -90,7 +90,7 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.selectedIdsMap[rogueKey];
+        const selectedIds = state.rogueInput[rogueKey].relics;
         if (!selectedIds.includes(id)) {
           selectedIds.push(id);
         }
@@ -102,7 +102,7 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.selectedIdsMap[rogueKey];
+        const selectedIds = state.rogueInput[rogueKey].relics;
         if (selectedIds.includes(id)) {
           const i = selectedIds.indexOf(id);
           selectedIds.splice(i, 1);
@@ -115,7 +115,7 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.selectedIdsMap[rogueKey];
+        const selectedIds = state.rogueInput[rogueKey].relics;
         if (selectedIds.includes(id)) {
           const i = selectedIds.indexOf(id);
           selectedIds.splice(i, 1);

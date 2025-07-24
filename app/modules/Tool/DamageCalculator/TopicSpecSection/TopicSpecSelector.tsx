@@ -16,6 +16,9 @@ export interface ITopicSpecItem {
   url: string;
   invert: number;
   rows: number;
+  disabled?: boolean;
+  usage?: string;
+  hasLayer?: boolean;
 }
 
 export interface ITopicSpecConfig {

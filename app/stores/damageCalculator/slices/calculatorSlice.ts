@@ -22,8 +22,6 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     const charList = Object.values(character_table).filter((charData) => {
       return !["TOKEN", "TRAP"].includes(charData.profession) && allowCharNames.includes(charData.name);
     });
-    /** 肉鸽主题 */
-    const rogueKey = rogueInput.topic;
     /** 初始化藏品数据 */
     const relicDataMap: Record<RogueKey, Record<string, RelicDataExt>> = {} as never;
     /** 初始化藏品状态 */
@@ -66,11 +64,11 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     const renderStages = getStageList(stages, rogueInput);
     /** 初始化关卡 */
     const stageId = renderStages[0].id;
-    const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
+    const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages,
       levels: {},
-      selectedIds: [],
+      relics: [],
       stageId,
     });
     set(
@@ -91,7 +89,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIdsMap = { [rogueKey]: selectedIds } as never;
+        state.rogueInput[rogueInput.topic].relics = relics;
         // 初始化敌人
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;

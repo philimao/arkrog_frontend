@@ -71,13 +71,21 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
       difficulty: 18,
       thoughtLoad: "NORMAL",
       tech: "1.3",
+      relics: [] as string[],
+      wraths: [] as string[],
+      coppers: [] as string[],
     },
     rogue_5: {
       zone: "zone_5",
       difficulty: 15,
       tech: "1",
+      relics: [] as string[],
+      wraths: [] as string[],
+      coppers: [] as string[],
     },
   } as RogueInput,
+  rogue5_wrath_spec_items: [],
+  rogue5_copper_spec_items: [],
   topicSpecItems: [],
   skill_table: {},
   uniequip_table: {},
@@ -122,7 +130,6 @@ export const initialCalcUIState: SlicedCalcUIState = {
 export const initialRelicState: SlicedCalcRelicState = {
   relicDataMap: {} as Record<RogueKey, Record<string, RelicDataExt>>,
   relicWrapperMap: {} as Record<RogueKey, Record<string, RelicWrapper>>,
-  selectedIdsMap: {} as Record<RogueKey, string[]>,
 };
 
 export const initialState: DCalculatorState = {

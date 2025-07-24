@@ -6,7 +6,7 @@ import { calculator } from "./calculator";
 import { CalculatorHelper } from "./helper";
 import { ExpressionUtil } from "./expression-util";
 import { calculatorStorage, createBaseState } from "~/stores/damageCalculator/localStorage";
-
+import { useShallow } from "zustand/react/shallow";
 let localStateInited = false;
 
 export default function CalcCenter() {
@@ -14,7 +14,8 @@ export default function CalcCenter() {
     stageId,
     charData,
     charInput,
-    topicSpecItems,
+    rogue5_wrath_spec_items,
+    rogue5_copper_spec_items,
     stageData,
     rogueInput,
     enemyBase,
@@ -28,10 +29,9 @@ export default function CalcCenter() {
     setGlobalAnalysisResult,
     setEnemyExpression,
   } = useDamageCalculatorStore();
-  const rogueKey = rogueInput.topic;
-  const selectedIds = useDamageCalculatorStore((state) => state.selectedIdsMap[rogueKey]);
-  const relicWrappers = useDamageCalculatorStore((state) => state.relicWrapperMap[rogueKey]);
-  const relicData = useDamageCalculatorStore((state) => state.relicDataMap[rogueKey]);
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
+  const relicWrappers = useDamageCalculatorStore((state) => state.relicWrapperMap[state.rogueInput.topic]);
+  const relicData = useDamageCalculatorStore((state) => state.relicDataMap[state.rogueInput.topic]);
 
   /** 选择的藏品 */
   const selectedRelics = useMemo(() => {
@@ -43,6 +43,16 @@ export default function CalcCenter() {
         ...relicWrapper,
       }));
   }, [relicData, relicWrappers, selectedIds]);
+
+  /** 主题加成列表 */
+  const topicSpecItems = useMemo(() => {
+    if (rogueInput.topic === RogueTopic.ROGUE_5) {
+      const wraths = rogueInput.rogue_5.wraths.map((id) => rogue5_wrath_spec_items.find((item) => item.id === id)!);
+      const coppers = rogueInput.rogue_5.coppers.map((id) => rogue5_copper_spec_items.find((item) => item.id === id)!);
+      return [...wraths, ...coppers].filter((item) => item.userActive);
+    }
+    return [];
+  }, [rogue5_copper_spec_items, rogue5_wrath_spec_items, rogueInput]);
 
   /** 计算全局Buff上下文 */
   useEffect(() => {
@@ -195,36 +205,35 @@ export default function CalcCenter() {
     console.log("setRogueTopic", rogueInput);
     const localState = calculatorStorage.read() || createBaseState();
     localState.topic = rogueInput.topic as RogueTopic;
+    // 保存萨卡兹肉鸽主题状态
     if (localState.topic === RogueTopic.ROGUE_4) {
       localState.rougeTopic[RogueTopic.ROGUE_4] = {
-        tech: rogueInput[rogueKey].tech,
-        difficulty: rogueInput[rogueKey].difficulty,
-        zone: rogueInput[rogueKey].zone,
+        tech: rogueInput[localState.topic].tech,
+        difficulty: rogueInput[localState.topic].difficulty,
+        zone: rogueInput[localState.topic].zone,
         stage: stageId,
         enemyName: enemyBase.id,
         relics: selectedIds,
-        thoughtLoad: rogueInput[rogueKey].thoughtLoad,
-        inspiration: rogueInput[rogueKey].inspiration,
-        // era: rogueInput[rogueKey].era,
-        era: "1",
+        thoughtLoad: rogueInput[localState.topic].thoughtLoad,
+        inspiration: rogueInput[localState.topic].inspiration,
+        disaster: "1",
       };
     }
+    // 保存界园肉鸽主题状态
     if (localState.topic === RogueTopic.ROGUE_5) {
       localState.rougeTopic[RogueTopic.ROGUE_5] = {
-        tech: rogueInput[rogueKey].tech,
-        difficulty: rogueInput[rogueKey].difficulty,
-        zone: rogueInput[rogueKey].zone,
+        tech: rogueInput[localState.topic].tech,
+        difficulty: rogueInput[localState.topic].difficulty,
+        zone: rogueInput[localState.topic].zone,
         stage: stageId,
         enemyName: enemyBase.id,
         relics: selectedIds,
-        // era: rogueInput[rogueKey].era,
-        // treasure: rogueInput[rogueKey].treasure,
-        era: "1",
-        treasure: "1",
+        wraths: rogueInput[localState.topic].wraths,
+        coppers: rogueInput[localState.topic].coppers,
       };
     }
     calculatorStorage.write(localState);
-  }, [charInput, enemyBase, rogueInput, stageId, rogueKey, selectedIds]);
+  }, [charInput, enemyBase, rogueInput, stageId, selectedIds]);
 
   /** 初始化从本地恢复状态 */
   useEffect(() => {

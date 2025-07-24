@@ -4,10 +4,26 @@ import { initialCalcGameDataState } from "../calcConstants";
 
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
 import { RogueTopic, type RogueKey } from "~/types/gameData";
-import { calculatorStorage, type Rouge4State } from "../localStorage";
+import { calculatorStorage, type Rouge4State, type Rouge5State } from "../localStorage";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
+  setRogue5WrathSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue5_wrath_spec_items = callback(state.rogue5_wrath_spec_items);
+      },
+      undefined,
+      "setRogue5WrathSpecItems",
+    ),
+  setRogue5CopperSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue5_copper_spec_items = callback(state.rogue5_copper_spec_items);
+      },
+      undefined,
+      "setRogue5CopperSpecItems",
+    ),
   setTopicSpecItems: (callback) =>
     set(
       (state) => {
@@ -37,11 +53,11 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     rogueInput[rogueTopic].zone = zone;
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = localRogueTopic?.stage ?? renderStages[0].id;
-    const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
+    const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: localRogueTopic?.relics || [],
+      relics: localRogueTopic?.relics || [],
       stageId,
     }); // immer可以获得最新的state
     set(
@@ -55,7 +71,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIdsMap[rogueTopic] = selectedIds;
+        state.rogueInput[rogueTopic].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
         // 萨卡兹肉鸽 设置思维负荷和灵感
@@ -65,8 +81,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         }
         // 界园肉鸽 设置岁时和通宝
         if (rogueTopic === RogueTopic.ROGUE_5) {
-          // state.rogueInput[topic].era = (rogueState as Rouge5State).era;
-          // state.rogueInput[topic].treasure = (rogueState as Rouge5State).treasure;
+          state.rogueInput[rogueTopic].wraths = (localRogueTopic as Rouge5State).wraths;
+          state.rogueInput[rogueTopic].coppers = (localRogueTopic as Rouge5State).coppers;
         }
       },
       undefined,
@@ -76,8 +92,6 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueDifficulty: (difficulty) => {
     return set(
       (state) => {
-        console.log("setRogueDifficulty", get().rogueInput.topic);
-        console.log("setRogueDifficulty", state.rogueInput.topic);
         state.rogueInput[get().rogueInput.topic].difficulty = difficulty;
       },
       undefined,
@@ -91,11 +105,11 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const rogueKey = rogueInput.topic as RogueKey;
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
-    const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
+    const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: state.selectedIdsMap[rogueKey],
+      relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
     set(
@@ -106,7 +120,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIdsMap[state.rogueInput.topic] = selectedIds;
+        state.rogueInput[rogueKey].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
       },
@@ -117,11 +131,11 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueStageId: async (stageId) => {
     const state = get();
     const rogueKey = state.rogueInput.topic as RogueKey;
-    const { stageData, levelData, levels, selectedIds, enemyData, enemyBase } = await handleUpdateStageId({
+    const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput: state.rogueInput,
       stages: state.stages,
       levels: state.levels,
-      selectedIds: state.selectedIdsMap[rogueKey],
+      relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
     set(
@@ -130,7 +144,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.selectedIdsMap[rogueKey] = selectedIds;
+        state.rogueInput[rogueKey].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
       },
@@ -141,10 +155,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) =>
     set(
       (state) => {
-        const rogueKey = state.rogueInput.topic;
-        if (rogueKey === "rogue_4") {
-          state.rogueInput[rogueKey].thoughtLoad = thoughtLoad;
-        }
+        state.rogueInput[RogueTopic.ROGUE_4].thoughtLoad = thoughtLoad;
       },
       undefined,
       "setRogueThoughtLoad",
@@ -157,5 +168,35 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       },
       undefined,
       "setRogueTech",
+    ),
+  setRogue5Wraths: (wraths) =>
+    set(
+      (state) => {
+        if (Array.isArray(wraths)) {
+          state.rogueInput[RogueTopic.ROGUE_5].wraths = wraths;
+        } else {
+          const updated = [...state.rogueInput[RogueTopic.ROGUE_5].wraths];
+          if (updated.includes(wraths)) updated.splice(updated.indexOf(wraths), 1);
+          else updated.unshift(wraths);
+          state.rogueInput[RogueTopic.ROGUE_5].wraths = updated;
+        }
+      },
+      undefined,
+      "setRogueWraths",
+    ),
+  setRogue5Coppers: (coppers) =>
+    set(
+      (state) => {
+        if (Array.isArray(coppers)) {
+          state.rogueInput[RogueTopic.ROGUE_5].coppers = coppers;
+        } else {
+          const updated = [...state.rogueInput[RogueTopic.ROGUE_5].coppers];
+          if (updated.includes(coppers)) updated.splice(updated.indexOf(coppers), 1);
+          else updated.unshift(coppers);
+          state.rogueInput[RogueTopic.ROGUE_5].coppers = updated;
+        }
+      },
+      undefined,
+      "setRogueCoppers",
     ),
 });

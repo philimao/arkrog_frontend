@@ -8,6 +8,7 @@ import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import type { RelicWrapper } from "~/types/gameData";
 import { CalculatorHelper } from "../calculator";
+import { useShallow } from "zustand/react/shallow";
 
 const StyledRelicsContainer = styled.div`
   margin-top: 1rem;
@@ -120,11 +121,9 @@ const StyledLayerWrapper = styled.div`
 const debugRelic = false;
 
 function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
-  const { charData, charInput, enemyData, stageData, rogueInput, setRelicLayer, toggleRelicSelection } =
-    useDamageCalculatorStore();
-  const rogueKey = rogueInput.topic;
-  const relicMap = useDamageCalculatorStore((state) => state.relicDataMap[rogueKey]);
-  const selectedIds = useDamageCalculatorStore((state) => state.selectedIdsMap[rogueKey]);
+  const { charData, charInput, enemyData, stageData, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
+  const relicMap = useDamageCalculatorStore((state) => state.relicDataMap[state.rogueInput.topic]);
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
   const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
 
   function updateRelicLayer(evt: FormEvent) {

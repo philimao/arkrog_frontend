@@ -16,17 +16,17 @@ export interface RougeBaseState {
   relics: string[];
 }
 
-/** 肉鸽5主题状态 */
+/** 萨卡兹主题状态 */
 export interface Rouge4State extends RougeBaseState {
   /** 思维负荷状态 */
   thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
   /** 当前生效灵感 */
   inspiration?: string;
   /** 年代 */
-  era: string;
+  disaster: string;
 }
 
-/** 肉鸽5主题状态 */
+/** 界园主题状态 */
 export interface Rouge5State extends RougeBaseState {
   /** 岁时 */
   wraths: string[];

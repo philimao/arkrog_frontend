@@ -50,7 +50,7 @@ export type DCalculatorActions = SlicedCalcGameDataActions &
 /** 肉鸽输入数据 */
 export type RogueInput = {
   /** 肉鸽主题 */
-  topic: RogueKey;
+  topic: RogueTopic;
 } & Record<
   RogueKey,
   {
@@ -64,13 +64,24 @@ export type RogueInput = {
     thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
     /** 当前生效灵感 */
     inspiration?: string;
+    /** 岁时 */
+    wraths: string[];
+    /** 通宝 */
+    coppers: string[];
+    stage: string;
+    enemyName: string;
+    relics: string[];
   }
 >;
 
 export interface SlicedCalcGameDataState {
   /** 肉鸽难度 */
   rogueInput: RogueInput;
-  /** 肉鸽主题特殊效果列表 */
+  /** 界园主题 岁时加成列表 */
+  rogue5_wrath_spec_items: ITopicSpecItem[];
+  /** 界园主题 通宝加成列表 */
+  rogue5_copper_spec_items: ITopicSpecItem[];
+  /** 肉鸽主题特殊效果列表 @deprecated 解耦后不再使用 */
   topicSpecItems: ITopicSpecItem[];
   /** 技能解包数据 */
   skill_table: Record<string, SkillData>;
@@ -104,6 +115,14 @@ export interface SlicedCalcGameDataActions {
   setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   /** 设置肉鸽幕后加成 */
   setRogueTech: (tech: string) => void;
+  /** 设置肉鸽岁时 */
+  setRogue5Wraths: (wraths: string | string[]) => void;
+  /** 设置肉鸽通宝 */
+  setRogue5Coppers: (coppers: string | string[]) => void;
+  /** 设置界园主题 岁时加成列表 */
+  setRogue5WrathSpecItems: (callback: (wraths: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
+  /** 设置界园主题 通宝加成列表 */
+  setRogue5CopperSpecItems: (callback: (coppers: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
   /** 设置肉鸽主题特殊效果列表 */
   setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
 }
@@ -255,8 +274,6 @@ export interface SlicedCalcRelicState {
   relicDataMap: Record<RogueKey, Record<string, RelicDataExt>>;
   /** 预处理后的藏品列表 */
   relicWrapperMap: Record<RogueKey, Record<string, RelicWrapper>>;
-  /** 选择的藏品ID */
-  selectedIdsMap: Record<RogueKey, string[]>;
 }
 
 export interface SlicedCalcRelicActions {

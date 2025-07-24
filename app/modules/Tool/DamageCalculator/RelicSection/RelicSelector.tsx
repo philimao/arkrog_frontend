@@ -152,7 +152,7 @@ export default function RelicSelector() {
   const rogueKey = rogueInput.topic;
   const difficulty = rogueInput[rogueKey].difficulty;
   const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
-  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.selectedIdsMap[rogueKey]));
+  const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
 
   const filterTagsMemo: string[][] = useMemo(() => {
     const result = JSON.parse(JSON.stringify(filterTags));

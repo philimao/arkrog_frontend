@@ -86,17 +86,25 @@ export default memo(function TopicSpecTrigger() {
   const {
     rogueInput,
     toggleShowTopicSpec,
+    rogue4_inspiration_spec_items,
     rogue5_wrath_spec_items,
     rogue5_copper_spec_items,
+    rogue4_disaster_spec_items,
+    setRogue4InspirationSpecItems,
     setRogue5WrathSpecItems,
     setRogue5CopperSpecItems,
+    setRogue4DisasterSpecItems,
   } = useDamageCalculatorStore(
     useShallow((state) => ({
       rogueInput: state.rogueInput,
+      rogue4_inspiration_spec_items: state.rogue4_inspiration_spec_items,
       rogue5_wrath_spec_items: state.rogue5_wrath_spec_items,
       rogue5_copper_spec_items: state.rogue5_copper_spec_items,
+      rogue4_disaster_spec_items: state.rogue4_disaster_spec_items,
+      setRogue4InspirationSpecItems: state.setRogue4InspirationSpecItems,
       setRogue5WrathSpecItems: state.setRogue5WrathSpecItems,
       setRogue5CopperSpecItems: state.setRogue5CopperSpecItems,
+      setRogue4DisasterSpecItems: state.setRogue4DisasterSpecItems,
       toggleShowTopicSpec: state.toggleShowTopicSpec,
     })),
   );
@@ -126,17 +134,31 @@ export default memo(function TopicSpecTrigger() {
           </StyledTopicSpecTriggerInfo>
         </StyledSpecTrigger>
         <StyledTopicSpecNodeWrapper>
+          {/* 灵感 */}
+          {rogueInput.topic === RogueTopic.ROGUE_4 && (
+            <TopicSpecTriggerNode
+              items={rogue4_inspiration_spec_items.filter((item) => item.id === rogueInput.rogue_4.inspiration)}
+              onClick={(item) => toggleTopicSpecUserActive(item, setRogue4InspirationSpecItems)}
+            />
+          )}
+          {/* 年代 */}
+          {rogueInput.topic === RogueTopic.ROGUE_4 && (
+            <TopicSpecTriggerNode
+              items={rogue4_disaster_spec_items.filter((item) => item.id === rogueInput.rogue_4.disaster)}
+              onClick={(item) => toggleTopicSpecUserActive(item, setRogue4DisasterSpecItems)}
+            />
+          )}
           {/* 岁时 */}
           {rogueInput.topic === RogueTopic.ROGUE_5 && (
             <TopicSpecTriggerNode
-              items={rogueInput.rogue_5.wraths.map((id) => rogue5_wrath_spec_items.find((item) => item.id === id)!)}
+              items={rogue5_wrath_spec_items.filter((item) => rogueInput.rogue_5.wraths.includes(item.id))}
               onClick={(item) => toggleTopicSpecUserActive(item, setRogue5WrathSpecItems)}
             />
           )}
           {/* 通宝 */}
           {rogueInput.topic === RogueTopic.ROGUE_5 && (
             <TopicSpecTriggerNode
-              items={rogueInput.rogue_5.coppers.map((id) => rogue5_copper_spec_items.find((item) => item.id === id)!)}
+              items={rogue5_copper_spec_items.filter((item) => rogueInput.rogue_5.coppers.includes(item.id))}
               onClick={(item) => toggleTopicSpecUserActive(item, setRogue5CopperSpecItems)}
             />
           )}

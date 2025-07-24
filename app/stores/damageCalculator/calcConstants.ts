@@ -84,6 +84,8 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
       coppers: [] as string[],
     },
   } as RogueInput,
+  rogue4_disaster_spec_items: [],
+  rogue4_inspiration_spec_items: [],
   rogue5_wrath_spec_items: [],
   rogue5_copper_spec_items: [],
   topicSpecItems: [],

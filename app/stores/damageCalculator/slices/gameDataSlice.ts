@@ -8,6 +8,22 @@ import { calculatorStorage, type Rouge4State, type Rouge5State } from "../localS
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
+  setRogue4DisasterSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue4_disaster_spec_items = callback(state.rogue4_disaster_spec_items);
+      },
+      undefined,
+      "setRogue4DisasterSpecItems",
+    ),
+  setRogue4InspirationSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue4_inspiration_spec_items = callback(state.rogue4_inspiration_spec_items);
+      },
+      undefined,
+      "setRogue4InspirationSpecItems",
+    ),
   setRogue5WrathSpecItems: (callback) =>
     set(
       (state) => {
@@ -78,6 +94,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         if (rogueTopic === RogueTopic.ROGUE_4) {
           state.rogueInput[rogueTopic].thoughtLoad = (localRogueTopic as Rouge4State).thoughtLoad;
           state.rogueInput[rogueTopic].inspiration = (localRogueTopic as Rouge4State).inspiration;
+          state.rogueInput[rogueTopic].disaster = (localRogueTopic as Rouge4State).disaster;
         }
         // 界园肉鸽 设置岁时和通宝
         if (rogueTopic === RogueTopic.ROGUE_5) {
@@ -152,14 +169,6 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       "setRogueStageId",
     );
   },
-  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) =>
-    set(
-      (state) => {
-        state.rogueInput[RogueTopic.ROGUE_4].thoughtLoad = thoughtLoad;
-      },
-      undefined,
-      "setRogueThoughtLoad",
-    ),
   setRogueTech: (tech) =>
     set(
       (state) => {
@@ -169,16 +178,40 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogueTech",
     ),
+  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) =>
+    set(
+      (state) => {
+        state.rogueInput.rogue_4.thoughtLoad = thoughtLoad;
+      },
+      undefined,
+      "setRogueThoughtLoad",
+    ),
+  setRogue4Inspiration: (inspiration) =>
+    set(
+      (state) => {
+        state.rogueInput.rogue_4.inspiration = inspiration;
+      },
+      undefined,
+      "setRogue4Inspiration",
+    ),
+  setRogue4Disaster: (disaster) =>
+    set(
+      (state) => {
+        state.rogueInput.rogue_4.disaster = disaster;
+      },
+      undefined,
+      "setRogue4Disaster",
+    ),
   setRogue5Wraths: (wraths) =>
     set(
       (state) => {
         if (Array.isArray(wraths)) {
-          state.rogueInput[RogueTopic.ROGUE_5].wraths = wraths;
+          state.rogueInput.rogue_5.wraths = wraths;
         } else {
-          const updated = [...state.rogueInput[RogueTopic.ROGUE_5].wraths];
+          const updated = [...state.rogueInput.rogue_5.wraths];
           if (updated.includes(wraths)) updated.splice(updated.indexOf(wraths), 1);
           else updated.unshift(wraths);
-          state.rogueInput[RogueTopic.ROGUE_5].wraths = updated;
+          state.rogueInput.rogue_5.wraths = updated;
         }
       },
       undefined,
@@ -188,12 +221,12 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     set(
       (state) => {
         if (Array.isArray(coppers)) {
-          state.rogueInput[RogueTopic.ROGUE_5].coppers = coppers;
+          state.rogueInput.rogue_5.coppers = coppers;
         } else {
-          const updated = [...state.rogueInput[RogueTopic.ROGUE_5].coppers];
+          const updated = [...state.rogueInput.rogue_5.coppers];
           if (updated.includes(coppers)) updated.splice(updated.indexOf(coppers), 1);
           else updated.unshift(coppers);
-          state.rogueInput[RogueTopic.ROGUE_5].coppers = updated;
+          state.rogueInput.rogue_5.coppers = updated;
         }
       },
       undefined,

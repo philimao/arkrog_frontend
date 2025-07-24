@@ -23,7 +23,7 @@ export interface Rouge4State extends RougeBaseState {
   /** 当前生效灵感 */
   inspiration?: string;
   /** 年代 */
-  disaster: string;
+  disaster?: string;
 }
 
 /** 界园主题状态 */

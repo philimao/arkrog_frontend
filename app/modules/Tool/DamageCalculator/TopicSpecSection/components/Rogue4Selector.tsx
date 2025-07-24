@@ -12,9 +12,30 @@ import {
 } from "../TopicSpecSelector";
 import type { BlackboardData } from "~/types/gameData";
 import { LazyImage } from "~/components/LazyImage";
+import { useShallow } from "zustand/react/shallow";
+import { useEffect } from "react";
 
 export default function Rogue4Selector() {
-  const { rogueInput, topicSpecItems, setTopicSpecItems } = useDamageCalculatorStore();
+  const {
+    rogueInput,
+    rogue4_disaster_spec_items,
+    rogue4_inspiration_spec_items,
+    setRogue4Inspiration,
+    setRogue4Disaster,
+    setRogue4InspirationSpecItems,
+    setRogue4DisasterSpecItems,
+  } = useDamageCalculatorStore(
+    useShallow((state) => ({
+      rogueInput: state.rogueInput,
+      rogue4_disaster_spec_items: state.rogue4_disaster_spec_items,
+      rogue4_inspiration_spec_items: state.rogue4_inspiration_spec_items,
+      setRogue4Inspiration: state.setRogue4Inspiration,
+      setRogue4Disaster: state.setRogue4Disaster,
+      setRogue4DisasterSpecItems: state.setRogue4DisasterSpecItems,
+      setRogue4InspirationSpecItems: state.setRogue4InspirationSpecItems,
+    })),
+  );
+
   /** 难度 */
   const difficulty = rogueInput[rogueInput.topic].difficulty;
   /** 年代等级 */
@@ -22,52 +43,75 @@ export default function Rogue4Selector() {
   /** 年代等级字符串 */
   const levelStr = levels[disasterLevel];
 
+  /** 灵感板子 */
+  useEffect(() => {
+    setRogue4InspirationSpecItems(() => {
+      const specItems: ITopicSpecItem[] = Object.values(fragments).map((fragment) => {
+        const url = imageHost + getPath(`思绪_${fragment.name}.png`);
+        const description = fragment.functionDesc({} as never);
+        return {
+          ...fragment,
+          buffs: fragment.values[0],
+          description,
+          layer: 1,
+          url,
+          invert: 0,
+          userActive: true,
+          rows: 2,
+        };
+      });
+      return specItems;
+    });
+  }, [setRogue4InspirationSpecItems]);
+
+  /** 年代 */
+  useEffect(() => {
+    /** 难度 */
+    const difficulty = rogueInput.rogue_4.difficulty;
+    /** 年代等级 */
+    const disasterLevel = difficulty < 6 ? 0 : difficulty < 13 ? 1 : 2;
+    const specItems: ITopicSpecItem[] = Object.values(disasters).map((disaster) => {
+      const buffs = disaster.values?.[disasterLevel] ?? [];
+      const flatBuffs = buffs.map((buff) => buff.blackboard).flat();
+      const disasterIndex = Array.from(disaster.id).pop();
+      const url = imageHost + getPath(`集成战略_5_年代_${disasterIndex}.png`);
+      const description = disaster.functionDesc(flatBuffs);
+      return {
+        ...disaster,
+        description,
+        buffs,
+        layer: 1,
+        url,
+        invert: 1,
+        userActive: true,
+        rows: 2,
+      };
+    });
+    setRogue4DisasterSpecItems(() => specItems);
+  }, [setRogue4DisasterSpecItems, rogueInput.rogue_4.difficulty]);
+
   return (
     <>
       <StyledTitle>选择灵感</StyledTitle>
       <StyledGridContainer $cols={5}>
-        {Object.values(fragments).map((fragment) => {
-          const url = imageHost + getPath(`思绪_${fragment.name}.png`);
-          const description = fragment.functionDesc({} as never);
-          const onClick = () => {
-            setTopicSpecItems((nodes) => {
-              const updated = [...nodes];
-              let index;
-              if ((index = updated.findIndex((node) => node.id === fragment.id)) > -1) updated.splice(index, 1);
-              else {
-                const otherFragmentIndex = updated.findIndex((node) => node.id.includes("rogue_4_fragment_"));
-                if (otherFragmentIndex > -1) {
-                  updated.splice(otherFragmentIndex, 1);
-                }
-                updated.unshift({
-                  ...fragment,
-                  buffs: fragment.values[0],
-                  description,
-                  layer: 1,
-                  url,
-                  invert: 0,
-                  userActive: true,
-                  rows: 2,
-                } as ITopicSpecItem);
-              }
-              return updated;
-            });
-          };
+        {rogue4_inspiration_spec_items.map((fragment) => {
           return (
             <StyledGridItem
               key={fragment.id}
-              $selected={!!topicSpecItems.find((item) => item?.id === fragment.id)}
-              onClick={onClick}
+              $selected={rogueInput.rogue_4.inspiration === fragment.id}
+              onClick={() =>
+                setRogue4Inspiration(rogueInput.rogue_4.inspiration === fragment.id ? undefined : fragment.id)
+              }
             >
               <StyledGridItemInner>
                 <StyledGridItemIcon>
-                  <LazyImage src={url} alt={fragment.name} />
+                  <LazyImage src={fragment.url} alt={fragment.name} />
                 </StyledGridItemIcon>
                 <div className="flex flex-col gap-0.5 justify-center">
                   <StyledGridItemTitle>
                     <span>{fragment.name}</span>
                   </StyledGridItemTitle>
-                  <div className="text-tiny">{description}</div>
+                  <div className="text-tiny">{fragment.description}</div>
                 </div>
               </StyledGridItemInner>
             </StyledGridItem>
@@ -76,52 +120,23 @@ export default function Rogue4Selector() {
       </StyledGridContainer>
       <StyledTitle>选择年代</StyledTitle>
       <StyledGridContainer>
-        {Object.values(disasters).map((disaster) => {
-          const buffs = disaster.values?.[disasterLevel] ?? [];
-          const flatBuffs = buffs.map((buff) => buff.blackboard).flat();
-          const disasterIndex = Array.from(disaster.id).pop();
-          const url = imageHost + getPath(`集成战略_5_年代_${disasterIndex}.png`);
-          const description = disaster.functionDesc(flatBuffs);
-          const onClick = () => {
-            setTopicSpecItems((nodes) => {
-              const updated = [...nodes];
-              let index;
-              if ((index = updated.findIndex((node) => node.id === disaster.id)) > -1) updated.splice(index, 1);
-              else {
-                const otherDisasterIndex = updated.findIndex((node) => node.id.includes("rogue_4_disaster_"));
-                if (otherDisasterIndex > -1) {
-                  updated.splice(otherDisasterIndex, 1);
-                }
-                updated.push({
-                  ...disaster,
-                  description,
-                  buffs,
-                  layer: 1,
-                  url,
-                  invert: 1,
-                  userActive: true,
-                  rows: 2,
-                } as ITopicSpecItem);
-              }
-              return updated;
-            });
-          };
+        {rogue4_disaster_spec_items.map((disaster) => {
           return (
             <StyledGridItem
               key={disaster.id}
-              $selected={!!topicSpecItems.find((item) => item?.id === disaster.id)}
-              onClick={onClick}
+              $selected={rogueInput.rogue_4.disaster === disaster.id}
+              onClick={() => setRogue4Disaster(rogueInput.rogue_4.disaster === disaster.id ? undefined : disaster.id)}
             >
               <StyledGridItemInner>
                 <StyledGridItemIcon $invert={1}>
-                  <LazyImage src={url} alt={disaster.name} />
+                  <LazyImage src={disaster.url} alt={disaster.name} />
                 </StyledGridItemIcon>
                 <div className="flex flex-col gap-0.5 justify-center">
                   <StyledGridItemTitle>
                     <span>{disaster.name}</span>
                     <span className="text-small">{levelStr}</span>
                   </StyledGridItemTitle>
-                  <div className="text-tiny">{description}</div>
+                  <div className="text-tiny">{disaster.description}</div>
                 </div>
               </StyledGridItemInner>
             </StyledGridItem>

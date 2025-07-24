@@ -60,23 +60,29 @@ export type RogueInput = {
     tech: string;
     /** 肉鸽难度 */
     difficulty: number;
+    stage: string;
+    enemyName: string;
+    relics: string[];
     /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
     thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
     /** 当前生效灵感 */
     inspiration?: string;
+    /** 年代 */
+    disaster?: string;
     /** 岁时 */
     wraths: string[];
     /** 通宝 */
     coppers: string[];
-    stage: string;
-    enemyName: string;
-    relics: string[];
   }
 >;
 
 export interface SlicedCalcGameDataState {
   /** 肉鸽难度 */
   rogueInput: RogueInput;
+  /** 萨卡兹主题 年代加成 */
+  rogue4_disaster_spec_items: ITopicSpecItem[];
+  /** 萨卡兹主题 灵感加成 */
+  rogue4_inspiration_spec_items: ITopicSpecItem[];
   /** 界园主题 岁时加成列表 */
   rogue5_wrath_spec_items: ITopicSpecItem[];
   /** 界园主题 通宝加成列表 */
@@ -111,14 +117,22 @@ export interface SlicedCalcGameDataActions {
   setRogueZone: (zone: string) => Promise<void>;
   /** 设置肉鸽关卡 */
   setRogueStageId: (stageId: string) => Promise<void>;
-  /** 设置肉鸽思维负荷 */
-  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
   /** 设置肉鸽幕后加成 */
   setRogueTech: (tech: string) => void;
+  /** 设置肉鸽思维负荷 */
+  setRogueThoughtLoad: (thoughtLoad: RogueInput["rogue_4"]["thoughtLoad"]) => void;
+  /** 设置肉鸽灵感 */
+  setRogue4Inspiration: (inspiration?: string) => void;
+  /** 设置肉鸽年代 */
+  setRogue4Disaster: (disaster?: string) => void;
   /** 设置肉鸽岁时 */
   setRogue5Wraths: (wraths: string | string[]) => void;
   /** 设置肉鸽通宝 */
   setRogue5Coppers: (coppers: string | string[]) => void;
+  /** 设置萨卡兹主题 年代加成列表 */
+  setRogue4DisasterSpecItems: (callback: (disasters: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
+  /** 设置萨卡兹主题 灵感加成列表 */
+  setRogue4InspirationSpecItems: (callback: (inspirations: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
   /** 设置界园主题 岁时加成列表 */
   setRogue5WrathSpecItems: (callback: (wraths: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
   /** 设置界园主题 通宝加成列表 */

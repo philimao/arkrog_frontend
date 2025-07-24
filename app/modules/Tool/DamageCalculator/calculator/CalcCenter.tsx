@@ -14,6 +14,8 @@ export default function CalcCenter() {
     stageId,
     charData,
     charInput,
+    rogue4_inspiration_spec_items,
+    rogue4_disaster_spec_items,
     rogue5_wrath_spec_items,
     rogue5_copper_spec_items,
     stageData,
@@ -51,8 +53,19 @@ export default function CalcCenter() {
       const coppers = rogueInput.rogue_5.coppers.map((id) => rogue5_copper_spec_items.find((item) => item.id === id)!);
       return [...wraths, ...coppers].filter((item) => item.userActive);
     }
+    if (rogueInput.topic === RogueTopic.ROGUE_4) {
+      const inspiration = rogue4_inspiration_spec_items.find((item) => item.id === rogueInput.rogue_4.inspiration);
+      const disaster = rogue4_disaster_spec_items.find((item) => item.id === rogueInput.rogue_4.disaster);
+      return [inspiration, disaster].filter((item) => item?.userActive);
+    }
     return [];
-  }, [rogue5_copper_spec_items, rogue5_wrath_spec_items, rogueInput]);
+  }, [
+    rogue4_disaster_spec_items,
+    rogue4_inspiration_spec_items,
+    rogue5_copper_spec_items,
+    rogue5_wrath_spec_items,
+    rogueInput,
+  ]);
 
   /** 计算全局Buff上下文 */
   useEffect(() => {
@@ -216,7 +229,7 @@ export default function CalcCenter() {
         relics: selectedIds,
         thoughtLoad: rogueInput[localState.topic].thoughtLoad,
         inspiration: rogueInput[localState.topic].inspiration,
-        disaster: "1",
+        disaster: rogueInput[localState.topic].disaster,
       };
     }
     // 保存界园肉鸽主题状态

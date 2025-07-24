@@ -16,6 +16,7 @@ import {
   updateCharSpec,
 } from "../calcUtils/charUtils";
 import { getCharImpl } from "~/modules/Tool/DamageCalculator/calculator/impls";
+import { calculatorStorage } from "../localStorage";
 
 export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharActions> = (set, get) => ({
   ...intialCalcCharState,
@@ -44,14 +45,22 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
     if (!charData) throw new Error(`${charName} Not Found`);
 
     // 获取干员初始状态
-    const { phaseLevel, frameIndex, skillKey, skillLevel, potential } = getInitCharState(charData);
+    const localState = calculatorStorage.read();
+    const localCharState = localState?.charStates[charName];
+    const initCharState = getInitCharState(charData);
+    const phaseLevel = localCharState?.phaseLevel ?? initCharState.phaseLevel;
+    const frameIndex = localCharState?.frameIndex ?? initCharState.frameIndex;
+    const skillKey = localCharState?.skillKey ?? initCharState.skillKey;
+    const skillLevel = localCharState?.skillLevel ?? initCharState.skillLevel;
+    const potential = localCharState?.potential ?? initCharState.potential;
+
     const phases = getPhases(charData);
     const phase = getPhase(phases, phaseLevel);
     const skills = getSkills(charData, skill_table);
     const skillCandidate = getSkillCandidate(skills, skillKey);
     const skillItem = getSkillItem(skillCandidate, skillLevel);
     const uniEquips = getUniEquips(charData, phaseLevel, frameIndex, uniequip_table);
-    const uniEquipId = uniEquips.length ? uniEquips.slice().pop()!.uniEquipId : "";
+    const uniEquipId = localCharState?.uniEquipId ?? (uniEquips.length ? uniEquips.slice().pop()!.uniEquipId : "");
     const uniEquipLevel = 2;
     const uniEquipCandidate = getUniEquipCandidate(uniEquips, uniEquipId);
     const uniEquipName = uniEquipCandidate ? uniEquipCandidate.uniEquipName : "";
@@ -126,7 +135,7 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           /** 干员属性额外修改 */
           attributeModifier: charModifier,
           /** 是否为伺烛客 rogue_5限定 */
-          candleHolder: false,
+          candleHolder: localCharState?.candleHolder ?? false,
           /** 干员特殊配置 */
           charSpec,
         };

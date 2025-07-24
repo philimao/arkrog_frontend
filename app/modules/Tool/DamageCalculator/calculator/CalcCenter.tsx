@@ -7,9 +7,11 @@ import { CalculatorHelper } from "./helper";
 import { ExpressionUtil } from "./expression-util";
 import { calculatorStorage, createBaseState } from "~/stores/damageCalculator/localStorage";
 import { useShallow } from "zustand/react/shallow";
+import { useGameDataStore } from "~/stores/gameDataStore";
 let localStateInited = false;
 
 export default function CalcCenter() {
+  const { skill_table, uniequip_table } = useGameDataStore();
   const {
     stageId,
     charData,
@@ -30,6 +32,7 @@ export default function CalcCenter() {
     setCalcOutput,
     setGlobalAnalysisResult,
     setEnemyExpression,
+    setActiveCharName,
   } = useDamageCalculatorStore();
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
   const relicWrappers = useDamageCalculatorStore((state) => state.relicWrapperMap[state.rogueInput.topic]);
@@ -217,6 +220,23 @@ export default function CalcCenter() {
     if (!localStateInited) return;
     console.log("setRogueTopic", rogueInput);
     const localState = calculatorStorage.read() || createBaseState();
+    localState.charName = charInput?.name;
+
+    // 保存当前干员状态
+    if (charInput) {
+      localState.charStates[charInput.name] = {
+        name: charInput.name,
+        phaseLevel: charInput.phaseLevel,
+        frameIndex: charInput.frameIndex,
+        skillKey: charInput.skillKey,
+        skillLevel: charInput.skillLevel,
+        potential: charInput.potential,
+        uniEquipId: charInput.uniEquipId,
+        uniEquipLevel: charInput.uniEquipLevel,
+        candleHolder: charInput.candleHolder,
+      };
+    }
+
     localState.topic = rogueInput.topic as RogueTopic;
     // 保存萨卡兹肉鸽主题状态
     if (localState.topic === RogueTopic.ROGUE_4) {
@@ -251,12 +271,20 @@ export default function CalcCenter() {
   /** 初始化从本地恢复状态 */
   useEffect(() => {
     if (localStateInited) return;
-    localStateInited = true;
-    const localState = calculatorStorage.read();
-    // 如果本地有保存的主题，则设置为当前主题
-    if (localState && localState.topic) {
-      setRogueKey(localState.topic);
+    // 主题异步操作等待
+    async function init() {
+      const localState = calculatorStorage.read();
+      // 如果本地有保存的主题，则设置为当前主题
+      if (localState && localState.topic) {
+        await setRogueKey(localState.topic);
+      }
+      // 如果本地有保存的干员，则设置为当前干员
+      if (localState && localState.charName) {
+        setActiveCharName(localState.charName, skill_table, uniequip_table);
+      }
+      localStateInited = true;
     }
+    init().then();
   }, []);
 
   return null;

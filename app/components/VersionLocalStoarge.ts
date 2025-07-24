@@ -30,20 +30,22 @@ export class VersionLocalStorage<Data> {
   constructor(
     public readonly name: string,
     public readonly version: number,
-  ) {
-    // const storage = globalThis.localStorage.getItem(name);
-    // if (storage) {
-    //   const data = JSON.parse(storage);
-    //   if (data.version !== version) {
-    //     localStorage.removeItem(name);
-    //   }
-    // }
+  ) {}
+
+  init() {
+    const storage = VersionLocalStorage.get(this.name);
+    if (storage) {
+      if (storage.version !== this.version) {
+        VersionLocalStorage.remove(this.name);
+      }
+    }
   }
 
   /**
    * 读取本地存储
    */
   read(): Data | null {
+    this.init();
     const data = VersionLocalStorage.get<Data>(this.name);
     if (data) {
       return data.data;

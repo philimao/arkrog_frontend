@@ -90,14 +90,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.rogueInput[rogueTopic].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
-        // 萨卡兹肉鸽 设置思维负荷和灵感
-        if (rogueTopic === RogueTopic.ROGUE_4) {
+        // 萨卡兹肉鸽 设置思维负荷和灵感 (本地状态还原)
+        if (rogueTopic === RogueTopic.ROGUE_4 && localRogueTopic) {
           state.rogueInput[rogueTopic].thoughtLoad = (localRogueTopic as Rouge4State).thoughtLoad;
           state.rogueInput[rogueTopic].inspiration = (localRogueTopic as Rouge4State).inspiration;
           state.rogueInput[rogueTopic].disaster = (localRogueTopic as Rouge4State).disaster;
         }
-        // 界园肉鸽 设置岁时和通宝
-        if (rogueTopic === RogueTopic.ROGUE_5) {
+        // 界园肉鸽 设置岁时和通宝 (本地状态还原)
+        if (rogueTopic === RogueTopic.ROGUE_5 && localRogueTopic) {
           state.rogueInput[rogueTopic].wraths = (localRogueTopic as Rouge5State).wraths;
           state.rogueInput[rogueTopic].coppers = (localRogueTopic as Rouge5State).coppers;
         }

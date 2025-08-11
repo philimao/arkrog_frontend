@@ -53,7 +53,7 @@ export const StyledEnemyTag = styled.div`
   background: var(--mid-gray);
 `;
 
-export const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{ $levelType: string }>`
+export const StyledEnmeyLevelBadge = styled(StyledEnemyTag) <{ $levelType: string }>`
   background: ${({ $levelType }) => {
     if ($levelType === "BOSS") return "var(--ak-purple)";
     if ($levelType === "ELITE") return "var(--ak-red)";
@@ -172,6 +172,16 @@ export default function EnemyDisplay() {
       id: "enemy_000_dummy",
       name: { m_value: "木桩", m_defined: true },
     });
+    // 复制敌人数据(buff加成后)到enemyBase中, 当enemyBase敌人为木桩时, 敌人属性加成不会作用到木桩的enemyBase
+    const copyEnemyInput: EnemyInput = JSON.parse(JSON.stringify({
+      ...enemyBase,
+      id: "enemy_000_dummy",
+      name: "木桩",
+    }))
+    Object.keys(displayAttrKeys).map((key) => {
+      copyEnemyInput.attributes[key] = enemyExpression[key].calculate();
+    });
+    setEnemyBase(copyEnemyInput);
   }
   // TODO 免疫状态展示
   // const immunes = Object.entries(enemyBase.attributes).filter(([key, value]) => key.endsWith("Immune") && value);

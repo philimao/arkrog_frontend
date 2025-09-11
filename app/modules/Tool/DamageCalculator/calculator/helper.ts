@@ -520,7 +520,7 @@ export class CalculatorHelper {
     if (rogueInput.topic === "rogue_5") {
       const { difficulty, zone } = rogueInput.rogue_5;
       /** 肉鸽难度加成 */
-      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 15];
+      const enemyAttrMultipliers = [0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 15];
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       /** 肉鸽层数 */
       const zoneLayerMap: Record<string, number> = {

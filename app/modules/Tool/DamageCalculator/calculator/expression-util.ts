@@ -81,6 +81,9 @@ const common_in_game_expression = (input: { charInput: CharInput; context: BuffC
 
 /**
  * 公式工具
+ * 通过ExpressionGroupNode类构建结构化的表达式树，即用嵌套的树对象来存储算式表达式。
+ * ExpressionGroupNode可以用来计算结果值，并交给Display组件来进行渲染表达式
+ * 该文件也统一管理干员所有基础属性计算方式
  */
 export class ExpressionUtil {
   constructor(

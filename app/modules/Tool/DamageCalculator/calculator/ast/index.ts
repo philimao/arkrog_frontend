@@ -112,6 +112,9 @@ export class NumericLiteralNode extends BaseNode {
   }
 }
 
+/**
+ * 表达式组, 这个组将所有子项都在一个组里面一起计算, (child1 + child2 + child3)
+ */
 export class ExpressionGroupNode extends BaseNode {
   operator: "-" | "+" | "*" | "max" | "min" | "union";
   children: BaseNode[] = [];

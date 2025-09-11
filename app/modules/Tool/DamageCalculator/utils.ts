@@ -7,8 +7,8 @@ import type {
   DefinedData,
   EnemyData,
   RelicBuff,
-  RogueKey,
 } from "~/types/gameData";
+import { RogueTopic } from "~/types/gameData";
 
 /**
  * 注册的key与中文翻译
@@ -467,12 +467,29 @@ export function applyAttrModifiers(mod: AttributeModifier, result: CharAttribute
   }
 }
 
-export const outBuffMap: Partial<Record<RogueKey, string[]>> = {
-  rogue_1: ["1"],
-  rogue_2: ["1", "1.2"],
-  rogue_3: ["1", "1.23"],
-  rogue_4: ["1", "1.2", "1.3"],
-  rogue_5: ["1", "1.2"],
+/** 所有肉鸽主题的科技树加成列表 */
+export const ALL_TOPIC_TECHTREE_BUFF: Record<
+  RogueTopic,
+  Array<{ label: string; buff: { def: number; atk: number; max_hp: number } }>
+> = {
+  [RogueTopic.ROGUE_1]: [{ label: "1", buff: { def: 1, atk: 1, max_hp: 1 } }],
+  [RogueTopic.ROGUE_2]: [
+    { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+    { label: "1.2", buff: { def: 1.2, atk: 1.2, max_hp: 1.2 } },
+  ],
+  [RogueTopic.ROGUE_3]: [
+    { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+    { label: "1.23", buff: { def: 1.23, atk: 1.23, max_hp: 1.23 } },
+  ],
+  [RogueTopic.ROGUE_4]: [
+    { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+    { label: "1.2", buff: { def: 1.2, atk: 1.2, max_hp: 1.2 } },
+    { label: "1.3", buff: { def: 1.3, atk: 1.3, max_hp: 1.3 } },
+  ],
+  [RogueTopic.ROGUE_5]: [
+    { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+    { label: "1.2", buff: { def: 1.2, atk: 1.2, max_hp: 1.24 } },
+  ],
 };
 
 export const professions = [

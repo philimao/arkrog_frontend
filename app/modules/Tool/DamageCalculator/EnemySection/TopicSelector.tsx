@@ -1,8 +1,8 @@
-import type { RogueKey } from "~/types/gameData";
+import type { RogueTopic } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
-import { outBuffMap } from "~/modules/Tool/DamageCalculator/utils";
+import { ALL_TOPIC_TECHTREE_BUFF } from "~/modules/Tool/DamageCalculator/utils";
 import { styled } from "styled-components";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
 
@@ -42,7 +42,7 @@ export default function TopicSelector() {
           getKey={(item) => item.id}
           getValue={(item) => item.name}
           selectedKeys={[rogueKey]}
-          onChange={(evt) => setRogueKey(evt.target.value as RogueKey)}
+          onChange={(evt) => setRogueKey(evt.target.value as RogueTopic)}
         />
         <ToolSelect
           disallowEmptySelection={true}
@@ -56,7 +56,9 @@ export default function TopicSelector() {
         <ToolSelect
           disallowEmptySelection={true}
           label="科技树加成"
-          array={outBuffMap[rogueKey]!}
+          array={ALL_TOPIC_TECHTREE_BUFF[rogueKey]}
+          getValue={(item) => item.label}
+          getKey={(item) => item.label}
           selectedKeys={[rogueInput[rogueKey].tech]}
           onChange={(evt) => setRougeTech(evt.target.value)}
         />

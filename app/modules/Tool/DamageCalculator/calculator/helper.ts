@@ -14,7 +14,13 @@ import type {
   RelicDataExt,
 } from "~/types/gameData";
 import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
-import { isRelicInBlacklist, allowedBlackboardKeyMap, parseDefinedData, isBuffForEnemy } from "../utils";
+import {
+  isRelicInBlacklist,
+  allowedBlackboardKeyMap,
+  parseDefinedData,
+  isBuffForEnemy,
+  ALL_TOPIC_TECHTREE_BUFF,
+} from "../utils";
 import { getCharImpl, getRelicBlackboard, isRelicBlackboard } from "./impls";
 import { BuffContext } from "./buff-context";
 import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
@@ -406,20 +412,34 @@ export class CalculatorHelper {
     return result;
   }
 
-  /** 分析肉鸽难度加成 */
+  /**
+   * 分析肉鸽难度加成
+   * 这里会根据选择肉鸽主题和难度，来计算对应的属性加成。
+   * 还会涉及到科技树，层数，特定主题buff等
+   */
   static analyzeRogueDifficulty(
     input: { rogueInput: RogueInput; enemyData?: EnemyData },
     context: BuffContext,
   ): BuffContext {
     const { rogueInput, enemyData } = input;
-    if (rogueInput.topic === "rogue_4") {
-      /** 科技树加成 */
-      const tech = parseFloat(rogueInput.rogue_4.tech);
-      if (tech > 1) {
-        context.relic_rune_mul.atk.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.def.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
+    /** 科技树加成 */
+    const tech = parseFloat(rogueInput[rogueInput.topic].tech);
+    if (tech > 1) {
+      // 从常量中获取科技树对干员的属性加成
+      const techTree = ALL_TOPIC_TECHTREE_BUFF[rogueInput.topic].find((item) => item.label === tech.toString());
+      if (techTree) {
+        context.relic_rune_mul.atk.addChild(new NumericLiteralNode((techTree.buff.atk * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.def.addChild(new NumericLiteralNode((techTree.buff.def * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.max_hp.addChild(
+          new NumericLiteralNode((techTree.buff.max_hp * 100 - 100) / 100, "科技树"),
+        );
+      } else {
+        console.error("科技树加成不存在", tech);
       }
+    }
+
+    /** 萨卡兹肉鸽 */
+    if (rogueInput.topic === "rogue_4") {
       const { difficulty, thoughtLoad, zone } = rogueInput.rogue_4;
       if (difficulty === 18 && thoughtLoad === "CONFUSION") {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
@@ -495,14 +515,9 @@ export class CalculatorHelper {
           new NumericLiteralNode(2, `直面魂灵·15 | “放逐的黑棺”的最大生命值提升至200%`),
         );
       }
-    } else if (rogueInput.topic === "rogue_5") {
-      /** 科技树加成 */
-      const tech = parseFloat(rogueInput.rogue_5.tech);
-      if (tech > 1) {
-        context.relic_rune_mul.atk.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.def.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode((tech * 100 - 100) / 100, "科技树"));
-      }
+    }
+    /** 界园肉鸽 */
+    if (rogueInput.topic === "rogue_5") {
       const { difficulty, zone } = rogueInput.rogue_5;
       /** 肉鸽难度加成 */
       const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 13, 15];
@@ -529,6 +544,24 @@ export class CalculatorHelper {
         );
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
           new ExpressionGroupNode("*", `请君入园·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+      }
+      /** N0 所有敌人最大生命值-20%，攻击力-20% */
+      if (difficulty === 0) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.8, `请君入园 | 所有敌人最大生命值-20%，攻击力-20%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.8, `请君入园 | 所有敌人最大生命值-20%，攻击力-20%`),
+        );
+      }
+      /** N0 所有敌人最大生命值-10%，攻击力-10% */
+      if (difficulty === 1) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.9, `请君入园·1 | 所有敌人最大生命值-10%，攻击力-10%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.9, `请君入园·1 | 所有敌人最大生命值-10%，攻击力-10%`),
         );
       }
       /** N4 所有敌人的生命值+40%，便符的生命值+50% */

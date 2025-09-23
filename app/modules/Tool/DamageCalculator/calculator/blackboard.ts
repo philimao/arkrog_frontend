@@ -264,6 +264,24 @@ registerRelicBlackboard("rogue_4_damage_scale[tag]", {
   },
 });
 
+/** 见厉 */
+registerRelicBlackboard("damage_scale[filter_tag]", {
+  isActive(input) {
+    const { buff } = input;
+    const tag = getByKey(buff.blackboard, "tag")?.valueStr;
+    if (tag && input.enemyData) {
+      return !!input.enemyData.enemyTags.m_value?.includes(tag);
+    }
+    return true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+    context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+  },
+});
+
 /** 久居之手 */
 registerRelicBlackboard("rogue_4_special_hand[time]", {
   isActive(input) {

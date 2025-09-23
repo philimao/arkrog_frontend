@@ -39,6 +39,7 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   "damage_scale[medic]": "医疗易伤",
   "damage_scale[sniper]": "狙击易伤",
   "damage_scale[sarkaz]": "对萨卡兹易伤", // 文学
+  "damage_scale[filter_tag]": "对指定标签易伤", // 见厉
   magic_resistance: "法术抗性",
   damage_resistance: "物理法术减伤",
   "enemy_damage_resistance[inf]": "物理与法术伤害降低",

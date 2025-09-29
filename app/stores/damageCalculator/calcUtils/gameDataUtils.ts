@@ -1,5 +1,5 @@
 import { navOfZone, zoneOfTopic } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
-import type { LevelData, RogueKey, StageOfRogue } from "~/types/gameData";
+import type { LevelData, RogueKey, StageOfRogue, EnemyData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import { dummy } from "../calcConstants";
 import type { RogueInput } from "../calcTypes";
@@ -9,10 +9,16 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
   const stageOfRogue = stages[rogueInput.topic as RogueKey];
   const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
   const zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+  
+  // 获取所有关卡并合并重复的关卡
+  const allStages = Object.values(stageOfRogue)
+    .filter((stage) => zone!.filter(stage));
+  
+  // 合并重复关卡
+  const mergedStages = mergeDuplicateStages(allStages);
+  
   return (
-    Object.values(stageOfRogue)
-      // 过滤区域关卡
-      .filter((stage) => zone!.filter(stage))
+    mergedStages
       // 排序 紧急 > 普通
       .sort((a, b) => {
         const isEliteA = a.isElite;
@@ -39,6 +45,35 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
   );
 }
 
+/** 合并重复关卡 */
+function mergeDuplicateStages(stages: any[]) {
+  const stageMap = new Map();
+  
+  stages.forEach(stage => {
+    const key = stage.name; // 使用关卡名称作为合并键
+    
+    if (!stageMap.has(key)) {
+      // 如果是夕江对擂或南武群英会，需要特殊处理
+      if (key === "夕江对擂") {
+        // 夕江对擂：只保留ro5_duel_1
+        if (stage.id === "ro5_duel_1") {
+          stageMap.set(stage.id, stage);
+        }
+      } else if (key === "南武群英会") {
+        // 南武群英会：只保留ro5_duel_2_c
+        if (stage.id === "ro5_duel_2_c") {
+          stageMap.set(stage.id, stage); // 使用关卡名称作为键，合并为一个
+        }
+      } else {
+        // 其他关卡正常添加
+        stageMap.set(stage.id, stage);
+      }
+    }
+  });
+  
+  return Array.from(stageMap.values());
+}
+
 /** 设置关卡数据 */
 export async function handleUpdateStageId(state: {
   rogueInput: RogueInput;
@@ -60,6 +95,12 @@ export async function handleUpdateStageId(state: {
     else {
       // 加载并设置缓存
       levelData = await loadLevelData(stageData.levelId);
+      
+      // 为南武群英会添加神父变体
+      if (stageId === "ro5_duel_2_c") {
+        levelData = await addPriestVariants(levelData);
+      }
+      
       levels[stageId] = levelData;
     }
     const stageWithBoatIds = [
@@ -94,6 +135,51 @@ export async function handleUpdateStageId(state: {
     enemyData: undefined,
     enemyBase: dummy,
   };
+}
+
+/** 为南武群英会添加神父变体 */
+async function addPriestVariants(levelData: LevelData): Promise<LevelData> {
+  // 找到原有的神父敌人
+  const originalPriest = levelData.enemies.find(enemy => enemy.id === "enemy_1284_sgprst");
+  
+  if (originalPriest) {
+    // 从ro5_duel_2关卡加载level 1的神父数据
+    const level1Data = await loadLevelData("Obt/Roguelike/RO5/level_rogue5_d-2");
+    const level1Priest = level1Data.enemies.find(enemy => enemy.id === "enemy_1284_sgprst");
+    
+    if (level1Priest) {
+      // 创建神父变体（全远程版本，level 1）
+      const priestVariant: EnemyData = {
+        ...level1Priest,
+        id: "enemy_1284_sgprst_variant",
+        name: { ...level1Priest.name, m_value: "阿格尼尔神父" }
+      };
+      
+      // 修改原神父的显示名称（深拷贝避免引用问题）
+      const modifiedOriginalPriest: EnemyData = {
+        ...originalPriest,
+        name: { ...originalPriest.name, m_value: "阿格尼尔神父" },
+        attributes: {
+          ...originalPriest.attributes
+        }
+      };
+      
+      // 找到原神父在数组中的位置
+      const priestIndex = levelData.enemies.findIndex(enemy => enemy.id === "enemy_1284_sgprst");
+      
+      // 创建新的敌人数组，在原神父位置插入两个神父变体
+      const newEnemies = [...levelData.enemies];
+      newEnemies[priestIndex] = modifiedOriginalPriest;
+      newEnemies.splice(priestIndex + 1, 0, priestVariant);
+      
+      return {
+        ...levelData,
+        enemies: newEnemies
+      };
+    }
+  }
+  
+  return levelData;
 }
 
 /** 加载关卡详细解包数据 */

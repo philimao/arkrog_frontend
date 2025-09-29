@@ -185,6 +185,15 @@ export default function StageSelector() {
                   const parasitized = _enemyData.talentBlackboard?.find(
                     (bb) => bb.key === "parasitic" && bb.valueStr === "true",
                   );
+                  
+                  // 为神父变体添加特殊显示名称
+                  let displayName = _enemyData.name.m_value;
+                  if (_enemyData.id === "enemy_1284_sgprst") {
+                    displayName = "阿格尼尔神父（其他）";
+                  } else if (_enemyData.id === "enemy_1284_sgprst_variant") {
+                    displayName = "阿格尼尔神父（全远程）";
+                  }
+                  
                   return (
                     <StyledEnemy
                       key={_enemyData.id}
@@ -194,7 +203,7 @@ export default function StageSelector() {
                       }}
                     >
                       <EnemyAvatar name={_enemyData.name.m_value} />
-                      <StyledEnemyName $color={"inherit"}>{_enemyData.name.m_value}</StyledEnemyName>
+                      <StyledEnemyName $color={"inherit"}>{displayName}</StyledEnemyName>
                       {parasitized && <StyledEnemyBadge />}
                     </StyledEnemy>
                   );

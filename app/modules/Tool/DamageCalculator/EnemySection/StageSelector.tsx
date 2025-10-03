@@ -39,7 +39,7 @@ const StyledEnemiesLabel = styled.div`
     margin-right: auto;
     color: var(--light-gray);
   }
-  & > span:last-child {
+  & > span.parasitic-hint {
     color: var(--ak-red);
   }
 `;
@@ -173,7 +173,7 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
-              <span>红点代表死亡后会生成恐卡兹</span>
+              {rogueInput.topic === "rogue_4" && <span className="parasitic-hint">红点代表死亡后会生成恐卡兹</span>}
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies

@@ -37,7 +37,7 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
   const mitigation =
     1 -
     (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
-      (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate());
   const fire: boolean = input.relics.find((r) => r.name === "烟花之手") !== undefined; // 烟花手，脚本只需获取是否有该藏品
 
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
@@ -127,7 +127,7 @@ export default function KroosTheKeenGlint(input: CalculatorInput): CalculatorOut
       const attackTime = atkFrame / 30.0;
 
       // 计算击数
-      const normalHitCount = Math.ceil(spCost / attackTime);
+      const normalHitCount = spCost;
       const skillHitCount = Math.ceil(duration / attackTime);
 
       result.attack.dph = normalDph;

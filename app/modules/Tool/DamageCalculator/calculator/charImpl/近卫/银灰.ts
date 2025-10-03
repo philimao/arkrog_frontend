@@ -42,20 +42,25 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
 
   const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
+  const skillLevel = input.charInput.skillLevel; // 技能等级
   const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
   const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
-  const commonBuffIn = 0.27;
+  const commonBuffIn = 0;
   const commonDPH = ((atk + atkBuffInAdd) * (1 + atkBuffInMul + commonBuffIn) + atkBuffFinalAdd) * atkBuffFinalMul;
   const commonDamage = Math.max(commonDPH * 1.15 - enemyDef, commonDPH * 1.15 * 0.05) * damage_scale * damage_scale_phy;
   const commonDamageMag = commonDPH * 0.1 * damage_scale_mag * (1 - enemyMagRes / 100);
 
   const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
-  const commonAtkTimeBase = 1.33; // 普攻基础时间
-  const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻帧数
+  const baseAttackFrame = 39;// 基础普攻帧数
+  let commonAtkFrame = Math.round((baseAttackFrame * 100.0) / atkSpeed); // 普攻动画帧数
+  const commonCoolFrame = Math.ceil((baseAttackFrame * 100.0) / atkSpeed);
+  if (commonCoolFrame > commonAtkFrame) {
+    commonAtkFrame = commonCoolFrame + 1;
+  }
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻时间
 
   result.attack.dps.phy = (commonDamage * (1 - mitigation)) / commonAtkTime;
@@ -65,6 +70,7 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
 
   switch (skillKey) {
     case "skchr_svrash_1": {
+
       break;
     }
     case "skchr_svrash_2": {

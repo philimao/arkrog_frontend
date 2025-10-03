@@ -16,3 +16,4 @@ Dockerfile
 scripts/*
 wasm/*
 .history
+yarn.lock

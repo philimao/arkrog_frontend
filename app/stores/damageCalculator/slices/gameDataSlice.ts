@@ -221,6 +221,12 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
           return "layer_1"; // 默认第一层
         }
         
+        // 指点迷津区域的特殊处理
+        if (zone === "zone_11") {
+          if (stageId === "ro5_dv_5") return "layer_5"; // 分明 → 第五层
+          return "layer_5"; // 默认第五层
+        }
+        
         return jiayuanZoneToLayerMap[zone] || "layer_1";
       }
     };
@@ -322,6 +328,18 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         if (stageId === "ro5_t_9_b") return "layer_4"; // 硅基伥的宴席 → 第四层
         if (stageId === "ro5_t_9_c") return "layer_4"; // 彻底失控 → 第四层
         if (stageId === "ro5_t_10") return "layer_3"; // 为崖作伥 → 第三层
+        // 界园主题指点迷津关卡特定层数设置
+        if (stageId === "ro5_dv_5") return "layer_5"; // 分明 → 第五层
+        if (stageId === "ro5_fs_1") return "layer_5"; // 谤天 → 第五层
+        if (stageId === "ro5_fs_1_b") return "layer_5"; // 谤天(紧急) → 第五层
+        if (stageId === "ro5_fs_2") return "layer_5"; // 迎雷 → 第五层
+        if (stageId === "ro5_fs_2_b") return "layer_5"; // 迎雷(紧急) → 第五层
+        if (stageId === "ro5_fs_3") return "layer_5"; // 蔑震 → 第五层
+        if (stageId === "ro5_fs_3_b") return "layer_5"; // 蔑震(紧急) → 第五层
+        if (stageId === "ro5_fs_4") return "layer_5"; // 赴陨 → 第五层
+        if (stageId === "ro5_fs_4_b") return "layer_5"; // 赴陨(紧急) → 第五层
+        if (stageId === "ro5_fs_5") return "layer_5"; // 斥洪 → 第五层
+        if (stageId === "ro5_fs_5_b") return "layer_5"; // 斥洪(紧急) → 第五层
       }
       return state.rogueInput[rogueKey].layer; // 保持当前层数
     };

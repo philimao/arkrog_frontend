@@ -221,5 +221,14 @@ export const zoneOfTopic = {
         return false;
       },
     },
+    {
+      id: "zone_11",
+      name: "指点迷津",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "fs" || args[1] === "dv") return true;
+        return false;
+      },
+    },
   ],
 };

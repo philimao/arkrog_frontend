@@ -36,7 +36,30 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
   
   return (
     mergedStages
-      // 诡异行商区域特殊排序 - 最高优先级
+      // 指点迷津区域特殊排序 - 最高优先级
+      .sort((a, b) => {
+        const isFsA = a.id.includes("_fs_");
+        const isFsB = b.id.includes("_fs_");
+        const isDvA = a.id.includes("_dv_");
+        const isDvB = b.id.includes("_dv_");
+        
+        // 如果都是指点迷津类型关卡，使用特殊排序
+        if ((isFsA || isDvA) && (isFsB || isDvB)) {
+          // 分明(dv)排在最上面
+          if (isDvA && isFsB) return -1; // dv在前
+          if (isFsA && isDvB) return 1;  // fs在后
+          
+          // 如果都是fs类型，按数字排序
+          if (isFsA && isFsB) {
+            const numA = a.id.match(/_fs_(\d+)/)?.[1] || "0";
+            const numB = b.id.match(/_fs_(\d+)/)?.[1] || "0";
+            return parseInt(numA) - parseInt(numB);
+          }
+        }
+        
+        return 0;
+      })
+      // 诡异行商区域特殊排序 - 第二优先级
       .sort((a, b) => {
         const isEvA = a.id.includes("_ev_");
         const isEvB = b.id.includes("_ev_");
@@ -67,13 +90,17 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
         if (isEliteA !== isEliteB) return isEliteA ? 1 : -1;
         return 0;
       })
-      // 相同关卡排列在一起（跳过ev类型关卡，它们有特殊排序）
+      // 相同关卡排列在一起（跳过ev、fs、dv类型关卡，它们有特殊排序）
       .sort((a, b) => {
         const isEvA = a.id.includes("_ev_");
         const isEvB = b.id.includes("_ev_");
+        const isFsA = a.id.includes("_fs_");
+        const isFsB = b.id.includes("_fs_");
+        const isDvA = a.id.includes("_dv_");
+        const isDvB = b.id.includes("_dv_");
         
-        // 如果都是ev类型，跳过数字排序
-        if (isEvA && isEvB) return 0;
+        // 如果都是特殊类型，跳过数字排序
+        if ((isEvA || isFsA || isDvA) && (isEvB || isFsB || isDvB)) return 0;
         
         const argsA = a.id.match(/.*_(\d{1,2})/)?.[1] || "0";
         const argsB = b.id.match(/.*_(\d{1,2})/)?.[1] || "0";

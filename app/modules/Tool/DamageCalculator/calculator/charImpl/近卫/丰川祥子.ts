@@ -26,7 +26,7 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
     const damage_scale_mag = context.global_buff_stack.damage_scale_mag.calculate();
 
     /** 攻击速度 */
-    const atkSpeedBuff =
+    let atkSpeedBuff =
         context.in_game_buff_add.attack_speed.calculate() + context.relic_rune_add.attack_speed.calculate(); // 额外攻击速度
 
     /** 获取局外面板 */
@@ -61,6 +61,13 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
 
     /** 敌人法抗 */
     const enemyMagRes = input.enemyInput.attributes.magicResistance;
+
+    atkSpeedBuff += 12;//天赋攻速，待精一适配
+    if (potential >= 4) atkSpeedBuff += 4;
+    if (uniEquipId === "uniequip_002_oblvns") {
+        atkSpeedBuff += 12;
+    }
+
     // 基础攻击间隔和前摇
     const baseAttackFrame = 39;
     const baseAttackPre = 9;
@@ -184,7 +191,7 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
             break;
         }
         case "skchr_oblvns_2": {
-            //当前输出钢琴dps和fever总伤，法伤仅输出fever总伤，分别对应普攻，周期，技能
+            //当前输出钢琴dps和fever总伤，法伤仅输出dps，分别对应普攻，周期，技能
             //当前未考虑减抗
             const atkScales = [0.4, 0.45, 0.50, 0.6, 0.65, 0.7, 0.75, 0.8, 0.95, 1.1];
             const skillAtkSpeeds = [60, 65, 70, 80, 90, 100, 110, 120, 130, 140];

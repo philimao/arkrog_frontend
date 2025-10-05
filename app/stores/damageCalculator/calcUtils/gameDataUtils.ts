@@ -8,7 +8,24 @@ import type { RogueInput } from "../calcTypes";
 export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput: RogueInput) {
   const stageOfRogue = stages[rogueInput.topic as RogueKey];
   const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
-  const zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+  let zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+  
+  // 调试信息
+  if (!zone) {
+    console.error(`Zone not found: ${rogueInput[rogueInput.topic].zone}`, {
+      topic: rogueInput.topic,
+      availableZones: zones.map(z => z.id),
+      requestedZone: rogueInput[rogueInput.topic].zone
+    });
+    // 如果找不到区域，使用第一个可用区域
+    const fallbackZone = zones[0];
+    if (fallbackZone) {
+      console.warn(`Using fallback zone: ${fallbackZone.id}`);
+      zone = fallbackZone;
+    } else {
+      throw new Error(`No zones available for topic: ${rogueInput.topic}`);
+    }
+  }
   
   // 获取所有关卡并合并重复的关卡
   const allStages = Object.values(stageOfRogue)
@@ -19,6 +36,30 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
   
   return (
     mergedStages
+      // 诡异行商区域特殊排序 - 最高优先级
+      .sort((a, b) => {
+        const isEvA = a.id.includes("_ev_");
+        const isEvB = b.id.includes("_ev_");
+        
+        // 如果都是ev类型关卡，使用特殊排序
+        if (isEvA && isEvB) {
+          const topic = rogueInput.topic;
+          
+          // 萨卡兹主题：叙事要约(ev_2) - 物权纠纷(ev_1)
+          if (topic === "rogue_4") {
+            if (a.id === "ro4_ev_2" && b.id === "ro4_ev_1") return -1; // 叙事要约在前
+            if (a.id === "ro4_ev_1" && b.id === "ro4_ev_2") return 1;  // 物权纠纷在后
+          }
+          
+          // 界园主题：神游天外(ev_1) - 作壁上观(ev_2)
+          if (topic === "rogue_5") {
+            if (a.id === "ro5_ev_1" && b.id === "ro5_ev_2") return -1; // 神游天外在前
+            if (a.id === "ro5_ev_2" && b.id === "ro5_ev_1") return 1;  // 作壁上观在后
+          }
+        }
+        
+        return 0;
+      })
       // 排序 紧急 > 普通
       .sort((a, b) => {
         const isEliteA = a.isElite;
@@ -26,8 +67,14 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
         if (isEliteA !== isEliteB) return isEliteA ? -1 : 1;
         return 0;
       })
-      // 相同关卡排列在一起
+      // 相同关卡排列在一起（跳过ev类型关卡，它们有特殊排序）
       .sort((a, b) => {
+        const isEvA = a.id.includes("_ev_");
+        const isEvB = b.id.includes("_ev_");
+        
+        // 如果都是ev类型，跳过数字排序
+        if (isEvA && isEvB) return 0;
+        
         const argsA = a.id.match(/.*_(\d{1,2})/)?.[1] || "0";
         const argsB = b.id.match(/.*_(\d{1,2})/)?.[1] || "0";
         return parseInt(argsA) - parseInt(argsB);

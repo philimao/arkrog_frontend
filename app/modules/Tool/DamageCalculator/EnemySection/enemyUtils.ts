@@ -164,6 +164,15 @@ export const zoneOfTopic = {
         return false;
       },
     },
+    {
+      id: "zone_9",
+      name: "诡异行商",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "ev") return true;
+        return false;
+      },
+    },
   ],
   rogue_5: [
     {
@@ -191,6 +200,15 @@ export const zoneOfTopic = {
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
         if (args[1] === "t" || args[2] === "t") return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_9",
+      name: "诡异行商",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "ev") return true;
         return false;
       },
     },

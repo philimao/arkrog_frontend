@@ -60,46 +60,101 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     rogueInput.topic = rogueTopic;
-    const localState = calculatorStorage.read();
-    const localRogueTopic = localState?.rougeTopic[rogueTopic];
-    const difficulty = localRogueTopic?.difficulty ?? rogueInput[rogueTopic].difficulty;
-    const zone = localRogueTopic?.zone ?? rogueInput[rogueTopic].zone;
-    const tech = localRogueTopic?.tech ?? rogueInput[rogueTopic].tech;
-
-    rogueInput[rogueTopic].zone = zone;
+    
+    // 切换主题时使用默认值，不使用本地存储
+    const defaultValues: Record<RogueTopic, any> = {
+      rogue_1: {
+        zone: "zone_1",
+        layer: "layer_1",
+        difficulty: 0,
+        tech: "1",
+        relics: [] as string[],
+      },
+      rogue_2: {
+        zone: "zone_1", 
+        layer: "layer_1",
+        difficulty: 0,
+        tech: "1",
+        relics: [] as string[],
+      },
+      rogue_3: {
+        zone: "zone_1",
+        layer: "layer_1", 
+        difficulty: 0,
+        tech: "1",
+        relics: [] as string[],
+      },
+      rogue_4: {
+        zone: "zone_5",
+        layer: "layer_5", 
+        difficulty: 18,
+        tech: "1.3",
+        relics: [] as string[],
+        thoughtLoad: "NORMAL" as const,
+        inspiration: undefined as string | undefined,
+        disaster: undefined as string | undefined,
+      },
+      rogue_5: {
+        zone: "zone_5",
+        layer: "layer_5",
+        difficulty: 15,
+        tech: "1",
+        relics: [] as string[],
+        wraths: [] as string[],
+        coppers: [] as string[],
+      },
+    };
+    
+    const topicDefaults = defaultValues[rogueTopic];
+    rogueInput[rogueTopic].zone = topicDefaults.zone;
+    rogueInput[rogueTopic].layer = topicDefaults.layer;
+    rogueInput[rogueTopic].difficulty = topicDefaults.difficulty;
+    rogueInput[rogueTopic].tech = topicDefaults.tech;
+    rogueInput[rogueTopic].relics = topicDefaults.relics;
+    
+    // 设置主题特定属性
+    if (rogueTopic === RogueTopic.ROGUE_4) {
+      rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
+      rogueInput[rogueTopic].inspiration = topicDefaults.inspiration;
+      rogueInput[rogueTopic].disaster = topicDefaults.disaster;
+    } else if (rogueTopic === RogueTopic.ROGUE_5) {
+      rogueInput[rogueTopic].wraths = topicDefaults.wraths;
+      rogueInput[rogueTopic].coppers = topicDefaults.coppers;
+    }
+    
     const renderStages = getStageList(state.stages, rogueInput);
-    const stageId = localRogueTopic?.stage ?? renderStages[0].id;
+    const stageId = renderStages[0].id;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
-      relics: localRogueTopic?.relics || [],
+      relics: topicDefaults.relics,
       stageId,
     }); // immer可以获得最新的state
     set(
       (state) => {
         state.rogueInput.topic = rogueTopic;
-        state.rogueInput[rogueTopic].difficulty = difficulty;
-        state.rogueInput[rogueTopic].zone = zone;
-        state.rogueInput[rogueTopic].tech = tech;
+        state.rogueInput[rogueTopic].difficulty = topicDefaults.difficulty;
+        state.rogueInput[rogueTopic].zone = topicDefaults.zone;
+        state.rogueInput[rogueTopic].layer = topicDefaults.layer;
+        state.rogueInput[rogueTopic].tech = topicDefaults.tech;
+        state.rogueInput[rogueTopic].relics = topicDefaults.relics;
         state.renderStages = renderStages;
         state.stageId = stageId;
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.rogueInput[rogueTopic].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
-        // 萨卡兹肉鸽 设置思维负荷和灵感 (本地状态还原)
-        if (rogueTopic === RogueTopic.ROGUE_4 && localRogueTopic) {
-          state.rogueInput[rogueTopic].thoughtLoad = (localRogueTopic as Rouge4State).thoughtLoad;
-          state.rogueInput[rogueTopic].inspiration = (localRogueTopic as Rouge4State).inspiration;
-          state.rogueInput[rogueTopic].disaster = (localRogueTopic as Rouge4State).disaster;
-        }
-        // 界园肉鸽 设置岁时和通宝 (本地状态还原)
-        if (rogueTopic === RogueTopic.ROGUE_5 && localRogueTopic) {
-          state.rogueInput[rogueTopic].wraths = (localRogueTopic as Rouge5State).wraths;
-          state.rogueInput[rogueTopic].coppers = (localRogueTopic as Rouge5State).coppers;
+        
+        // 设置主题特定属性
+        if (rogueTopic === RogueTopic.ROGUE_4) {
+          state.rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
+          state.rogueInput[rogueTopic].inspiration = topicDefaults.inspiration;
+          state.rogueInput[rogueTopic].disaster = topicDefaults.disaster;
+        } else if (rogueTopic === RogueTopic.ROGUE_5) {
+          state.rogueInput[rogueTopic].wraths = topicDefaults.wraths;
+          state.rogueInput[rogueTopic].coppers = topicDefaults.coppers;
         }
       },
       undefined,
@@ -120,8 +175,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     const rogueKey = rogueInput.topic as RogueKey;
     
-    // 根据区域设置默认层数
-    const getDefaultLayerForZone = (zone: string, topic: string): string => {
+    // 根据区域和关卡设置默认层数
+    const getDefaultLayerForZone = (zone: string, topic: string, stageId?: string): string => {
       if (topic === "rogue_4") {
         // 萨卡兹主题的层数映射
         const sarkazZoneToLayerMap: Record<string, string> = {
@@ -134,6 +189,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
           "zone_7": "layer_6",        // VI 逍遥兰若·奎隆 → 第六层
           "zone_8": "layer_7",        // VII 无终安息·魔王阿米娅 → 第七层
         };
+        
+        // 诡异行商区域的特殊处理
+        if (zone === "zone_9") {
+          if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
+          if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
+          return "layer_1"; // 默认第一层
+        }
+        
         return sarkazZoneToLayerMap[zone] || "layer_1";
       } else {
         // 界园主题的层数映射
@@ -147,16 +210,38 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
           "zone_7": "layer_2",        // 岁兽残识 → 第二层
           "zone_8": "layer_1",        // 不期而遇 → 第一层
         };
+        
+        // 诡异行商区域的特殊处理
+        if (zone === "zone_9") {
+          if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
+          if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
+          return "layer_1"; // 默认第一层
+        }
+        
         return jiayuanZoneToLayerMap[zone] || "layer_1";
       }
     };
     
-    const defaultLayer = getDefaultLayerForZone(zone, rogueKey);
     rogueInput[rogueKey].zone = zone;
-    rogueInput[rogueKey].layer = defaultLayer;
     
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
+    
+    // 根据第一个关卡的默认层数设置层数
+    const getDefaultLayerForStage = (stageId: string, topic: string): string => {
+      if (topic === "rogue_4") {
+        if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
+        if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
+      } else if (topic === "rogue_5") {
+        if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
+        if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
+      }
+      // 对于非商店关卡，使用区域默认层数
+      return getDefaultLayerForZone(zone, rogueKey);
+    };
+    
+    const defaultLayer = getDefaultLayerForStage(stageId, rogueKey);
+    rogueInput[rogueKey].layer = defaultLayer;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
@@ -202,6 +287,21 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
+    
+    // 根据关卡设置默认层数
+    const getDefaultLayerForStage = (stageId: string, topic: string): string => {
+      if (topic === "rogue_4") {
+        if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
+        if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
+      } else if (topic === "rogue_5") {
+        if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
+        if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
+      }
+      return state.rogueInput[rogueKey].layer; // 保持当前层数
+    };
+    
+    const newLayer = getDefaultLayerForStage(stageId, rogueKey);
+    
     set(
       (state) => {
         state.stageId = stageId;
@@ -211,6 +311,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.rogueInput[rogueKey].relics = relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
+        state.rogueInput[rogueKey].layer = newLayer;
       },
       undefined,
       "setRogueStageId",

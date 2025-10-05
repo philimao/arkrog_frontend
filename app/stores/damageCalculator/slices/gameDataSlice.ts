@@ -121,21 +121,37 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const rogueKey = rogueInput.topic as RogueKey;
     
     // 根据区域设置默认层数
-    const getDefaultLayerForZone = (zone: string): string => {
-      const zoneToLayerMap: Record<string, string> = {
-        "zone_1": "layer_1",        // I 洪陆楼 → 第一层
-        "zone_2": "layer_2",        // II 山水阁 → 第二层
-        "zone_3": "layer_3",        // III 云瓦亭 → 第三层
-        "zone_4": "layer_4",        // IV 汝吾门 → 第四层
-        "zone_5": "layer_5",        // V 见字祠 → 第五层
-        "zone_6": "layer_6",        // VI 始末陵·"望" → 第六层
-        "zone_7": "layer_2",        // 岁兽残识 → 第二层
-        "zone_8": "layer_1",        // 不期而遇 → 第一层
-      };
-      return zoneToLayerMap[zone] || "layer_1";
+    const getDefaultLayerForZone = (zone: string, topic: string): string => {
+      if (topic === "rogue_4") {
+        // 萨卡兹主题的层数映射
+        const sarkazZoneToLayerMap: Record<string, string> = {
+          "zone_1": "layer_1",        // I 熔魂之始 → 第一层
+          "zone_2": "layer_2",        // II 锻铁根须 → 第二层
+          "zone_3": "layer_3",        // III 灰铸迷城 → 第三层
+          "zone_4": "layer_4",        // IV 或然歧域 → 第四层
+          "zone_5": "layer_5",        // V 虚实疆界 → 第五层
+          "zone_6": "layer_6",        // VI 辉光天顶·爱国者 → 第六层
+          "zone_7": "layer_6",        // VI 逍遥兰若·奎隆 → 第六层
+          "zone_8": "layer_7",        // VII 无终安息·魔王阿米娅 → 第七层
+        };
+        return sarkazZoneToLayerMap[zone] || "layer_1";
+      } else {
+        // 界园主题的层数映射
+        const jiayuanZoneToLayerMap: Record<string, string> = {
+          "zone_1": "layer_1",        // I 洪陆楼 → 第一层
+          "zone_2": "layer_2",        // II 山水阁 → 第二层
+          "zone_3": "layer_3",        // III 云瓦亭 → 第三层
+          "zone_4": "layer_4",        // IV 汝吾门 → 第四层
+          "zone_5": "layer_5",        // V 见字祠 → 第五层
+          "zone_6": "layer_6",        // VI 始末陵·"望" → 第六层
+          "zone_7": "layer_2",        // 岁兽残识 → 第二层
+          "zone_8": "layer_1",        // 不期而遇 → 第一层
+        };
+        return jiayuanZoneToLayerMap[zone] || "layer_1";
+      }
     };
     
-    const defaultLayer = getDefaultLayerForZone(zone);
+    const defaultLayer = getDefaultLayerForZone(zone, rogueKey);
     rogueInput[rogueKey].zone = zone;
     rogueInput[rogueKey].layer = defaultLayer;
     

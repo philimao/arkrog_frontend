@@ -1,4 +1,4 @@
-import { navOfZone, zoneOfTopic } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
+import { getNavOfZone, zoneOfTopic } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 import type { LevelData, RogueKey, StageOfRogue, EnemyData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import { dummy } from "../calcConstants";
@@ -7,7 +7,7 @@ import type { RogueInput } from "../calcTypes";
 /** 获取渲染关卡列表 */
 export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput: RogueInput) {
   const stageOfRogue = stages[rogueInput.topic as RogueKey];
-  const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
+  const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
   const zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
   
   // 获取所有关卡并合并重复的关卡

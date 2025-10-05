@@ -72,64 +72,72 @@ export function parseEnemyData(enemyData: EnemyData): EnemyInput {
   };
 }
 
-export const navOfZone = [
-  {
-    id: "zone_1",
-    name: "I 洪陆楼",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if (args[1] !== "n" && args[1] !== "e") return false;
-      return args[2] === "1";
+// 根据主题获取区域配置
+export function getNavOfZone(topic: string) {
+  const baseZones = [
+    {
+      id: "zone_1",
+      name: topic === "rogue_4" ? "I 熔魂之始" : "I 洪陆楼",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] !== "n" && args[1] !== "e") return false;
+        return args[2] === "1";
+      },
     },
-  },
-  {
-    id: "zone_2",
-    name: "II 山水阁",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if (args[1] !== "n" && args[1] !== "e") return false;
-      return args[2] === "2";
+    {
+      id: "zone_2",
+      name: topic === "rogue_4" ? "II 锻铁根须" : "II 山水阁",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] !== "n" && args[1] !== "e") return false;
+        return args[2] === "2";
+      },
     },
-  },
-  {
-    id: "zone_3",
-    name: "III 云瓦亭",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if ((args[1] === "n" || args[1] === "e") && args[2] === "3") return true;
-      if (args[1] === "b" && ["1", "2", "3"].includes(args[2])) return true;
-      if (args[1] === "duel") return true;
-      return false;
+    {
+      id: "zone_3",
+      name: topic === "rogue_4" ? "III 灰铸迷城" : "III 云瓦亭",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && args[2] === "3") return true;
+        if (args[1] === "b" && ["1", "2", "3"].includes(args[2])) return true;
+        if (args[1] === "duel") return true;
+        return false;
+      },
     },
-  },
-  {
-    id: "zone_4",
-    name: "IV 汝吾门",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if ((args[1] === "n" || args[1] === "e") && args[2] === "4") return true;
-      if (args[1] === "duel") return true;
-      return false;
+    {
+      id: "zone_4",
+      name: topic === "rogue_4" ? "IV 或然歧域" : "IV 汝吾门",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && args[2] === "4") return true;
+        if (args[1] === "duel") return true;
+        return false;
+      },
     },
-  },
-  {
-    id: "zone_5",
-    name: "V 见字祠",
-    filter: (stage: StageData) => {
-      const args = stage.id.split("_");
-      if ((args[1] === "n" || args[1] === "e") && args[2] === "5") return true;
-      if (args[1] === "b" && ["4", "5"].includes(args[2])) return true;
-      if (args[1] === "duel") return true;
-      return false;
+    {
+      id: "zone_5",
+      name: topic === "rogue_4" ? "V 虚实疆界" : "V 见字祠",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if ((args[1] === "n" || args[1] === "e") && args[2] === "5") return true;
+        if (args[1] === "b" && ["4", "5"].includes(args[2])) return true;
+        if (args[1] === "duel") return true;
+        return false;
+      },
     },
-  },
-];
+  ];
+
+  return baseZones;
+}
+
+// 保持向后兼容的默认导出
+export const navOfZone = getNavOfZone("rogue_5");
 
 export const zoneOfTopic = {
   rogue_4: [
     {
       id: "zone_6",
-      name: "第六层 · 爱国者",
+      name: "VI 辉光天顶 · 爱国者",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
         if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
@@ -139,7 +147,7 @@ export const zoneOfTopic = {
     },
     {
       id: "zone_7",
-      name: "第六层 · 奎隆",
+      name: "VI 逍遥兰若 · 奎隆",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
         if ((args[1] === "n" || args[1] === "e") && (args[2] === "6" || args[2] === "7")) return true;
@@ -149,7 +157,7 @@ export const zoneOfTopic = {
     },
     {
       id: "zone_8",
-      name: "第七层 · 魔王阿米娅",
+      name: "VII 无终安息 · 魔王阿米娅",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
         if (args[1] === "b" && ["8"].includes(args[2])) return true;

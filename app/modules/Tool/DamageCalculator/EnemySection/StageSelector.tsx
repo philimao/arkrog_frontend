@@ -4,7 +4,7 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { navOfZone, zoneOfTopic } from "./enemyUtils";
+import { getNavOfZone, zoneOfTopic } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 import { cosHost } from "~/utils/tools";
 
@@ -122,7 +122,7 @@ export default function StageSelector() {
     setRogueLayer,
   } = useDamageCalculatorStore();
 
-  const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
+  const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
 
   return (
     <StyledStageSelector>
@@ -161,7 +161,8 @@ export default function StageSelector() {
             { id: "layer_3", name: "第三层" },
             { id: "layer_4", name: "第四层" },
             { id: "layer_5", name: "第五层" },
-            { id: "layer_6", name: "第六层" }
+            { id: "layer_6", name: "第六层" },
+            { id: "layer_7", name: "第七层" }
           ]}
           getKey={(layer) => layer.id}
           getValue={(layer) => layer.name}

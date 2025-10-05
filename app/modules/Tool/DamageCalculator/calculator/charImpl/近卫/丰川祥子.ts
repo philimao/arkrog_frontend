@@ -80,7 +80,7 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
     const normalCritDph = normalAtk;
 
     switch (skillKey) {
-        case "skchr_svrash_1": {
+        case "skchr_oblvns_1": {
             //注：当前仅计算满级技能的精确结果，普攻部分未考虑天赋穿透
             // 一技能 新月的苏醒
             const atkScales = [2.12, 2.33, 2.53, 2.76, 2.97, 3.17, 3.37, 3.60, 3.82, 4.22];
@@ -183,7 +183,7 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
 
             break;
         }
-        case "skchr_svrash_2": {
+        case "skchr_oblvns_2": {
             //当前输出钢琴dps和fever总伤，法伤仅输出fever总伤，分别对应普攻，周期，技能
             //当前未考虑减抗
             const atkScales = [0.4, 0.45, 0.50, 0.6, 0.65, 0.7, 0.75, 0.8, 0.95, 1.1];
@@ -237,7 +237,54 @@ export const calculator: CalculatorImpl = (input: CalculatorInput): CalculatorOu
             result.cycle.dps.phy = result.cycle.total_damage.phy / duration;
             break;
         }
-        case "skchr_svrash_3": {
+        case "skchr_oblvns_3": {
+            const bullets = input.charInput.charSpec.find((spec) => spec.label === "阻挡敌人" && spec.key === "是") ? 0 : 12;
+            const atkScales = [1.4, 1.45, 1.5, 1.55, 1.6, 1.7, 1.8, 1.9, 2.05, 2.2];
+            const atkScale = atkScales[skillLevel];
+            const spCosts = [48, 48, 48, 47, 47, 47, 46, 45, 44, 42];
+            const spCost = spCosts[skillLevel];
+            const skillduration = 25; // 技能持续时间
+            const duration = 20; // fever时间
+            const phyReductionPerBullet = 5; // 每颗子弹减防百分比
+            const magReductionPerBullet = 2.5; // 每颗子弹减抗百分比
+
+            let normalPhysicalDamage =
+                Math.max(normalDph - enemyDef, 0.05 * normalDph) *
+                damage_scale *
+                damage_scale_phy;
+
+
+            const skillAtkMul = 1 + atkBuffInMul;
+            const skillAtk = (atk + atkBuffInAdd) * skillAtkMul * atkBuffFinalMul * atkScale + atkBuffFinalAdd;
+            const skillDph = skillAtk;
+
+            const skillPhyDamage =
+                Math.max(skillDph - enemyDef * (1 - 0.01 * bullets * phyReductionPerBullet), 0.05 * skillDph) *
+                damage_scale *
+                damage_scale_phy;
+            const skillMagDamage = skillDph * Math.max((1 - enemyMagRes * (1 - 0.01 * bullets * magReductionPerBullet) / 100), 0.05) *
+                damage_scale *
+                damage_scale_mag;
+
+            const normalHitCount = spCost;
+            const skillHitCount = Math.ceil(skillduration / attackTime) * 2;
+            const feverHitCount = Math.ceil(duration / attackTime) * 2;
+
+            result.attack.dph = normalDph;
+            result.attack.total_damage.phy = normalPhysicalDamage * normalHitCount * (1 - mitigation);
+            result.attack.dps.phy = result.attack.total_damage.phy / (spCost * attackTime);
+
+            result.skill.dph = skillDph;
+            result.skill.total_damage.phy = skillPhyDamage * skillHitCount * (1 - mitigation);
+            result.skill.dps.phy = result.skill.total_damage.phy / skillduration;
+            result.skill.total_damage.mag = skillMagDamage * skillHitCount * (1 - mitigation);
+            result.skill.dps.mag = result.skill.total_damage.mag / skillduration;
+
+            result.cycle.total_damage.phy = result.attack.total_damage.phy + result.skill.total_damage.phy;
+            result.cycle.dps.phy = result.cycle.total_damage.phy / (spCost * attackTime + skillduration);
+            result.cycle.total_damage.mag = result.skill.total_damage.mag;
+            result.cycle.dps.mag = result.cycle.total_damage.mag / (spCost * attackTime + skillduration);
+            break;
         }
     }
 

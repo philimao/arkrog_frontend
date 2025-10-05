@@ -6,8 +6,10 @@ export interface RougeBaseState {
   tech: string;
   /** 难度 */
   difficulty: number;
-  /** 层数 */
+  /** 区域 */
   zone: string;
+  /** 层数选择 */
+  layer: string;
   /** 关卡 */
   stage: string;
   /** 敌人 */

@@ -68,6 +68,7 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
     // TODO 预设其他肉鸽的初始值
     rogue_4: {
       zone: "zone_5",
+      layer: "layer_5",
       difficulty: 18,
       thoughtLoad: "NORMAL",
       tech: "1.3",
@@ -77,6 +78,7 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
     },
     rogue_5: {
       zone: "zone_5",
+      layer: "layer_5",
       difficulty: 15,
       tech: "1",
       relics: [] as string[],

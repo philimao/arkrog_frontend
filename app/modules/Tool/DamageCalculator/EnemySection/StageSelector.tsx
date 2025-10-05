@@ -39,7 +39,7 @@ const StyledEnemiesLabel = styled.div`
     margin-right: auto;
     color: var(--light-gray);
   }
-  & > span:last-child {
+  & > span.parasitic-hint {
     color: var(--ak-red);
   }
 `;
@@ -119,6 +119,7 @@ export default function StageSelector() {
     stageData,
     setEnemyData,
     setRogueZone,
+    setRogueLayer,
   } = useDamageCalculatorStore();
 
   const zones = [...navOfZone, ...zoneOfTopic[rogueInput.topic as never]];
@@ -151,6 +152,22 @@ export default function StageSelector() {
           selectedKeys={[stageId]}
           onChange={(evt) => setRogueStageId(evt.target.value)}
         />
+        <ToolSelect
+          disallowEmptySelection={true}
+          label="选择层数"
+          array={[
+            { id: "layer_1", name: "第一层" },
+            { id: "layer_2", name: "第二层" },
+            { id: "layer_3", name: "第三层" },
+            { id: "layer_4", name: "第四层" },
+            { id: "layer_5", name: "第五层" },
+            { id: "layer_6", name: "第六层" }
+          ]}
+          getKey={(layer) => layer.id}
+          getValue={(layer) => layer.name}
+          selectedKeys={[rogueInput[rogueInput.topic].layer]}
+          onChange={(evt) => setRogueLayer(evt.target.value)}
+        />
         {stageData.eliteDesc && (
           <div className="flex flex-col whitespace-nowrap" style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}>
             <div style={{ height: "calc(0.875rem + 10px)" }}>紧急条件</div>
@@ -173,7 +190,7 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
-              <span>红点代表死亡后会生成恐卡兹</span>
+              {rogueInput.topic === "rogue_4" && <span className="parasitic-hint">红点代表死亡后会生成恐卡兹</span>}
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies

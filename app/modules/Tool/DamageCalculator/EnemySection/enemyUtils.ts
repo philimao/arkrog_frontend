@@ -75,7 +75,7 @@ export function parseEnemyData(enemyData: EnemyData): EnemyInput {
 export const navOfZone = [
   {
     id: "zone_1",
-    name: "第一层",
+    name: "I 洪陆楼",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
       if (args[1] !== "n" && args[1] !== "e") return false;
@@ -84,7 +84,7 @@ export const navOfZone = [
   },
   {
     id: "zone_2",
-    name: "第二层",
+    name: "II 山水阁",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
       if (args[1] !== "n" && args[1] !== "e") return false;
@@ -93,7 +93,7 @@ export const navOfZone = [
   },
   {
     id: "zone_3",
-    name: "第三层",
+    name: "III 云瓦亭",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
       if ((args[1] === "n" || args[1] === "e") && args[2] === "3") return true;
@@ -104,7 +104,7 @@ export const navOfZone = [
   },
   {
     id: "zone_4",
-    name: "第四层",
+    name: "IV 汝吾门",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
       if ((args[1] === "n" || args[1] === "e") && args[2] === "4") return true;
@@ -114,7 +114,7 @@ export const navOfZone = [
   },
   {
     id: "zone_5",
-    name: "第五层",
+    name: "V 见字祠",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
       if ((args[1] === "n" || args[1] === "e") && args[2] === "5") return true;
@@ -160,7 +160,7 @@ export const zoneOfTopic = {
   rogue_5: [
     {
       id: "zone_6",
-      name: "第六层 · “望”",
+      name: "VI 始末陵 · \"望\"",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
         if ((args[1] === "n" || args[1] === "e") && args[2] === "6") return true;

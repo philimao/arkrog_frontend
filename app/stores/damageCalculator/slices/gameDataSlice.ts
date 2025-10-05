@@ -118,8 +118,27 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
   setRogueZone: async (zone) => {
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
-    rogueInput[rogueInput.topic].zone = zone;
     const rogueKey = rogueInput.topic as RogueKey;
+    
+    // 根据区域设置默认层数
+    const getDefaultLayerForZone = (zone: string): string => {
+      const zoneToLayerMap: Record<string, string> = {
+        "zone_1": "layer_1",        // I 洪陆楼 → 第一层
+        "zone_2": "layer_2",        // II 山水阁 → 第二层
+        "zone_3": "layer_3",        // III 云瓦亭 → 第三层
+        "zone_4": "layer_4",        // IV 汝吾门 → 第四层
+        "zone_5": "layer_5",        // V 见字祠 → 第五层
+        "zone_6": "layer_6",        // VI 始末陵·"望" → 第六层
+        "zone_7": "layer_2",        // 岁兽残识 → 第二层
+        "zone_8": "layer_1",        // 不期而遇 → 第一层
+      };
+      return zoneToLayerMap[zone] || "layer_1";
+    };
+    
+    const defaultLayer = getDefaultLayerForZone(zone);
+    rogueInput[rogueKey].zone = zone;
+    rogueInput[rogueKey].layer = defaultLayer;
+    
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
@@ -132,6 +151,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     set(
       (state) => {
         state.rogueInput[rogueKey].zone = zone;
+        state.rogueInput[rogueKey].layer = defaultLayer;
         state.renderStages = renderStages;
         state.stageId = stageId;
         state.stageData = stageData;
@@ -143,6 +163,17 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       },
       undefined,
       "setRogueZone",
+    );
+  },
+  setRogueLayer: (layer) => {
+    const state = get();
+    const rogueKey = state.rogueInput.topic as RogueKey;
+    return set(
+      (state) => {
+        state.rogueInput[rogueKey].layer = layer;
+      },
+      undefined,
+      "setRogueLayer",
     );
   },
   setRogueStageId: async (stageId) => {

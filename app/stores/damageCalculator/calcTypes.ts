@@ -54,8 +54,10 @@ export type RogueInput = {
 } & Record<
   RogueKey,
   {
-    /** 层数 */
+    /** 区域 */
     zone: string;
+    /** 层数选择 */
+    layer: string;
     /** 科技树 */
     tech: string;
     /** 肉鸽难度 */
@@ -115,6 +117,8 @@ export interface SlicedCalcGameDataActions {
   setRogueDifficulty: (difficulty: number) => void;
   /** 设置肉鸽区域 */
   setRogueZone: (zone: string) => Promise<void>;
+  /** 设置肉鸽层数 */
+  setRogueLayer: (layer: string) => void;
   /** 设置肉鸽关卡 */
   setRogueStageId: (stageId: string) => Promise<void>;
   /** 设置肉鸽幕后加成 */

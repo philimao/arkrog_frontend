@@ -166,6 +166,15 @@ export const zoneOfTopic = {
     },
     {
       id: "zone_9",
+      name: "不期而遇",
+      filter: (stage: StageData) => {
+        const args = stage.id.split("_");
+        if (args[1] === "t" || args[2] === "t") return true;
+        return false;
+      },
+    },
+    {
+      id: "zone_10",
       name: "诡异行商",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");
@@ -204,7 +213,7 @@ export const zoneOfTopic = {
       },
     },
     {
-      id: "zone_9",
+      id: "zone_10",
       name: "诡异行商",
       filter: (stage: StageData) => {
         const args = stage.id.split("_");

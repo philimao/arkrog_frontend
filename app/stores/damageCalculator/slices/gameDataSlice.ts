@@ -190,11 +190,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
           "zone_8": "layer_7",        // VII 无终安息·魔王阿米娅 → 第七层
         };
         
-        // 诡异行商区域的特殊处理
+        // 不期而遇区域的特殊处理
         if (zone === "zone_9") {
-          if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
-          if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
-          return "layer_1"; // 默认第一层
+          return "layer_4"; // 默认关卡显示时光凯旋，默认第四层
+        }
+        
+        // 诡异行商区域的特殊处理
+        if (zone === "zone_10") {
+          return "layer_4"; //默认关卡显示叙事要约，默认第四层
         }
         
         return sarkazZoneToLayerMap[zone] || "layer_1";
@@ -212,7 +215,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         };
         
         // 诡异行商区域的特殊处理
-        if (zone === "zone_9") {
+        if (zone === "zone_10") {
           if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
           if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
           return "layer_1"; // 默认第一层
@@ -293,9 +296,32 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       if (topic === "rogue_4") {
         if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
         if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
+        // 萨卡兹主题不期而遇关卡特定层数设置
+        if (stageId === "ro4_e_t_2") return "layer_5"; // 紧急信号灯 → 第五层
+        if (stageId === "ro4_t_1") return "layer_1"; // 失败的试胆 → 第一层
+        if (stageId === "ro4_t_2") return "layer_2"; // 普通信号灯 → 第二层
+        if (stageId === "ro4_t_3") return "layer_3"; // 劫虚济实 → 第三层
+        if (stageId === "ro4_t_4") return "layer_6"; // 鸭速公路 → 第六层
+        if (stageId === "ro4_t_5") return "layer_4"; // 战场侧面 → 第四层
+        if (stageId === "ro4_t_6") return "layer_4"; // 继承 → 第四层
+        if (stageId === "ro4_t_7") return "layer_4"; // 时光凯旋 → 第四层
+        if (stageId === "ro4_t_8") return "layer_5"; // 玩具的报复 → 第五层
       } else if (topic === "rogue_5") {
         if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
         if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
+        // 界园主题不期而遇关卡特定层数设置
+        if (stageId === "ro5_t_1") return "layer_1"; // 源源不断 → 第一层
+        if (stageId === "ro5_t_2") return "layer_3"; // 闪闪发光 → 第三层
+        if (stageId === "ro5_t_3") return "layer_3"; // 循循善诱 → 第三层
+        if (stageId === "ro5_t_4") return "layer_6"; // 易易鸭鸭 → 第六层
+        if (stageId === "ro5_t_5") return "layer_6"; // 劫罚 → 第六层
+        if (stageId === "ro5_t_6") return "layer_5"; // 生百相 → 第五层
+        if (stageId === "ro5_t_7") return "layer_3"; // 硕果累累 → 第三层
+        if (stageId === "ro5_t_8") return "layer_3"; // 以逸待劳 → 第三层
+        if (stageId === "ro5_t_9_a") return "layer_4"; // 喜从驮来 → 第四层
+        if (stageId === "ro5_t_9_b") return "layer_4"; // 硅基伥的宴席 → 第四层
+        if (stageId === "ro5_t_9_c") return "layer_4"; // 彻底失控 → 第四层
+        if (stageId === "ro5_t_10") return "layer_3"; // 为崖作伥 → 第三层
       }
       return state.rogueInput[rogueKey].layer; // 保持当前层数
     };

@@ -60,11 +60,11 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
         
         return 0;
       })
-      // 排序 紧急 > 普通
+      // 排序 普通 > 紧急
       .sort((a, b) => {
         const isEliteA = a.isElite;
         const isEliteB = b.isElite;
-        if (isEliteA !== isEliteB) return isEliteA ? -1 : 1;
+        if (isEliteA !== isEliteB) return isEliteA ? 1 : -1;
         return 0;
       })
       // 相同关卡排列在一起（跳过ev类型关卡，它们有特殊排序）

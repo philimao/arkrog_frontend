@@ -74,8 +74,10 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         maxHp: ExpressionUtil.operator_out_game_max_hp({ charInput, context }),
         atk: ExpressionUtil.operator_out_game_atk({ charInput, context }),
         def: ExpressionUtil.operator_out_game_def({ charInput, context }),
+        magicResistance: ExpressionUtil.operator_out_game_magic_resistance({ charInput, context }),
         attackSpeed: ExpressionUtil.operator_out_game_attack_speed({ charInput, context }),
         cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context }),
+        blockCnt: ExpressionUtil.operator_in_game_block_cnt({ charInput: charInput, context }),
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
       };
@@ -84,8 +86,10 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: charInput, context }),
         atk: ExpressionUtil.operator_in_game_atk({ charInput: charInput, context }),
         def: ExpressionUtil.operator_in_game_def({ charInput: charInput, context }),
+        magicResistance: ExpressionUtil.operator_in_game_magic_resistance({ charInput: charInput, context }),
         attackSpeed: ExpressionUtil.operator_in_game_attack_speed({ charInput: charInput, context }),
         cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context }),
+        blockCnt: ExpressionUtil.operator_in_game_block_cnt({ charInput: charInput, context }),
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
       };
@@ -96,11 +100,13 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         maxHp: ExpressionUtil.operator_in_game_max_hp({ charInput: charInput, context: skillContext }),
         atk: ExpressionUtil.operator_in_game_atk({ charInput: charInput, context: skillContext }),
         def: ExpressionUtil.operator_in_game_def({ charInput: charInput, context: skillContext }),
+        magicResistance: ExpressionUtil.operator_in_game_magic_resistance({ charInput: charInput, context: skillContext }),
         attackSpeed: ExpressionUtil.operator_in_game_attack_speed({
           charInput: charInput,
           context: skillContext,
         }),
         cost: ExpressionUtil.operator_out_game_cost({ charInput: charInput, context: skillContext }),
+        blockCnt: ExpressionUtil.operator_in_game_block_cnt({ charInput: charInput, context: skillContext }),
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({
           charInput: charInput,
           context: skillContext,
@@ -143,7 +149,7 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           </div>
           <div>
             <span>法术抗性</span>
-            <div>{result.magicResistance}</div>
+            <ExpressionDisplay mode={props.mode} expression={enemyExpression.magicResistance} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>费用</span>
@@ -151,7 +157,7 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           </div>
           <div>
             <span>阻挡数</span>
-            <div>{result.blockCnt}</div>
+            <ExpressionDisplay mode={props.mode} expression={enemyExpression.blockCnt} className="text-sm h-4 px-2" />
           </div>
           <div>
             <span>攻击速度</span>

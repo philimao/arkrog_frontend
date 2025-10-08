@@ -100,7 +100,7 @@ export class ExpressionUtil {
     return new ExpressionGroupNode("*", "局外最大生命值")
       .addChild(
         new ExpressionGroupNode("+", "局外加成")
-          .addChild(new NumericLiteralNode(baseMaxHp, "基础攻击力"))
+          .addChild(new NumericLiteralNode(baseMaxHp, "基础最大生命值"))
           .addChild(...input.context.relic_rune_add.max_hp.children),
       )
       .addChild(input.context.relic_rune_mul.max_hp);
@@ -161,6 +161,34 @@ export class ExpressionUtil {
   /** 防御力 - 局内 干员防御力 */
   static operator_in_game_def(input: { charInput: CharInput; context: BuffContext }) {
     return common_in_game_expression(input, "def");
+  }
+
+  /** 法术抗性 - 局外 干员法术抗性 */
+  static operator_out_game_magic_resistance(input: { charInput: CharInput; context: BuffContext }) {
+    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data;
+    const baseMagicResistance = attribute?.magicResistance ?? 0;
+
+    return new ExpressionGroupNode("+", "法术抗性")
+      .addChild(new NumericLiteralNode(baseMagicResistance, "基础法术抗性"))
+      .addChild(...input.context.relic_rune_add.magic_resistance.children);
+  }
+
+  /** 法术抗性 - 局内 干员法术抗性 */
+  static operator_in_game_magic_resistance(input: { charInput: CharInput; context: BuffContext }) {
+    return ExpressionUtil.operator_out_game_magic_resistance({
+      charInput: input.charInput,
+      context: input.context,
+    }).addChild(...input.context.in_game_buff_add.magic_resistance.children);
+  }
+
+  /** 阻挡数 - 局内 干员阻挡数 */
+  static operator_in_game_block_cnt(input: { charInput: CharInput; context: BuffContext }) {
+    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data;
+    const baseBlockCnt = attribute?.blockCnt ?? 0;
+
+    return new ExpressionGroupNode("+", "阻挡数")
+      .addChild(new NumericLiteralNode(baseBlockCnt, "基础阻挡数"))
+      .addChild(...input.context.in_game_buff_add.block_cnt.children);
   }
 
   /** 攻击速度 - 局外 干员攻击速度 */

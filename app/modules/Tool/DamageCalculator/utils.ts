@@ -135,6 +135,7 @@ export const layerValueStrs = [
   "rogue_5_character_in_candle_holder_common_buff[stack]", // 伺烛客编队
   "rogue_5_character_atk_up[extend_by_candle]", // 岁厉 攻击提升时间层数
   "rogue_5_character_in_candle_holder_buff[battle_god]", // 契心聆铃
+  "rogue_2_atk_up_in_range", // 支柱-援护
 ];
 
 /**

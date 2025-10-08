@@ -344,6 +344,18 @@ registerRelicBlackboard("rogue_4_caster_hand[pair]", {
   },
 });
 
+/** 支柱-援护 */
+registerRelicBlackboard("rogue_2_atk_up_in_range", {
+  isActive() {
+    return true; // 对所有干员生效，忽略职业选择器
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const atk = getByKeySafe(buff.blackboard, "atk");
+    context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+  },
+});
+
 /** 湖中神盾 */
 registerRelicBlackboard("rogue_3_increaseMaxHPWhenHavingShield", {
   isActive() {

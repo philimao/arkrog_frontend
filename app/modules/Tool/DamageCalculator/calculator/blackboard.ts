@@ -763,7 +763,11 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
 
     /** 最大生命值 */
     if (max_hp) {
-      context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * layer, relic.name, { relic, buff }));
+      if (inGame) {
+        context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
+      } else {
+        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * layer, relic.name, { relic, buff }));
+      }
       is_invalid = false;
     }
     /** 攻击力 */

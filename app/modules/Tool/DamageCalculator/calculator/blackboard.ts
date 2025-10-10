@@ -492,50 +492,69 @@ registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff[stack]",
     const atk = getByKey(buff.blackboard, "atk");
     const def = getByKey(buff.blackboard, "def");
     const max_hp = getByKey(buff.blackboard, "max_hp");
+    
     if (attack_speed) {
       context.relic_rune_add.attack_speed.addChild(
         new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
       );
     }
     if (atk) {
-      context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
     }
     if (def) {
-      context.relic_rune_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+      context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
     }
     if (max_hp) {
-      context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
     }
   },
 });
 
-// /** 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) */
-// registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff", {
-//   isActive(input) {
-//     return !input.charData || isBlackboardActiveForChar(input.buff, input.charData);
-//   },
-//   apply(input): void {
-//     const { context, buff, relic } = input;
-//     const attack_speed = getByKey(buff.blackboard, "attack_speed");
-//     const atk = getByKey(buff.blackboard, "atk");
-//     const def = getByKey(buff.blackboard, "def");
-//     const max_hp = getByKey(buff.blackboard, "max_hp");
-//     if (attack_speed) {
-//       context.relic_rune_add.attack_speed.addChild(
-//         new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
-//       );
-//     }
-//     if (atk) {
-//       context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
-//     }
-//     if (def) {
-//       context.relic_rune_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
-//     }
-//     if (max_hp) {
-//       context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
-//     }
-//   },
-// });
+/** 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) */
+registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff", {
+  isActive(input) {
+    // 只对伺烛客干员生效
+    return input.charInput?.candleHolder === true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const attack_speed = getByKey(buff.blackboard, "attack_speed");
+    const atk = getByKey(buff.blackboard, "atk");
+    const def = getByKey(buff.blackboard, "def");
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    if (attack_speed) {
+      context.in_game_buff_add.attack_speed.addChild(
+        new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
+      );
+    }
+    if (atk) {
+      context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+    }
+    if (def) {
+      context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+    }
+    if (max_hp) {
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
+    }
+  },
+});
+
+/** 契心聆铃 - 再部署时间减少 */
+registerRelicBlackboard("rogue_5_character_in_candle_holder_buff[respawn_time]", {
+  isActive(input) {
+    // 只对伺烛客干员生效
+    return input.charInput?.candleHolder === true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const respawn_time_addition = getByKey(buff.blackboard, "respawn_time_addition");
+    if (respawn_time_addition) {
+      context.relic_rune_mul.respawn_time.addChild(
+        new NumericLiteralNode(respawn_time_addition.value * relic.layer, relic.name),
+      );
+    }
+  },
+});
 
 /** 画人间 - 岁兽残识 */
 registerRelicBlackboard("rogue_5_character_sp_zone_attri_up", {

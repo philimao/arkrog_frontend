@@ -98,7 +98,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         zone: "zone_5",
         layer: "layer_5",
         difficulty: 15,
-        tech: "1",
+        tech: "1.2",
         relics: [] as string[],
         wraths: [] as string[],
         coppers: [] as string[],

@@ -788,8 +788,13 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
 
     // 是否加算
     const is_add = buff.key.includes("_attribute_add");
-    /** 如果buff不含层数效果，忽视用户填写的层数 */
-    const layer = relicHasLayer(relic) ? relic.layer : 1;
+
+    // /** 如果buff不含层数效果，忽视用户填写的层数 */
+    // const layer = relicHasLayer(relic) ? relic.layer : 1;
+
+    /** 如果buff的key以layer_开头，说明受层数影响，否则固定为1层 */
+    const layer = buff.key.startsWith("layer_") ? relic.layer : 1;
+
     // 是否局内
     const inGame = inGameRelicNames.includes(relic.name) || ["buff", "ability"].some((kw) => buff.key.includes(kw));
 

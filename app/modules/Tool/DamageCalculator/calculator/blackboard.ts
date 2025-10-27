@@ -817,12 +817,25 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       is_invalid = false;
     }
     /** 防御力 */
+    // if (def) {
+    //   const node = new NumericLiteralNode(def.value * layer, relic.name, { relic, buff });
+    //   if (is_add) {
+    //     context.relic_rune_add.def.addChild(node);
+    //   } else {
+    //     context.relic_rune_mul.def.addChild(node);
+    //   }
+    //   is_invalid = false;
+    // }
     if (def) {
-      const node = new NumericLiteralNode(def.value * layer, relic.name, { relic, buff });
-      if (is_add) {
-        context.relic_rune_add.def.addChild(node);
+      if (inGame) {
+        context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
       } else {
-        context.relic_rune_mul.def.addChild(node);
+        const node = new NumericLiteralNode(def.value * layer, relic.name, { relic, buff });
+        if (is_add) {
+          context.relic_rune_add.def.addChild(node);
+        } else {
+          context.relic_rune_mul.def.addChild(node);
+        }
       }
       is_invalid = false;
     }

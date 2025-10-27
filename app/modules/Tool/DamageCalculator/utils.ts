@@ -82,7 +82,8 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
 };
 
 export const parseBlackboardEntry = (blackboard: BlackboardData, percent?: boolean) =>
-  `${allowedBlackboardKeyMap[blackboard.key] || blackboard.key}: ${percent ? blackboard.value * 100 + "%" : blackboard.value}`;
+  // `${allowedBlackboardKeyMap[blackboard.key] || blackboard.key}: ${percent ? blackboard.value * 100 + "%" : blackboard.value}`;
+  `${allowedBlackboardKeyMap[blackboard.key] || blackboard.key}: ${percent ? Math.round(blackboard.value * 10000) / 100 + "%" : blackboard.value}`;
 
 /**
  * buff.key以global开头的，注册的valueStr
@@ -165,6 +166,7 @@ export const inGameRelicNames = [
   "未叙魔王残片",
   "魔王的祭器",
   "几丁质刺刃",
+  "四方绘料",
 ];
 
 /** 金酒之杯系列 */

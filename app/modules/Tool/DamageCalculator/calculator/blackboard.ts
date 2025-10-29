@@ -609,6 +609,47 @@ registerRelicBlackboard("rogue_5_left_or_right_most_tile_col[attri_up]", {
   },
 });
 
+/** 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 */
+registerRelicBlackboard("attri_up_filter_level_cost", {
+  isActive(input) {
+    const { buff, relics } = input;
+    const costThreshold = getByKey(buff.blackboard, "cost");
+
+    // 计算费用条件
+    if (costThreshold) {
+      let maxCostBonus = 99;
+      for (const relic of relics) {
+        for (const relicBuff of relic.buffs) {
+          if (relicBuff.key === "level_max_cost_add") {
+            const maxCost = getByKey(relicBuff.blackboard, "max_cost");
+            if (maxCost) {
+              maxCostBonus += maxCost.value;
+            }
+          }
+        }
+      }
+
+      return maxCostBonus >= costThreshold.value;
+    }
+
+    return true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const max_hp = getByKey(buff.blackboard, "max_hp");
+    const block_cnt = getByKey(buff.blackboard, "block_cnt");
+
+    // 生命值 - 局内乘算
+    if (max_hp) {
+      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+    }
+    // 阻挡数 - 局内加算
+    if (block_cnt) {
+      context.in_game_buff_add.block_cnt.addChild(new NumericLiteralNode(block_cnt.value, relic.name));
+    }
+  },
+});
+
 /** 通用敌人藏品黑板 */
 export const commonEnemyRelicBlackboard = {
   isActive({ buff, enemyData, relic, stageData }: EnemyRelicBlackboardInput) {

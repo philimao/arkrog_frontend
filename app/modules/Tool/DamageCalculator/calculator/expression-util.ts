@@ -262,9 +262,16 @@ export class ExpressionUtil {
           .addChild(new NumericLiteralNode(input.enemyBase.attributes.def, "基础"))
           .addChild(input.context.stage_rune_mul.enemy_def),
       )
-      .addChild(input.context.relic_rune_mul.enemy_def)
+      .addChild(input.context.relic_rune_mul.enemy_def);
+    let expressFinal = new ExpressionGroupNode("*", "最终加算&最终乘算");
+    expressFinal = expressFinal
+      .addChild(
+        new ExpressionGroupNode("+", "最终加算")
+          .addChild(expression)
+          .addChild(input.context.in_game_buff_final_add.enemy_def),
+      )
       .addChild(input.context.in_game_buff_final_mul.enemy_def);
-    return expression;
+    return expressFinal;
   }
 
   /** 敌人最终生命值 */

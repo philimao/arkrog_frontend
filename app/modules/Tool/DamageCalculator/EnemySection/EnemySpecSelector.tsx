@@ -40,7 +40,7 @@ export default function EnemySpecSelector() {
             // 为年代之刺和饮泣之刺的年代印痕选择器禁用"否"选项
             const isSkzdwxSelect = select.label.includes("年代印痕");
             const disabledKeys = isSpecialEnemy && isSkzdwxSelect ? ["0"] : undefined; // 禁用"否"选项（key为0）
-            
+
             return (
               <ToolSelect
                 key={select.label}
@@ -117,6 +117,28 @@ export const Rogue4SkzdwxSelect: EnemySpecConfig["selects"][number] = {
 };
 
 export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
+  // rogue_5 岁的界园志异
+  enemy_2105_dyrnge: {
+    id: "enemy_2105_dyrnge",
+    name: "似兽",
+    selects: [
+      {
+        label: "是否起飞",
+        options: [
+          { label: "否", key: 0 },
+          { label: "是", key: -1500 },
+        ],
+        apply: (key: string) => {
+          return {
+            label: "是否起飞",
+            bbKey: "in_game_buff_final_add.enemy_def",
+            key: key,
+            value: Number(key),
+          };
+        },
+      },
+    ],
+  },
   // rogue_4 萨卡兹的无终奇语
   enemy_2081_skztxs: {
     id: "enemy_2081_skztxs",

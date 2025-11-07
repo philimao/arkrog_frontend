@@ -440,7 +440,7 @@ export class CalculatorHelper {
 
     /** 萨卡兹肉鸽 */
     if (rogueInput.topic === "rogue_4") {
-      const { difficulty, thoughtLoad, zone, layer } = rogueInput.rogue_4;
+      const { difficulty, thoughtLoad, layer } = rogueInput.rogue_4;
       if (difficulty === 18 && thoughtLoad === "CONFUSION") {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
         context.relic_rune_add.cost.addChild(new NumericLiteralNode(3, "思绪混乱"));
@@ -449,12 +449,12 @@ export class CalculatorHelper {
       const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
       /** 层数选择器到实际层数的映射 */
       const layerToZoneMap: Record<string, number> = {
-        "layer_1": 1,
-        "layer_2": 2,
-        "layer_3": 3,
-        "layer_4": 4,
-        "layer_5": 5,
-        "layer_6": 6,
+        layer_1: 1,
+        layer_2: 2,
+        layer_3: 3,
+        layer_4: 4,
+        layer_5: 5,
+        layer_6: 6,
       };
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       const zoneValue = layerToZoneMap[layer] || 1;
@@ -516,18 +516,18 @@ export class CalculatorHelper {
     }
     /** 界园肉鸽 */
     if (rogueInput.topic === "rogue_5") {
-      const { difficulty, zone, layer } = rogueInput.rogue_5;
+      const { difficulty, layer } = rogueInput.rogue_5;
       /** 肉鸽难度加成 */
       const enemyAttrMultipliers = [0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 15];
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       /** 层数选择器到实际层数的映射 */
       const layerToZoneMap: Record<string, number> = {
-        "layer_1": 1,
-        "layer_2": 2,
-        "layer_3": 3,
-        "layer_4": 4,
-        "layer_5": 5,
-        "layer_6": 6,
+        layer_1: 1,
+        layer_2: 2,
+        layer_3: 3,
+        layer_4: 4,
+        layer_5: 5,
+        layer_6: 6,
       };
       const zoneValue = layerToZoneMap[layer] || 1;
 
@@ -674,6 +674,9 @@ export class CalculatorHelper {
         switch (bbKey) {
           case "enemy_damage_resistance":
             context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
+            break;
+          case "in_game_buff_final_add.enemy_def":
+            context.in_game_buff_final_add.enemy_def.addChild(new NumericLiteralNode(value, label));
             break;
           default:
             break;

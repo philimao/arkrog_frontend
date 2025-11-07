@@ -85,6 +85,8 @@ export interface IBuffContext {
   in_game_buff_final_add: {
     /** 攻击力来源 */
     atk: ExpressionGroupNode;
+    /** 敌人防御力改变 */
+    enemy_def: ExpressionGroupNode;
   };
   /** 局内Buff 最终乘算 */
   in_game_buff_final_mul: {
@@ -173,6 +175,7 @@ export class BuffContext implements IBuffContext {
   };
   in_game_buff_final_add: IBuffContext["in_game_buff_final_add"] = {
     atk: new ExpressionGroupNode("+", "局内最终加算"),
+    enemy_def: new ExpressionGroupNode("+", "局内最终加算"),
   };
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
@@ -262,6 +265,7 @@ export class BuffContext implements IBuffContext {
     // 深度克隆 in_game_buff_final_add
     clone.in_game_buff_final_add = {
       atk: this.in_game_buff_final_add.atk.clone(),
+      enemy_def: this.in_game_buff_final_add.enemy_def.clone(),
     };
 
     // 深度克隆 in_game_buff_final_mul

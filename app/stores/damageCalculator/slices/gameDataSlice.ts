@@ -60,7 +60,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     rogueInput.topic = rogueTopic;
-    
+
     // 切换主题时使用默认值，不使用本地存储
     const defaultValues: Record<RogueTopic, any> = {
       rogue_1: {
@@ -71,7 +71,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         relics: [] as string[],
       },
       rogue_2: {
-        zone: "zone_1", 
+        zone: "zone_1",
         layer: "layer_1",
         difficulty: 0,
         tech: "1",
@@ -79,14 +79,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       },
       rogue_3: {
         zone: "zone_1",
-        layer: "layer_1", 
+        layer: "layer_1",
         difficulty: 0,
         tech: "1",
         relics: [] as string[],
       },
       rogue_4: {
         zone: "zone_5",
-        layer: "layer_5", 
+        layer: "layer_5",
         difficulty: 18,
         tech: "1.3",
         relics: [] as string[],
@@ -104,14 +104,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         coppers: [] as string[],
       },
     };
-    
+
     const topicDefaults = defaultValues[rogueTopic];
     rogueInput[rogueTopic].zone = topicDefaults.zone;
     rogueInput[rogueTopic].layer = topicDefaults.layer;
     rogueInput[rogueTopic].difficulty = topicDefaults.difficulty;
     rogueInput[rogueTopic].tech = topicDefaults.tech;
     rogueInput[rogueTopic].relics = topicDefaults.relics;
-    
+
     // 设置主题特定属性
     if (rogueTopic === RogueTopic.ROGUE_4) {
       rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
@@ -121,7 +121,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       rogueInput[rogueTopic].wraths = topicDefaults.wraths;
       rogueInput[rogueTopic].coppers = topicDefaults.coppers;
     }
-    
+
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
@@ -146,7 +146,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.levels = levels;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
-        
+
         // 设置主题特定属性
         if (rogueTopic === RogueTopic.ROGUE_4) {
           state.rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
@@ -174,68 +174,68 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     const rogueKey = rogueInput.topic as RogueKey;
-    
+
     // 根据区域和关卡设置默认层数
     const getDefaultLayerForZone = (zone: string, topic: string, stageId?: string): string => {
       if (topic === "rogue_4") {
         // 萨卡兹主题的层数映射
         const sarkazZoneToLayerMap: Record<string, string> = {
-          "zone_1": "layer_1",        // I 熔魂之始 → 第一层
-          "zone_2": "layer_2",        // II 锻铁根须 → 第二层
-          "zone_3": "layer_3",        // III 灰铸迷城 → 第三层
-          "zone_4": "layer_4",        // IV 或然歧域 → 第四层
-          "zone_5": "layer_5",        // V 虚实疆界 → 第五层
-          "zone_6": "layer_6",        // VI 辉光天顶·爱国者 → 第六层
-          "zone_7": "layer_6",        // VI 逍遥兰若·奎隆 → 第六层
-          "zone_8": "layer_7",        // VII 无终安息·魔王阿米娅 → 第七层
+          zone_1: "layer_1", // I 熔魂之始 → 第一层
+          zone_2: "layer_2", // II 锻铁根须 → 第二层
+          zone_3: "layer_3", // III 灰铸迷城 → 第三层
+          zone_4: "layer_4", // IV 或然歧域 → 第四层
+          zone_5: "layer_5", // V 虚实疆界 → 第五层
+          zone_6: "layer_6", // VI 辉光天顶·爱国者 → 第六层
+          zone_7: "layer_6", // VI 逍遥兰若·奎隆 → 第六层
+          zone_8: "layer_7", // VII 无终安息·魔王阿米娅 → 第七层
         };
-        
+
         // 不期而遇区域的特殊处理
         if (zone === "zone_9") {
           return "layer_4"; // 默认关卡显示时光凯旋，默认第四层
         }
-        
+
         // 诡异行商区域的特殊处理
         if (zone === "zone_10") {
           return "layer_4"; //默认关卡显示叙事要约，默认第四层
         }
-        
+
         return sarkazZoneToLayerMap[zone] || "layer_1";
       } else {
         // 界园主题的层数映射
         const jiayuanZoneToLayerMap: Record<string, string> = {
-          "zone_1": "layer_1",        // I 洪陆楼 → 第一层
-          "zone_2": "layer_2",        // II 山水阁 → 第二层
-          "zone_3": "layer_3",        // III 云瓦亭 → 第三层
-          "zone_4": "layer_4",        // IV 汝吾门 → 第四层
-          "zone_5": "layer_5",        // V 见字祠 → 第五层
-          "zone_6": "layer_6",        // VI 始末陵·"望" → 第六层
-          "zone_7": "layer_2",        // 岁兽残识 → 第二层
-          "zone_8": "layer_1",        // 不期而遇 → 第一层
+          zone_1: "layer_1", // I 洪陆楼 → 第一层
+          zone_2: "layer_2", // II 山水阁 → 第二层
+          zone_3: "layer_3", // III 云瓦亭 → 第三层
+          zone_4: "layer_4", // IV 汝吾门 → 第四层
+          zone_5: "layer_5", // V 见字祠 → 第五层
+          zone_6: "layer_6", // VI 始末陵·"望" → 第六层
+          zone_7: "layer_2", // 岁兽残识 → 第二层
+          zone_8: "layer_1", // 不期而遇 → 第一层
         };
-        
+
         // 诡异行商区域的特殊处理
         if (zone === "zone_10") {
           if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
           if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
           return "layer_1"; // 默认第一层
         }
-        
+
         // 指点迷津区域的特殊处理
         if (zone === "zone_11") {
           if (stageId === "ro5_dv_5") return "layer_5"; // 分明 → 第五层
           return "layer_5"; // 默认第五层
         }
-        
+
         return jiayuanZoneToLayerMap[zone] || "layer_1";
       }
     };
-    
+
     rogueInput[rogueKey].zone = zone;
-    
+
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
-    
+
     // 根据第一个关卡的默认层数设置层数
     const getDefaultLayerForStage = (stageId: string, topic: string): string => {
       if (topic === "rogue_4") {
@@ -248,7 +248,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       // 对于非商店关卡，使用区域默认层数
       return getDefaultLayerForZone(zone, rogueKey);
     };
-    
+
     const defaultLayer = getDefaultLayerForStage(stageId, rogueKey);
     rogueInput[rogueKey].layer = defaultLayer;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
@@ -296,7 +296,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
-    
+
     // 根据关卡设置默认层数
     const getDefaultLayerForStage = (stageId: string, topic: string): string => {
       if (topic === "rogue_4") {
@@ -343,9 +343,9 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       }
       return state.rogueInput[rogueKey].layer; // 保持当前层数
     };
-    
+
     const newLayer = getDefaultLayerForStage(stageId, rogueKey);
-    
+
     set(
       (state) => {
         state.stageId = stageId;

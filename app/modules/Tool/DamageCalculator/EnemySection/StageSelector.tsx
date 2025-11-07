@@ -124,6 +124,11 @@ export default function StageSelector() {
 
   const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
 
+  // 快速切换紧急/普通
+  const switchDifficultyTarget = stageId.match(/_[en]_/)
+    ? stageId.replace(/_[en]_/, (match) => (match === "_e_" ? "_n_" : "_e_"))
+    : null;
+
   return (
     <StyledStageSelector>
       <GridContainer>
@@ -162,7 +167,7 @@ export default function StageSelector() {
             { id: "layer_4", name: "第四层" },
             { id: "layer_5", name: "第五层" },
             { id: "layer_6", name: "第六层" },
-            { id: "layer_7", name: "第七层" }
+            { id: "layer_7", name: "第七层" },
           ]}
           getKey={(layer) => layer.id}
           getValue={(layer) => layer.name}
@@ -191,6 +196,14 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
+              {switchDifficultyTarget && (
+                <span
+                  className={"cursor-pointer " + (stageData.isElite ? "" : "text-ak-red")}
+                  onClick={() => setRogueStageId(switchDifficultyTarget)}
+                >
+                  点击跳转至{stageData.isElite ? "普通" : "紧急"}
+                </span>
+              )}
               {rogueInput.topic === "rogue_4" && <span className="parasitic-hint">红点代表死亡后会生成恐卡兹</span>}
             </StyledEnemiesLabel>
             <StyledEnemies>
@@ -203,7 +216,7 @@ export default function StageSelector() {
                   const parasitized = _enemyData.talentBlackboard?.find(
                     (bb) => bb.key === "parasitic" && bb.valueStr === "true",
                   );
-                  
+
                   // 为神父变体添加特殊显示名称
                   let displayName = _enemyData.name.m_value;
                   if (_enemyData.id === "enemy_1284_sgprst") {
@@ -211,7 +224,7 @@ export default function StageSelector() {
                   } else if (_enemyData.id === "enemy_1284_sgprst_variant") {
                     displayName = "阿格尼尔神父（全远程）";
                   }
-                  
+
                   return (
                     <StyledEnemy
                       key={_enemyData.id}

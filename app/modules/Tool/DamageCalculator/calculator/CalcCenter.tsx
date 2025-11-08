@@ -8,6 +8,7 @@ import { ExpressionUtil } from "./expression-util";
 import { calculatorStorage, createBaseState } from "~/stores/damageCalculator/localStorage";
 import { useShallow } from "zustand/react/shallow";
 import { useGameDataStore } from "~/stores/gameDataStore";
+import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
 let localStateInited = false;
 
 export default function CalcCenter() {
@@ -54,12 +55,12 @@ export default function CalcCenter() {
     if (rogueInput.topic === RogueTopic.ROGUE_5) {
       const wraths = rogueInput.rogue_5.wraths.map((id) => rogue5_wrath_spec_items.find((item) => item.id === id)!);
       const coppers = rogueInput.rogue_5.coppers.map((id) => rogue5_copper_spec_items.find((item) => item.id === id)!);
-      return [...wraths, ...coppers].filter((item) => item.userActive);
+      return [...wraths, ...coppers].filter((item) => item?.userActive) as ITopicSpecItem[];
     }
     if (rogueInput.topic === RogueTopic.ROGUE_4) {
       const inspiration = rogue4_inspiration_spec_items.find((item) => item.id === rogueInput.rogue_4.inspiration);
       const disaster = rogue4_disaster_spec_items.find((item) => item.id === rogueInput.rogue_4.disaster);
-      return [inspiration, disaster].filter((item) => item?.userActive);
+      return [inspiration, disaster].filter((item) => item?.userActive) as ITopicSpecItem[];
     }
     return [];
   }, [
@@ -250,6 +251,7 @@ export default function CalcCenter() {
         thoughtLoad: rogueInput[localState.topic].thoughtLoad,
         inspiration: rogueInput[localState.topic].inspiration,
         disaster: rogueInput[localState.topic].disaster,
+        layer: rogueInput[localState.topic].layer,
       };
     }
     // 保存界园肉鸽主题状态
@@ -263,6 +265,7 @@ export default function CalcCenter() {
         relics: selectedIds,
         wraths: rogueInput[localState.topic].wraths,
         coppers: rogueInput[localState.topic].coppers,
+        layer: rogueInput[localState.topic].layer,
       };
     }
     calculatorStorage.write(localState);

@@ -4,7 +4,6 @@ import { initialCalcGameDataState } from "../calcConstants";
 
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
 import { RogueTopic, type RogueKey } from "~/types/gameData";
-import { calculatorStorage, type Rouge4State, type Rouge5State } from "../localStorage";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
@@ -62,48 +61,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     rogueInput.topic = rogueTopic;
 
     // 切换主题时使用默认值，不使用本地存储
-    const defaultValues: Record<RogueTopic, any> = {
-      rogue_1: {
-        zone: "zone_1",
-        layer: "layer_1",
-        difficulty: 0,
-        tech: "1",
-        relics: [] as string[],
-      },
-      rogue_2: {
-        zone: "zone_1",
-        layer: "layer_1",
-        difficulty: 0,
-        tech: "1",
-        relics: [] as string[],
-      },
-      rogue_3: {
-        zone: "zone_1",
-        layer: "layer_1",
-        difficulty: 0,
-        tech: "1",
-        relics: [] as string[],
-      },
-      rogue_4: {
-        zone: "zone_5",
-        layer: "layer_5",
-        difficulty: 18,
-        tech: "1.3",
-        relics: [] as string[],
-        thoughtLoad: "NORMAL" as const,
-        inspiration: undefined as string | undefined,
-        disaster: undefined as string | undefined,
-      },
-      rogue_5: {
-        zone: "zone_5",
-        layer: "layer_5",
-        difficulty: 15,
-        tech: "1.2",
-        relics: [] as string[],
-        wraths: [] as string[],
-        coppers: [] as string[],
-      },
-    };
+    const defaultValues = initialCalcGameDataState.rogueInput;
 
     const topicDefaults = defaultValues[rogueTopic];
     rogueInput[rogueTopic].zone = topicDefaults.zone;
@@ -124,7 +82,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
 
     const renderStages = getStageList(state.stages, rogueInput);
     const stageId = renderStages[0].id;
-    const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
+    const { stageData, levelData, levels, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
       levels: state.levels,
@@ -134,8 +92,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     set(
       (state) => {
         state.rogueInput.topic = rogueTopic;
-        state.rogueInput[rogueTopic].difficulty = topicDefaults.difficulty;
-        state.rogueInput[rogueTopic].zone = topicDefaults.zone;
+        state.rogueInput[rogueTopic].difficulty = topicDefaults.difficulty!;
+        state.rogueInput[rogueTopic].zone = topicDefaults.zone!;
         state.rogueInput[rogueTopic].layer = topicDefaults.layer;
         state.rogueInput[rogueTopic].tech = topicDefaults.tech;
         state.rogueInput[rogueTopic].relics = topicDefaults.relics;

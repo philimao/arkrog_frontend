@@ -61,7 +61,11 @@ export default function EnemyMiniPreview() {
             <StyledInputWrapper key={key}>
               <div className="ps-3 me-auto">{allowedBlackboardKeyMap[camelToSnake(key)]}</div>
               {enemyExpression[key] ? (
-                <ExpressionDisplay className={className} expression={enemyExpression[key]}></ExpressionDisplay>
+                <ExpressionDisplay
+                  className={className}
+                  expression={enemyExpression[key]}
+                  mode="in_game"
+                ></ExpressionDisplay>
               ) : (
                 <div className={className}>{enemyBase.attributes[key as never]}</div>
               )}

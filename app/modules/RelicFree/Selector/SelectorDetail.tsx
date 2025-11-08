@@ -87,24 +87,26 @@ export default function SelectorDetail({
       </div>
       <div className="flex">
         {/* 新增全部筛选器，不参与下方每层的关卡渲染 */}
-        {[{ id: "all", name: "全部" }, ...navOfZone].map((zone) => (
-          <div
-            className={
-              "basis-1/6 text-center font-bold leading-[3rem] " +
-              `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
-            }
-            key={zone.id}
-            role="button"
-            onClick={() => {
-              searchParams.set("zoneId", zone.id);
-              setSearchParams(searchParams, {
-                preventScrollReset: true,
-              });
-            }}
-          >
-            {zone.name}
-          </div>
-        ))}
+        {[{ id: "all", name: "全部", filter: () => [true] }, ...navOfZone]
+          .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
+          .map((zone) => (
+            <div
+              className={
+                "basis-1/6 text-center font-bold leading-[3rem] " +
+                `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+              }
+              key={zone.id}
+              role="button"
+              onClick={() => {
+                searchParams.set("zoneId", zone.id);
+                setSearchParams(searchParams, {
+                  preventScrollReset: true,
+                });
+              }}
+            >
+              {zone.name}
+            </div>
+          ))}
       </div>
       <div className="mb-4">
         <div className="w-1/3 sm:w-1/4 lg:w-1/6 px-4 py-4 text-xs text-wrap">
@@ -118,6 +120,9 @@ export default function SelectorDetail({
       <div>
         {/* 根据楼层筛选器，渲染每层的关卡 */}
         {navOfZone
+          // 过滤没有关联关卡的层数
+          .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
+          // 过滤当前选中的层数
           .filter((zone) => zoneFilterId === "all" || zoneFilterId === zone.id)
           .map((zone) => {
             const renderedStageIds: string[] = [];

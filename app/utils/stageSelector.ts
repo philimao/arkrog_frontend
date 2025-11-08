@@ -1,10 +1,16 @@
+/**
+ * 无藏收录页面用关卡筛选器，不要与计算器页面关卡筛选器混用
+ */
+
 import type { StageData } from "~/types/gameData";
 
+// 三层boss关数量（异格记为同一个）
 export const numOfMinorBoss = {
   ro1: 5,
   ro2: 3,
   ro3: 3,
   ro4: 3,
+  ro5: 3,
 };
 
 // 定义每层的名称，以及筛选器
@@ -55,11 +61,34 @@ export const navOfZone = [
     },
   },
   {
+    id: "zone_sky_1",
+    name: "是非境",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if (args[1] !== "sv") return false;
+      return args.slice(-1)[0] !== "dlc1";
+    },
+  },
+  {
+    id: "zone_sky_2",
+    name: "今昔境",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      if (args[1] !== "sv") return false;
+      return args.slice(-1)[0] === "dlc1";
+    },
+  },
+  {
     id: "others",
     name: "特殊关卡",
     filter: (stage: StageData) => {
       const args = stage.id.split("_");
-      return ["ev", "t", "duel"].includes(args[1]);
+      return [
+        "ev", // 不期而遇
+        "t", // 不期而遇
+        "duel", // 狭路
+        "dv", //分明
+      ].includes(args[1]);
     },
   },
 ];

@@ -9,7 +9,7 @@ import { getNavOfZone, zoneOfTopic } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 import { cosHost } from "~/utils/tools";
 import type { StageData } from "~/types/gameData";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -138,9 +138,13 @@ export default function StageSelector() {
   const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
 
   // 快速切换紧急/普通
-  const switchDifficultyTarget = stageId.match(/_[en]_/)
-    ? stageId.replace(/_[en]_/, (match) => (match === "_e_" ? "_n_" : "_e_"))
-    : null;
+  const switchDifficultyTarget = renderStages.find(
+    (stage) => stage.name === stageData.name && stage.isElite !== stageData.isElite,
+  )?.id;
+
+  useEffect(() => {
+    console.log(stageData);
+  }, [stageData]);
 
   return (
     <StyledStageSelector>
@@ -223,10 +227,7 @@ export default function StageSelector() {
               {switchDifficultyTarget && (
                 <span
                   className={"cursor-pointer " + (stageData.isElite ? "" : "text-ak-red")}
-                  onClick={() => {
-                    console.log("debug", switchDifficultyTarget);
-                    setRogueStageId(switchDifficultyTarget);
-                  }}
+                  onClick={() => setRogueStageId(switchDifficultyTarget)}
                 >
                   点击跳转至{stageData.isElite ? "普通" : "紧急"}
                 </span>
@@ -289,6 +290,7 @@ const StyledStageQuickSelector = styled.div<{ $visible: boolean }>`
 `;
 
 const StyledStageItem = styled.div<{ $active: boolean }>`
+  position: relative;
   padding: 0.5rem;
   margin: 0.25rem;
   background: ${({ $active }) => ($active ? "var(--ak-blue)" : "var(--dark-gray)")};
@@ -297,6 +299,16 @@ const StyledStageItem = styled.div<{ $active: boolean }>`
   font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
   text-align: center;
   cursor: pointer;
+`;
+
+const StyledMainEnemies = styled.div<{ $visible: string }>`
+  position: absolute;
+  display: ${({ $visible }) => ($visible ? "flex" : "none")};
+  top: 50%;
+  right: 0.5rem;
+  box-shadow: 0px 0px 2px 1px #ffffff40;
+  transform: translateY(-50%);
+  z-index: 100;
 `;
 
 function StageQuickSelector({
@@ -325,6 +337,10 @@ function StageQuickSelector({
             }}
           >
             {stage.stageName}
+            <div>{stage.id}</div>
+            <StyledMainEnemies $visible={stage.mainEnemy}>
+              <EnemyAvatar name={stage.mainEnemy} className="w-8 h-8" />
+            </StyledMainEnemies>
           </StyledStageItem>
         );
       })}

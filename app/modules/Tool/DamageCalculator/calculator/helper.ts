@@ -528,6 +528,7 @@ export class CalculatorHelper {
         layer_4: 4,
         layer_5: 5,
         layer_6: 6,
+        layer_7: 7,
       };
       const zoneValue = layerToZoneMap[layer] || 1;
 

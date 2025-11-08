@@ -30,8 +30,12 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
   // 获取所有关卡并合并重复的关卡
   const allStages = Object.values(stageOfRogue).filter((stage) => zone!.filter(stage));
 
+  // 过滤无效关卡
+  const invalidStages = ["ro5_e_t_9_a"];
+  const filteredStages = allStages.filter((stage) => !invalidStages.includes(stage.id));
+
   // 合并重复关卡
-  const mergedStages = mergeDuplicateStages(allStages);
+  const mergedStages = mergeDuplicateStages(filteredStages);
 
   return (
     mergedStages
@@ -105,7 +109,15 @@ export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput:
         const argsB = b.id.match(/.*_(\d{1,2})/)?.[1] || "0";
         return parseInt(argsA) - parseInt(argsB);
       })
-      // // Boss关在最前，狭路在最后
+      // 变种关卡排序，以字母结尾
+      .sort((a, b) => {
+        const re = /[a-z]$/;
+        if (a.id.match(re) && b.id.match(re)) {
+          return a.id.match(re)?.[0]?.charCodeAt(0) - b.id.match(re)?.[0]?.charCodeAt(0);
+        }
+        return 0;
+      })
+      // Boss关在最前，狭路在最后
       .sort((a, b) => {
         const isBossA = a.isBoss;
         const isBossB = b.isBoss;

@@ -197,23 +197,6 @@ export async function handleUpdateStageId(state: {
     if (stageWithRollingAncestorIds.includes(stageId) && !state.relics.includes("rogue_4_relic_explore_7")) {
       relics.push("rogue_4_relic_explore_7");
     }
-
-    // 合并同名，同属性敌人
-    const mergedEnemies: EnemyData[] = [];
-    for (const enemy of levelData.enemies) {
-      const existingEnemy = mergedEnemies.find(
-        (e) =>
-          e.name.m_value === enemy.name.m_value &&
-          e.attributes.maxHp.m_value === enemy.attributes.maxHp.m_value &&
-          e.attributes.atk.m_value === enemy.attributes.atk.m_value &&
-          e.attributes.def.m_value === enemy.attributes.def.m_value &&
-          e.attributes.magicResistance.m_value === enemy.attributes.magicResistance.m_value,
-      );
-      if (!existingEnemy) {
-        mergedEnemies.push(enemy);
-      }
-    }
-    levelData.enemies = mergedEnemies;
   } else {
     levelData = undefined;
   }
@@ -227,7 +210,7 @@ export async function handleUpdateStageId(state: {
   };
 }
 
-/** 为南武群英会添加神父变体 */
+/** 为南武群英会添加神父变体 TODO 放到后端 */
 async function addPriestVariants(levelData: LevelData): Promise<LevelData> {
   // 找到原有的神父敌人
   const originalPriest = levelData.enemies.find((enemy) => enemy.id === "enemy_1284_sgprst");
@@ -274,5 +257,22 @@ async function addPriestVariants(levelData: LevelData): Promise<LevelData> {
 
 /** 加载关卡详细解包数据 */
 export async function loadLevelData(levelId: string) {
-  return await _get<LevelData>(`/gamedata/level/${levelId.toLowerCase().replace(/\//g, "&&")}`);
+  const levelData = await _get<LevelData>(`/gamedata/level/${levelId.toLowerCase().replace(/\//g, "&&")}`);
+  // 合并同名，同属性敌人，在加载时处理避免被freeze，以及减少运算
+  const mergedEnemies: EnemyData[] = [];
+  for (const enemy of levelData.enemies) {
+    const existingEnemy = mergedEnemies.find(
+      (e) =>
+        e.name.m_value === enemy.name.m_value &&
+        e.attributes.maxHp.m_value === enemy.attributes.maxHp.m_value &&
+        e.attributes.atk.m_value === enemy.attributes.atk.m_value &&
+        e.attributes.def.m_value === enemy.attributes.def.m_value &&
+        e.attributes.magicResistance.m_value === enemy.attributes.magicResistance.m_value,
+    );
+    if (!existingEnemy) {
+      mergedEnemies.push(enemy);
+    }
+  }
+  levelData.enemies = mergedEnemies;
+  return levelData;
 }

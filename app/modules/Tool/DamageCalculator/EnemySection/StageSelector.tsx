@@ -177,7 +177,7 @@ export default function StageSelector() {
         {stageData.eliteDesc && (
           <div className="flex flex-col whitespace-nowrap" style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}>
             <div style={{ height: "calc(0.875rem + 10px)" }}>紧急条件</div>
-            <div className="relative">
+            <div className="relative h-12">
               <div className="absolute top-0 left-0 flex flex-col justify-center bg-dark-gray h-12 px-2">
                 <div>{stageData.eliteDesc}</div>
                 <div>
@@ -199,7 +199,10 @@ export default function StageSelector() {
               {switchDifficultyTarget && (
                 <span
                   className={"cursor-pointer " + (stageData.isElite ? "" : "text-ak-red")}
-                  onClick={() => setRogueStageId(switchDifficultyTarget)}
+                  onClick={() => {
+                    console.log("debug", switchDifficultyTarget);
+                    setRogueStageId(switchDifficultyTarget);
+                  }}
                 >
                   点击跳转至{stageData.isElite ? "普通" : "紧急"}
                 </span>

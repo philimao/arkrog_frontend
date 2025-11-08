@@ -235,11 +235,15 @@ export interface SlicedCalcCharActions {
   addCharData: () => void;
   setCharData: (charData: CharData, i: number) => void;
   removeCharData: (i: number) => void;
+  /** 设置当前选中的干员 */
   setActiveCharName: (
     charName: string,
     skill_table: Record<string, SkillData>,
     uniequip_table: Record<string, UniEquipData>,
   ) => void;
+  /** 移除当前选中的干员 */
+  removeActiveCharName: () => void;
+  /** 设置干员属性额外修改 */
   setCharsModifier: (charName: string, modifier: CharAttributeModifier) => void;
   /** 设置精英化等级 */
   setPhaseLevel: (phaseLevel: string) => void;

@@ -52,15 +52,37 @@ const StyledOperatorButtonWrapper = styled.div<{ $active: boolean }>`
 const StyledOperatorButton = styled.button<{ $active: boolean }>`
   width: 10rem;
   height: 3rem;
+  position: relative;
   text-align: start;
   padding: 0 0.75rem;
   font-weight: bold;
   background: ${(props) => (props.$active ? "var(--ak-blue)" : "var(--dark-gray)")};
 `;
 
+const StyledRemoveButton = styled.button<{ $active: boolean }>`
+  display: ${(props) => (props.$active ? "flex" : "none")};
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1rem;
+  transform: translate(50%, -50%);
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 50%;
+  background: black;
+  opacity: 0.75;
+  transition: opacity 0.2s ease-in-out;
+  &:hover {
+    opacity: 1;
+  }
+`;
+
 export function OperatorButton({ charData }: { charData: CharData }) {
   const { skill_table, uniequip_table } = useGameDataStore();
-  const { activeCharName, setActiveCharName } = useDamageCalculatorStore();
+  const { activeCharName, setActiveCharName, removeActiveCharName } = useDamageCalculatorStore();
   const active = activeCharName === charData.name;
   return (
     <StyledOperatorButtonWrapper $active={active}>
@@ -69,6 +91,15 @@ export function OperatorButton({ charData }: { charData: CharData }) {
         onClick={() => setActiveCharName(charData.name, skill_table, uniequip_table)}
       >
         {charData.name}
+        <StyledRemoveButton
+          $active={active}
+          onClick={(evt) => {
+            evt.stopPropagation();
+            removeActiveCharName();
+          }}
+        >
+          ×
+        </StyledRemoveButton>
       </StyledOperatorButton>
       {/*<StyledRemoveButton onClick={() => removeCharData(i)}>*/}
       {/*  X*/}

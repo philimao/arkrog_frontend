@@ -1,5 +1,5 @@
 import type { CharData } from "~/types/gameData";
-import type { CharSpec, SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
+import type { CharInput, CharSpec, SliceCreator, SlicedCalcCharActions, SlicedCalcCharState } from "../calcTypes";
 import { intialCalcCharState } from "../calcConstants";
 import {
   updateCharState,
@@ -142,6 +142,19 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       },
       undefined,
       "setActiveCharName",
+    );
+  },
+  removeActiveCharName: () => {
+    set(
+      (state) => {
+        state.activeCharName = "";
+        state.charsModifier = {};
+        state.charData = undefined as unknown as CharData;
+        state.charInput = undefined as unknown as CharInput;
+        state.charSpecConfigs = [];
+      },
+      undefined,
+      "removeActiveCharName",
     );
   },
   removeCharData: (i) =>

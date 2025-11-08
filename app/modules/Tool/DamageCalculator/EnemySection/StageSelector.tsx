@@ -5,11 +5,11 @@ import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { getNavOfZone, zoneOfTopic } from "./enemyUtils";
+import { getNavOfZone } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 import { cosHost } from "~/utils/tools";
 import type { StageData } from "~/types/gameData";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -126,6 +126,7 @@ export default function StageSelector() {
     levelData,
     enemyData,
     rogueInput,
+    zones,
     stageId,
     stageData,
     setEnemyData,
@@ -135,16 +136,21 @@ export default function StageSelector() {
 
   const [stageQuickSelectorVisible, setStageQuickSelectorVisible] = useState(false);
 
-  const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
+  const clickHandlerRef = useRef<(evt: MouseEvent) => void>((evt: MouseEvent) => {
+    if (!(evt.target as HTMLElement).closest(".stage-quick-selector")) {
+      // 点击外部区域关闭快速选择器
+      document.removeEventListener("click", clickHandlerRef.current);
+      setStageQuickSelectorVisible(false);
+    }
+  });
+
+  // 用于渲染区域选择器
+  const zoneList = getNavOfZone(rogueInput.topic, zones);
 
   // 快速切换紧急/普通
   const switchDifficultyTarget = renderStages.find(
     (stage) => stage.name === stageData.name && stage.isElite !== stageData.isElite,
   )?.id;
-
-  useEffect(() => {
-    console.log(stageData);
-  }, [stageData]);
 
   return (
     <StyledStageSelector>
@@ -152,7 +158,7 @@ export default function StageSelector() {
         <ToolSelect
           disallowEmptySelection={true}
           label="选择区域"
-          array={zones}
+          array={zoneList}
           getKey={(zone) => zone.id}
           getValue={(zone) => zone.name}
           selectedKeys={[rogueInput[rogueInput.topic].zone]}
@@ -164,15 +170,8 @@ export default function StageSelector() {
             className="font-bold justify-start"
             onPress={() =>
               setStageQuickSelectorVisible((prev) => {
-                if (!prev)
-                  document.addEventListener(
-                    "click",
-                    (evt) =>
-                      !(evt.target as HTMLElement).closest(".stage-quick-selector") &&
-                      setStageQuickSelectorVisible(false),
-                    { once: true },
-                  );
-                return true;
+                if (!prev) document.addEventListener("click", clickHandlerRef.current);
+                return !prev;
               })
             }
           >
@@ -184,6 +183,7 @@ export default function StageSelector() {
           setVisible={setStageQuickSelectorVisible}
           renderStages={renderStages}
           stageId={stageId}
+          handlerRef={clickHandlerRef}
         />
         <ToolSelect
           disallowEmptySelection={true}
@@ -286,7 +286,18 @@ const StyledStageQuickSelector = styled.div<{ $visible: boolean }>`
   z-index: 50;
   gap: 0.5rem 1rem;
   grid-template-columns: repeat(auto-fit, 15rem);
-  padding: 0.5rem 0;
+  padding: 1rem 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -1rem;
+    width: calc(100% + 2rem);
+    height: 100%;
+    background: var(--black-gray);
+    border-radius: 0.5rem;
+  }
 `;
 
 const StyledStageItem = styled.div<{ $active: boolean }>`
@@ -294,7 +305,7 @@ const StyledStageItem = styled.div<{ $active: boolean }>`
   padding: 0.5rem;
   margin: 0.25rem;
   background: ${({ $active }) => ($active ? "var(--ak-blue)" : "var(--dark-gray)")};
-  color: ${({ $active }) => ($active ? "white" : "inherit")};
+  color: ${({ $active }) => ($active ? "black" : "inherit")};
   font-size: 0.9rem;
   font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
   text-align: center;
@@ -314,11 +325,13 @@ const StyledMainEnemies = styled.div<{ $visible: string }>`
 function StageQuickSelector({
   visible,
   setVisible,
+  handlerRef,
   renderStages,
   stageId,
 }: {
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
+  handlerRef: RefObject<(evt: MouseEvent) => void>;
   renderStages: StageData[];
   stageId: string;
 }) {
@@ -334,10 +347,10 @@ function StageQuickSelector({
             onClick={() => {
               setRogueStageId(stage.id);
               setVisible(false);
+              document.removeEventListener("click", handlerRef.current);
             }}
           >
             {stage.stageName}
-            <div>{stage.id}</div>
             <StyledMainEnemies $visible={stage.mainEnemy}>
               <EnemyAvatar name={stage.mainEnemy} className="w-8 h-8" />
             </StyledMainEnemies>

@@ -12,7 +12,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
   ...initialCalculatorState,
   initStore: async (gameDataStore) => {
     console.log("initStore", gameDataStore);
-    const { topics, character_table, skill_table, uniequip_table, stages } = gameDataStore;
+    const { character_table, skill_table, uniequip_table, topics, zones, stages } = gameDataStore;
     const { rogueInput } = get();
     // const allowCharNames = Object.keys(
     //   import.meta.glob("/app/modules/Tool/DamageCalculator/calculator/charImpl/**/*.ts"),
@@ -61,7 +61,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       }
     }
     /** 渲染关卡列表 */
-    const renderStages = getStageList(stages, rogueInput);
+    const renderStages = getStageList(zones, stages, rogueInput);
     /** 初始化关卡 */
     const stageId = renderStages[0].id;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
@@ -83,6 +83,7 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
         state.skill_table = skill_table; // 重复储存，方便后续使用，考虑是否需要优化
         state.uniequip_table = uniequip_table;
         // 初始化关卡
+        state.zones = zones;
         state.stages = stages;
         state.renderStages = renderStages;
         state.stageId = stageId;

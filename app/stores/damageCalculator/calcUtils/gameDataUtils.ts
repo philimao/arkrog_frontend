@@ -1,24 +1,39 @@
-import { getNavOfZone, zoneOfTopic } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
-import type { LevelData, RogueKey, StageOfRogue, EnemyData, StageData } from "~/types/gameData";
+import { getNavOfZone } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
+import type { LevelData, RogueKey, StageOfRogue, EnemyData, StageData, ZoneOfRogue } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 import { dummy } from "../calcConstants";
 import type { RogueInput } from "../calcTypes";
 
 /** 获取渲染关卡列表 */
-export function getStageList(stages: Record<RogueKey, StageOfRogue>, rogueInput: RogueInput) {
+export function getStageList(
+  zones: Record<string, ZoneOfRogue>,
+  stages: Record<RogueKey, StageOfRogue>,
+  rogueInput: RogueInput,
+) {
   const stageOfRogue = stages[rogueInput.topic as RogueKey];
-  const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
-  let zone = zones.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
+  const zoneList = getNavOfZone(rogueInput.topic, zones);
+
+  // zoneList.forEach((zone) => {
+  //   const { id, name, filter } = zone;
+  //   console.log(id, name);
+  //   console.log(
+  //     Object.values(stageOfRogue)
+  //       .filter((stage) => filter(stage))
+  //       .map((stage) => stage.id + " " + stage.name),
+  //   );
+  // });
+
+  let zone = zoneList.find((zone) => rogueInput[rogueInput.topic].zone === zone.id);
 
   // 调试信息
   if (!zone) {
     console.error(`Zone not found: ${rogueInput[rogueInput.topic].zone}`, {
       topic: rogueInput.topic,
-      availableZones: zones.map((z) => z.id),
+      availableZones: zoneList.map((z) => z.id),
       requestedZone: rogueInput[rogueInput.topic].zone,
     });
     // 如果找不到区域，使用第一个可用区域
-    const fallbackZone = zones[0];
+    const fallbackZone = zoneList[0];
     if (fallbackZone) {
       console.warn(`Using fallback zone: ${fallbackZone.id}`);
       zone = fallbackZone;

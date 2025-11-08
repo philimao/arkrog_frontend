@@ -4,6 +4,10 @@ import { initialCalcGameDataState } from "../calcConstants";
 
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
 import { RogueTopic, type RogueKey } from "~/types/gameData";
+import {
+  getDefaultLayerForStage,
+  getDefaultLayerForZone,
+} from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 
 export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
   ...initialCalcGameDataState,
@@ -80,7 +84,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       rogueInput[rogueTopic].coppers = topicDefaults.coppers;
     }
 
-    const renderStages = getStageList(state.stages, rogueInput);
+    const renderStages = getStageList(state.zones, state.stages, rogueInput);
     const stageId = renderStages[0].id;
     const { stageData, levelData, levels, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
@@ -133,82 +137,15 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     const rogueKey = rogueInput.topic as RogueKey;
 
-    // 根据区域和关卡设置默认层数
-    const getDefaultLayerForZone = (zone: string, topic: string, stageId?: string): string => {
-      if (topic === "rogue_4") {
-        // 萨卡兹主题的层数映射
-        const sarkazZoneToLayerMap: Record<string, string> = {
-          zone_1: "layer_1", // I 熔魂之始 → 第一层
-          zone_2: "layer_2", // II 锻铁根须 → 第二层
-          zone_3: "layer_3", // III 灰铸迷城 → 第三层
-          zone_4: "layer_4", // IV 或然歧域 → 第四层
-          zone_5: "layer_5", // V 虚实疆界 → 第五层
-          zone_6: "layer_6", // VI 辉光天顶·爱国者 → 第六层
-          zone_7: "layer_6", // VI 逍遥兰若·奎隆 → 第六层
-          zone_8: "layer_7", // VII 无终安息·魔王阿米娅 → 第七层
-        };
-
-        // 不期而遇区域的特殊处理
-        if (zone === "zone_9") {
-          return "layer_4"; // 默认关卡显示时光凯旋，默认第四层
-        }
-
-        // 诡异行商区域的特殊处理
-        if (zone === "zone_10") {
-          return "layer_4"; //默认关卡显示叙事要约，默认第四层
-        }
-
-        return sarkazZoneToLayerMap[zone] || "layer_1";
-      } else {
-        // 界园主题的层数映射
-        const jiayuanZoneToLayerMap: Record<string, string> = {
-          zone_1: "layer_1", // I 洪陆楼 → 第一层
-          zone_2: "layer_2", // II 山水阁 → 第二层
-          zone_3: "layer_3", // III 云瓦亭 → 第三层
-          zone_4: "layer_4", // IV 汝吾门 → 第四层
-          zone_5: "layer_5", // V 见字祠 → 第五层
-          zone_6: "layer_6", // VI 始末陵·"望" → 第六层
-          zone_7: "layer_2", // 岁兽残识 → 第二层
-          zone_8: "layer_1", // 不期而遇 → 第一层
-        };
-
-        // 诡异行商区域的特殊处理
-        if (zone === "zone_10") {
-          if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
-          if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
-          return "layer_1"; // 默认第一层
-        }
-
-        // 指点迷津区域的特殊处理
-        if (zone === "zone_11") {
-          if (stageId === "ro5_dv_5") return "layer_5"; // 分明 → 第五层
-          return "layer_5"; // 默认第五层
-        }
-
-        return jiayuanZoneToLayerMap[zone] || "layer_1";
-      }
-    };
-
     rogueInput[rogueKey].zone = zone;
 
-    const renderStages = getStageList(state.stages, rogueInput);
+    const renderStages = getStageList(state.zones, state.stages, rogueInput);
     const stageId = renderStages[0].id;
 
-    // 根据第一个关卡的默认层数设置层数
-    const getDefaultLayerForStage = (stageId: string, topic: string): string => {
-      if (topic === "rogue_4") {
-        if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
-        if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
-      } else if (topic === "rogue_5") {
-        if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
-        if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
-      }
-      // 对于非商店关卡，使用区域默认层数
-      return getDefaultLayerForZone(zone, rogueKey);
-    };
+    // 根据区域更新难度层数
+    const newLayer = getDefaultLayerForZone(stageId, rogueInput, state.zones);
+    rogueInput[rogueKey].layer = newLayer;
 
-    const defaultLayer = getDefaultLayerForStage(stageId, rogueKey);
-    rogueInput[rogueKey].layer = defaultLayer;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput,
       stages: state.stages,
@@ -219,7 +156,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     set(
       (state) => {
         state.rogueInput[rogueKey].zone = zone;
-        state.rogueInput[rogueKey].layer = defaultLayer;
+        state.rogueInput[rogueKey].layer = newLayer;
         state.renderStages = renderStages;
         state.stageId = stageId;
         state.stageData = stageData;
@@ -255,54 +192,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       stageId,
     });
 
-    // 根据关卡设置默认层数
-    const getDefaultLayerForStage = (stageId: string, topic: string): string => {
-      if (topic === "rogue_4") {
-        if (stageId === "ro4_ev_1") return "layer_1"; // 物权纠纷 → 第一层
-        if (stageId === "ro4_ev_2") return "layer_4"; // 叙事要约 → 第四层
-        // 萨卡兹主题不期而遇关卡特定层数设置
-        if (stageId === "ro4_e_t_2") return "layer_5"; // 紧急信号灯 → 第五层
-        if (stageId === "ro4_t_1") return "layer_1"; // 失败的试胆 → 第一层
-        if (stageId === "ro4_t_2") return "layer_2"; // 普通信号灯 → 第二层
-        if (stageId === "ro4_t_3") return "layer_3"; // 劫虚济实 → 第三层
-        if (stageId === "ro4_t_4") return "layer_6"; // 鸭速公路 → 第六层
-        if (stageId === "ro4_t_5") return "layer_4"; // 战场侧面 → 第四层
-        if (stageId === "ro4_t_6") return "layer_4"; // 继承 → 第四层
-        if (stageId === "ro4_t_7") return "layer_4"; // 时光凯旋 → 第四层
-        if (stageId === "ro4_t_8") return "layer_5"; // 玩具的报复 → 第五层
-      } else if (topic === "rogue_5") {
-        if (stageId === "ro5_ev_1") return "layer_1"; // 神游天外 → 第一层
-        if (stageId === "ro5_ev_2") return "layer_4"; // 作壁上观 → 第四层
-        // 界园主题不期而遇关卡特定层数设置
-        if (stageId === "ro5_t_1") return "layer_1"; // 源源不断 → 第一层
-        if (stageId === "ro5_t_2") return "layer_3"; // 闪闪发光 → 第三层
-        if (stageId === "ro5_t_3") return "layer_3"; // 循循善诱 → 第三层
-        if (stageId === "ro5_t_4") return "layer_6"; // 易易鸭鸭 → 第六层
-        if (stageId === "ro5_t_5") return "layer_6"; // 劫罚 → 第六层
-        if (stageId === "ro5_t_6") return "layer_5"; // 生百相 → 第五层
-        if (stageId === "ro5_t_7") return "layer_3"; // 硕果累累 → 第三层
-        if (stageId === "ro5_t_8") return "layer_3"; // 以逸待劳 → 第三层
-        if (stageId === "ro5_t_9_a") return "layer_4"; // 喜从驮来 → 第四层
-        if (stageId === "ro5_t_9_b") return "layer_4"; // 硅基伥的宴席 → 第四层
-        if (stageId === "ro5_t_9_c") return "layer_4"; // 彻底失控 → 第四层
-        if (stageId === "ro5_t_10") return "layer_3"; // 为崖作伥 → 第三层
-        // 界园主题指点迷津关卡特定层数设置
-        if (stageId === "ro5_dv_5") return "layer_5"; // 分明 → 第五层
-        if (stageId === "ro5_fs_1") return "layer_5"; // 谤天 → 第五层
-        if (stageId === "ro5_fs_1_b") return "layer_5"; // 谤天(紧急) → 第五层
-        if (stageId === "ro5_fs_2") return "layer_5"; // 迎雷 → 第五层
-        if (stageId === "ro5_fs_2_b") return "layer_5"; // 迎雷(紧急) → 第五层
-        if (stageId === "ro5_fs_3") return "layer_5"; // 蔑震 → 第五层
-        if (stageId === "ro5_fs_3_b") return "layer_5"; // 蔑震(紧急) → 第五层
-        if (stageId === "ro5_fs_4") return "layer_5"; // 赴陨 → 第五层
-        if (stageId === "ro5_fs_4_b") return "layer_5"; // 赴陨(紧急) → 第五层
-        if (stageId === "ro5_fs_5") return "layer_5"; // 斥洪 → 第五层
-        if (stageId === "ro5_fs_5_b") return "layer_5"; // 斥洪(紧急) → 第五层
-      }
-      return state.rogueInput[rogueKey].layer; // 保持当前层数
-    };
-
-    const newLayer = getDefaultLayerForStage(stageId, rogueKey);
+    // 根据关卡更新难度层数
+    const newLayer = getDefaultLayerForStage(stageId, state.rogueInput);
 
     set(
       (state) => {

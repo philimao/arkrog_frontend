@@ -8,6 +8,7 @@ import type {
   RogueKey,
   StageData,
   StageOfRogue,
+  ZoneOfRogue,
 } from "~/types/gameData";
 import type { CharInput, RogueInput, SlicedCalcRelicState } from "./calcTypes";
 import type {
@@ -113,6 +114,7 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
   topicSpecItems: [],
   skill_table: {},
   uniequip_table: {},
+  zones: {} as Record<string, ZoneOfRogue>,
   stages: {} as Record<RogueKey, StageOfRogue>,
   levels: {},
   renderStages: [],

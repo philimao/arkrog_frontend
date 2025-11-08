@@ -22,6 +22,7 @@ import type {
   UniEquipPhaseData,
   BlackboardData,
   RogueTopic,
+  ZoneOfRogue,
 } from "~/types/gameData";
 import type { GameDataState } from "../gameDataStore";
 import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
@@ -62,8 +63,11 @@ export type RogueInput = {
     tech: string;
     /** 肉鸽难度 */
     difficulty: number;
+    /** 关卡id，但似乎从没更新过 */
     stage: string;
+    /** 敌人名称 */
     enemyName: string;
+    /** 藏品id列表 */
     relics: string[];
     /** 思维负荷 清晰: NORMAL, 混乱: CONFUSION, 阻滞: STAGNATION */
     thoughtLoad: "NORMAL" | "CONFUSION" | "STAGNATION";
@@ -95,6 +99,8 @@ export interface SlicedCalcGameDataState {
   skill_table: Record<string, SkillData>;
   /** 模组解包数据 */
   uniequip_table: Record<string, UniEquipData>;
+  /** 区域数据 */
+  zones: Record<string, ZoneOfRogue>;
   /** 关卡基础数据 */
   stages: Record<RogueKey, StageOfRogue>;
   /** 关卡详细解包数据 */

@@ -2,11 +2,12 @@ import { type CalculatorInput, type EnemyInput } from "~/types/gameData";
 import { BuffContext } from "./buff-context";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 import type { CharInput } from "~/stores/damageCalculator/calcTypes";
-import { allowedBlackboardKeyMap } from "../utils";
+import { allowedBlackboardKeyMap, snakeToCamel } from "../utils";
 
 const common_out_game_expression = (input: { charInput: CharInput; context: BuffContext }, key: string) => {
-  const baseValue = (input.charInput.phase.attributesKeyFrames[input.charInput.frameIndex].data[key as never] ??
-    0) as number;
+  const baseValue = (input.charInput.phase.attributesKeyFrames[input.charInput.frameIndex].data[
+    snakeToCamel(key) as never
+  ] ?? 0) as number;
   let expression;
   if (input.context.relic_rune_add[key as keyof typeof input.context.relic_rune_add]) {
     expression = new ExpressionGroupNode("*", "局外" + allowedBlackboardKeyMap[key]).addChild(
@@ -80,6 +81,80 @@ const common_in_game_expression = (input: { charInput: CharInput; context: BuffC
 };
 
 /**
+ * 通用敌方属性计算
+ * @param input 敌方基础数据和上下文
+ * @param key 属性键名，例如 max_hp
+ * @returns 敌方属性表达式
+ */
+const common_enemy_expression = (input: { enemyBase: EnemyInput; context: BuffContext }, key: string) => {
+  const baseValue = (input.enemyBase.attributes[snakeToCamel(key) as never] ?? 0) as number;
+  const buffKey = "enemy_" + key;
+  let expression;
+  if (input.context.stage_rune_mul[buffKey as keyof typeof input.context.stage_rune_mul]) {
+    expression = new ExpressionGroupNode("*", "本关" + allowedBlackboardKeyMap[key]).addChild(
+      new ExpressionGroupNode("+", "本关加成")
+        .addChild(new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]))
+        .addChild(...input.context.stage_rune_mul[buffKey as keyof typeof input.context.stage_rune_mul].children),
+    );
+  } else {
+    expression = new ExpressionGroupNode("*", "本关" + allowedBlackboardKeyMap[key]).addChild(
+      new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]),
+    );
+  }
+  if (input.context.relic_rune_add[buffKey as keyof typeof input.context.relic_rune_add]) {
+    expression = new ExpressionGroupNode("*", "局外" + allowedBlackboardKeyMap[key]).addChild(
+      new ExpressionGroupNode("+", "局外加成")
+        .addChild(new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]))
+        .addChild(...input.context.relic_rune_add[key as keyof typeof input.context.relic_rune_add].children),
+    );
+  } else {
+    expression = new ExpressionGroupNode("*", "局外" + allowedBlackboardKeyMap[key]).addChild(
+      new NumericLiteralNode(baseValue, "基础" + allowedBlackboardKeyMap[key]),
+    );
+  }
+  if (input.context.relic_rune_mul[buffKey as keyof typeof input.context.relic_rune_mul]) {
+    expression.addChild(input.context.relic_rune_mul[buffKey as keyof typeof input.context.relic_rune_mul]);
+  }
+
+  const outGameExpression = expression;
+
+  // TODO 敌方天赋、技能可能导致局内属性变化
+  expression = new ExpressionGroupNode("*", "直接加算&直接乘算");
+
+  if (input.context.in_game_buff_add[buffKey as keyof typeof input.context.in_game_buff_add]) {
+    expression = expression.addChild(
+      new ExpressionGroupNode("+", "直接加算")
+        .addChild(outGameExpression) // 没做取整 TODO
+        .addChild(input.context.in_game_buff_add[buffKey as keyof typeof input.context.in_game_buff_add]),
+    );
+  } else {
+    expression = expression.addChild(outGameExpression);
+  }
+
+  if (input.context.in_game_buff_mul[buffKey as keyof typeof input.context.in_game_buff_mul]) {
+    expression = expression.addChild(
+      input.context.in_game_buff_mul[buffKey as keyof typeof input.context.in_game_buff_mul],
+    );
+  }
+  let expressFinal = new ExpressionGroupNode("*", "最终加算&最终乘算");
+  if (input.context.in_game_buff_final_add[buffKey as keyof typeof input.context.in_game_buff_final_add]) {
+    expressFinal = expressFinal.addChild(
+      new ExpressionGroupNode("+", "最终加算")
+        .addChild(expression)
+        .addChild(input.context.in_game_buff_final_add[buffKey as keyof typeof input.context.in_game_buff_final_add]),
+    );
+  } else {
+    expressFinal = expressFinal.addChild(expression);
+  }
+  if (input.context.in_game_buff_final_mul[buffKey as keyof typeof input.context.in_game_buff_final_mul]) {
+    expressFinal = expressFinal.addChild(
+      input.context.in_game_buff_final_mul[buffKey as keyof typeof input.context.in_game_buff_final_mul],
+    );
+  }
+  return expressFinal;
+};
+
+/**
  * 公式工具
  * 通过ExpressionGroupNode类构建结构化的表达式树，即用嵌套的树对象来存储算式表达式。
  * ExpressionGroupNode可以用来计算结果值，并交给Display组件来进行渲染表达式
@@ -93,64 +168,40 @@ export class ExpressionUtil {
 
   /** 最大生命值 - 局外 干员最大生命值 */
   static operator_out_game_max_hp(input: { charInput: CharInput; context: BuffContext }) {
-    // 获取精英化等级属性
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
-    const baseMaxHp = attribute?.maxHp ?? 0;
+    // // 获取精英化等级属性
+    // const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
+    // const baseMaxHp = attribute?.maxHp ?? 0;
 
-    return new ExpressionGroupNode("*", "局外最大生命值")
-      .addChild(
-        new ExpressionGroupNode("+", "局外加成")
-          .addChild(new NumericLiteralNode(baseMaxHp, "基础最大生命值"))
-          .addChild(...input.context.relic_rune_add.max_hp.children),
-      )
-      .addChild(input.context.relic_rune_mul.max_hp);
+    // return new ExpressionGroupNode("*", "局外最大生命值")
+    //   .addChild(
+    //     new ExpressionGroupNode("+", "局外加成")
+    //       .addChild(new NumericLiteralNode(baseMaxHp, "基础最大生命值"))
+    //       .addChild(...input.context.relic_rune_add.max_hp.children),
+    //   )
+    //   .addChild(input.context.relic_rune_mul.max_hp);
+
+    return common_out_game_expression(input, "max_hp");
   }
 
   /** 最大生命值 - 局内 干员最大生命值 */
   static operator_in_game_max_hp(input: { charInput: CharInput; context: BuffContext }) {
-    return new ExpressionGroupNode("*", "直接乘算")
-      .addChild(ExpressionUtil.operator_out_game_max_hp({ charInput: input.charInput, context: input.context }))
-      .addChild(input.context.in_game_buff_mul.max_hp);
+    return common_in_game_expression(input, "max_hp");
   }
 
   /** 最大生命值 - 技能 干员最大生命值 */
   static operator_skill_max_hp(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_in_game_max_hp({ charInput: input.charInput, context: input.context });
+    // 与上面的区别应该在context
+    return common_in_game_expression(input, "max_hp");
   }
 
   /** 攻击力 - 局外 干员攻击力 */
   static operator_out_game_atk(input: { charInput: CharInput; context: BuffContext }) {
-    // 获取精英化等级属性
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
-    const baseAtk = attribute?.atk ?? 0;
-
-    return new ExpressionGroupNode("*", "局外攻击力")
-      .addChild(
-        new ExpressionGroupNode("+", "局外加成")
-          .addChild(new NumericLiteralNode(baseAtk, "基础攻击力"))
-          .addChild(...input.context.relic_rune_add.atk.children),
-      )
-      .addChild(input.context.relic_rune_mul.atk);
+    return common_out_game_expression(input, "atk");
   }
 
   /** 攻击力 - 局内 干员攻击力 */
   static operator_in_game_atk(input: { charInput: CharInput; context: BuffContext }) {
-    // 直接加和直接乘
-    const expression = new ExpressionGroupNode("*", "直接加算&直接乘算")
-      .addChild(
-        new ExpressionGroupNode("+", "直接加算")
-          .addChild(ExpressionUtil.operator_out_game_atk({ charInput: input.charInput, context: input.context }))
-          .addChild(input.context.in_game_buff_add.atk),
-      )
-      .addChild(input.context.in_game_buff_mul.atk);
-
-    return new ExpressionGroupNode("*", "最终加算&最终乘算")
-      .addChild(
-        new ExpressionGroupNode("+", "最终加算")
-          .addChild(expression)
-          .addChild(input.context.in_game_buff_final_add.atk),
-      )
-      .addChild(input.context.in_game_buff_final_mul.atk);
+    return common_in_game_expression(input, "atk");
   }
 
   /** 防御力 - 局外 干员防御力 */
@@ -165,53 +216,52 @@ export class ExpressionUtil {
 
   /** 法术抗性 - 局外 干员法术抗性 */
   static operator_out_game_magic_resistance(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data;
-    const baseMagicResistance = attribute?.magicResistance ?? 0;
-
-    return new ExpressionGroupNode("+", "法术抗性")
-      .addChild(new NumericLiteralNode(baseMagicResistance, "基础法术抗性"))
-      .addChild(...input.context.relic_rune_add.magic_resistance.children);
+    return common_out_game_expression(input, "magic_resistance");
   }
 
   /** 法术抗性 - 局内 干员法术抗性 */
   static operator_in_game_magic_resistance(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_out_game_magic_resistance({
-      charInput: input.charInput,
-      context: input.context,
-    }).addChild(...input.context.in_game_buff_add.magic_resistance.children);
-  }
-
-  /** 阻挡数 - 局内 干员阻挡数 */
-  static operator_in_game_block_cnt(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data;
-    const baseBlockCnt = attribute?.blockCnt ?? 0;
-
-    return new ExpressionGroupNode("+", "阻挡数")
-      .addChild(new NumericLiteralNode(baseBlockCnt, "基础阻挡数"))
-      .addChild(...input.context.in_game_buff_add.block_cnt.children);
-  }
-
-  /** 攻击速度 - 局外 干员攻击速度 */
-  static operator_out_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
-    const attribute = input.charInput.phase?.attributesKeyFrames[input.charInput.frameIndex].data; // TODO 去掉?
-    const baseAttackSpeed = attribute?.attackSpeed ?? 0;
-
-    return new ExpressionGroupNode("+", "攻击速度")
-      .addChild(new NumericLiteralNode(baseAttackSpeed, "基础攻击速度"))
-      .addChild(...input.context.relic_rune_add.attack_speed.children);
-  }
-
-  /** 攻击速度 - 局内 干员攻击速度 */
-  static operator_in_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
-    return ExpressionUtil.operator_out_game_attack_speed({
-      charInput: input.charInput,
-      context: input.context,
-    }).addChild(...input.context.in_game_buff_add.attack_speed.children);
+    return common_in_game_expression(input, "magic_resistance");
   }
 
   /** 部署费用 - 局外 干员部署费用 */
   static operator_out_game_cost(input: { charInput: CharInput; context: BuffContext }) {
     return common_in_game_expression(input, "cost");
+  }
+
+  /** 阻挡数 - 局内 干员阻挡数 */
+  static operator_in_game_block_cnt(input: { charInput: CharInput; context: BuffContext }) {
+    return common_in_game_expression(input, "block_cnt");
+  }
+
+  /** 攻击速度 - 局外 干员攻击速度 */
+  static operator_out_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
+    return common_out_game_expression(input, "attack_speed");
+  }
+
+  /** 攻击速度 - 局内 干员攻击速度 */
+  static operator_in_game_attack_speed(input: { charInput: CharInput; context: BuffContext }) {
+    return common_in_game_expression(input, "attack_speed");
+  }
+
+  /** 攻击间隔 - 局外 干员攻击间隔 */
+  static operator_out_game_base_attack_time(input: { charInput: CharInput; context: BuffContext }) {
+    return common_out_game_expression(input, "base_attack_time");
+  }
+
+  /** 攻击间隔 - 局内 干员攻击间隔 */
+  static operator_in_game_base_attack_time(input: { charInput: CharInput; context: BuffContext }) {
+    return common_in_game_expression(input, "base_attack_time");
+  }
+
+  /** 再部署 - 局外 干员再部署 */
+  static operator_out_game_respawn_time(input: { charInput: CharInput; context: BuffContext }) {
+    return common_out_game_expression(input, "respawn_time");
+  }
+
+  /** 再部署 - 局内 干员再部署 */
+  static operator_in_game_respawn_time(input: { charInput: CharInput; context: BuffContext }) {
+    return common_in_game_expression(input, "respawn_time");
   }
 
   /** 每秒生命回复 - 局外 干员每秒生命回复 */
@@ -234,72 +284,35 @@ export class ExpressionUtil {
     );
   }
 
+  /** 伤害倍率 - 局外 干员伤害倍率 */
+  static operator_out_game_damage_scale(input: { charInput: CharInput; context: BuffContext }) {
+    return common_out_game_expression(input, "damage_scale");
+  }
+
+  /** 伤害倍率 - 局内 干员伤害倍率 */
+  static operator_in_game_damage_scale(input: { charInput: CharInput; context: BuffContext }) {
+    return common_in_game_expression(input, "damage_scale");
+  }
+
   /** 敌人最终攻击力 */
   static enemy_final_atk(input: { enemyBase: EnemyInput; context: BuffContext }) {
     // (基础属性 * 关卡rune) * (藏品rune + 藏品rune) * 最终乘算 * 最终乘算
-    const expression = new ExpressionGroupNode("*", "敌人攻击力");
-
-    // 关卡rune
-    expression
-      .addChild(
-        new ExpressionGroupNode("*", "本关攻击力")
-          .addChild(new NumericLiteralNode(input.enemyBase.attributes.atk, "基础"))
-          .addChild(input.context.stage_rune_mul.enemy_atk),
-      )
-      .addChild(input.context.relic_rune_mul.enemy_atk)
-      .addChild(input.context.in_game_buff_final_mul.enemy_atk);
-    return expression;
+    return common_enemy_expression(input, "atk");
   }
 
   /** 敌人最终防御力 */
   static enemy_final_def(input: { enemyBase: EnemyInput; context: BuffContext }) {
-    const expression = new ExpressionGroupNode("*", "敌人防御力");
-
-    // 关卡rune
-    expression
-      .addChild(
-        new ExpressionGroupNode("*", "本关防御力")
-          .addChild(new NumericLiteralNode(input.enemyBase.attributes.def, "基础"))
-          .addChild(input.context.stage_rune_mul.enemy_def),
-      )
-      .addChild(input.context.relic_rune_mul.enemy_def);
-    let expressFinal = new ExpressionGroupNode("*", "最终加算&最终乘算");
-    expressFinal = expressFinal
-      .addChild(
-        new ExpressionGroupNode("+", "最终加算")
-          .addChild(expression)
-          .addChild(input.context.in_game_buff_final_add.enemy_def),
-      )
-      .addChild(input.context.in_game_buff_final_mul.enemy_def);
-    return expressFinal;
+    return common_enemy_expression(input, "def");
   }
 
   /** 敌人最终生命值 */
   static enemy_final_max_hp(input: { enemyBase: EnemyInput; context: BuffContext }) {
-    const expression = new ExpressionGroupNode("*", "敌人最大生命值");
-
-    // 关卡rune
-    expression
-      .addChild(
-        new ExpressionGroupNode("*", "本关生命值")
-          .addChild(new NumericLiteralNode(input.enemyBase.attributes.maxHp, "基础"))
-          .addChild(input.context.stage_rune_mul.enemy_max_hp),
-      )
-      .addChild(input.context.relic_rune_mul.enemy_max_hp)
-      .addChild(input.context.in_game_buff_final_mul.enemy_max_hp);
-    return expression;
+    return common_enemy_expression(input, "max_hp");
   }
 
   /** 敌人最终法术抗性 */
   static enemy_final_magic_resistance(input: { enemyBase: EnemyInput; context: BuffContext }) {
-    const expression = new ExpressionGroupNode("*", "敌人法术抗性")
-      .addChild(
-        new ExpressionGroupNode("+", "局内加算")
-          .addChild(new NumericLiteralNode(input.enemyBase.attributes.magicResistance, "基础"))
-          .addChild(input.context.in_game_buff_add.enemy_magic_resistance),
-      )
-      .addChild(input.context.in_game_buff_final_mul.enemy_magic_resistance);
-    return expression;
+    return common_enemy_expression(input, "magic_resistance");
   }
 
   /** 敌人最终元素损伤抗性 */

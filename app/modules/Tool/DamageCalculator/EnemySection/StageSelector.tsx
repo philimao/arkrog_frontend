@@ -43,11 +43,11 @@ const StyledStageSelectorBody = styled.div`
 const StyledEnemiesLabel = styled.div`
   height: 1.25rem;
   display: flex;
+  justify-content: space-between;
   font-size: 0.75rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   & > span:first-child {
-    margin-right: auto;
     color: var(--light-gray);
   }
   & > span.parasitic-hint {

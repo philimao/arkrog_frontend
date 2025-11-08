@@ -97,7 +97,7 @@ const numberOfZone67Boss = {
   ro1: 2,
   ro2: 2,
   ro3: 2,
-  ro4: 2,
+  ro4: 3,
   ro5: 2,
 };
 
@@ -119,22 +119,19 @@ const isShop = (args: string[]) => args[1] === "ev";
 const isStashedRecruit = (args: string[]) => args[1] === "fs" || args[1] === "dv";
 
 // 判断是否为boss关
-const isBoss = (args: string[], zoneData: ZoneData, i: number) => {
+const isBoss = (args: string[], zoneData: ZoneData, zoneIndex: number) => {
   if (args[1] !== "b") return false;
   const bossNum = parseInt(args[2]);
   const zone3BossNum = numOfZone3Boss[args[0] as keyof typeof numOfZone3Boss];
   const zone5BossNum = numOfZone5Boss[args[0] as keyof typeof numOfZone5Boss];
   const zone67BossNum = numberOfZone67Boss[args[0] as keyof typeof numberOfZone67Boss];
-  if (i === 2 && bossNum <= zone3BossNum) return true;
-  if (i === 4 && bossNum > zone3BossNum && bossNum <= zone3BossNum + zone5BossNum) return true;
-  if (
-    i > 4 &&
-    isLayer(args, zoneData) &&
-    bossNum > zone3BossNum + zone5BossNum &&
-    bossNum <= zone3BossNum + zone5BossNum + zone67BossNum
-  )
-    return true;
+  if (zoneIndex === 2 && bossNum <= zone3BossNum) return true;
+  if (zoneIndex === 4 && bossNum > zone3BossNum && bossNum <= zone3BossNum + zone5BossNum) return true;
+  // 爱国者 bossNum=6 index=5 zone3BossNum=3 zone5BossNum=2
+  // 阿米娅 bossNum=8 index=7 zone3BossNum=3 zone5BossNum=2
+  if (zoneIndex > 4 && zoneIndex - bossNum === zone3BossNum + zone5BossNum - 6) return true;
   // TODO 水月树洞未处理
+  if (zoneIndex > zone3BossNum + zone5BossNum + zone67BossNum) return false;
   return false;
 };
 
@@ -182,31 +179,37 @@ export function getNavOfZone(rogueKey: RogueKey, zones: Record<string, ZoneOfRog
       };
     });
 
-  const otherZones = [
+  const otherZones =
     {
-      id: "zone_sky_1",
-      name: "岁兽残识 · 是非境",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        return args[1] === "sv" && args.slice(-1)[0] !== "dlc1";
-      },
-      // 如果在6层以下保持层数不变
-      getLayer: (rogueInput: RogueInput) => {
-        const layerNum = Number(rogueInput[rogueInput.topic].layer.split("_")[1]);
-        if (layerNum > 5) return "layer_5";
-        else return rogueInput[rogueInput.topic].layer;
-      },
-    },
-    {
-      id: "zone_sky_2",
-      name: "岁兽残识 · 今昔境",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        return args[1] === "sv" && args.slice(-1)[0] === "dlc1";
-      },
-      // 固定为6层
-      getLayer: () => "layer_6",
-    },
+      rogue_5: [
+        {
+          id: "zone_sky_1",
+          name: "岁兽残识 · 是非境",
+          filter: (stage: StageData) => {
+            const args = stage.id.split("_");
+            return args[1] === "sv" && args.slice(-1)[0] !== "dlc1";
+          },
+          // 如果在6层以下保持层数不变
+          getLayer: (rogueInput: RogueInput) => {
+            const layerNum = Number(rogueInput[rogueInput.topic].layer.split("_")[1]);
+            if (layerNum > 5) return "layer_5";
+            else return rogueInput[rogueInput.topic].layer;
+          },
+        },
+        {
+          id: "zone_sky_2",
+          name: "岁兽残识 · 今昔境",
+          filter: (stage: StageData) => {
+            const args = stage.id.split("_");
+            return args[1] === "sv" && args.slice(-1)[0] === "dlc1";
+          },
+          // 固定为6层
+          getLayer: () => "layer_6",
+        },
+      ],
+    }[rogueKey as string] || [];
+
+  const sharedZones = [
     {
       id: "zone_incident",
       name: "不期而遇",
@@ -245,7 +248,7 @@ export function getNavOfZone(rogueKey: RogueKey, zones: Record<string, ZoneOfRog
     },
   ];
 
-  return [...baseZones, ...otherZones];
+  return [...baseZones, ...otherZones, ...sharedZones];
 }
 
 // 根据区域和关卡获取默认层数

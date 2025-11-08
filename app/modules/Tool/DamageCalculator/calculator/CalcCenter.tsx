@@ -219,7 +219,7 @@ export default function CalcCenter() {
   /** 保存状态到本地 */
   useEffect(() => {
     if (!localStateInited) return;
-    console.log("setRogueTopic", rogueInput);
+    // console.log("setRogueTopic", rogueInput);
     const localState = calculatorStorage.read() || createBaseState();
     localState.charName = charInput?.name;
 

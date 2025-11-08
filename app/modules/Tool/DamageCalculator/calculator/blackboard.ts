@@ -14,7 +14,6 @@ import {
   isRelicInBlacklist,
   parseDefinedData,
 } from "../utils";
-import { relicHasLayer } from "~/stores/damageCalculator/calcUtils/relicUtils";
 import { debugRelic } from "./helper";
 
 /** 敌人物理易伤 */
@@ -492,7 +491,7 @@ registerRelicBlackboard("rogue_5_character_in_candle_holder_common_buff[stack]",
     const atk = getByKey(buff.blackboard, "atk");
     const def = getByKey(buff.blackboard, "def");
     const max_hp = getByKey(buff.blackboard, "max_hp");
-    
+
     if (attack_speed) {
       context.relic_rune_add.attack_speed.addChild(
         new NumericLiteralNode(attack_speed.value * relic.layer, relic.name),
@@ -580,34 +579,35 @@ registerRelicBlackboard("env_001_storm", {
   },
 });
 
-/** 花-驰道长 - 投出时，使战斗中位于最左边和最右边一列化境地块上的干员攻击力+30%，攻击速度+30*/
-registerRelicBlackboard("rogue_5_left_or_right_most_tile_col[attri_up]", {
-  isActive(input) {
-    const { buff } = input;
-    const sequence_select = getByKey(buff.blackboard, "sequence_select");
-    /** 右侧 0 左侧 1 */
-    return sequence_select?.value === 1.0;
-  },
-  apply(input): void {
-    const { context, buff, relic } = input;
-    const atk = getByKey(buff.blackboard, "atk");
-    if (atk) {
-      context.in_game_buff_final_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
-    }
-    const def = getByKey(buff.blackboard, "def");
-    if (def) {
-      context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value, relic.name));
-    }
-    const max_hp = getByKey(buff.blackboard, "max_hp");
-    if (max_hp) {
-      context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
-    }
-    const attack_speed = getByKey(buff.blackboard, "attack_speed");
-    if (attack_speed) {
-      context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
-    }
-  },
-});
+// 无需判断左右，走通用黑板
+// /** 花-驰道长 - 投出时，使战斗中位于最左边和最右边一列化境地块上的干员攻击力+30%，攻击速度+30*/
+// registerRelicBlackboard("rogue_5_left_or_right_most_tile_col[attri_up]", {
+//   isActive(input) {
+//     const { buff } = input;
+//     const sequence_select = getByKey(buff.blackboard, "sequence_select");
+//     /** 右侧 0 左侧 1 */
+//     return sequence_select?.value === 1.0;
+//   },
+//   apply(input): void {
+//     const { context, buff, relic } = input;
+//     const atk = getByKey(buff.blackboard, "atk");
+//     if (atk) {
+//       context.in_game_buff_final_mul.atk.addChild(new NumericLiteralNode(atk.value, relic.name));
+//     }
+//     const def = getByKey(buff.blackboard, "def");
+//     if (def) {
+//       context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value, relic.name));
+//     }
+//     const max_hp = getByKey(buff.blackboard, "max_hp");
+//     if (max_hp) {
+//       context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value, relic.name));
+//     }
+//     const attack_speed = getByKey(buff.blackboard, "attack_speed");
+//     if (attack_speed) {
+//       context.in_game_buff_add.attack_speed.addChild(new NumericLiteralNode(attack_speed.value, relic.name));
+//     }
+//   },
+// });
 
 /** 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 */
 registerRelicBlackboard("attri_up_filter_level_cost", {
@@ -769,45 +769,60 @@ export const commonEnemyRelicBlackboard = {
 /** 通用干员藏品黑板 */
 export const commonCharRelicBlackboard: RelicBlackboard = {
   isActive({ buff, stageData, charData, charInput, relic }) {
-    if (debugRelic) console.groupCollapsed("buff", buff.key, buff.blackboard);
-    // 判断藏品是否可以生效
-    const isActive =
-      !isRelicInBlacklist(relic.name) && !isBuffInBlacklist(buff) && isBlackboardActiveForChar(buff, charData);
-    if (debugRelic)
-      console.log(
-        "对该干员生效",
-        !isRelicInBlacklist(relic.name),
-        !isBuffInBlacklist(buff),
-        isBlackboardActiveForChar(buff, charData),
-      );
-    if (!isActive) return false;
+    try {
+      if (debugRelic) console.groupCollapsed("buff", buff.key, buff.blackboard);
+      // 判断藏品是否可以生效
+      const isActive =
+        !isRelicInBlacklist(relic.name) && !isBuffInBlacklist(buff) && isBlackboardActiveForChar(buff, charData);
+      if (debugRelic)
+        console.log(
+          "对该干员生效状态",
+          !isRelicInBlacklist(relic.name),
+          !isBuffInBlacklist(buff),
+          isBlackboardActiveForChar(buff, charData),
+        );
+      if (!isActive) throw new Error();
 
-    /** 关卡类型选择器 */
-    const validator_roguelike_event_type = getByKey(buff.blackboard, "validator.roguelike_event_type")?.valueStr as
-      | "BATTLE_BOSS"
-      | "DUEL";
-    if (debugRelic)
-      console.log(
-        "关卡类型",
-        validator_roguelike_event_type,
+      /** 关卡类型选择器 */
+      const validator_roguelike_event_type = getByKey(buff.blackboard, "validator.roguelike_event_type")?.valueStr as
+        | "BATTLE_BOSS"
+        | "DUEL";
+      if (debugRelic)
+        console.log(
+          "关卡类型",
+          validator_roguelike_event_type,
+          (validator_roguelike_event_type === "BATTLE_BOSS" && !stageData?.isBoss) ||
+            (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel")),
+        );
+      if (
         (validator_roguelike_event_type === "BATTLE_BOSS" && !stageData?.isBoss) ||
-          (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel")),
-      );
-    if (
-      (validator_roguelike_event_type === "BATTLE_BOSS" && !stageData?.isBoss) ||
-      (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel"))
-    ) {
-      return false;
-    }
+        (validator_roguelike_event_type === "DUEL" && !stageData?.id.includes("duel"))
+      ) {
+        throw new Error();
+      }
 
-    /** 伺烛客选择器 */
-    const candle_holder = buff.blackboard.find((item) => item.valueStr?.includes("rogue_5_character_in_candle_holder"));
-    if (debugRelic) console.log("伺烛客选择器", candle_holder, charInput?.candleHolder);
-    if (candle_holder && !charInput?.candleHolder) {
+      /** 伺烛客选择器 */
+      const candle_holder = buff.blackboard.find((item) =>
+        item.valueStr?.includes("rogue_5_character_in_candle_holder"),
+      );
+      if (debugRelic) console.log("伺烛客选择器", candle_holder, charInput?.candleHolder);
+      if (candle_holder && !charInput?.candleHolder) {
+        throw new Error();
+      }
+
+      /** 化境地块选择器 */
+      const dygmny_tile = relic.usage?.includes("化境地块");
+      if (debugRelic) console.log("化境地块选择器", dygmny_tile, charInput?.dygmnyTile);
+      if (dygmny_tile && !charInput?.dygmnyTile) {
+        throw new Error();
+      }
+      if (debugRelic) console.log("*** buff生效 ***");
+    } catch {
+      console.log("*** buff不生效 ***");
       return false;
+    } finally {
+      if (debugRelic) console.groupEnd();
     }
-    if (debugRelic) console.log("*** buff生效 ***");
-    if (debugRelic) console.groupEnd();
     return true;
   },
   apply({ relic, context, buff }) {
@@ -844,7 +859,9 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       if (inGame) {
         context.in_game_buff_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * relic.layer, relic.name));
       } else {
-        context.relic_rune_mul.max_hp.addChild(new NumericLiteralNode(max_hp.value * layer, relic.name, { relic, buff }));
+        context.relic_rune_mul.max_hp.addChild(
+          new NumericLiteralNode(max_hp.value * layer, relic.name, { relic, buff }),
+        );
       }
       is_invalid = false;
     }

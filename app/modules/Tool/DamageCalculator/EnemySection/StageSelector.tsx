@@ -1,5 +1,6 @@
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
+import ToolButton from "~/modules/Tool/components/ToolButton";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { styled } from "styled-components";
 import EnemyDisplay from "~/modules/Tool/DamageCalculator/EnemySection/EnemyDisplay";
@@ -7,9 +8,19 @@ import { GridContainer } from "~/modules/Tool/components/Shared";
 import { getNavOfZone, zoneOfTopic } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 import { cosHost } from "~/utils/tools";
+import type { StageData } from "~/types/gameData";
+import { useState, type Dispatch, type SetStateAction } from "react";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
+`;
+
+const StyledControlLabel = styled.div`
+  height: calc(0.875rem + 10px);
+  line-height: calc(0.875rem + 10px);
+  font-size: 0.8rem;
+  color: rgb(236, 237, 238);
+  user-select: none;
 `;
 
 const StyledStageSelectorBody = styled.div`
@@ -122,6 +133,8 @@ export default function StageSelector() {
     setRogueLayer,
   } = useDamageCalculatorStore();
 
+  const [stageQuickSelectorVisible, setStageQuickSelectorVisible] = useState(false);
+
   const zones = [...getNavOfZone(rogueInput.topic), ...zoneOfTopic[rogueInput.topic as never]];
 
   // 快速切换紧急/普通
@@ -131,7 +144,7 @@ export default function StageSelector() {
 
   return (
     <StyledStageSelector>
-      <GridContainer>
+      <GridContainer className="relative">
         <ToolSelect
           disallowEmptySelection={true}
           label="选择区域"
@@ -141,21 +154,32 @@ export default function StageSelector() {
           selectedKeys={[rogueInput[rogueInput.topic].zone]}
           onChange={(evt) => setRogueZone(evt.target.value)}
         />
-        <ToolSelect
-          disallowEmptySelection={true}
-          label="选择关卡"
-          array={renderStages}
-          getKey={(stage) => stage.id}
-          getValue={(stage) => {
-            if (stage.isBoss) {
-              if (stage.description.includes("出现新的敌人")) return `BOSS · 带船 · ${stage.name}`;
-              else return `BOSS · ${stage.name}`;
+        <div>
+          <StyledControlLabel>选择关卡</StyledControlLabel>
+          <ToolButton
+            className="font-bold justify-start"
+            onPress={() =>
+              setStageQuickSelectorVisible((prev) => {
+                if (!prev)
+                  document.addEventListener(
+                    "click",
+                    (evt) =>
+                      !(evt.target as HTMLElement).closest(".stage-quick-selector") &&
+                      setStageQuickSelectorVisible(false),
+                    { once: true },
+                  );
+                return true;
+              })
             }
-            if (stage.id.includes("duel")) return `狭路 · ${stage.name}`;
-            return `${stage.isElite ? "紧急 · " : "普通 · "}${stage.name}`;
-          }}
-          selectedKeys={[stageId]}
-          onChange={(evt) => setRogueStageId(evt.target.value)}
+          >
+            {stageData?.stageName || stageData?.name || "未选择"}
+          </ToolButton>
+        </div>
+        <StageQuickSelector
+          visible={stageQuickSelectorVisible}
+          setVisible={setStageQuickSelectorVisible}
+          renderStages={renderStages}
+          stageId={stageId}
         />
         <ToolSelect
           disallowEmptySelection={true}
@@ -176,7 +200,7 @@ export default function StageSelector() {
         />
         {stageData.eliteDesc && (
           <div className="flex flex-col whitespace-nowrap" style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}>
-            <div style={{ height: "calc(0.875rem + 10px)" }}>紧急条件</div>
+            <StyledControlLabel>紧急条件</StyledControlLabel>
             <div className="relative h-12">
               <div className="absolute top-0 left-0 flex flex-col justify-center bg-dark-gray h-12 px-2">
                 <div>{stageData.eliteDesc}</div>
@@ -248,5 +272,62 @@ export default function StageSelector() {
         </StyledStageSelectorBody>
       )}
     </StyledStageSelector>
+  );
+}
+
+const StyledStageQuickSelector = styled.div<{ $visible: boolean }>`
+  display: ${(props) => (props.$visible ? "grid" : "none")};
+  position: absolute;
+  top: 5rem;
+  left: 0;
+  max-width: 100%;
+  background: var(--black-gray);
+  z-index: 50;
+  gap: 0.5rem 1rem;
+  grid-template-columns: repeat(auto-fit, 15rem);
+  padding: 0.5rem 0;
+`;
+
+const StyledStageItem = styled.div<{ $active: boolean }>`
+  padding: 0.5rem;
+  margin: 0.25rem;
+  background: ${({ $active }) => ($active ? "var(--ak-blue)" : "var(--dark-gray)")};
+  color: ${({ $active }) => ($active ? "white" : "inherit")};
+  font-size: 0.9rem;
+  font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
+  text-align: center;
+  cursor: pointer;
+`;
+
+function StageQuickSelector({
+  visible,
+  setVisible,
+  renderStages,
+  stageId,
+}: {
+  visible: boolean;
+  setVisible: Dispatch<SetStateAction<boolean>>;
+  renderStages: StageData[];
+  stageId: string;
+}) {
+  const { setRogueStageId } = useDamageCalculatorStore();
+
+  return (
+    <StyledStageQuickSelector $visible={visible} className="stage-quick-selector">
+      {renderStages.map((stage) => {
+        return (
+          <StyledStageItem
+            key={stage.id}
+            $active={stage.id === stageId}
+            onClick={() => {
+              setRogueStageId(stage.id);
+              setVisible(false);
+            }}
+          >
+            {stage.stageName}
+          </StyledStageItem>
+        );
+      })}
+    </StyledStageQuickSelector>
   );
 }

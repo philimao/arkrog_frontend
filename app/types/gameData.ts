@@ -50,6 +50,7 @@ export interface StageData {
   id: string;
   code: string;
   name: string;
+  stageName: string;
   levelId: string; // Obt/Roguelike/RO3/level_rogue3_b-5-b
   description: string;
   eliteDesc: string;

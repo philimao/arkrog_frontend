@@ -218,6 +218,8 @@ export interface CharInput {
   attributeModifier: CharAttributeModifier;
   /** 是否为伺烛客 rogue_5限定 */
   candleHolder: boolean;
+  /** 是否在化境地块上 */
+  dygmnyTile: boolean;
   /** 干员特殊配置 */
   charSpec: CharSpec[];
 }
@@ -269,6 +271,8 @@ export interface SlicedCalcCharActions {
   setCharSpec: (label: string, key: string, value: number) => void;
   /** 设置是否为伺烛客 rogue_5限定 */
   setCandleHolder: (candleHolder: boolean) => void;
+  /** 设置是否在化境地块上 */
+  setDygmnyTile: (dygmnyTile: boolean) => void;
 }
 
 export interface SlicedCalcEnemyState {

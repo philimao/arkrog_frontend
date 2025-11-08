@@ -92,6 +92,7 @@ export default function OperatorDisplay() {
     setUniEquipLevel,
     setCharSpec,
     setCandleHolder,
+    setDygmnyTile,
   } = useDamageCalculatorStore();
 
   const {
@@ -112,6 +113,7 @@ export default function OperatorDisplay() {
     uniEquipName,
     charSpec,
     candleHolder,
+    dygmnyTile,
   } = charInput;
 
   // 面板显示模式
@@ -264,6 +266,22 @@ export default function OperatorDisplay() {
                 <StyledCandleHolderInner $candleHolder={candleHolder}>
                   {candleHolder ? "是" : "否"}
                 </StyledCandleHolderInner>
+              </ToolButton>
+            </div>
+          )}
+
+          {rogueKey === "rogue_5" && (
+            <div>
+              <StyledGridLabel>
+                <span>是否在化境地块上</span>
+                <Tooltip content={<div>在化境地块上的干员将享受部分藏品/通宝效果加成</div>} closeDelay={100}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" color="#9A9A9A">
+                    <use href="#question_circle" />
+                  </svg>
+                </Tooltip>
+              </StyledGridLabel>
+              <ToolButton onPress={() => setDygmnyTile(!dygmnyTile)} className="px-0">
+                <StyledCandleHolderInner $candleHolder={dygmnyTile}>{dygmnyTile ? "是" : "否"}</StyledCandleHolderInner>
               </ToolButton>
             </div>
           )}

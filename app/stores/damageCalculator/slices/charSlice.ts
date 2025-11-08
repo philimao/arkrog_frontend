@@ -136,6 +136,8 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
           attributeModifier: charModifier,
           /** 是否为伺烛客 rogue_5限定 */
           candleHolder: localCharState?.candleHolder ?? false,
+          /** 是否在化境地块上 */
+          dygmnyTile: localCharState?.dygmnyTile ?? false,
           /** 干员特殊配置 */
           charSpec,
         };
@@ -330,6 +332,21 @@ export const createCharSlice: SliceCreator<SlicedCalcCharState & SlicedCalcCharA
       },
       undefined,
       "setCandleHolder",
+    );
+  },
+  setDygmnyTile: (dygmnyTile: boolean) => {
+    set(
+      (state) => {
+        state.charInput.dygmnyTile = dygmnyTile;
+        state.charInput = updateCharState({
+          charInput: state.charInput,
+          charData: state.charData,
+          uniequip_table: state.uniequip_table,
+          charSpecConfigs: state.charSpecConfigs,
+        });
+      },
+      undefined,
+      "setDygmnyTile",
     );
   },
   setCharSpec: (label: string, key: string) => {

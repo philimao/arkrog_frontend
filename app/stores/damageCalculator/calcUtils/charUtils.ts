@@ -96,6 +96,8 @@ export function updateCharState({
     attributeModifier: charInput.attributeModifier,
     /** 是否为伺烛客 rogue_5限定 */
     candleHolder: charInput.candleHolder,
+    /** 是否在化境地块上 */
+    dygmnyTile: charInput.dygmnyTile,
     /** 干员特殊配置 */
     charSpec,
   };

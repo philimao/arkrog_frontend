@@ -235,6 +235,7 @@ export default function CalcCenter() {
         uniEquipId: charInput.uniEquipId,
         uniEquipLevel: charInput.uniEquipLevel,
         candleHolder: charInput.candleHolder,
+        dygmnyTile: charInput.dygmnyTile,
       };
     }
 

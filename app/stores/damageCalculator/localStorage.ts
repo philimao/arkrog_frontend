@@ -69,6 +69,8 @@ interface CalculatorLocalState {
         // ...不同肉鸽主题扩展状态
         /** 是否为伺烛客 rogue_5限定 */
         candleHolder: boolean;
+        /** 是否在化境地块上 */
+        dygmnyTile: boolean;
       }
     >
   >;

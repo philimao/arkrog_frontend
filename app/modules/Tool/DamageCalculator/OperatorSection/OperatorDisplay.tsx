@@ -75,6 +75,15 @@ const StyledCandleHolderInner = styled(StyledSwitchButton)<{ $candleHolder: bool
   text-align: left;
 `;
 
+const StyledDygmnyTileInner = styled(StyledSwitchButton)<{ $dygmnyTile: boolean }>`
+  background: ${({ $dygmnyTile }) => `url("${cosHost}/images%2Frogue_5%2Fdygmny_tile_${$dygmnyTile}.png")`};
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center right;
+  width: 100%;
+  text-align: left;
+`;
+
 export default function OperatorDisplay() {
   const {
     activeCharName,
@@ -281,7 +290,7 @@ export default function OperatorDisplay() {
                 </Tooltip>
               </StyledGridLabel>
               <ToolButton onPress={() => setDygmnyTile(!dygmnyTile)} className="px-0">
-                <StyledCandleHolderInner $candleHolder={dygmnyTile}>{dygmnyTile ? "是" : "否"}</StyledCandleHolderInner>
+                <StyledDygmnyTileInner $dygmnyTile={dygmnyTile}>{dygmnyTile ? "是" : "否"}</StyledDygmnyTileInner>
               </ToolButton>
             </div>
           )}

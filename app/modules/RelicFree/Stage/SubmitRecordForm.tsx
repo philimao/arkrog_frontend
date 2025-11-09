@@ -50,7 +50,7 @@ export default function SubmitRecordForm({
   stageId: string;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
-  const { character_basic } = useRelicFreeStore();
+  const { character_basic, uniequip_basic } = useRelicFreeStore();
   const { userInfo } = useUserInfoStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [team, setTeam] = useState("");
@@ -64,7 +64,7 @@ export default function SubmitRecordForm({
     const memberDataArray = charStrArray
       .map((charStr) => charStrToData(charStr, character_basic))
       .filter((i) => i.charData);
-    setMemberDataArray((prev) => {
+    setMemberDataArray((prev: TeamMemberData[]) => {
       memberDataArray.map((memberData) => {
         const { charId, charData } = memberData;
         const prevData = prev.find((md) => md.charId === charId);
@@ -76,9 +76,10 @@ export default function SubmitRecordForm({
         memberData.uniequipId =
           Object.values(charData?.uniequip || {}).sort((a, b) => b.charEquipOrder - a.charEquipOrder)[0]?.uniEquipId ||
           "";
+        memberData.uniequipName = uniequip_basic[memberData.uniequipId || ""]?.typeIcon.toUpperCase() || "";
         return memberData;
       });
-      return memberDataArray;
+      return memberDataArray as TeamMemberData[];
     });
   }, [team, character_basic]);
 

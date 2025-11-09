@@ -99,9 +99,9 @@ export default function StageDetail({
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>
-          <span className="text-xl font-bold mb-2">地图</span>
+          <span className="text-xl font-bold">地图</span>
           <img
-            className="w-full"
+            className="w-full mt-2"
             src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
             alt="map"
             referrerPolicy="no-referrer"
@@ -109,8 +109,8 @@ export default function StageDetail({
           />
         </div>
         <div className="">
-          <span className="text-xl font-bold mb-2">敌方情报</span>
-          <div className="w-full aspect-video bg-mid-gray p-2">
+          <span className="text-xl font-bold">敌方情报</span>
+          <div className="w-full aspect-video bg-mid-gray p-2 mt-2">
             <div className="h-full pt-4 overflow-y-auto flex flex-wrap justify-evenly gap-4">
               {[...enemyOfStage, ...Array(5).fill(0)].map((enemyData, i) => {
                 return (

@@ -284,17 +284,6 @@ export default function RecordCard({
               .fill(0)
               .map((_, i) => {
                 const memberData = record.team[bustOrderMapping(i)];
-                if (memberData) {
-                  memberData.skillName =
-                    character_basic[memberData.charId as CharId].skills[
-                      memberData.skillId as SkillId
-                    ]?.name;
-                  memberData.uniequipName =
-                    uniequip_basic &&
-                    uniequip_basic[
-                      memberData.uniequipId || ""
-                    ]?.typeIcon.toUpperCase();
-                }
                 return (
                   <CharAvatar
                     key={i}

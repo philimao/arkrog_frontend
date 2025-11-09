@@ -85,14 +85,14 @@ export default function SelectorDetail({
           <span role="button">按干员</span>
         </Tooltip>
       </div>
-      <div className="flex">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))]">
         {/* 新增全部筛选器，不参与下方每层的关卡渲染 */}
         {[{ id: "all", name: "全部", filter: () => [true] }, ...navOfZone]
           .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
           .map((zone) => (
             <div
               className={
-                "basis-1/6 text-center font-bold leading-[3rem] " +
+                "text-center font-bold leading-[3rem] " +
                 `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
               }
               key={zone.id}

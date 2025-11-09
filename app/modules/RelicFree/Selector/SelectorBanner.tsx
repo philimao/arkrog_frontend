@@ -130,7 +130,7 @@ export default function SelectorBanner({
           <img
             src={`${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${currentTopic.id}.jpg`}
             alt="topic_banner"
-            className="h-full z-0 object-cover"
+            className="w-full h-full z-0 object-cover"
           />
         </div>
         <StyledBannerForeground>

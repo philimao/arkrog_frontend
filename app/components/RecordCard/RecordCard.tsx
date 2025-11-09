@@ -1,5 +1,5 @@
 import { StageTypes } from "~/types/constant";
-import type { RecordType } from "~/types/recordType";
+import type { RecordType, TeamMemberData } from "~/types/recordType";
 import { Divider } from "@heroui/react";
 import { _post, findDuplicates } from "~/utils/tools";
 import React, {
@@ -14,13 +14,14 @@ import CharAvatar from "~/components/RecordCard/CharAvatar";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useRecordStore } from "~/stores/recordStore";
 import { openModal } from "~/utils/dom";
-import type { RogueKey, StageData } from "~/types/gameData";
+import type { CharId, RogueKey, SkillId, StageData } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
 import ModalTemplate from "~/components/Modal";
 import { useAppDataStore } from "~/stores/appDataStore";
 import { DeleteIcon, ReportIcon, StarIcon } from "../Icons";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -141,6 +142,7 @@ export default function RecordCard({
   const { userInfo, updateUserInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
+  const { character_basic, uniequip_basic } = useRelicFreeStore();
   const { charImages } = useAppDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
   const [showNote, setShowNote] = useState<boolean>(false);
@@ -281,10 +283,22 @@ export default function RecordCard({
             {Array(14)
               .fill(0)
               .map((_, i) => {
+                const memberData = record.team[bustOrderMapping(i)];
+                if (memberData) {
+                  memberData.skillName =
+                    character_basic[memberData.charId as CharId].skills[
+                      memberData.skillId as SkillId
+                    ]?.name;
+                  memberData.uniequipName =
+                    uniequip_basic &&
+                    uniequip_basic[
+                      memberData.uniequipId || ""
+                    ]?.typeIcon.toUpperCase();
+                }
                 return (
                   <CharAvatar
                     key={i}
-                    memberData={record.team[bustOrderMapping(i)]}
+                    memberData={memberData}
                     className="w-[14.2%] p-1"
                     isBust={false}
                   />

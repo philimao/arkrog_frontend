@@ -1,8 +1,16 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
-import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
+import type {
+  CharInput,
+  RogueInput,
+} from "~/stores/damageCalculator/calcTypes";
 
 /** @deprecated 使用RogueTopic枚举替代 */
-export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5";
+export type RogueKey =
+  | "rogue_1"
+  | "rogue_2"
+  | "rogue_3"
+  | "rogue_4"
+  | "rogue_5";
 
 /** 肉鸽主题枚举 */
 export const enum RogueTopic {
@@ -129,7 +137,12 @@ export interface UniEquipPhaseData {
   equipLevel: number;
   parts: {
     resKey: string;
-    target: "DISPLAY" | "TALENT_DATA_ONLY" | "TALENT" | "TRAIT" | "TRAIT_DATA_ONLY";
+    target:
+      | "DISPLAY"
+      | "TALENT_DATA_ONLY"
+      | "TALENT"
+      | "TRAIT"
+      | "TRAIT_DATA_ONLY";
     isToken: boolean;
     addOrOverrideTalentDataBundle: {
       candidates: CharTalentData[] | null;
@@ -179,11 +192,19 @@ export interface SkillData {
 
 export type CharId = `char_${number}_${string}` | `trap_${number}_${string}`;
 
-type SkillId = `skchr_${string}`;
+export type SkillId = `skchr_${string}`;
 
 export type SkillsBasic = Record<SkillId, SkillBasicData>;
 
-export type Profession = "VANGUARD" | "SNIPER" | "CASTER" | "MEDIC" | "GUARD" | "DEFENDER" | "SPECIALIST" | "SUPPORTER";
+export type Profession =
+  | "VANGUARD"
+  | "SNIPER"
+  | "CASTER"
+  | "MEDIC"
+  | "GUARD"
+  | "DEFENDER"
+  | "SPECIALIST"
+  | "SUPPORTER";
 
 // 干员基础信息
 export interface CharBasicData {

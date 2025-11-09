@@ -83,7 +83,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
     const newFilesWithPreview = await Promise.all(
       allowedFiles.map(async (file) => ({
-        id: await hashString(file.name),
+        id: await hashString(file.name, 16),
         filename: file.name.split(".")[0],
         ext: file.name.split(".")[1],
         prefix: "",

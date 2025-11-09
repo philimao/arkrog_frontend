@@ -4,6 +4,7 @@ import { styled } from "styled-components";
 import type { StageOfRogue } from "~/types/gameData";
 import { navOfZone } from "~/utils/stageSelector";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
+import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 
 const StyledZoneName = styled.div`
   height: 5rem;
@@ -55,6 +56,19 @@ const StyledDifficulty = styled.div`
   font-family: "Novecento", sans-serif;
   opacity: 0.1;
   user-select: none;
+`;
+
+const StyledStageType = styled.div`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 0.25rem;
+  background: var(--black-gray);
+  font-size: 0.8rem;
+  color: #ffffff30;
+  font-family: "Novecento", sans-serif;
+  user-select: none;
+  cursor: pointer;
 `;
 
 const StyledStageName = styled.div`
@@ -133,7 +147,7 @@ export default function SelectorDetail({
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 grow">
-                  {renderStages.map((stage, i) => {
+                  {renderStages.map((stage, i, stageList) => {
                     if (stage.id === "ghost") return <StyledStageCard className="" key={"ghost" + i} />;
                     const stagePreviewData = stagePreview?.[stage.id];
                     const maxLevel = ["??", "N18", "N15"].reduce((a, b) =>
@@ -145,6 +159,15 @@ export default function SelectorDetail({
                         ? b
                         : a,
                     );
+                    /**
+                     * 在界园岁兽残识中存在多个同名关卡，但id存在区别
+                     * 例如地有四难 ro5_sv_1 与 ro5_sv_1_b
+                     */
+                    const stageGroup = stageList
+                      .filter((s) => s.name === stage.name && s.isElite === stage.isElite)
+                      .map((s) => s.id);
+                    const stageType =
+                      stageGroup.length > 1 ? ["a", "b", "c", "d", "e"][stageGroup.indexOf(stage.id)] : "";
                     return (
                       <StyledStageCard role="button" key={stage.id} onClick={() => navigate(stage.id)}>
                         <div className="h-6 bg-black-gray flex">
@@ -171,6 +194,18 @@ export default function SelectorDetail({
                         </div>
                         <StyledCardBody>
                           <StyledDifficulty>{maxLevel}</StyledDifficulty>
+                          {stageType && stage.mainEnemy && (
+                            <Tooltip
+                              radius="none"
+                              placement="bottom"
+                              classNames={{ content: "p-2" }}
+                              content={
+                                <EnemyAvatar name={stage.mainEnemy} className="w-12 h-12 border-2 border-[#ffffff80]" />
+                              }
+                            >
+                              <StyledStageType>{"TYPE-" + stageType}</StyledStageType>
+                            </Tooltip>
+                          )}
                           <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">{stage.name}</StyledStageName>
                         </StyledCardBody>
                       </StyledStageCard>

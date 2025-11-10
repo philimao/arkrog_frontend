@@ -18,10 +18,13 @@ type RelicFreeBasic = {
 type RelicFreeState = RelicFreeBasic & {
   /** 无藏记录数据是否已加载 */
   relicFreeDataLoaded: boolean;
+  /** 无藏记录预览数据是否已加载 */
+  stagePreviewLoaded: boolean;
 };
 
 type RelicFreeAction = {
   fetchRelicFreeData: () => Promise<void>;
+  fetchStagePreview: (force?: boolean) => Promise<void>;
 };
 
 export const useRelicFreeStore = create<RelicFreeState & RelicFreeAction>()(
@@ -48,6 +51,16 @@ export const useRelicFreeStore = create<RelicFreeState & RelicFreeAction>()(
         } catch (err) {
           console.error(err);
           toast.error(`加载无藏记录数据失败！`);
+        }
+      },
+      fetchStagePreview: async (force = false) => {
+        try {
+          if (get().stagePreviewLoaded && !force) return;
+          const data = await _get<StagePreview>("/relic-free/stage-preview");
+          set({ stagePreview: data, stagePreviewLoaded: true });
+        } catch (err) {
+          console.error(err);
+          toast.error(`加载无藏记录预览数据失败！`);
         }
       },
     }),

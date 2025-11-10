@@ -52,6 +52,7 @@ export default function SubmitRecordForm({
 }) {
   const { character_basic, uniequip_basic } = useRelicFreeStore();
   const { userInfo } = useUserInfoStore();
+  const { fetchStagePreview } = useRelicFreeStore();
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [team, setTeam] = useState("");
   const [memberDataArray, setMemberDataArray] = useState<TeamMemberData[]>([]);
@@ -167,6 +168,9 @@ export default function SubmitRecordForm({
       setRecords(records);
       onClose();
     }
+    setTimeout(() => {
+      fetchStagePreview(true);
+    }, 2000);
   }
 
   if (!userInfo?.level || userInfo?.level < 3) return null;

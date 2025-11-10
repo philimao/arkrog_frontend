@@ -36,7 +36,7 @@ export default function RootLayout() {
   // 主页应用数据
   const { fetchAppData } = useAppDataStore();
   // 无藏记录数据
-  const { fetchRelicFreeData } = useRelicFreeStore();
+  const { fetchRelicFreeData, fetchStagePreview } = useRelicFreeStore();
   // 游戏数据
   const { fetchGameDataBasic, fetchGameDataExt } = useGameDataStore();
   // 赛事数据
@@ -50,7 +50,7 @@ export default function RootLayout() {
     const route = window.location.pathname.split("/")[1] || "index";
     const preload = {
       index: [fetchAppData],
-      "relic-free": [fetchGameDataBasic, fetchRelicFreeData],
+      "relic-free": [fetchGameDataBasic, fetchRelicFreeData, fetchStagePreview],
       tool: [fetchGameDataBasic, fetchGameDataExt],
       tournament: [fetchGameDataBasic, fetchTournamentsData],
     };

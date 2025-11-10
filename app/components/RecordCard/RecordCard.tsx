@@ -142,7 +142,7 @@ export default function RecordCard({
   const { userInfo, updateUserInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
   const { stages } = useGameDataStore();
-  const { character_basic, uniequip_basic } = useRelicFreeStore();
+  const { fetchStagePreview } = useRelicFreeStore();
   const { charImages } = useAppDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
   const [showNote, setShowNote] = useState<boolean>(false);
@@ -159,6 +159,9 @@ export default function RecordCard({
       updated.splice(index, 1);
       return updated;
     });
+    setTimeout(() => {
+      fetchStagePreview(true);
+    }, 2000);
   }
 
   const starred =

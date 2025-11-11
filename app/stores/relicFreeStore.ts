@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { CharBasicData, CharId, EnemyBasicData, StagePreview, UniEquipBasicData } from "~/types/gameData";
+import type { CharBasicData, CharId, StagePreview, UniEquipBasicData } from "~/types/gameData";
 import { _get } from "~/utils/tools";
 
 type RelicFreeBasic = {
@@ -11,8 +11,8 @@ type RelicFreeBasic = {
   uniequip_basic: Record<string, UniEquipBasicData>;
   /** 无藏记录预览 */
   stagePreview?: StagePreview;
-  /** 敌人基础数据 */
-  enemies: Record<string, EnemyBasicData[]>;
+  /** 敌方预览数据 */
+  stageEnemies?: Record<string, string[]>;
 };
 
 type RelicFreeState = RelicFreeBasic & {
@@ -30,7 +30,7 @@ type RelicFreeAction = {
 export const useRelicFreeStore = create<RelicFreeState & RelicFreeAction>()(
   devtools(
     (set, get) => ({
-      enemies: undefined,
+      stageEnemies: undefined,
       stagePreview: undefined,
       fetchRelicFreeData: async () => {
         try {

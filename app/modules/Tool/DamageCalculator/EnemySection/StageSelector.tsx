@@ -92,26 +92,6 @@ const StyledEnemies = styled.div`
 const StyledEnemy = styled.div<{ $selected: boolean }>`
   box-shadow: ${({ $selected }) => ($selected ? "0px 0px 10px 2px #FFF" : "none")};
   width: 4rem;
-  position: relative;
-`;
-
-const StyledEnemyName = styled.div<{ $color: string }>`
-  padding: 0.1rem 0.15rem;
-  font-size: 0.65rem;
-  background: var(--black-gray);
-  text-align: center;
-  color: ${({ $color }) => ($color === "red" ? "var(--ak-red)" : "inherit")};
-`;
-
-/** 恐卡兹标记 */
-const StyledEnemyBadge = styled.div`
-  position: absolute;
-  top: -0.3rem;
-  right: -0.3rem;
-  width: 1rem;
-  height: 1rem;
-  background: url(${cosHost + "/images/rogue_4/恐卡兹标记.webp"}) no-repeat center center;
-  background-size: contain;
 `;
 
 const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标", "仅剩的创意", "受符"];
@@ -241,7 +221,7 @@ export default function StageSelector() {
                 )
                 .map((_enemyData) => {
                   // 被恐卡兹寄生（小红点）
-                  const parasitized = _enemyData.talentBlackboard?.find(
+                  const parasitized = !!_enemyData.talentBlackboard?.find(
                     (bb) => bb.key === "parasitic" && bb.valueStr === "true",
                   );
 
@@ -261,9 +241,12 @@ export default function StageSelector() {
                         setEnemyData(_enemyData);
                       }}
                     >
-                      <EnemyAvatar name={_enemyData.name.m_value} />
-                      <StyledEnemyName $color={"inherit"}>{displayName}</StyledEnemyName>
-                      {parasitized && <StyledEnemyBadge />}
+                      <EnemyAvatar
+                        name={_enemyData.name.m_value}
+                        displayName={displayName!}
+                        fontSize="0.65rem"
+                        parasitized={parasitized}
+                      />
                     </StyledEnemy>
                   );
                 })}

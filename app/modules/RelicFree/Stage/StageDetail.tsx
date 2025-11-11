@@ -7,6 +7,7 @@ import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
 import { assetsHost } from "~/utils/tools";
+import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 
 const StyledDescriptionBlock = styled.div`
   padding: 1.5rem;
@@ -49,11 +50,11 @@ export default function StageDetail({
 }) {
   const navigate = useNavigate();
 
-  const { stagePreview, enemies } = useRelicFreeStore();
+  const { stagePreview, stageEnemies } = useRelicFreeStore();
   const { stages } = useGameDataStore();
 
   // 关卡敌人信息
-  const enemyOfStage = enemies?.[stageData.id] || [];
+  const enemies = stageEnemies?.[stageData.id] || [];
 
   // 关卡面包屑描述
   const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ""}`;
@@ -114,21 +115,10 @@ export default function StageDetail({
           <span className="text-xl font-bold">敌方情报</span>
           <div className="w-full aspect-video bg-mid-gray p-2 mt-2">
             <div className="h-full pt-4 overflow-y-auto flex flex-wrap justify-evenly gap-4">
-              {[...enemyOfStage, ...Array(5).fill(0)].map((enemyData, i) => {
+              {[...enemies, ...Array(5).fill(0)].map((enemyName, i) => {
                 return (
                   <div className="w-1/6" key={i}>
-                    {enemyData ? (
-                      <>
-                        <img
-                          className="w-full"
-                          src={enemyData.profile.replace("thumb/", "").split("/50px")[0]}
-                          alt="profile"
-                          referrerPolicy="no-referrer"
-                          crossOrigin="anonymous"
-                        />
-                        <div className="text-center">{enemyData.name}</div>
-                      </>
-                    ) : null}
+                    <EnemyAvatar name={enemyName} displayName={enemyName} />
                   </div>
                 );
               })}

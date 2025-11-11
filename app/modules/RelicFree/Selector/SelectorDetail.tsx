@@ -150,7 +150,7 @@ export default function SelectorDetail({
                   {renderStages.map((stage, i, stageList) => {
                     if (stage.id === "ghost") return <StyledStageCard className="" key={"ghost" + i} />;
                     const stagePreviewData = stagePreview?.[stage.id];
-                    const maxLevel = ["??", "N18", "N15"].reduce((a, b) =>
+                    const maxLevel = ["??", "N0", "N18", "N15"].reduce((a, b) =>
                       [
                         stagePreviewData?.normalLevel,
                         stagePreviewData?.eliteLevel,
@@ -194,6 +194,7 @@ export default function SelectorDetail({
                         </div>
                         <StyledCardBody>
                           <StyledDifficulty>{maxLevel}</StyledDifficulty>
+                          {/* 如果关卡包含主要敌人信息，鼠标悬停显示敌人头像 */}
                           {stageType && stage.mainEnemy && (
                             <Tooltip
                               radius="none"
@@ -203,7 +204,9 @@ export default function SelectorDetail({
                                 <EnemyAvatar name={stage.mainEnemy} className="w-12 h-12 border-2 border-[#ffffff80]" />
                               }
                             >
-                              <StyledStageType>{"TYPE-" + stageType}</StyledStageType>
+                              <StyledStageType onClick={(evt) => evt.stopPropagation()}>
+                                {"TYPE-" + stageType}
+                              </StyledStageType>
                             </Tooltip>
                           )}
                           <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">{stage.name}</StyledStageName>

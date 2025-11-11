@@ -20,4 +20,4 @@ export const SeedTypeColors: BasicObject = {
   other: "ak-pink",
 };
 
-export const StageLevels = ["N15", "N18"];
+export const StageLevels = ["N0", "N15", "N18"];

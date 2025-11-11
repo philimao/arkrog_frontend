@@ -6,6 +6,7 @@ import SubmitRecordForm from "~/modules/RelicFree/Stage/SubmitRecordForm";
 import type { RecordType } from "~/types/recordType";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
+import { assetsHost } from "~/utils/tools";
 
 const StyledDescriptionBlock = styled.div`
   padding: 1.5rem;
@@ -46,13 +47,18 @@ export default function StageDetail({
   stageData: StageData;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
 }) {
+  const navigate = useNavigate();
+
   const { stagePreview, enemies } = useRelicFreeStore();
   const { stages } = useGameDataStore();
 
+  // 关卡敌人信息
   const enemyOfStage = enemies?.[stageData.id] || [];
 
+  // 关卡面包屑描述
   const breadcrumb = `${topicData.name} ${stagePreview?.[stageData.id]?.breadcrumb ?? ""}`;
 
+  // 查找是否有紧急作战数据
   const eliteStageData: StageData | null = useMemo(() => {
     if (!stages || !stageData.id.match(/ro\d_n/)) return null;
     const eliteId = stageData.id.replace("n", "e");
@@ -61,10 +67,10 @@ export default function StageDetail({
     return stages[rogueKey][eliteId];
   }, [stages, stageData]);
 
-  const navigate = useNavigate();
+  console.log([stageData.description.replace(/<@[^>]+>(.+?)<\/>/g, "$1").replace(/\\n/g, "\n")]);
 
-  const shouldShowAdditionalDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
-  const renderAdditionalDesc = () => {
+  const shouldShowEliteDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
+  const renderEliteDesc = () => {
     const tag = eliteStageData ? "紧急" : stagePreview?.[stageData.id]?.boatDesc ? "带船" : "";
     return (
       <>
@@ -89,20 +95,16 @@ export default function StageDetail({
       <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
       <div className="grid gap-4 grid-col-1 md:grid-cols-2 mb-8">
         <StyledDescriptionBlock>
-          {stageData.description
-            .replace(/\\n/g, "\n")
-            .replace(/。/g, "。\n")
-            .replace(/<@.*?>/, "")
-            .replace(/<\/>/g, "")}
+          {stageData.description.replace(/<@[^>]+>(.+?)<\/>/g, "$1").replace(/\\n/g, "\n\n")}
         </StyledDescriptionBlock>
-        {<StyledDescriptionBlock>{shouldShowAdditionalDesc && renderAdditionalDesc()}</StyledDescriptionBlock>}
+        {shouldShowEliteDesc && <StyledDescriptionBlock>{renderEliteDesc()}</StyledDescriptionBlock>}
       </div>
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>
           <span className="text-xl font-bold">地图</span>
           <img
             className="w-full mt-2"
-            src={`https://torappu.prts.wiki/assets/map_preview/${stageData.id}.png`}
+            src={`${assetsHost}/map_preview/${stageData.id}.png`}
             alt="map"
             referrerPolicy="no-referrer"
             crossOrigin="anonymous"

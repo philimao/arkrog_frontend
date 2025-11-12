@@ -268,11 +268,11 @@ export default function RecordCard({
         </StyledCornerMark>
         {/* 左侧信息区 */}
         <StyledLeftInfo className="left-info">
-          <div className="font-han-serif">
-            <span className="text-[3rem] md:text-[4rem] lg:text-[5rem] xl:text-[7rem] me-0 md:me-2 xl:me-4">
+          <div>
+            <span className="font-han-serif text-[3rem] md:text-[4rem] lg:text-[5rem] xl:text-[7rem] me-0 md:me-2 xl:me-4">
               {record.team.length + "人"}
             </span>
-            <RecordTypeLabel type={record.type} />
+            <RecordTypeLabel className="font-han-sans" type={record.type} />
           </div>
           <Divider className="mb-4 bg-white w-36" style={{ height: "1px" }} />
           <div className="flex items-center text-[10px] sm:text-[12px] lg:text-[16px]">
@@ -368,7 +368,7 @@ export default function RecordCard({
                 href={record.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-han-serif text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px]"
+                className="font-han-sans text-[10px] sm:text-[12px] lg:text-[14px] xl:text-[16px]"
               >
                 跳转原址
               </a>
@@ -419,7 +419,7 @@ export default function RecordCard({
           )}
         </div>
         <div className="w-1/3 flex items-center justify-center">
-          <a href={record.url} target="_blank" rel="noopener noreferrer" className="font-han-serif text-sm">
+          <a href={record.url} target="_blank" rel="noopener noreferrer" className="font-han-sans text-sm">
             <button>跳转原址</button>
           </a>
         </div>

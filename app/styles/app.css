@@ -45,14 +45,14 @@ body {
         font-family: 'HanSans';
         font-style: normal;
         font-weight: 600;
-        src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format('otf');
+        src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format('opentype');
     }
 
     @font-face {
         font-family: 'HanSerif';
         font-style: normal;
         font-weight: 600;
-        src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format('otf');
+        src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format('opentype');
     }
 }
 

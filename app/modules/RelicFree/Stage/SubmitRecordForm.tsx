@@ -21,7 +21,7 @@ import { charStrToData, URLValidation } from "~/utils/record";
 import { _post, findDuplicates } from "~/utils/tools";
 import type { RecordType, TeamMemberData } from "~/types/recordType";
 import { toast } from "react-toastify";
-import { StageLevels, StageTypes } from "~/types/constant";
+import { StageLevels, StageTypes, topicMaxLevels } from "~/types/constant";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
@@ -57,7 +57,13 @@ export default function SubmitRecordForm({
   const [team, setTeam] = useState("");
   const [memberDataArray, setMemberDataArray] = useState<TeamMemberData[]>([]);
 
-  const teamRe = /[+、]/;
+  /** 肉鸽主题 */
+  const rogueKey = stageId.split("_")[0].replace("ro", "rogue_");
+  /** 肉鸽主题最高难度等级 */
+  const maxLevel = topicMaxLevels[rogueKey as keyof typeof topicMaxLevels];
+
+  /** 队伍组成分隔符 */
+  const teamSplitterRe = /[+、]/;
 
   useEffect(() => {
     if (!character_basic) return;
@@ -141,7 +147,7 @@ export default function SubmitRecordForm({
     }
 
     // 干员信息验证
-    const misMatch = team.split(teamRe).find((memberStr, i) => {
+    const misMatch = team.split(teamSplitterRe).find((memberStr, i) => {
       const memberData = memberDataArray[i];
       if (!memberData) return true;
       const { name, skillStr } = memberData;
@@ -155,6 +161,14 @@ export default function SubmitRecordForm({
     const skillErrorMember = memberDataArray.find((memberData) => memberData.skillId === "error");
     if (skillErrorMember) {
       return toast.warning(`队伍组成中 ${skillErrorMember.name} 的技能填写有误！`);
+    }
+
+    // 技能非空验证
+    const skillEmptyMember = memberDataArray.find(
+      (memberData) => !memberData.skillId && !memberData.name.match(/-\d$/),
+    );
+    if (skillEmptyMember) {
+      return toast.warning(`队伍组成中 ${skillEmptyMember.name} 的技能未填写！`);
     }
 
     data.team = memberDataArray.map((memberData) => {
@@ -220,6 +234,7 @@ export default function SubmitRecordForm({
                             );
                             if (index > -1) {
                               updated[index].uniequipId = id;
+                              updated[index].uniequipName = uniequip_basic[id]?.typeIcon.toUpperCase() || "";
                             }
                             return updated;
                           });
@@ -243,7 +258,7 @@ export default function SubmitRecordForm({
                   <SelectItem key={typeKey}>{StageTypes[typeKey] + "作战"}</SelectItem>
                 ))}
               </MySelect>
-              <MySelect name="level" label="难度等级" defaultSelectedKeys={[StageLevels[0]]} required>
+              <MySelect name="level" label="难度等级" defaultSelectedKeys={[maxLevel]} required>
                 {StageLevels.map((l) => (
                   <SelectItem key={l}>{l}</SelectItem>
                 ))}

@@ -68,8 +68,6 @@ export default function StageDetail({
     return stages[rogueKey][eliteId];
   }, [stages, stageData]);
 
-  console.log([stageData.description.replace(/<@[^>]+>(.+?)<\/>/g, "$1").replace(/\\n/g, "\n")]);
-
   const shouldShowEliteDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
   const renderEliteDesc = () => {
     const tag = eliteStageData ? "紧急" : stagePreview?.[stageData.id]?.boatDesc ? "带船" : "";

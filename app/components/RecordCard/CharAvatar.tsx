@@ -3,12 +3,12 @@ import { styled } from "styled-components";
 import type { Route } from "../../../.react-router/types/app/+types/root";
 import { getPath, imageHost } from "~/utils/tools";
 
-const StyledBustImg = styled.img`
+const StyledBustImg = styled.img<{ $isBust: boolean }>`
   position: absolute;
   width: 100%;
   height: auto;
   left: 0;
-  top: -18%;
+  top: ${({ $isBust }) => ($isBust ? "0" : "-18%")};
 `;
 
 const StyledMinorImg = styled.img`
@@ -51,23 +51,17 @@ export default function CharAvatar({
   className?: string;
 }) {
   const bgSrc = `/images/card/noinfo${isBust ? "-bust" : ""}.png`;
-  const bustSrc = memberData
-    ? encodeURI(imageHost + getPath(`半身像_${memberData.name}_1.png`))
-    : "#";
+  const bustSrc = memberData ? encodeURI(imageHost + getPath(`半身像_${memberData.name}_1.png`)) : "#";
   const skillSrc = memberData?.skillName
     ? encodeURI(imageHost + getPath(`技能_${memberData.skillName}.png`))
     : "/images/card/no-uniequip.png";
   const uniequipSrc =
     memberData?.uniequipName && memberData.uniequipName !== "ORIGINAL"
-      ? encodeURI(
-          imageHost + getPath(`模组类型_${memberData.uniequipName}_小图.png`),
-        )
+      ? encodeURI(imageHost + getPath(`模组类型_${memberData.uniequipName}_小图.png`))
       : "/images/card/no-uniequip.png";
 
   return (
-    <div
-      className={`relative first-of-type:opacity-0 first-of-type:mb-2 ${className}`}
-    >
+    <div className={`relative ${className}`}>
       <div className="bg-dark-gray p-1 relative">
         <div className="relative h-full w-full overflow-hidden">
           {!memberData ? (
@@ -77,7 +71,7 @@ export default function CharAvatar({
           ) : (
             <>
               <img src={bgSrc} alt="bg" className="max-h-full" />
-              <StyledBustImg src={bustSrc} />
+              <StyledBustImg src={bustSrc} $isBust={isBust} />
               <StyledSkillImg src={skillSrc} />
               <StyledUniequipImgWrapper>
                 <StyledUniequipImg src={uniequipSrc} alt="uniequip" />

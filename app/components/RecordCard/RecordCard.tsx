@@ -20,12 +20,18 @@ import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const StyledCardContainer = styled.div`
   width: 100%;
-  height: 9rem;
+  height: 14rem;
   @media (min-width: 640px) {
-    height: 12rem;
+    height: 16rem;
+  }
+  @media (min-width: 768px) {
+    height: 18rem;
+  }
+  @media (min-width: 992px) {
+    height: 20rem;
   }
   @media (min-width: 1024px) {
-    height: 20rem;
+    height: 22rem;
   }
   @media (min-width: 1280px) {
     height: 24rem;
@@ -68,7 +74,7 @@ const StyledDotLayer = styled(StyledBasic)`
 
 const StyledChar = styled(StyledBasic)<{ $url: string }>`
   background-image: url(${(props) => props.$url});
-  background-size: contain;
+  background-size: auto 100%;
   background-position: 30% 100%;
 `;
 
@@ -78,11 +84,8 @@ const StyledLeftInfo = styled(StyledBasic)`
   justify-content: end;
   z-index: 1;
   height: 100%;
-  padding: 0 0 0.5rem 0.5rem;
+  padding: 0 0 1rem 1.25rem;
   @media (min-width: 640px) {
-    padding: 0 0 1rem 1rem;
-  }
-  @media (min-width: 1024px) {
     padding: 0 0 1.5rem 1.5rem;
   }
   @media (min-width: 1280px) {
@@ -91,18 +94,44 @@ const StyledLeftInfo = styled(StyledBasic)`
 `;
 
 const StyledRightTeam = styled(StyledBasic)`
-  width: 60%;
-  height: unset;
+  max-width: calc(100% - 12rem);
+  max-height: 90%;
   left: unset;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const StyledTeamContainer = styled.div<{ $singleRow: boolean; $isSmallScreen: boolean }>`
+  height: ${({ $singleRow, $isSmallScreen }) =>
+    $singleRow
+      ? $isSmallScreen
+        ? "100%"
+        : "calc(100% - 4rem)"
+      : $isSmallScreen
+        ? "calc(50% - 0.5rem)"
+        : "calc(50% - 2rem)"};
+  display: flex;
+  gap: ${({ $singleRow }) => ($singleRow ? "0.5rem" : "0.25rem")};
+  justify-content: end;
+  align-content: start;
+`;
+
+const StyledCardActions = styled.div`
+  justify-content: end;
+  align-items: center;
+  height: 2.5rem;
+  flex-shrink: 0;
 `;
 
 const StyledCornerMark = styled.div`
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 2;
   background: linear-gradient(45deg, rgba(255, 255, 255, 0) 50%, var(--ak-dark-red) 50%);
   & > span {
     position: absolute;
@@ -176,7 +205,7 @@ export default function RecordCard({
   }, [isStagePage]);
 
   if (!record) {
-    return <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-mid-gray"></div>;
+    return <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-[#181818CC]"></div>;
   }
 
   // 从后端返回的可用立绘中进行选择，默认维什戴尔
@@ -184,57 +213,75 @@ export default function RecordCard({
   const charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.random())] : "char_1035_wisdel";
   const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
 
+  // 使用单行干员展示
+  const isLargeScreen = window.matchMedia("(min-width: 1024px)").matches;
+  const isSmallScreen = window.matchMedia("(max-width: 640px)").matches;
+  // 是否单行展示，要求队伍长度小于一定值
+  const [singleRow, setSingleRow] = useState(
+    isLargeScreen || isSmallScreen ? record.team.length <= 4 : record.team.length <= 5,
+  );
+  // 双行展示时，需要补全的干员数量
+  const [doubleRowPatchNum, setDoubleRowPatchNum] = useState(isLargeScreen || isSmallScreen ? 5 : 7);
+
+  useEffect(() => {
+    const handler = () => {
+      // 如果大屏幕或小屏幕，卡片长度不足
+      if (window.matchMedia("(min-width: 1024px)").matches || window.matchMedia("(max-width: 640px)").matches) {
+        setSingleRow(record.team.length <= 4);
+        setDoubleRowPatchNum(5);
+      } else {
+        setSingleRow(record.team.length <= 5);
+        setDoubleRowPatchNum(7);
+      }
+    };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   return (
     <div className="mb-4">
       {stageData && (
         <div className="mb-2 flex">
-          <div className="bg-black-gray px-4 text-lg font-bold font-han-sans">
+          <div className="bg-[#181818CC] px-4 text-lg font-bold font-han-sans">
             <span>{`${record.team.length}人-${StageTypes[record.type]}-`}</span>
             <span className="text-ak-blue">{stageData.name}</span>
           </div>
         </div>
       )}
-      {isStagePage && (
-        <div className="my-3 font-bold">
-          <div className="bg-dark-gray inline-block px-4 pe-12 relative">
-            <span className="text-lg me-4">{StageTypes[record.type]}</span>
-            <span
-              className={
-                "text-[2.5rem] absolute left-16 top-1/2 -translate-y-1/2 " +
-                (record.type === "normal" ? "text-ak-blue" : record.type === "elite" ? "text-ak-red" : "text-ak-purple")
-              }
-            >
-              {record.team.length}
-            </span>
-          </div>
-        </div>
-      )}
+
       <StyledCardContainer>
-        <StyledRightBottomDecoration $ro={ro} />
-        <StyledDotLayer />
-        <StyledLeftTopDecoration $ro={ro} />
-        <StyledLogo $ro={ro} />
-        <StyledChar $url={bgChar} />
-        <StyledCornerMark className="size-10 sm:size-14 lg:size-16">
+        {/* 右下装饰 */}
+        <StyledRightBottomDecoration className="right-bottom-decoration" $ro={ro} />
+        {/* 点层 */}
+        <StyledDotLayer className="dot-layer" />
+        {/* 左上装饰 */}
+        <StyledLeftTopDecoration className="left-top-decoration" $ro={ro} />
+        {/* 主题logo */}
+        <StyledLogo className="logo" $ro={ro} />
+        {/* 背景立绘 */}
+        <StyledChar className="char-image" $url={bgChar} />
+        {/* 难度角标 */}
+        <StyledCornerMark className="difficulty-mark size-10 sm:size-14 lg:size-16">
           <span className="right-1 sm:right-2 text-lg sm:text-xl lg:text-2xl xl:text-3xl">
             {record.level.replace("N", "")}
           </span>
         </StyledCornerMark>
-        <StyledLeftInfo>
+        {/* 左侧信息区 */}
+        <StyledLeftInfo className="left-info">
           <div className="font-han-serif">
-            <span className="text-[2rem] sm:text-[3rem] lg:text-[5rem] xl:text-[7rem] me-4">
+            <span className="text-[3rem] md:text-[4rem] lg:text-[5rem] xl:text-[7rem] me-0 md:me-2 xl:me-4">
               {record.team.length + "人"}
             </span>
             <RecordTypeLabel type={record.type} />
           </div>
-          <Divider className="mb-4 bg-white w-1/3" style={{ height: "1px" }} />
-          <div className="flex items-center text-[8px] sm:text-[12px] lg:text-[16px]">
+          <Divider className="mb-4 bg-white w-36" style={{ height: "1px" }} />
+          <div className="flex items-center text-[10px] sm:text-[12px] lg:text-[16px]">
             <a href={record.raiderLink} className="mb-2 flex" target="_blank" rel="noopener noreferrer">
               <img
                 src={record.raiderImage}
                 alt="raiderImage"
                 style={{ borderRadius: "50%" }}
-                className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 me-2"
+                className="size-8 md:size-10 lg:size-12 me-2"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
@@ -250,17 +297,47 @@ export default function RecordCard({
             {record.note}
           </div>
         </StyledLeftInfo>
-        <StyledRightTeam className="right-2 sm:right-4 lg:right-6 xl:right-8">
-          <div className="flex flex-wrap">
-            {Array(14)
-              .fill(0)
-              .map((_, i) => {
-                const memberData = record.team[bustOrderMapping(i)];
-                return <CharAvatar key={i} memberData={memberData} className="w-[14.2%] p-1" isBust={false} />;
-              })}
-          </div>
-          <div className="hidden sm:flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
-            <div className="flex justify-evenly w-12 sm:w-16 lg:w-20 xl:w-24 bg-default-50 content-center flex-wrap">
+        {/* 右侧信息区 */}
+        <StyledRightTeam className="right-info right-2 sm:right-4 lg:right-6 xl:right-8">
+          {/* 队伍信息 */}
+          {singleRow ? (
+            <StyledTeamContainer className="team-info" $singleRow={singleRow} $isSmallScreen={isSmallScreen}>
+              {Array(Math.max(3, record.team.length))
+                .fill(0)
+                .map((_, i) => (
+                  <CharAvatar key={"member" + i} memberData={record.team[i]} isBust={true} className="flex" />
+                ))}
+            </StyledTeamContainer>
+          ) : (
+            <>
+              <StyledTeamContainer className="team-info" $singleRow={singleRow} $isSmallScreen={isSmallScreen}>
+                {Array(Math.max((record.team.length + 1) / 2, doubleRowPatchNum))
+                  .fill(0)
+                  .map((_, i) => {
+                    const memberData = record.team[bustOrderMapping(i)];
+                    return (
+                      <CharAvatar
+                        key={"member" + i}
+                        memberData={memberData}
+                        isBust={false}
+                        className="flex first-of-type:opacity-0"
+                      />
+                    );
+                  })}
+              </StyledTeamContainer>
+              <StyledTeamContainer className="team-info" $singleRow={singleRow} $isSmallScreen={isSmallScreen}>
+                {Array(Math.max((record.team.length + 1) / 2, doubleRowPatchNum))
+                  .fill(0)
+                  .map((_, i) => {
+                    const memberData = record.team[bustOrderMapping(i + 7)];
+                    return <CharAvatar key={"member" + i} memberData={memberData} isBust={false} className="flex" />;
+                  })}
+              </StyledTeamContainer>
+            </>
+          )}
+          {/* 操作按钮 */}
+          <StyledCardActions className="card-actions hidden sm:flex">
+            <div className="flex justify-evenly w-32 h-full bg-[#181818CC] content-center flex-wrap">
               <StarIcon
                 className={starred ? "text-yellow-300" : "hover:text-yellow-300"}
                 role="button"
@@ -286,7 +363,7 @@ export default function RecordCard({
                 <DeleteIcon className="hover:text-yellow-300" role="button" onClick={handleDeleteRecord} />
               )}
             </div>
-            <div className="w-[3.5rem] sm:w-[5rem] lg:w-[6rem] xl:w-[7rem] bg-ak-deep-blue flex justify-center content-center flex-wrap">
+            <div className="w-[3.5rem] sm:w-[5rem] lg:w-[6rem] xl:w-[7rem] h-full bg-[#0073A4CC] flex justify-center content-center flex-wrap">
               <a
                 href={record.url}
                 target="_blank"
@@ -296,11 +373,13 @@ export default function RecordCard({
                 跳转原址
               </a>
             </div>
-          </div>
+          </StyledCardActions>
         </StyledRightTeam>
       </StyledCardContainer>
-      {showNote && <div className="mt-2 whitespace-pre-wrap p-2 bg-semi-black text-sm">{record.note}</div>}
-      <div className="flex sm:hidden mt-2 bg-semi-black py-2">
+      {showNote && (
+        <div className="mt-2 whitespace-pre-wrap p-2 bg-[#181818CC] text-sm">{record.note || "无备注信息"}</div>
+      )}
+      <div className="flex sm:hidden mt-2 bg-[#181818CC] py-2">
         <div className="w-1/3 flex items-center justify-center text-sm">
           <button
             onClick={() => {

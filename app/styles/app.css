@@ -2,23 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-    --ak-blue: #18D1FF;
-    --ak-deep-blue: #0691CD;
-    --light-gray: #D9D9D9;
-    --light-mid-gray: #9A9A9A;
-    --mid-gray: #4E4E4E;
-    --dark-gray: #242424;
-    --black-gray: #181818;
-    --ak-purple: #D533EB;
-    --ak-dark-purple: #B116BF;
-    --ak-red: #EB3333;
-    --ak-dark-red: #C21619;
-    --ak-pink: #FB7299;
-    --semi-black: rgba(0, 0, 0, 0.5);
-    --black-gray-70: rgba(24, 24, 24, 0.7);
-}
-
 html,
 body {
     background: #181818;
@@ -98,4 +81,52 @@ body {
 
 .hide-scroll::-webkit-scrollbar {
     display: none;
+}
+
+/* 响应式根节点字体大小调整 */
+
+/* 默认字体大小：移动端友好，最小 14px，最大 18px */
+html {
+    overflow-x: hidden;
+  
+    /* 最小 14px，最大 16px */
+    font-size: clamp(14px, 1vw + 0.3rem, 16px);
+  }
+  
+  @media screen and (width >= 1440px) {
+    html {
+      font-size: clamp(14px, 0.8vw + 0.3rem, 16px);
+    }
+  }
+  
+  @media screen and (width >= 1920px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
+@layer components {
+    @media (min-width: 640px) {
+        .container {
+            max-width: 786px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .container {
+            max-width: 992px;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .container {
+            max-width: 1024px;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .container {
+            max-width: 1280px;
+        }
+    }
 }

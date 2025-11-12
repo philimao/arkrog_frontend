@@ -7,7 +7,7 @@ import { useRelicFreeStore } from "~/stores/relicFreeStore";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 
 const StyledZoneName = styled.div`
-  height: 5rem;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,8 +142,8 @@ export default function SelectorDetail({
             const renderedStageIds: string[] = [];
             const renderStages = Object.values(stageOfRogue).filter((stage) => zone.filter(stage, renderedStageIds));
             return (
-              <div className="flex mb-16" key={zone.id}>
-                <div className="w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8">
+              <div className="block md:flex mb-16" key={zone.id}>
+                <div className="w-full md:w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8 mb-8 md:mb-0 h-10 md:h-20">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 grow">

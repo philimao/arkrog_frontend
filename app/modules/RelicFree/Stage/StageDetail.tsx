@@ -8,19 +8,14 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
 import { assetsHost } from "~/utils/tools";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
+import { toast } from "react-toastify";
 
-const StyledDescriptionBlock = styled.div`
-  padding: 1.5rem;
-  background: var(--black-gray);
-  white-space: pre-wrap;
-`;
-
-const StyledDescriptionTag = styled.div<{ $tag: string }>`
-  float: right;
-  padding: 0.25rem 1rem;
-  margin-left: 0.25rem;
-  font-size: 0.8rem;
-  background: ${(props) => (props.$tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)")};
+const StyledStageDetailContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
 `;
 
 const StyledBackButtonContainer = styled.div`
@@ -34,9 +29,61 @@ const StyledBackButtonContainer = styled.div`
 const StyledBackButton = styled.button`
   position: absolute;
   right: 0;
-  top: 2rem;
-  padding: 0.5rem 2rem;
+  top: 0;
+  width: 5.5rem;
+  height: 2.5rem;
   background: var(--black-gray);
+`;
+
+const StyledDescriptionBlock = styled.div`
+  padding: 1.5rem;
+  background: #181818b2;
+  white-space: pre-wrap;
+`;
+
+const StyledDescriptionTag = styled.div<{ $tag: string }>`
+  float: right;
+  padding: 0.25rem 1rem;
+  margin-left: 0.25rem;
+  font-size: 0.8rem;
+  background: ${(props) => (props.$tag === "紧急" ? "var(--ak-dark-red)" : "var(--ak-dark-purple)")};
+`;
+
+const StyledStageInfoContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const StyledStageHeader = styled.h1`
+  font-weight: bold;
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+`;
+
+const StyledStageBreadcrumb = styled.div`
+  font-size: 0.875rem;
+  color: var(--ak-blue);
+  display: inline-block;
+`;
+
+const StyledStageActions = styled.div`
+  display: inline-block;
+  align-self: end;
+`;
+
+const StyledStageNavButton = styled.button`
+  width: 5rem;
+  height: 2.5rem;
+  font-weight: bold;
+  background: var(--mid-gray);
+  margin-right: 0.5rem;
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 export default function StageDetail({
@@ -68,6 +115,7 @@ export default function StageDetail({
     return stages[rogueKey][eliteId];
   }, [stages, stageData]);
 
+  // 是否渲染紧急/带船信息
   const shouldShowEliteDesc = eliteStageData || stagePreview?.[stageData.id]?.boatDesc;
   const renderEliteDesc = () => {
     const tag = eliteStageData ? "紧急" : stagePreview?.[stageData.id]?.boatDesc ? "带船" : "";
@@ -79,25 +127,62 @@ export default function StageDetail({
     );
   };
 
+  // 上一关
+  const stageIds = Object.keys(stagePreview!);
+  const prevStageIdx = stageIds.indexOf(stageData.id) - 1;
+  const nextStageIdx = stageIds.indexOf(stageData.id) + 1;
+
   return (
-    <div className="mb-10 relative">
+    <StyledStageDetailContainer>
+      {/* 宽屏下返回按钮 */}
       <StyledBackButtonContainer>
         <div className="relative">
-          <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
+          <StyledBackButton className="hidden lg:block" onClick={() => navigate(-1)}>
+            返回
+          </StyledBackButton>
         </div>
       </StyledBackButtonContainer>
-      <h1 className="font-bold mb-2 flex items-end">
-        <span className="text-[2.5rem] leading-10 me-2">{stageData.name}</span>
-        <span className="text-2xl">{stageData.code}</span>
-        <SubmitRecordForm stageId={stageData.id} setRecords={setRecords} />
-      </h1>
-      <div className="text-ak-blue text-sm mb-8">{breadcrumb}</div>
+      {/* 顶部关卡信息展示区与操作按钮区 */}
+      <StyledStageInfoContainer>
+        <StyledStageHeader>
+          <span className="text-[2.5rem] leading-10">{stageData.name}</span>
+          <span className="text-2xl">{stageData.code}</span>
+          {/* 窄屏下返回按钮 */}
+          <StyledBackButton className="text-small py-1.5 block lg:hidden" onClick={() => navigate(-1)}>
+            返回
+          </StyledBackButton>
+        </StyledStageHeader>
+        <div className="flex justify-between">
+          <StyledStageBreadcrumb>{breadcrumb}</StyledStageBreadcrumb>
+          <StyledStageActions>
+            {prevStageIdx >= 0 && (
+              <StyledStageNavButton
+                className="text-small py-1.5"
+                onClick={() => navigate(`/relic-free/${stageIds[prevStageIdx]}`)}
+              >
+                上一关
+              </StyledStageNavButton>
+            )}
+            {nextStageIdx < stageIds.length && (
+              <StyledStageNavButton
+                className="text-small py-1.5"
+                onClick={() => navigate(`/relic-free/${stageIds[nextStageIdx]}`)}
+              >
+                下一关
+              </StyledStageNavButton>
+            )}
+            <SubmitRecordForm stageId={stageData.id} setRecords={setRecords} />
+          </StyledStageActions>
+        </div>
+      </StyledStageInfoContainer>
+      {/* 关卡描述与紧急条件描述 */}
       <div className="grid gap-4 grid-col-1 md:grid-cols-2 mb-8">
         <StyledDescriptionBlock>
           {stageData.description.replace(/<@[^>]+>(.+?)<\/>/g, "$1").replace(/\\n/g, "\n\n")}
         </StyledDescriptionBlock>
         {shouldShowEliteDesc && <StyledDescriptionBlock>{renderEliteDesc()}</StyledDescriptionBlock>}
       </div>
+      {/* 地图与敌方情报 */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mb-8">
         <div>
           <span className="text-xl font-bold">地图</span>
@@ -124,6 +209,6 @@ export default function StageDetail({
           </div>
         </div>
       </div>
-    </div>
+    </StyledStageDetailContainer>
   );
 }

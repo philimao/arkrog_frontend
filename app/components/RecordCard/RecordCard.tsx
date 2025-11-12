@@ -2,12 +2,7 @@ import { StageTypes } from "~/types/constant";
 import type { RecordType, TeamMemberData } from "~/types/recordType";
 import { Divider } from "@heroui/react";
 import { _post, findDuplicates } from "~/utils/tools";
-import React, {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import React, { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import RecordTypeLabel from "~/components/RecordCard/RecordTypeLabel";
 import CharAvatar from "~/components/RecordCard/CharAvatar";
@@ -51,21 +46,18 @@ const StyledBasic = styled.div`
 `;
 
 const StyledLeftTopDecoration = styled(StyledBasic)<{ $ro: string }>`
-  background-image: url(${(props) =>
-    "/images/card/" + props.$ro + "_deco_l.png"});
+  background-image: url(${(props) => "/images/card/" + props.$ro + "_deco_l.png"});
 `;
 
 const StyledRightBottomDecoration = styled(StyledBasic)<{ $ro: string }>`
   left: initial;
   right: 0;
-  background-image: url(${(props) =>
-    "/images/card/" + props.$ro + "_deco_r.png"});
+  background-image: url(${(props) => "/images/card/" + props.$ro + "_deco_r.png"});
   background-position: right;
 `;
 
 const StyledLogo = styled(StyledBasic)<{ $ro: string }>`
-  background-image: url(${(props) =>
-    "/images/card/" + props.$ro + "_logo.png"});
+  background-image: url(${(props) => "/images/card/" + props.$ro + "_logo.png"});
   background-size: auto 40%;
 `;
 
@@ -111,11 +103,7 @@ const StyledCornerMark = styled.div`
   position: absolute;
   right: 0;
   top: 0;
-  background: linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0) 50%,
-    var(--ak-dark-red) 50%
-  );
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0) 50%, var(--ak-dark-red) 50%);
   & > span {
     position: absolute;
     top: 0;
@@ -123,6 +111,7 @@ const StyledCornerMark = styled.div`
   }
 `;
 
+// 纵向排列干员头像，将横向序数映射到纵向序数
 const bustOrderMapping = (i: number) => {
   if (i === 0) return -1;
   if (i >= 1 && i <= 6) return 2 * i - 1;
@@ -164,8 +153,7 @@ export default function RecordCard({
     }, 2000);
   }
 
-  const starred =
-    record?._id && userInfo?.favorite?.find((item) => item._id === record._id);
+  const starred = record?._id && userInfo?.favorite?.find((item) => item._id === record._id);
   async function handleStarRecord() {
     if (!record?._id) return;
     try {
@@ -188,18 +176,12 @@ export default function RecordCard({
   }, [isStagePage]);
 
   if (!record) {
-    return (
-      <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-mid-gray"></div>
-    );
+    return <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-mid-gray"></div>;
   }
 
-  const availableBg = findDuplicates([
-    ...record.team.map((memberData) => memberData.charId),
-    ...(charImages || []),
-  ]);
-  const charId = availableBg.length
-    ? availableBg[Math.floor(availableBg.length * Math.random())]
-    : "char_1035_wisdel";
+  // 从后端返回的可用立绘中进行选择，默认维什戴尔
+  const availableBg = findDuplicates([...record.team.map((memberData) => memberData.charId), ...(charImages || [])]);
+  const charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.random())] : "char_1035_wisdel";
   const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
 
   return (
@@ -219,11 +201,7 @@ export default function RecordCard({
             <span
               className={
                 "text-[2.5rem] absolute left-16 top-1/2 -translate-y-1/2 " +
-                (record.type === "normal"
-                  ? "text-ak-blue"
-                  : record.type === "elite"
-                    ? "text-ak-red"
-                    : "text-ak-purple")
+                (record.type === "normal" ? "text-ak-blue" : record.type === "elite" ? "text-ak-red" : "text-ak-purple")
               }
             >
               {record.team.length}
@@ -251,12 +229,7 @@ export default function RecordCard({
           </div>
           <Divider className="mb-4 bg-white w-1/3" style={{ height: "1px" }} />
           <div className="flex items-center text-[8px] sm:text-[12px] lg:text-[16px]">
-            <a
-              href={record.raiderLink}
-              className="mb-2 flex"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={record.raiderLink} className="mb-2 flex" target="_blank" rel="noopener noreferrer">
               <img
                 src={record.raiderImage}
                 alt="raiderImage"
@@ -268,11 +241,7 @@ export default function RecordCard({
               <div className="flex flex-wrap content-center">
                 <div>
                   <div>{record.raider}</div>
-                  <div className="text-ak-blue">
-                    {new Date(record.date_published).toLocaleDateString(
-                      "zh-CN",
-                    )}
-                  </div>
+                  <div className="text-ak-blue">{new Date(record.date_published).toLocaleDateString("zh-CN")}</div>
                 </div>
               </div>
             </a>
@@ -287,22 +256,13 @@ export default function RecordCard({
               .fill(0)
               .map((_, i) => {
                 const memberData = record.team[bustOrderMapping(i)];
-                return (
-                  <CharAvatar
-                    key={i}
-                    memberData={memberData}
-                    className="w-[14.2%] p-1"
-                    isBust={false}
-                  />
-                );
+                return <CharAvatar key={i} memberData={memberData} className="w-[14.2%] p-1" isBust={false} />;
               })}
           </div>
           <div className="hidden sm:flex justify-end h-4 sm:h-5 lg:h-7 xl:h-8 mt-2">
             <div className="flex justify-evenly w-12 sm:w-16 lg:w-20 xl:w-24 bg-default-50 content-center flex-wrap">
               <StarIcon
-                className={
-                  starred ? "text-yellow-300" : "hover:text-yellow-300"
-                }
+                className={starred ? "text-yellow-300" : "hover:text-yellow-300"}
                 role="button"
                 onClick={() => {
                   if (!userInfo?.level) {
@@ -323,11 +283,7 @@ export default function RecordCard({
                 }}
               />
               {userInfo?.level !== undefined && userInfo?.level > 2 && (
-                <DeleteIcon
-                  className="hover:text-yellow-300"
-                  role="button"
-                  onClick={handleDeleteRecord}
-                />
+                <DeleteIcon className="hover:text-yellow-300" role="button" onClick={handleDeleteRecord} />
               )}
             </div>
             <div className="w-[3.5rem] sm:w-[5rem] lg:w-[6rem] xl:w-[7rem] bg-ak-deep-blue flex justify-center content-center flex-wrap">
@@ -343,11 +299,7 @@ export default function RecordCard({
           </div>
         </StyledRightTeam>
       </StyledCardContainer>
-      {showNote && (
-        <div className="mt-2 whitespace-pre-wrap p-2 bg-semi-black text-sm">
-          {record.note}
-        </div>
-      )}
+      {showNote && <div className="mt-2 whitespace-pre-wrap p-2 bg-semi-black text-sm">{record.note}</div>}
       <div className="flex sm:hidden mt-2 bg-semi-black py-2">
         <div className="w-1/3 flex items-center justify-center text-sm">
           <button
@@ -363,11 +315,7 @@ export default function RecordCard({
         </ModalTemplate>
         <div className="w-1/3 flex items-center justify-evenly">
           <StarIcon
-            className={
-              starred
-                ? "text-yellow-300 w-4 h-4"
-                : "hover:text-yellow-300 w-4 h-4"
-            }
+            className={starred ? "text-yellow-300 w-4 h-4" : "hover:text-yellow-300 w-4 h-4"}
             role="button"
             onClick={() => {
               if (!userInfo?.level) {
@@ -388,20 +336,11 @@ export default function RecordCard({
             }}
           />
           {userInfo?.level !== undefined && userInfo?.level > 2 && (
-            <DeleteIcon
-              className="hover:text-yellow-300 w-4 h-4"
-              role="button"
-              onClick={handleDeleteRecord}
-            />
+            <DeleteIcon className="hover:text-yellow-300 w-4 h-4" role="button" onClick={handleDeleteRecord} />
           )}
         </div>
         <div className="w-1/3 flex items-center justify-center">
-          <a
-            href={record.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-han-serif text-sm"
-          >
+          <a href={record.url} target="_blank" rel="noopener noreferrer" className="font-han-serif text-sm">
             <button>跳转原址</button>
           </a>
         </div>

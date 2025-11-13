@@ -169,7 +169,23 @@ export default function SelectorDetail({
                     const stageType =
                       stageGroup.length > 1 ? ["a", "b", "c", "d", "e"][stageGroup.indexOf(stage.id)] : "";
                     return (
-                      <StyledStageCard role="button" key={stage.id} onClick={() => navigate(stage.id)}>
+                      <StyledStageCard
+                        role="button"
+                        key={stage.id}
+                        onClick={() => {
+                          // 保存当前查询参数到sessionStorage，用于返回时恢复
+                          const returnParams = new URLSearchParams();
+                          const topicId = searchParams.get("topicId");
+                          const zoneId = searchParams.get("zoneId");
+                          if (topicId) returnParams.set("topicId", topicId);
+                          if (zoneId) returnParams.set("zoneId", zoneId);
+                          const returnUrl = returnParams.toString()
+                            ? `/relic-free?${returnParams.toString()}`
+                            : "/relic-free";
+                          sessionStorage.setItem("relicFreeReturnUrl", returnUrl);
+                          navigate(stage.id);
+                        }}
+                      >
                         <div className="h-6 bg-black-gray flex">
                           <div className="w-1/2 flex justify-center">
                             {stagePreviewData?.normalNum && (

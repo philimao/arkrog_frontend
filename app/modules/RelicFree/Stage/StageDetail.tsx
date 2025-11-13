@@ -132,12 +132,26 @@ export default function StageDetail({
   const prevStageIdx = stageIds.indexOf(stageData.id) - 1;
   const nextStageIdx = stageIds.indexOf(stageData.id) + 1;
 
+  // 处理返回按钮点击
+  const handleBack = () => {
+    // 检查是否有保存的返回URL（从列表页跳转过来时保存的）
+    const returnUrl = sessionStorage.getItem("relicFreeReturnUrl");
+    if (returnUrl) {
+      // 清除保存的URL，避免影响其他导航
+      sessionStorage.removeItem("relicFreeReturnUrl");
+      navigate(returnUrl);
+    } else {
+      // 如果没有保存的URL，使用浏览器历史记录返回
+      navigate(-1);
+    }
+  };
+
   return (
     <StyledStageDetailContainer>
       {/* 宽屏下返回按钮 */}
       <StyledBackButtonContainer>
         <div className="relative">
-          <StyledBackButton className="hidden lg:block" onClick={() => navigate(-1)}>
+          <StyledBackButton className="hidden lg:block" onClick={handleBack}>
             返回
           </StyledBackButton>
         </div>
@@ -148,7 +162,7 @@ export default function StageDetail({
           <span className="text-[2.5rem] leading-10">{stageData.name}</span>
           <span className="text-2xl">{stageData.code}</span>
           {/* 窄屏下返回按钮 */}
-          <StyledBackButton className="text-small py-1.5 block lg:hidden" onClick={() => navigate(-1)}>
+          <StyledBackButton className="text-small py-1.5 block lg:hidden" onClick={handleBack}>
             返回
           </StyledBackButton>
         </StyledStageHeader>

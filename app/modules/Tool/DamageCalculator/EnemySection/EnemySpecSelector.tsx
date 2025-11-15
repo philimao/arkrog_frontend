@@ -16,7 +16,7 @@ const StyledEnemySpecSelectorInner = styled.div`
 
 export interface EnemySpec {
   id: string;
-  value: { label: string; bbKey: string; key: string; value: number }[];
+  value: { label: string; key: string; blackboard: { bbKey: string; value: number }[] }[];
 }
 
 /**
@@ -68,7 +68,7 @@ export interface EnemySpecConfig {
   selects: {
     label: string;
     options: { label: string; key: number }[];
-    apply: (key: string) => { label: string; bbKey: string; key: string; value: number };
+    apply: (key: string) => { label: string; key: string; blackboard: { bbKey: string; value: number }[] };
     img?: string;
   }[];
 }
@@ -90,9 +90,8 @@ export const sharedConfigs: Record<string, EnemySpecConfig> = {};
         apply: (key: string) => {
           return {
             label: "重生造物（受到的物理和法术伤害降低90%）",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },
@@ -109,9 +108,8 @@ export const Rogue4SkzdwxSelect: EnemySpecConfig["selects"][number] = {
   apply: (key: string) => {
     return {
       label: "是否位于年代印痕中（最终乘算50减伤）",
-      bbKey: "enemy_damage_resistance",
       key: key,
-      value: Number(key),
+      blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
     };
   },
 };
@@ -131,9 +129,40 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "是否起飞",
-            bbKey: "in_game_buff_final_add.enemy_def",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "in_game_buff_final_add.enemy_def", value: Number(key) }],
+          };
+        },
+      },
+    ],
+  },
+  enemy_2106_dyremy: {
+    id: "enemy_2106_dyremy",
+    name: "怪葫芦",
+    selects: [
+      {
+        label: "每3源石锭，最大生命值与攻击力+15%",
+        options: [
+          { label: "无源石锭", key: 0 },
+          { label: "3源石锭", key: 3 },
+          { label: "6源石锭", key: 6 },
+          { label: "9源石锭", key: 9 },
+          { label: "12源石锭", key: 12 },
+          { label: "15源石锭", key: 15 },
+          { label: "18源石锭", key: 18 },
+          { label: "21源石锭", key: 21 },
+          { label: "24源石锭", key: 1.2 },
+          { label: "27源石锭", key: 27 },
+          { label: "30源石锭以上", key: 30 },
+        ],
+        apply: (key: string) => {
+          return {
+            label: `持有${key}源石锭，自身最大生命值与攻击力各+${Number(key) * 5}%`,
+            key: key,
+            blackboard: [
+              { bbKey: "in_game_buff_final_mul.enemy_max_hp", value: Number(key) * 0.05 + 1 },
+              { bbKey: "in_game_buff_final_mul.enemy_atk", value: Number(key) * 0.05 + 1 },
+            ],
           };
         },
       },
@@ -156,9 +185,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "根据与特蕾西亚距离获得物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
         img:
@@ -177,9 +205,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "本关固定获得50物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },
@@ -200,9 +227,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "根据储存的攻击能量数量获得物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },
@@ -221,9 +247,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "伤害来源与自身距离≥2.0，获得80物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },
@@ -250,9 +275,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
           const finalValue = Math.round(percentage * 100) / 100;
           return {
             label: "场上每存在一个尼卢火，获得20物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: finalValue,
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: finalValue }],
           };
         },
       },
@@ -271,9 +295,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "一阶段获得50物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },
@@ -292,9 +315,8 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
         apply: (key: string) => {
           return {
             label: "当护盾朝向我方干员时，获得80物法减伤",
-            bbKey: "enemy_damage_resistance",
             key: key,
-            value: Number(key),
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: Number(key) }],
           };
         },
       },

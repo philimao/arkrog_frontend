@@ -296,7 +296,10 @@ export interface SlicedCalcEnemyActions {
   /** 直接设置敌人基础面板（仅木桩使用） */
   setEnemyBase: (enemyBase: EnemyInput) => void;
   /** 用户修改敌人特殊配置选项 */
-  updateEnemySpec: (index: number, result: { label: string; bbKey: string; key: string; value: number }) => void;
+  updateEnemySpec: (
+    index: number,
+    result: { label: string; key: string; blackboard: { bbKey: string; value: number }[] },
+  ) => void;
   /** 设置敌人属性表达式，在多个显示敌人面板的组件中使用 */
   setEnemyExpression: (expression: Record<string, ExpressionGroupNode>) => void;
 }

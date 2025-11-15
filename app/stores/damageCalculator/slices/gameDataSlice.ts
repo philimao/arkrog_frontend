@@ -127,6 +127,23 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     return set(
       (state) => {
         state.rogueInput[get().rogueInput.topic].difficulty = difficulty;
+
+        // 当难度低于14时，为年代之刺与饮泣之刺取消年代印痕减伤
+        if (["trap_760_skztzs", "enemy_2073_skzrck"].includes(state.enemyData.id)) {
+          if (difficulty < 14) {
+            state.enemySpec.value[0] = {
+              label: "年代印痕减伤",
+              key: "0",
+              blackboard: [{ bbKey: "enemy_damage_resistance", value: 0 }],
+            };
+          } else {
+            state.enemySpec.value[0] = {
+              label: "年代印痕减伤",
+              key: "0.5",
+              blackboard: [{ bbKey: "enemy_damage_resistance", value: 0.5 }],
+            };
+          }
+        }
       },
       undefined,
       "setRogueDifficulty",

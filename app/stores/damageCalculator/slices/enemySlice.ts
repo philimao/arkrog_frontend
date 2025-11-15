@@ -38,14 +38,20 @@ export const createEnemySlice: SliceCreator<SlicedCalcEnemyState & SlicedCalcEne
           ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)
         ) {
           // 年代之刺与饮泣之刺的年代印痕减伤被强制设置为"是"
-          state.enemySpec.value[0].value = 0.5;
-          state.enemySpec.value[0].key = "0.5";
+          state.enemySpec.value[0] = {
+            label: "年代印痕减伤",
+            key: "0.5",
+            blackboard: [{ bbKey: "enemy_damage_resistance", value: 0.5 }],
+          };
         }
       },
       undefined,
       "setEnemyData",
     ),
-  updateEnemySpec: (index: number, result: { label: string; bbKey: string; key: string; value: number }) =>
+  updateEnemySpec: (
+    index: number,
+    result: { label: string; key: string; blackboard: { bbKey: string; value: number }[] },
+  ) =>
     set(
       (state) => {
         state.enemySpec.value[index] = result;

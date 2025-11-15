@@ -671,17 +671,23 @@ export class CalculatorHelper {
     /** 计算敌人特殊加成 */
     if (enemySpec) {
       enemySpec.value.forEach((spec) => {
-        const { bbKey, value, label } = spec;
-        switch (bbKey) {
-          case "enemy_damage_resistance":
-            context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
-            break;
-          case "in_game_buff_final_add.enemy_def":
-            context.in_game_buff_final_add.enemy_def.addChild(new NumericLiteralNode(value, label));
-            break;
-          default:
-            break;
-        }
+        const { blackboard, label } = spec;
+        blackboard.forEach(({ bbKey, value }) => {
+          switch (bbKey) {
+            case "enemy_damage_resistance":
+              context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_add.enemy_def":
+              context.in_game_buff_final_add.enemy_def.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_mul.enemy_atk":
+              context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_mul.enemy_max_hp":
+              context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, label));
+              break;
+          }
+        });
       });
     }
     return context;

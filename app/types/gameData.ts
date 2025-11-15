@@ -459,6 +459,8 @@ export interface EnemyData {
   id: string;
   level: 0 | 1 | 2;
   name: DefinedData<string>;
+  /** 显示名称，部分在后端手动定义 */
+  displayName?: DefinedData<string>;
   description: DefinedData<string>;
   prefabKey: DefinedData<string>;
   attributes: {

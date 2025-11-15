@@ -12,6 +12,7 @@ import {
 import type { Route } from "./+types/root";
 import app from "./styles/app.css?url";
 import variable from "./styles/variable.css?url";
+import basic from "./styles/basic.css?url";
 import React from "react";
 import { HeroUIProvider } from "@heroui/react";
 
@@ -27,6 +28,8 @@ export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: app },
   { rel: "preload", href: variable, as: "style" },
   { rel: "stylesheet", href: variable },
+  { rel: "preload", href: basic, as: "style" },
+  { rel: "stylesheet", href: basic },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

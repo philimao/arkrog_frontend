@@ -287,13 +287,13 @@ export default function RecordCard({
               />
               <div className="flex flex-wrap content-center">
                 <div>
-                  <div>{record.raider}</div>
+                  <div className="text-shadow-lg">{record.raider}</div>
                   <div className="text-ak-blue">{new Date(record.date_published).toLocaleDateString("zh-CN")}</div>
                 </div>
               </div>
             </a>
           </div>
-          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px] hidden sm:block">
+          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px] hidden sm:block text-shadow-lg">
             {record.note}
           </div>
         </StyledLeftInfo>

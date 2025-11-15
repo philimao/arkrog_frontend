@@ -74,9 +74,11 @@ export default function EnemyAvatar({
         }}
         {...props}
       />
-      <StyledEnemyName $color={"inherit"} $fontSize={fontSize}>
-        {displayName}
-      </StyledEnemyName>
+      {displayName && (
+        <StyledEnemyName $color={"inherit"} $fontSize={fontSize}>
+          {displayName}
+        </StyledEnemyName>
+      )}
       {parasitized && <StyledEnemyBadge />}
     </div>
   );

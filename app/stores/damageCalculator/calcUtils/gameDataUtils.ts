@@ -195,12 +195,6 @@ export async function handleUpdateStageId(state: {
     else {
       // 加载并设置缓存
       levelData = await loadLevelData(stageData.levelId);
-
-      // 为南武群英会添加神父变体
-      if (stageId === "ro5_duel_2_c") {
-        levelData = await addPriestVariants(levelData);
-      }
-
       levels[stageId] = levelData;
     }
     const stageWithBoatIds = [
@@ -235,51 +229,6 @@ export async function handleUpdateStageId(state: {
     enemyData: undefined,
     enemyBase: dummy,
   };
-}
-
-/** 为南武群英会添加神父变体 TODO 放到后端 */
-async function addPriestVariants(levelData: LevelData): Promise<LevelData> {
-  // 找到原有的神父敌人
-  const originalPriest = levelData.enemies.find((enemy) => enemy.id === "enemy_1284_sgprst");
-
-  if (originalPriest) {
-    // 从ro5_duel_2关卡加载level 1的神父数据
-    const level1Data = await loadLevelData("Obt/Roguelike/RO5/level_rogue5_d-2");
-    const level1Priest = level1Data.enemies.find((enemy) => enemy.id === "enemy_1284_sgprst");
-
-    if (level1Priest) {
-      // 创建神父变体（全远程版本，level 1）
-      const priestVariant: EnemyData = {
-        ...level1Priest,
-        id: "enemy_1284_sgprst_variant",
-        name: { ...level1Priest.name, m_value: "阿格尼尔神父" },
-      };
-
-      // 修改原神父的显示名称（深拷贝避免引用问题）
-      const modifiedOriginalPriest: EnemyData = {
-        ...originalPriest,
-        name: { ...originalPriest.name, m_value: "阿格尼尔神父" },
-        attributes: {
-          ...originalPriest.attributes,
-        },
-      };
-
-      // 找到原神父在数组中的位置
-      const priestIndex = levelData.enemies.findIndex((enemy) => enemy.id === "enemy_1284_sgprst");
-
-      // 创建新的敌人数组，在原神父位置插入两个神父变体
-      const newEnemies = [...levelData.enemies];
-      newEnemies[priestIndex] = modifiedOriginalPriest;
-      newEnemies.splice(priestIndex + 1, 0, priestVariant);
-
-      return {
-        ...levelData,
-        enemies: newEnemies,
-      };
-    }
-  }
-
-  return levelData;
 }
 
 /** 加载关卡详细解包数据 */

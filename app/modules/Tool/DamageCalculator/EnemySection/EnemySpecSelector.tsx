@@ -168,6 +168,58 @@ export const EnemySpecConfigs: Record<string, EnemySpecConfig> = {
       },
     ],
   },
+  enemy_10066_ftxjl: {
+    id: "enemy_10066_ftxjl",
+    name: "“巢穴”",
+    selects: [
+      {
+        label: "不在我方视野时，30s内属性线性提升",
+        options: [
+          { label: "无提升", key: 0 },
+          { label: "25%提升", key: 0.25 },
+          { label: "50%提升", key: 0.5 },
+          { label: "75%提升", key: 0.75 },
+          { label: "100%提升", key: 1 },
+        ],
+        apply: (key: string) => {
+          return {
+            label: `最大生命值提升${400 * Number(key)}%，攻击力提升${80 * Number(key)}%`,
+            key: key,
+            blackboard: [
+              { bbKey: "in_game_buff_final_mul.enemy_max_hp", value: 4 * Number(key) + 1 },
+              { bbKey: "in_game_buff_final_mul.enemy_atk", value: 0.8 * Number(key) + 1 },
+            ],
+          };
+        },
+      },
+    ],
+  },
+  enemy_10066_ftxjl_2: {
+    id: "enemy_10066_ftxjl_2",
+    name: "“襁褓”",
+    selects: [
+      {
+        label: "不在我方视野时，30s内属性线性提升",
+        options: [
+          { label: "无提升", key: 0 },
+          { label: "25%提升", key: 0.25 },
+          { label: "50%提升", key: 0.5 },
+          { label: "75%提升", key: 0.75 },
+          { label: "100%提升", key: 1 },
+        ],
+        apply: (key: string) => {
+          return {
+            label: `最大生命值提升${400 * Number(key)}%，攻击力提升${80 * Number(key)}%`,
+            key: key,
+            blackboard: [
+              { bbKey: "in_game_buff_final_mul.enemy_max_hp", value: 4 * Number(key) + 1 },
+              { bbKey: "in_game_buff_final_mul.enemy_atk", value: 0.8 * Number(key) + 1 },
+            ],
+          };
+        },
+      },
+    ],
+  },
   // rogue_4 萨卡兹的无终奇语
   enemy_2081_skztxs: {
     id: "enemy_2081_skztxs",

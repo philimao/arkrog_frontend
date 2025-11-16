@@ -155,6 +155,15 @@ export default function StageSelector() {
               })
             }
           >
+            <svg
+              stroke="currentColor"
+              strokeWidth="1.5"
+              viewBox="0 0 24 24"
+              data-open={stageQuickSelectorVisible}
+              className="absolute end-3 w-4 h-4 transition-transform duration-150 ease motion-reduce:transition-none data-[open=true]:rotate-180"
+            >
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
             {stageData?.stageName || stageData?.name || "未选择"}
           </ToolButton>
         </div>

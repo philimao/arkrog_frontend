@@ -408,11 +408,11 @@ const StyledSkillDisplay = styled.div`
   font-size: 0.9rem;
   white-space: nowrap;
   .skill-icon {
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .skill-name {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
   }
   .skill-type {
@@ -466,10 +466,10 @@ function SkillDisplay({ skill }: { skill: SkillLevelData }) {
   return (
     <StyledSkillDisplay>
       <ButtonWrapper onPress={() => setIsOpen(!isOpen)}>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center">
           <CustomIcon name={"技能_" + skill.name} className="skill-icon" />
           <div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-1 items-center">
               <div className="skill-name">{skill.name}</div>
               <div className="skill-type">
                 <div>{skill.spData.spType === "INCREASE_WITH_TIME" ? "自动回复" : "攻击回复"}</div>
@@ -511,12 +511,12 @@ const StyledUniEquipDisplay = styled.div`
   white-space: nowrap;
 
   .uni-equip-icon {
-    width: 3rem;
-    height: 3rem;
+    width: 2rem;
+    height: 2rem;
     filter: invert(1);
   }
   .uni-equip-name {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
   }
   .uni-equip-attributes {

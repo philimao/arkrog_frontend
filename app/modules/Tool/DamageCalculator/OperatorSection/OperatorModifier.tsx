@@ -1,6 +1,7 @@
 import React, { type Dispatch, type SetStateAction } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { Input, type InputProps } from "@heroui/react";
+import { styled } from "styled-components";
 
 function MyInput({
   value,
@@ -37,6 +38,15 @@ function MyInput({
   );
 }
 
+const StyledOperatorModifier = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  gap: 0.5rem;
+  background: rgba(24, 24, 24, 0.7);
+`;
+
 export default function OperatorModifier() {
   const { setCharsModifier, activeCharName } = useDamageCalculatorStore();
   const [atkBase, setAtkBase] = React.useState<string>("0");
@@ -55,7 +65,7 @@ export default function OperatorModifier() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <StyledOperatorModifier>
       <MyInput
         value={atkBase}
         setValue={setAtkBase}
@@ -72,6 +82,6 @@ export default function OperatorModifier() {
       />
       <MyInput value={atkFinal} setValue={setAtkFinal} label="攻击力变化最终值（局内鼓舞）" onBlur={handleBlur} />
       <MyInput value={atkSpd} setValue={setAtkSpd} label="攻击速度变化值" onBlur={handleBlur} />
-    </div>
+    </StyledOperatorModifier>
   );
 }

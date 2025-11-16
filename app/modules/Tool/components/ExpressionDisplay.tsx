@@ -87,7 +87,11 @@ const ExpressionStructure: React.FC<ExpressionStructureProps> = ({ node, default
         <span className="text-sm font-mono">{node.operator}(</span>
         {validChildren.map((child, index) => (
           <React.Fragment key={index}>
-            <ExpressionItem node={child} />
+            {child instanceof ExpressionGroupNode ? (
+              <ExpressionStructure node={child} />
+            ) : (
+              <ExpressionItem node={child} />
+            )}
             {index < validChildren.length - 1 && <span className="text-sm">,</span>}
           </React.Fragment>
         ))}

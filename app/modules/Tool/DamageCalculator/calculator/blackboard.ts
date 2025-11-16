@@ -1,6 +1,7 @@
 import {
   getByKey,
   getByKeySafe,
+  getByKeyAndValueStr,
   registerRelicBlackboard,
   type RelicBlackboardApplyInput,
   type EnemyRelicBlackboardInput,
@@ -839,8 +840,14 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     const cost = getByKey(buff.blackboard, "cost");
     const magic_resistance = getByKey(buff.blackboard, "magic_resistance");
     const block_cnt = getByKey(buff.blackboard, "block_cnt");
+    const evade_physical =
+      getByKeyAndValueStr(buff.blackboard, "prob", "evade[physical]") ||
+      getByKeyAndValueStr(buff.blackboard, "prob", "evade[non_pure]");
+    const evade_magical =
+      getByKeyAndValueStr(buff.blackboard, "prob", "evade[magical]") ||
+      getByKeyAndValueStr(buff.blackboard, "prob", "evade[non_pure]");
 
-    if (relic.name === "关卡加成") console.log(buff.key, buff.blackboard);
+    // if (relic.name === "关卡加成") console.log(buff.key, buff.blackboard);
 
     // 是否加算
     const is_add = buff.key.includes("_attribute_add");
@@ -951,6 +958,20 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     /** 阻挡数 */
     if (block_cnt) {
       context.in_game_buff_add.block_cnt.addChild(new NumericLiteralNode(block_cnt.value, relic.name, { relic, buff }));
+      is_invalid = false;
+    }
+    /** 物理闪避率 */
+    if (evade_physical) {
+      context.in_game_buff_final_mul.evade_physical.addChild(
+        new NumericLiteralNode(evade_physical.value, relic.name, { relic, buff }),
+      );
+      is_invalid = false;
+    }
+    /** 法术闪避率 */
+    if (evade_magical) {
+      context.in_game_buff_final_mul.evade_magical.addChild(
+        new NumericLiteralNode(evade_magical.value, relic.name, { relic, buff }),
+      );
       is_invalid = false;
     }
     if (is_invalid) {

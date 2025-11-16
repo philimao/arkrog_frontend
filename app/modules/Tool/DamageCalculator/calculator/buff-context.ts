@@ -94,6 +94,10 @@ export interface IBuffContext {
     atk: ExpressionGroupNode;
     /** 攻击力提升至倍率 */
     atk_scale: ExpressionGroupNode;
+    /** 物理闪避率 */
+    evade_physical: ExpressionGroupNode;
+    /** 法术闪避率 */
+    evade_magical: ExpressionGroupNode;
     /** 敌人攻击力改变来源 */
     enemy_atk: ExpressionGroupNode;
     /** 敌人防御力减少来源 */
@@ -180,6 +184,8 @@ export class BuffContext implements IBuffContext {
   in_game_buff_final_mul: IBuffContext["in_game_buff_final_mul"] = {
     atk: new ExpressionGroupNode("+", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     atk_scale: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    evade_physical: new ExpressionGroupNode("union", "局内取并集乘算").addChild(new NumericLiteralNode(0, "基数")),
+    evade_magical: new ExpressionGroupNode("union", "局内取并集乘算").addChild(new NumericLiteralNode(0, "基数")),
     enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
@@ -272,6 +278,8 @@ export class BuffContext implements IBuffContext {
     clone.in_game_buff_final_mul = {
       atk: this.in_game_buff_final_mul.atk.clone(),
       atk_scale: this.in_game_buff_final_mul.atk_scale.clone(),
+      evade_physical: this.in_game_buff_final_mul.evade_physical.clone(),
+      evade_magical: this.in_game_buff_final_mul.evade_magical.clone(),
       enemy_atk: this.in_game_buff_final_mul.enemy_atk.clone(),
       enemy_def: this.in_game_buff_final_mul.enemy_def.clone(),
       enemy_max_hp: this.in_game_buff_final_mul.enemy_max_hp.clone(),

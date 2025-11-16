@@ -13,11 +13,11 @@ const StyledAttributeWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   //grid-template-rows: repeat(6, auto);
-  gap: 0.5rem 2rem;
+  gap: 0.5rem 1rem;
   font-size: 0.8rem;
   justify-content: center;
   background: rgba(24, 24, 24, 0.7);
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   & > div {
     display: flex;
     align-items: center;
@@ -83,6 +83,8 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
         damageScale: ExpressionUtil.operator_out_game_damage_scale({ charInput: charInput, context }),
+        evadePhysical: ExpressionUtil.operator_in_game_evade_physical({ charInput: charInput, context }),
+        evadeMagical: ExpressionUtil.operator_in_game_evade_magical({ charInput: charInput, context }),
       };
     } else if (props.mode === "in_game") {
       return {
@@ -98,6 +100,8 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
         hpRecoveryPerSec: ExpressionUtil.operator_out_game_hp_recovery_per_sec({ charInput: charInput, context }),
         spRecoveryPerSec: ExpressionUtil.operator_out_game_sp_recovery_per_sec({ charInput: charInput, context }),
         damageScale: ExpressionUtil.operator_in_game_damage_scale({ charInput: charInput, context }),
+        evadePhysical: ExpressionUtil.operator_in_game_evade_physical({ charInput: charInput, context }),
+        evadeMagical: ExpressionUtil.operator_in_game_evade_magical({ charInput: charInput, context }),
       };
     } else if (props.mode === "skill") {
       const skillContext = context.clone();
@@ -130,6 +134,8 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
           context: skillContext,
         }),
         damageScale: ExpressionUtil.operator_in_game_damage_scale({ charInput: charInput, context: skillContext }),
+        evadePhysical: ExpressionUtil.operator_in_game_evade_physical({ charInput: charInput, context: skillContext }),
+        evadeMagical: ExpressionUtil.operator_in_game_evade_magical({ charInput: charInput, context: skillContext }),
       };
     }
     return {};
@@ -226,6 +232,22 @@ export default function OperatorAttributes(props: { mode: "out_game" | "in_game"
             <ExpressionDisplay
               mode={props.mode}
               expression={operatorExpression.damageScale}
+              className="text-sm h-4 px-2"
+            />
+          </div>
+          <div>
+            <span>物理闪避率</span>
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={operatorExpression.evadePhysical}
+              className="text-sm h-4 px-2"
+            />
+          </div>
+          <div>
+            <span>法术闪避率</span>
+            <ExpressionDisplay
+              mode={props.mode}
+              expression={operatorExpression.evadeMagical}
               className="text-sm h-4 px-2"
             />
           </div>

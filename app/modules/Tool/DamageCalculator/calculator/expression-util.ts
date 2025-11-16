@@ -294,6 +294,20 @@ export class ExpressionUtil {
     return common_in_game_expression(input, "damage_scale");
   }
 
+  /** 物理闪避率 - 局内 干员物理闪避率 */
+  static operator_in_game_evade_physical(input: { charInput: CharInput; context: BuffContext }) {
+    const expression = common_in_game_expression(input, "evade_physical");
+    expression.operator = "union";
+    return expression;
+  }
+
+  /** 法术闪避率 - 局内 干员法术闪避率 */
+  static operator_in_game_evade_magical(input: { charInput: CharInput; context: BuffContext }) {
+    const expression = common_in_game_expression(input, "evade_magical");
+    expression.operator = "union";
+    return expression;
+  }
+
   /** 敌人最终攻击力 */
   static enemy_final_atk(input: { enemyBase: EnemyInput; context: BuffContext }) {
     // (基础属性 * 关卡rune) * (藏品rune + 藏品rune) * 最终乘算 * 最终乘算

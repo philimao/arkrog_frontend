@@ -67,7 +67,7 @@ const StyledTagButton = styled.button<{ $selected: boolean }>`
 // 关键词筛选器
 const filterTags = [
   ["结局", "攻速", "攻击", "防御", "生命", "技力", "再部署"],
-  ["收藏", "物理", "法术", "真实", "元素", "异常", "召唤"],
+  ["收藏", "物理", "法术", "真实", "元素", "异常", "召唤", "闪避"],
 ];
 
 const filterFuncMap: Record<string, (relic: RelicWrapper) => boolean> = {

@@ -219,6 +219,10 @@ export interface CharAttribute {
   cost: number;
   /** 阻挡数 */
   blockCnt: number;
+  /** 物理闪避率 */
+  evadePhysical: number;
+  /** 法术闪避率 */
+  evadeMagical: number;
   /** 移动速度 */
   moveSpeed: number;
   /** 攻击速度 */

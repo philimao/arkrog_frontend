@@ -11,7 +11,7 @@ const StyledEnemyHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   background: rgba(24, 24, 24, 0.7);
-  padding: 1rem 1.5rem 0 1.5rem;
+  padding: 1rem 1rem 0 1rem;
 `;
 
 const StyledName = styled.div`
@@ -32,10 +32,10 @@ const StyledInputWrapper = styled.div`
 const StyledGridContainer = styled(GridContainer)`
   flex-grow: 1;
   background: rgba(24, 24, 24, 0.7);
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   margin-bottom: 0;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem 2rem;
+  gap: 0.5rem 1rem;
   font-size: 0.8rem;
 `;
 

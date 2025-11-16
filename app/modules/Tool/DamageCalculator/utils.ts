@@ -67,6 +67,8 @@ export const allowedBlackboardKeyMap: Record<string, string> = {
   damage_scale_mag: "法术增伤",
   damage_scale_phy: "物理增伤",
   damage_scale_pure: "真伤增伤",
+  evade_physical: "物理闪避率",
+  evade_magical: "法术闪避率",
   enemy_atk: "敌人攻击力",
   enemy_def: "敌人防御力",
   enemy_max_hp: "敌人生命上限",

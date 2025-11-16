@@ -142,3 +142,13 @@ export function getByKeySafe(blackboard: BlackboardData[], key: string): Blackbo
 export function getByKey(blackboard: BlackboardData[], key: string): BlackboardData | undefined {
   return blackboard.find((b) => b.key === key);
 }
+
+export function getByKeyAndValueStr(
+  blackboard: BlackboardData[],
+  key: string,
+  valueStr: string,
+): BlackboardData | undefined {
+  if (blackboard.find((b) => b.valueStr === valueStr)) {
+    return blackboard.find((b) => b.key === key);
+  }
+}

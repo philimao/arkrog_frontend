@@ -61,6 +61,7 @@ export default function TournamentForm({
   const saveToStorageRef = useRef<boolean>(true);
   const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
   const accordionRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saveFormData = () => {
@@ -124,6 +125,8 @@ export default function TournamentForm({
     if (tournamentData) {
       editStartTimeRef.current = Date.now();
     }
+
+    setMounted(true);
   }, [tournamentData]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -261,6 +264,11 @@ export default function TournamentForm({
     setIsPreviewMode(false);
     window.scrollTo({ top: 0 });
   };
+
+  // 未挂载时，不渲染表单
+  if (!mounted) {
+    return null;
+  }
 
   if (isPreviewMode) {
     return (

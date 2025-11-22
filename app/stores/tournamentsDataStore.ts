@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
-import { _get, _post } from "~/utils/tools";
+import { _get } from "~/utils/tools";
 import { toast } from "react-toastify";
 import { devtools } from "zustand/middleware";
 
@@ -13,9 +13,7 @@ type TournamentDataAction = {
   fetchTournamentPlayer: (tournamentId: string) => Promise<void>;
 };
 
-export const useTournamentDataStore = create<
-  TournamentsStore & TournamentDataAction
->()(
+export const useTournamentDataStore = create<TournamentsStore & TournamentDataAction>()(
   devtools(
     (set, get) => ({
       tournamentsData: undefined,
@@ -25,9 +23,7 @@ export const useTournamentDataStore = create<
 
         const now = new Date();
         data.forEach((d) => {
-          d.ongoing = d.stages.some(
-            (s) => new Date(s.startTime) <= now && now <= new Date(s.endTime),
-          );
+          d.ongoing = d.stages.some((s) => new Date(s.startTime) <= now && now <= new Date(s.endTime));
         });
 
         if (data) {
@@ -42,15 +38,10 @@ export const useTournamentDataStore = create<
         }
       },
       fetchTournamentPlayer: async (tournamentId: string) => {
-        const tournament = get().tournamentsData?.find(
-          (t) => t.id === tournamentId,
-        );
+        const tournament = get().tournamentsData?.find((t) => t.id === tournamentId);
         if (!tournament) return;
         try {
-          tournament.players = await _post<TournamentPlayer[]>(
-            "/tournament/players",
-            { id: tournament.id },
-          );
+          tournament.players = await _get<TournamentPlayer[]>(`/tournament/players?id=${tournamentId}`);
         } catch (err) {
           toast.error((err as Error).message);
           return;

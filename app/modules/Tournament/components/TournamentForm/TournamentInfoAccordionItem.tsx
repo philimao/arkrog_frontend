@@ -73,12 +73,8 @@ export default function TournamentInfoAccordionItem({
             aria-label="赛事类型"
             required
           >
-            <SelectItem key="individual" value="individual">
-              个人赛
-            </SelectItem>
-            <SelectItem key="team" value="team">
-              团队赛
-            </SelectItem>
+            <SelectItem key="individual">个人赛</SelectItem>
+            <SelectItem key="team">团队赛</SelectItem>
           </Select>
         </div>
 
@@ -128,9 +124,7 @@ export default function TournamentInfoAccordionItem({
               {Object.values(topics)
                 .reverse()
                 .map((topic) => (
-                  <SelectItem key={topic.id} value={topic.name}>
-                    {topic.name}
-                  </SelectItem>
+                  <SelectItem key={topic.id}>{topic.name}</SelectItem>
                 ))}
             </Select>
           </div>
@@ -149,15 +143,9 @@ export default function TournamentInfoAccordionItem({
             aria-label="肉鸽版本"
             required
           >
-            <SelectItem key="初始版本" value="初始版本">
-              初始版本
-            </SelectItem>
-            <SelectItem key="DLC_1" value="DLC_1">
-              DLC_1
-            </SelectItem>
-            <SelectItem key="DLC_2" value="DLC_2">
-              DLC_2
-            </SelectItem>
+            <SelectItem key="初始版本">初始版本</SelectItem>
+            <SelectItem key="DLC_1">DLC_1</SelectItem>
+            <SelectItem key="DLC_2">DLC_2</SelectItem>
           </Select>
         </div>
 
@@ -197,7 +185,7 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="room" className="flex items-center items-center text-sm font-light mb-1">
+          <label htmlFor="room" className="flex items-center text-sm font-light mb-1">
             观赛直播间
             <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
               <span className="px-1">

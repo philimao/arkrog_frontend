@@ -1,12 +1,13 @@
 import { Tooltip } from "@heroui/react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import React from "react";
 import { styled } from "styled-components";
-import type { StageData, StageOfRogue } from "~/types/gameData";
-import { useAppDataStore } from "~/stores/appDataStore";
+import type { StageOfRogue } from "~/types/gameData";
+import { navOfZone } from "~/utils/stageSelector";
+import { useRelicFreeStore } from "~/stores/relicFreeStore";
+import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 
 const StyledZoneName = styled.div`
-  height: 5rem;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,11 +32,7 @@ const StyledCardTitleText = styled.div<{ type: string }>`
   min-width: 2rem;
   user-select: none;
   color: ${(props) =>
-    props.type === "normal"
-      ? "var(--ak-blue)"
-      : props.type === "elite"
-        ? "var(--ak-red)"
-        : "var(--ak-purple)"};
+    props.type === "normal" ? "var(--ak-blue)" : props.type === "elite" ? "var(--ak-red)" : "var(--ak-purple)"};
 `;
 const StyledCardTitleNum = styled.div`
   font-size: 2rem;
@@ -61,6 +58,19 @@ const StyledDifficulty = styled.div`
   user-select: none;
 `;
 
+const StyledStageType = styled.div`
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 0.25rem;
+  background: var(--black-gray);
+  font-size: 0.8rem;
+  color: #ffffff30;
+  font-family: "Novecento", sans-serif;
+  user-select: none;
+  cursor: pointer;
+`;
+
 const StyledStageName = styled.div`
   font-size: 1.25rem;
   line-height: 3.5rem;
@@ -77,70 +87,7 @@ export default function SelectorDetail({
   // console.log(stageOfRogue);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { stagePreview } = useAppDataStore();
-
-  const numOfMinorBoss = {
-    ro1: 5,
-    ro2: 3,
-    ro3: 3,
-    ro4: 3,
-  };
-  // 定义每层的名称，以及筛选器
-  const navOfZone = [
-    {
-      id: "boss",
-      name: "险路恶敌",
-      filter: (stage: StageData, array: string[]) => {
-        const excludeIds = ["ro4_b_9"];
-        if (excludeIds.includes(stage.id)) return false;
-        const args = stage.id.split("_");
-        // eg: ro4_b_5_d
-        if (args[1] !== "b") return false;
-        // if (args[3]) return false; // 异格
-        const cool =
-          parseInt(args[2]) > // 如果该boss编号是小boss，跳过
-          (numOfMinorBoss[args[0] as keyof typeof numOfMinorBoss] || 99);
-        if (!cool || array.includes(stage.name)) return false;
-        array.push(stage.name);
-        return true;
-      },
-    },
-    {
-      id: "6",
-      name: "第六层",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        if (args[1] !== "n") return false;
-        return args[2] === "6" || args[2] === "7"; // 洞天福地是7层
-      },
-    },
-    {
-      id: "5",
-      name: "第五层",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        if (args[1] !== "n") return false;
-        return args[2] === "5";
-      },
-    },
-    {
-      id: "4",
-      name: "第四层",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        if (args[1] !== "n") return false;
-        return args[2] === "4";
-      },
-    },
-    {
-      id: "others",
-      name: "特殊关卡",
-      filter: (stage: StageData) => {
-        const args = stage.id.split("_");
-        return ["ev", "t", "duel"].includes(args[1]);
-      },
-    },
-  ];
+  const { stagePreview } = useRelicFreeStore();
 
   return (
     <>
@@ -152,26 +99,28 @@ export default function SelectorDetail({
           <span role="button">按干员</span>
         </Tooltip>
       </div>
-      <div className="flex">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))]">
         {/* 新增全部筛选器，不参与下方每层的关卡渲染 */}
-        {[{ id: "all", name: "全部" }, ...navOfZone].map((zone) => (
-          <div
-            className={
-              "basis-1/6 text-center font-bold leading-[3rem] " +
-              `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
-            }
-            key={zone.id}
-            role="button"
-            onClick={() => {
-              searchParams.set("zoneId", zone.id);
-              setSearchParams(searchParams, {
-                preventScrollReset: true,
-              });
-            }}
-          >
-            {zone.name}
-          </div>
-        ))}
+        {[{ id: "all", name: "全部", filter: () => [true] }, ...navOfZone]
+          .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
+          .map((zone) => (
+            <div
+              className={
+                "text-center font-bold leading-[3rem] " +
+                `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+              }
+              key={zone.id}
+              role="button"
+              onClick={() => {
+                searchParams.set("zoneId", zone.id);
+                setSearchParams(searchParams, {
+                  preventScrollReset: true,
+                });
+              }}
+            >
+              {zone.name}
+            </div>
+          ))}
       </div>
       <div className="mb-4">
         <div className="w-1/3 sm:w-1/4 lg:w-1/6 px-4 py-4 text-xs text-wrap">
@@ -185,23 +134,23 @@ export default function SelectorDetail({
       <div>
         {/* 根据楼层筛选器，渲染每层的关卡 */}
         {navOfZone
+          // 过滤没有关联关卡的层数
+          .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
+          // 过滤当前选中的层数
           .filter((zone) => zoneFilterId === "all" || zoneFilterId === zone.id)
           .map((zone) => {
             const renderedStageIds: string[] = [];
-            const renderStages = Object.values(stageOfRogue).filter((stage) =>
-              zone.filter(stage, renderedStageIds),
-            );
+            const renderStages = Object.values(stageOfRogue).filter((stage) => zone.filter(stage, renderedStageIds));
             return (
-              <div className="flex mb-16" key={zone.id}>
-                <div className="w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8">
+              <div className="block md:flex mb-16" key={zone.id}>
+                <div className="w-full md:w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8 mb-8 md:mb-0 h-10 md:h-20">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 grow">
-                  {renderStages.map((stage, i) => {
-                    if (stage.id === "ghost")
-                      return <StyledStageCard className="" key={"ghost" + i} />;
+                  {renderStages.map((stage, i, stageList) => {
+                    if (stage.id === "ghost") return <StyledStageCard className="" key={"ghost" + i} />;
                     const stagePreviewData = stagePreview?.[stage.id];
-                    const maxLevel = ["??", "N18", "N15"].reduce((a, b) =>
+                    const maxLevel = ["??", "N0", "N18", "N15"].reduce((a, b) =>
                       [
                         stagePreviewData?.normalLevel,
                         stagePreviewData?.eliteLevel,
@@ -210,39 +159,50 @@ export default function SelectorDetail({
                         ? b
                         : a,
                     );
+                    /**
+                     * 在界园岁兽残识中存在多个同名关卡，但id存在区别
+                     * 例如地有四难 ro5_sv_1 与 ro5_sv_1_b
+                     */
+                    const stageGroup = stageList
+                      .filter((s) => s.name === stage.name && s.isElite === stage.isElite)
+                      .map((s) => s.id);
+                    const stageType =
+                      stageGroup.length > 1 ? ["a", "b", "c", "d", "e"][stageGroup.indexOf(stage.id)] : "";
                     return (
                       <StyledStageCard
                         role="button"
                         key={stage.id}
-                        onClick={() => navigate(stage.id)}
+                        onClick={() => {
+                          // 保存当前查询参数到sessionStorage，用于返回时恢复
+                          const returnParams = new URLSearchParams();
+                          const topicId = searchParams.get("topicId");
+                          const zoneId = searchParams.get("zoneId");
+                          if (topicId) returnParams.set("topicId", topicId);
+                          if (zoneId) returnParams.set("zoneId", zoneId);
+                          const returnUrl = returnParams.toString()
+                            ? `/relic-free?${returnParams.toString()}`
+                            : "/relic-free";
+                          sessionStorage.setItem("relicFreeReturnUrl", returnUrl);
+                          navigate(stage.id);
+                        }}
                       >
                         <div className="h-6 bg-black-gray flex">
                           <div className="w-1/2 flex justify-center">
                             {stagePreviewData?.normalNum && (
                               <>
-                                <StyledCardTitleText type="normal">
-                                  普通
-                                </StyledCardTitleText>
-                                <StyledCardTitleNum>
-                                  {stagePreviewData.normalNum}
-                                </StyledCardTitleNum>
+                                <StyledCardTitleText type="normal">普通</StyledCardTitleText>
+                                <StyledCardTitleNum>{stagePreviewData.normalNum}</StyledCardTitleNum>
                               </>
                             )}
                           </div>
                           <div className="w-1/2 flex justify-center">
-                            {(stagePreviewData?.eliteNum ||
-                              stagePreviewData?.boatNum) && (
+                            {(stagePreviewData?.eliteNum || stagePreviewData?.boatNum) && (
                               <>
-                                <StyledCardTitleText
-                                  type={
-                                    stagePreviewData.eliteNum ? "elite" : "boss"
-                                  }
-                                >
+                                <StyledCardTitleText type={stagePreviewData.eliteNum ? "elite" : "boss"}>
                                   {stagePreviewData.eliteNum ? "紧急" : "带船"}
                                 </StyledCardTitleText>
                                 <StyledCardTitleNum>
-                                  {stagePreviewData.eliteNum ||
-                                    stagePreviewData.boatNum}
+                                  {stagePreviewData.eliteNum || stagePreviewData.boatNum}
                                 </StyledCardTitleNum>
                               </>
                             )}
@@ -250,9 +210,22 @@ export default function SelectorDetail({
                         </div>
                         <StyledCardBody>
                           <StyledDifficulty>{maxLevel}</StyledDifficulty>
-                          <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">
-                            {stage.name}
-                          </StyledStageName>
+                          {/* 如果关卡包含主要敌人信息，鼠标悬停显示敌人头像 */}
+                          {stageType && stage.mainEnemy && (
+                            <Tooltip
+                              radius="none"
+                              placement="bottom"
+                              classNames={{ content: "p-2" }}
+                              content={
+                                <EnemyAvatar name={stage.mainEnemy} className="w-12 h-12 border-2 border-[#ffffff80]" />
+                              }
+                            >
+                              <StyledStageType onClick={(evt) => evt.stopPropagation()}>
+                                {"TYPE-" + stageType}
+                              </StyledStageType>
+                            </Tooltip>
+                          )}
+                          <StyledStageName className="ps-2 sm:ps-3 lg:ps-4">{stage.name}</StyledStageName>
                         </StyledCardBody>
                       </StyledStageCard>
                     );

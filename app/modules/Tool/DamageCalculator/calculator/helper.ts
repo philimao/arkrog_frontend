@@ -1,0 +1,1017 @@
+import type {
+  CalculatorInput,
+  CalculatorOutput,
+  CharData,
+  DamageByType,
+  RelicWrapper,
+  CharAttributeExt,
+  CharAttribute,
+  BlackboardData,
+  EnemyInput,
+  StageData,
+  EnemyData,
+  LevelData,
+  RelicDataExt,
+} from "~/types/gameData";
+import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
+import {
+  isRelicInBlacklist,
+  allowedBlackboardKeyMap,
+  parseDefinedData,
+  isBuffForEnemy,
+  ALL_TOPIC_TECHTREE_BUFF,
+} from "../utils";
+import { getCharImpl, getRelicBlackboard, isRelicBlackboard } from "./impls";
+import { BuffContext } from "./buff-context";
+import { BaseNode, ExpressionGroupNode, NumericLiteralNode } from "./ast";
+import type { ITopicSpecItem } from "../TopicSpecSection/TopicSpecSelector";
+import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "./blackboard";
+import type { EnemySpec } from "../EnemySection/EnemySpecSelector";
+
+/** 加成词条 */
+export interface AdditionEntry {
+  /** 干员加成 */
+  in_game_char: string[];
+  /** 局外加成 */
+  out_game_char: string[];
+  /** 敌人加成 */
+  enemy: string[];
+}
+
+/** 打印藏品计算过程 */
+export const debugRelic = true;
+
+/** 以下敌人不计算通用加成 */
+const enemiesIgnore = [
+  "trap_222_rgdysm", //雕伥
+  "enemy_2101_dyspll", // 便符
+];
+
+/**
+ * 计算器的一些辅助函数
+ */
+export class CalculatorHelper {
+  /** 创建空的计算器输出 */
+  static createCalculatorOutput(): CalculatorOutput {
+    return {
+      attack: {
+        dph: 0,
+        dps: { phy: 0, mag: 0, pure: 0, ep: 0 },
+        total_damage: { phy: 0, mag: 0, pure: 0, ep: 0 },
+      },
+      skill: {
+        dph: 0,
+        dps: { phy: 0, mag: 0, pure: 0, ep: 0 },
+        total_damage: { phy: 0, mag: 0, pure: 0, ep: 0 },
+      },
+      cycle: {
+        dph: 0,
+        dps: { phy: 0, mag: 0, pure: 0, ep: 0 },
+        total_damage: { phy: 0, mag: 0, pure: 0, ep: 0 },
+      },
+      logs: [],
+    };
+  }
+
+  /** 创建加成上下文 */
+  static createAdditionContext(): BuffContext {
+    return new BuffContext();
+  }
+
+  /** 计算局外面板 */
+  static calculateOutsidePanel(input: { charInput: CharInput; context: BuffContext }): CharAttributeExt {
+    const { charInput: charInput, context } = input;
+    // 获取精英化等级属性
+    const attribute = charInput.phase?.attributesKeyFrames[charInput.frameIndex].data; // TODO 去掉?
+    const result = { ...attribute, damageScale: 1 } as CharAttributeExt;
+
+    /** 覆盖自然技力回复-攻回技能不会自动回复技力 */
+    if (charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK") {
+      result.spRecoveryPerSec = 0;
+    }
+
+    /** 应用局外加成(加算) */
+    result.atk += context.relic_rune_add.atk.calculate();
+    result.attackSpeed += context.relic_rune_add.attack_speed.calculate();
+    result.def += context.relic_rune_add.def.calculate();
+    result.maxHp += context.relic_rune_add.max_hp.calculate();
+    result.cost += context.relic_rune_add.cost.calculate();
+    result.hpRecoveryPerSec += context.relic_rune_add.hp_recovery_per_sec.calculate();
+    result.respawnTime += context.relic_rune_add.respawn_time.calculate();
+
+    /** 应用局外加成(乘算) */
+    result.atk = Math.round(result.atk * context.relic_rune_mul.atk.calculate());
+    result.def = Math.round(result.def * context.relic_rune_mul.def.calculate());
+    result.maxHp = Math.round(result.maxHp * context.relic_rune_mul.max_hp.calculate());
+    result.respawnTime = Math.round(result.respawnTime * context.relic_rune_mul.respawn_time.calculate());
+
+    /** 应用局内加算 */
+    result.spRecoveryPerSec += context.in_game_buff_add.sp_recovery_per_sec.calculate();
+
+    return result;
+  }
+
+  /** 计算敌人属性 */
+  static calculateEnemyAttr(input: { enemyBase: EnemyInput; context: BuffContext }): EnemyInput {
+    const { enemyBase, context } = input;
+
+    // 木桩敌人靠用户自定义输入, 不需要计算加成
+    if (input.enemyBase.name === "木桩") {
+      return input.enemyBase;
+    }
+
+    const enemyInput = JSON.parse(JSON.stringify(enemyBase));
+    const enemyAttr = enemyInput.attributes;
+
+    // 装置类敌人不受关卡rune的影响
+    const atk_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_atk.calculate();
+    const def_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_def.calculate();
+    const maxHp_stage_mul = enemyBase.id.startsWith("trap") ? 1 : context.stage_rune_mul.enemy_max_hp.calculate();
+
+    const atk_rune_mul = context.relic_rune_mul.enemy_atk.calculate();
+    const def_rune_mul = context.relic_rune_mul.enemy_def.calculate();
+    const maxHp_rune_mul = context.relic_rune_mul.enemy_max_hp.calculate();
+
+    const atk_final_mul = context.in_game_buff_final_mul.enemy_atk.calculate();
+    const def_final_mul = context.in_game_buff_final_mul.enemy_def.calculate();
+    const maxHp_final_mul = context.in_game_buff_final_mul.enemy_max_hp.calculate();
+
+    const damage_resistance =
+      1 -
+      (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+        (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+    // 应用局外加成
+    enemyAttr.atk = Math.round(enemyAttr.atk * atk_stage_mul * atk_rune_mul * atk_final_mul);
+    enemyAttr.def = Math.round(enemyAttr.def * def_stage_mul * def_rune_mul * def_final_mul);
+    enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_stage_mul * maxHp_rune_mul * maxHp_final_mul);
+    enemyAttr.damageResistance = Math.round(damage_resistance * 1000) / 1000;
+    return enemyInput;
+  }
+
+  /** 分析干员养成加成 */
+  static analyzeChar(input: { charInput: CharInput; charData: CharData }, context?: BuffContext) {
+    const { charInput, charData } = input;
+
+    const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
+    /** 应用信赖效果 */
+    const favor = charData.favorKeyFrames[1].data;
+    for (const key in favor) {
+      const typedKey = key as keyof CharAttribute;
+      if (typedKey === "atk" && favor.atk) {
+        result.relic_rune_add.atk.addChild(new NumericLiteralNode(favor.atk, "信赖"));
+      }
+      if (typedKey === "attackSpeed" && favor.attackSpeed) {
+        result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(favor.attackSpeed, "信赖"));
+      }
+      if (typedKey === "def" && favor.def) {
+        result.relic_rune_add.def.addChild(new NumericLiteralNode(favor.def, "信赖"));
+      }
+      if (typedKey === "maxHp" && favor.maxHp) {
+        result.relic_rune_add.max_hp.addChild(new NumericLiteralNode(favor.maxHp, "信赖"));
+      }
+    }
+
+    /** 应用潜能效果 */
+    for (const pot of charData.potentialRanks.slice(0, charInput.potential)) {
+      pot.buff?.attributes.attributeModifiers.forEach((mod) => {
+        switch (mod.attributeType) {
+          case "COST": {
+            result.relic_rune_add.cost.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "MAX_HP": {
+            result.relic_rune_add.max_hp.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "ATK": {
+            result.relic_rune_add.atk.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "DEF": {
+            result.relic_rune_add.def.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "ATTACK_SPEED": {
+            result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+          case "RESPAWN_TIME": {
+            result.relic_rune_add.respawn_time.addChild(new NumericLiteralNode(mod.value, "潜能"));
+            break;
+          }
+        }
+      });
+    }
+
+    /** 应用模组效果 */
+    const uniEquip = charInput.uniEquip;
+    if (uniEquip) {
+      // 基础值
+      for (const bb of uniEquip.attributeBlackboard) {
+        CalculatorHelper.analyzeBlackboard(bb, result, "模组属性加成");
+      }
+      // 天赋与特性效果
+      // for (const part of uniEquip.parts) {
+      //   for (const candidates of [
+      //     part.overrideTraitDataBundle.candidates, // 特性
+      //     part.addOrOverrideTalentDataBundle.candidates, // 天赋
+      //   ]) {
+      //     if (!candidates) continue;
+      //     // 从多个candidate中选出符合潜能的
+      //     const admittedTrait = candidates.findLast((item) => item.requiredPotentialRank <= charInput.potential);
+      //     for (const bb of admittedTrait!.blackboard) {
+      //       CalculatorHelper.analyzeBlackboard(bb, result, "模组天赋加成");
+      //     }
+      //   }
+      // }
+      // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
+    }
+    /** 应用天赋 */
+    getCharImpl(charData.name).applyTalent({ charInput: charInput as unknown as CharInput }, result);
+
+    /** 应用干员特殊配置 */
+    const { charSpec } = charInput;
+    charSpec.forEach((spec) => {
+      if (!spec.active) return;
+      const { blackboard } = spec;
+      blackboard.forEach((bb) => {
+        switch (bb.key) {
+          case "atk_scale":
+            result.in_game_buff_final_mul.atk_scale.addChild(new NumericLiteralNode(bb.value, spec.label));
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    return result;
+  }
+
+  /** 分析黑板数据(来自模组) */
+  static analyzeBlackboard(bb: BlackboardData, result: BuffContext, tooltip: string) {
+    switch (bb.key) {
+      // TODO
+      // case "damageScale": {
+      //   result.damageScale += bb.value - 1;
+      //   break;
+      // }
+      case "max_hp": {
+        result.relic_rune_add.max_hp.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
+      case "atk": {
+        result.relic_rune_add.atk.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
+      case "attack_speed": {
+        result.relic_rune_add.attack_speed.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
+      case "def": {
+        result.relic_rune_add.def.addChild(new NumericLiteralNode(bb.value, tooltip));
+        break;
+      }
+      default: {
+        console.log("未处理的黑板数据", bb);
+      }
+    }
+  }
+
+  static applyRelic(
+    input: {
+      relic: RelicDataExt & RelicWrapper;
+      relics: (RelicDataExt & RelicWrapper)[];
+      charData?: CharData;
+      charInput?: CharInput;
+      enemyData?: EnemyData;
+      stageData?: StageData;
+    },
+    result: BuffContext,
+  ) {
+    const { relic, relics, charData, charInput, enemyData, stageData } = input;
+    if (debugRelic) console.groupCollapsed("藏品", relic.name);
+    // 遍历藏品buff
+    relic.buffs.forEach((buff) => {
+      // 藏品在黑名单中
+      if (debugRelic) console.log("位于黑名单中", isRelicInBlacklist(relic.name));
+      if (isRelicInBlacklist(relic.name)) {
+        result.invalidRelics.push(relic);
+        return;
+      }
+      if (debugRelic) console.log("有特殊黑板实现", isRelicBlackboard(buff));
+      // 根据黑板每个buff的key，判断是否存在藏品黑板实现，用于特殊藏品效果
+      if (isRelicBlackboard(buff)) {
+        const blackboard = getRelicBlackboard(buff);
+        // buff是否可以生效
+        if (blackboard.isActive({ buff, relic, charData, charInput, enemyData, relics })) {
+          // 生效 应用到上下文
+          blackboard.apply({ buff, relic, context: result, relics });
+        } else {
+          // 不生效 无效藏品
+          result.invalidRelics.push(relic);
+        }
+        return;
+      }
+      // 藏品可能对双方生效，但单个Buff只对一方生效
+      if (isBuffForEnemy(buff)) {
+        if (debugRelic) console.log("使用敌人通用黑板");
+        // 对敌人生效
+        if (!enemyData || !commonEnemyRelicBlackboard.isActive({ buff, enemyData, relic, stageData })) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+        commonEnemyRelicBlackboard.apply({ relic, context: result, buff, relics });
+      } else {
+        if (debugRelic) console.log("使用干员通用黑板");
+        // 判断是否适用干员通用黑板
+        if (!commonCharRelicBlackboard.isActive({ buff, stageData, charData, charInput, relic, relics })) {
+          result.invalidRelics.push(relic);
+          return;
+        }
+        commonCharRelicBlackboard.apply({ relic, context: result, buff, relics });
+      }
+    });
+    if (debugRelic) console.groupEnd();
+  }
+
+  static printRelic(relicName: string, context: BuffContext) {
+    const buffStrs: string[] = [];
+    const parse = (buffKey: string, key: string, value: number) =>
+      `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+    Object.entries(context).forEach(([buffKey, buffValue]) => {
+      if (Array.isArray(buffValue)) return;
+      Object.entries(buffValue).forEach(([key, value]) => {
+        const node = value as ExpressionGroupNode;
+        for (const child of node.children) {
+          if (child.tooltip === relicName) {
+            // 此处计算的是child的计算结果，因此不含基数
+            const effectiveValue = child.calculate();
+            if (!effectiveValue) return;
+            buffStrs.push(parse(buffKey, key, effectiveValue));
+          }
+        }
+      });
+    });
+    return buffStrs;
+  }
+
+  /**
+   * 分析藏品加成
+   * @param input 输入
+   * @param input.charInput 角色输入
+   * @param input.charData 角色数据
+   * @param input.enemyData 敌人输入
+   * @param input.relics 藏品
+   */
+  static analyzeRelics(
+    input: {
+      // charInput在计算敌人数据时难以获取，暂时不传入
+      charInput?: CharInput;
+      charData?: CharData;
+      enemyData: EnemyData;
+      relics: (RelicDataExt & RelicWrapper)[];
+      stageData?: StageData;
+    },
+    context?: BuffContext,
+  ) {
+    const { charInput, charData, enemyData, relics, stageData } = input;
+    const result: BuffContext = context ? context.clone() : CalculatorHelper.createAdditionContext();
+    /** 用户修正属性 */
+    if (charInput && charInput.attributeModifier.atkOutPercent) {
+      result.relic_rune_mul.atk.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkOutPercent / 100, "攻击力变化百分比（局外藏品）"),
+      );
+    }
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkInPercent) {
+      result.in_game_buff_mul.atk.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkInPercent / 100, "攻击力变化百分比（局内血怒）"),
+      );
+    }
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkFinal) {
+      result.in_game_buff_final_add.atk.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkFinal, "攻击力变化最终值（局内鼓舞）"),
+      );
+    }
+    if (charInput && charInput.attributeModifier && charInput.attributeModifier.atkSpd) {
+      result.in_game_buff_add.attack_speed.addChild(
+        new NumericLiteralNode(charInput.attributeModifier.atkSpd, "攻击力变化百分比（局内鼓舞）"),
+      );
+    }
+    /** 筛选并应用藏品 */
+    for (const relic of relics) {
+      this.applyRelic({ relic, relics, charData, charInput, enemyData, stageData }, result);
+    }
+
+    result.global_buff_stack.damage_scale_phy.addChild(result.in_game_buff_final_mul.enemy_damage_scale_phy);
+
+    result.global_buff_stack.damage_scale_mag.addChild(result.in_game_buff_final_mul.enemy_damage_scale_mag);
+
+    result.global_buff_stack.damage_scale_pure.addChild(result.in_game_buff_final_mul.enemy_damage_scale_pure);
+
+    return result;
+  }
+
+  /**
+   * 分析肉鸽难度加成
+   * 这里会根据选择肉鸽主题和难度，来计算对应的属性加成。
+   * 还会涉及到科技树，层数，特定主题buff等
+   */
+  static analyzeRogueDifficulty(
+    input: { rogueInput: RogueInput; enemyData?: EnemyData },
+    context: BuffContext,
+  ): BuffContext {
+    const { rogueInput, enemyData } = input;
+    /** 科技树加成 */
+    const tech = parseFloat(rogueInput[rogueInput.topic].tech);
+    if (tech > 1) {
+      // 从常量中获取科技树对干员的属性加成
+      const techTree = ALL_TOPIC_TECHTREE_BUFF[rogueInput.topic].find((item) => item.label === tech.toString());
+      if (techTree) {
+        context.relic_rune_mul.atk.addChild(new NumericLiteralNode((techTree.buff.atk * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.def.addChild(new NumericLiteralNode((techTree.buff.def * 100 - 100) / 100, "科技树"));
+        context.relic_rune_mul.max_hp.addChild(
+          new NumericLiteralNode((techTree.buff.max_hp * 100 - 100) / 100, "科技树"),
+        );
+      } else {
+        console.error("科技树加成不存在", tech);
+      }
+    }
+
+    /** 萨卡兹肉鸽 */
+    if (rogueInput.topic === "rogue_4") {
+      const { difficulty, thoughtLoad, layer } = rogueInput.rogue_4;
+      if (difficulty === 18 && thoughtLoad === "CONFUSION") {
+        context.relic_rune_mul.atk.addChild(new NumericLiteralNode(-0.2, "思绪混乱"));
+        context.relic_rune_add.cost.addChild(new NumericLiteralNode(3, "思绪混乱"));
+      }
+      /** 肉鸽难度加成 */
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 13, 16, 20, 21, 22, 22];
+      /** 层数选择器到实际层数的映射 */
+      const layerToZoneMap: Record<string, number> = {
+        layer_1: 1,
+        layer_2: 2,
+        layer_3: 3,
+        layer_4: 4,
+        layer_5: 5,
+        layer_6: 6,
+      };
+      const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
+      const zoneValue = layerToZoneMap[layer] || 1;
+      // 根据肉鸽难度，计算敌人属性加成
+      if (enemyAttrMultiplier) {
+        const pow = new Array(zoneValue).fill(new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, "每层+22%"));
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new ExpressionGroupNode("*", `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new ExpressionGroupNode("*", `直面魂灵·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+      }
+      // 低难度下有加成
+      if (difficulty <= 2) {
+        const diff2Hp = [0.8, 0.85, 0.9];
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(
+            diff2Hp[difficulty],
+            `直面魂灵·${difficulty} | 所有敌人生命值-${Math.round((1 - diff2Hp[difficulty]) * 100)}%`,
+          ),
+        );
+      }
+      /** <年代之刺>与<饮泣之刺>的最大生命值+20% */
+      if (difficulty >= 4 && enemyData && ["trap_760_skztzs", "enemy_2073_skzrck"].includes(enemyData.id)) {
+        context.relic_rune_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.2, `直面魂灵·4 | 年代之刺与饮泣之刺的最大生命值+20%`),
+        );
+      }
+      /** 难度部分词条 精英和领袖敌人生命值+20% */
+      if (difficulty >= 4 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.2, `直面魂灵·4 | 精英和领袖敌人生命值+20%`),
+        );
+      }
+      /** 难度部分词条 精英和领袖敌人攻击力+10% */
+      if (difficulty >= 7 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(1.1, `直面魂灵·7 | 精英和领袖敌人攻击力+10%`),
+        );
+      }
+      if (difficulty >= 10 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.1, `直面魂灵·10 | 精英及领袖敌人受到的物理与法术伤害降低10%`),
+        );
+      }
+      /** N14大特血量加成 */
+      if (difficulty >= 14 && enemyData && enemyData.id === "enemy_2081_skztxs") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.5, `直面魂灵·14 | 特雷西斯，黑冠尊主的最大生命值提升至150%`),
+        );
+      }
+      /** N15黑棺血量加成 */
+      if (difficulty >= 15 && enemyData && enemyData.id === "enemy_2083_skzhg") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(2, `直面魂灵·15 | “放逐的黑棺”的最大生命值提升至200%`),
+        );
+      }
+    }
+    /** 界园肉鸽 */
+    if (rogueInput.topic === "rogue_5") {
+      const { difficulty, layer } = rogueInput.rogue_5;
+      /** 肉鸽难度加成 */
+      const enemyAttrMultipliers = [0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 15];
+      const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
+      /** 层数选择器到实际层数的映射 */
+      const layerToZoneMap: Record<string, number> = {
+        layer_1: 1,
+        layer_2: 2,
+        layer_3: 3,
+        layer_4: 4,
+        layer_5: 5,
+        layer_6: 6,
+        layer_7: 7,
+      };
+      const zoneValue = layerToZoneMap[layer] || 1;
+
+      if (enemyAttrMultiplier && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
+        const pow = new Array(zoneValue).fill(
+          new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, `每层+${enemyAttrMultiplier}%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new ExpressionGroupNode("*", `请君入园·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new ExpressionGroupNode("*", `请君入园·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+      }
+      /** N0 所有敌人最大生命值-20%，攻击力-20% */
+      if (difficulty === 0) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.8, `请君入园 | 所有敌人最大生命值-20%，攻击力-20%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.8, `请君入园 | 所有敌人最大生命值-20%，攻击力-20%`),
+        );
+      }
+      /** N0 所有敌人最大生命值-10%，攻击力-10% */
+      if (difficulty === 1) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.9, `请君入园·1 | 所有敌人最大生命值-10%，攻击力-10%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.9, `请君入园·1 | 所有敌人最大生命值-10%，攻击力-10%`),
+        );
+      }
+      /** N4 所有敌人的生命值+40%，便符的生命值+50% */
+      if (difficulty >= 4 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.4, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
+        );
+      }
+      if (difficulty >= 4 && enemyData && enemyData.id === "enemy_2101_dyspll") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.5, `请君入园·4 | 所有敌人的生命值+40%，便符的生命值+50%`),
+        );
+      }
+      /** N5 所有敌人受到物理和法术伤害降低10％ */
+      if (difficulty >= 5 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.1, `请君入园·5 | 所有敌人受到物理和法术伤害降低10%`),
+        );
+      }
+      /** N8 精英和领袖敌人防御力、生命值+20% */
+      if (difficulty >= 8 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.in_game_buff_final_mul.enemy_def.addChild(
+          new NumericLiteralNode(1.2, `请君入园·8 | 精英和领袖敌人防御力+20%`),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.2, `请君入园·8 | 精英和领袖敌人生命值+20%`),
+        );
+      }
+      /** N11 所有敌人的攻击力+20% */
+      if (difficulty >= 11 && (!enemyData || !enemiesIgnore.includes(enemyData.id))) {
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(1.2, `请君入园·11 | 所有敌人的攻击力+20%`),
+        );
+      }
+      /** N13 <雕伥>的最大生命值+50% */
+      if (difficulty >= 13 && enemyData && enemyData.id === "trap_222_rgdysm") {
+        context.relic_rune_mul.enemy_max_hp.addChild(new NumericLiteralNode(0.5, `请君入园·13 | 雕伥的最大生命值+50%`));
+      }
+      /** N14 领袖敌人受到伤害降低20％ */
+      if (difficulty >= 14 && enemyData && ["BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.2, `请君入园·14 | 领袖敌人受到伤害降低20％`),
+        );
+      }
+      /** N15 “瑕”的攻击力和生命值+50% */
+      if (difficulty >= 15 && enemyData && enemyData.id === "trap_226_dychss") {
+        // trap_226_dychss
+      }
+    }
+    return context;
+  }
+
+  /** 分析肉鸽主题特殊效果，例如萨卡兹的年代、萨米的密文板 */
+  static analyzeTopicSpec(
+    input: {
+      topicSpecItems: ITopicSpecItem[];
+      charData?: CharData;
+      charInput?: CharInput;
+      enemyData?: EnemyData;
+      stageData?: StageData;
+    },
+    context: BuffContext,
+  ) {
+    const { topicSpecItems, charData, charInput, enemyData, stageData } = input;
+    const activeItems = topicSpecItems.filter((item) => item && item.userActive);
+    for (const item of activeItems) {
+      this.applyRelic(
+        {
+          relic: item as unknown as RelicDataExt & RelicWrapper,
+          relics: activeItems as unknown as (RelicDataExt & RelicWrapper)[],
+          charData,
+          charInput,
+          enemyData,
+          stageData,
+        },
+        context,
+      );
+    }
+    return context;
+  }
+
+  /** 分析敌人特殊词条 */
+  static analyzeEnemySpec(
+    input: { enemySpec?: EnemySpec; enemyData?: EnemyData; stageData?: StageData; levelData?: LevelData },
+    context: BuffContext,
+  ) {
+    const { enemySpec, enemyData, stageData, levelData } = input;
+    /** 计算关卡rune加成 */
+    if (enemyData && stageData && levelData) {
+      const stageDifficulty = stageData.difficulty;
+      const levelRunes = levelData.runes || [];
+      const runes = levelRunes.filter(
+        (rune) => rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL",
+      );
+      const runeWrap = {
+        name: "关卡加成",
+        layer: 1,
+        buffs: runes,
+      };
+      this.applyRelic(
+        {
+          relic: runeWrap as unknown as RelicDataExt & RelicWrapper,
+          relics: [runeWrap as unknown as RelicDataExt & RelicWrapper],
+          enemyData,
+          stageData,
+        },
+        context,
+      );
+    }
+    /** 计算敌人特殊加成 */
+    if (enemySpec) {
+      enemySpec.value.forEach((spec) => {
+        const { blackboard, label } = spec;
+        blackboard.forEach(({ bbKey, value }) => {
+          switch (bbKey) {
+            case "enemy_damage_resistance":
+              context.in_game_buff_final_mul.enemy_damage_resistance.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_add.enemy_def":
+              context.in_game_buff_final_add.enemy_def.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_mul.enemy_atk":
+              context.in_game_buff_final_mul.enemy_atk.addChild(new NumericLiteralNode(value, label));
+              break;
+            case "in_game_buff_final_mul.enemy_max_hp":
+              context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(value, label));
+              break;
+          }
+        });
+      });
+    }
+    return context;
+  }
+
+  /** 把上下文输出一个加成词条 */
+  static outputAdditionEntry(context: BuffContext): AdditionEntry {
+    const result: AdditionEntry = {
+      in_game_char: [],
+      out_game_char: [],
+      enemy: [],
+    };
+    const parse = (buffKey: string, key: string, value: number) =>
+      `${buffKey.startsWith("in_game") ? "局内" : ""}${allowedBlackboardKeyMap[key] || key}: ${buffKey.endsWith("_add") ? value : Math.round(value * 100) + "%"}`;
+    Object.entries(context).forEach(([buffKey, buffValue]) => {
+      if (Array.isArray(buffValue)) return;
+      Object.entries(buffValue).forEach(([key, value]) => {
+        const node = value as ExpressionGroupNode;
+        // 加算与减伤的基数为0，乘算的基数为1
+        const effectiveValue =
+          buffKey.endsWith("_add") || key === "enemy_damage_resistance" ? node.calculate() : node.calculate() - 1;
+        if (!effectiveValue) return;
+        const log = parse(buffKey, key, node.calculate());
+        if (key.startsWith("enemy_")) {
+          result.enemy.push(log);
+        } else if (buffKey.includes("in_game_")) {
+          result.in_game_char.push(log);
+        } else {
+          result.out_game_char.push(log);
+        }
+      });
+    });
+    // Object.entries(context.relic_rune_add).forEach(([key, value]) => {
+    //   if (value.calculate() > 0) {
+    //     result.out_game_char.push(parse(key, value.calculate()));
+    //   }
+    // });
+    // Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+    //   if (key === "enemy_damage_resistance") {
+    //     if (value.calculate() === 0) {
+    //       return;
+    //     }
+    //     result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+    //     return;
+    //   }
+    //   if (value.calculate() !== 1) {
+    //     result.out_game_char.push(
+    //       `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
+    //   if (value.calculate() > 0) {
+    //     result.in_game_char.push(`局内${allowedBlackboardKeyMap[key] || key}: ${value.calculate()}`);
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
+    //   if (value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
+    // Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+    //   if (key === "enemy_damage_resistance") {
+    //     if (value.calculate() === 0) {
+    //       return;
+    //     }
+    //     result.enemy.push(`${allowedBlackboardKeyMap[key] || key}: ${Math.round(value.calculate() * 100)}%`);
+    //     return;
+    //   }
+    //   // TODO
+    //   const isEnemy = [
+    //     "enemy_atk",
+    //     "enemy_def",
+    //     "enemy_max_hp",
+    //     "enemy_damage_scale_phy",
+    //     "enemy_damage_scale_mag",
+    //     "enemy_damage_scale_pure",
+    //     "enemy_damage_scale_ep",
+    //     "enemy_damage_resistance",
+    //     "enemy_magic_resistance",
+    //     "enemy_ep_resistance",
+    //     "enemy_ep_damage_resistance",
+    //   ].includes(key);
+    //   if (!isEnemy && value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `最终乘算${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    //   if (isEnemy && value.calculate() !== 1) {
+    //     // 减伤描述特殊
+    //     if (key === "enemy_damage_resistance") {
+    //       result.enemy.push(
+    //         `局内${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //       );
+    //     } else {
+    //       result.enemy.push(
+    //         `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //       );
+    //     }
+    //   }
+    // });
+    // Object.entries(context.global_buff_stack).forEach(([key, value]) => {
+    //   if (value.calculate() !== 1) {
+    //     result.in_game_char.push(
+    //       `${allowedBlackboardKeyMap[key] || key}: ${CalculatorHelper.formatPercent(value.calculate())}`,
+    //     );
+    //   }
+    // });
+    return result;
+  }
+
+  /** 百分比数值显示 */
+  static formatPercent(value: number): string {
+    const percent = value * 100 - 100;
+    const textValue = Math.sign(percent) === 1 ? percent : percent;
+    return `${Math.round(textValue)}%`;
+  }
+
+  /** 标准打印 */
+  static print(input: CalculatorInput, output: CalculatorOutput) {
+    console.log(
+      `%c 本次运行伤害计算结果 %c 版本：1.0.0_beta `,
+      "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff",
+      "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff",
+    );
+    console.groupCollapsed("查看输入输出原始数据");
+    console.groupCollapsed(
+      "%c 输入 ",
+      "background:rgb(46, 59, 232); padding: 4px; border-radius: 3px; color: #fff;font-weight:bold",
+    );
+    console.log(input);
+    console.groupEnd();
+    console.groupCollapsed(
+      "%c 输出 ",
+      "background:rgb(181, 168, 29); padding: 4px; border-radius: 3px; color: #fff;font-weight:bold",
+    );
+    console.log(output);
+    console.groupEnd();
+    console.log("printAdditionContext in helper");
+    CalculatorHelper.printAdditionContext(input.buffContext, input.relics);
+    console.groupEnd();
+    console.groupCollapsed("查看结构化输出");
+    const tableData = [];
+    tableData.push({
+      伤害类型: "普攻伤害",
+      面板攻击力: output.attack.dph,
+      dps: countDamage(output.attack.dps),
+      总伤: countDamage(output.attack.total_damage),
+    });
+    tableData.push({
+      伤害类型: "技能伤害",
+      面板攻击力: output.skill.dph,
+      dps: countDamage(output.skill.dps),
+      总伤: countDamage(output.skill.total_damage),
+    });
+    tableData.push({
+      伤害类型: "周期伤害",
+      面板攻击力: output.cycle.dph,
+      dps: countDamage(output.cycle.dps),
+      总伤: countDamage(output.cycle.total_damage),
+    });
+    function countDamage(damage: DamageByType) {
+      return damage.phy + damage.mag + damage.pure + damage.ep;
+    }
+    console.table(tableData);
+    console.groupEnd();
+  }
+
+  /**
+   * 打印加成上下文
+   * @param context
+   * @param relics
+   */
+  static printAdditionContext(context: BuffContext, relics: (RelicDataExt & RelicWrapper)[]) {
+    interface StringRow {
+      藏品名称: string;
+      rune_add?: string;
+      rune_mul?: string;
+      in_game_add?: string;
+      in_game_mul?: string;
+      in_game_final_add?: string;
+      in_game_final_mul?: string;
+    }
+    interface ObjectRow {
+      藏品名称: string;
+      key: string;
+      rune_add: string[];
+      rune_mul: string[];
+      in_game_add: string[];
+      in_game_mul: string[];
+      in_game_final_add: string[];
+      in_game_final_mul: string[];
+      usage: string;
+    }
+    const flagLogMap: { [name: string]: StringRow } = {};
+    const objectLogMap: { [name: string]: ObjectRow } = {};
+    console.groupCollapsed("加成详细打印");
+
+    console.log(context);
+    console.log(flagLogMap);
+    console.log(objectLogMap);
+
+    /** 用于debug时获取自定义内容 */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const getKey = (relic?: RelicDataExt & RelicWrapper) => "";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const filterKey = (row: ObjectRow) => true;
+    /** 获取所有key: key的黑板 */
+    // const getKey = (relic?: RelicDataExt & RelicWrapper) =>
+    //   relic?.buffs
+    //     .find((buff) => buff.blackboard.find((bb) => bb.key === "key"))
+    //     ?.blackboard.find((bb) => bb.key === "key")?.valueStr || "";
+    // const filterKey = (row: ObjectRow) => !!row.key;
+
+    // 局外加算
+    Object.entries(context.relic_rune_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("rune_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
+
+    // 局外乘算
+    Object.entries(context.relic_rune_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("rune_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
+
+    // 直接加算
+    Object.entries(context.in_game_buff_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
+
+    // 直接乘算
+    Object.entries(context.in_game_buff_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
+
+    // 最终加算
+    Object.entries(context.in_game_buff_final_add).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_final_add", `${allowedBlackboardKeyMap[key] || key}+${node.calculate()}`, node),
+      );
+    });
+
+    // 最终乘算
+    Object.entries(context.in_game_buff_final_mul).forEach(([key, value]) => {
+      value.children.forEach((node) =>
+        set_row("in_game_final_mul", `${allowedBlackboardKeyMap[key] || key}*${toPercent(node.calculate())}`, node),
+      );
+    });
+
+    /** 转为百分比 */
+    function toPercent(value: number): string {
+      return `${(value * 100).toFixed()}%`;
+    }
+
+    function set_row(
+      target: "rune_add" | "rune_mul" | "in_game_add" | "in_game_mul" | "in_game_final_add" | "in_game_final_mul",
+      key: string,
+      node: BaseNode,
+    ) {
+      // 部分藏品在多个乘区有效
+      if (!flagLogMap[node.tooltip]) {
+        const relic = relics.find((relic) => relic.name === node.tooltip);
+        flagLogMap[node.tooltip] = { 藏品名称: node.tooltip };
+        objectLogMap[node.tooltip] = {
+          藏品名称: node.tooltip,
+          key: getKey(relic),
+          rune_add: [],
+          rune_mul: [],
+          in_game_add: [],
+          in_game_mul: [],
+          in_game_final_add: [],
+          in_game_final_mul: [],
+          usage: "",
+        };
+      }
+      flagLogMap[node.tooltip][target] = "√";
+      objectLogMap[node.tooltip][target].push(key);
+    }
+
+    for (const relic of relics) {
+      // 添加未生效的藏品
+      if (!flagLogMap[relic.name]) {
+        flagLogMap[relic.name] = { 藏品名称: relic.name };
+        objectLogMap[relic.name] = {
+          藏品名称: relic.name,
+          key: getKey(relic),
+          rune_add: [],
+          rune_mul: [],
+          in_game_add: [],
+          in_game_mul: [],
+          in_game_final_add: [],
+          in_game_final_mul: [],
+          usage: "",
+        };
+      }
+      objectLogMap[relic.name].usage = relic.usage;
+    }
+    console.table(
+      Object.values(objectLogMap)
+        .filter(filterKey)
+        .map((row) => {
+          return {
+            藏品名称: row.藏品名称,
+            词条: row.key,
+            局外加算: row.rune_add.join("|"),
+            局外乘算: row.rune_mul.join("|"),
+            直接加算: row.in_game_add.join("|"),
+            直接乘算: row.in_game_mul.join("|"),
+            最终乘算: row.in_game_final_mul.join("|"),
+            // 最终加算: row.in_game_final_add.join("|"),
+            描述: row.usage,
+          };
+        }),
+    );
+
+    console.groupEnd();
+  }
+}

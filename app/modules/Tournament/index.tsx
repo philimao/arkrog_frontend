@@ -98,7 +98,7 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
     }
     const tournamentsByEdition = new Map<string, TournamentData[]>();
     tournaments
-      .sort((a, b) => new Date(b.stages[0]?.startTime || 0).getTime() - new Date(a.stages[0]?.startTime || 0).getTime())
+      .sort((a, b) => new Date(b.stages[0].startTime).getTime() - new Date(a.stages[0].startTime).getTime())
       .map((tournament) => {
         const edition = tournament.edition;
         if (!tournamentsByEdition.has(edition)) {
@@ -176,6 +176,9 @@ function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournament
             {topic.name}
           </div>
         ))}
+      </div>
+      <div style={{ margin: "-2rem 0 2rem" }}>
+        （当前仍在数据对接中，希望收录比赛请加入影语集反馈群 909687635 并联系管理员）
       </div>
       {renderTournaments()}
     </div>

@@ -23,17 +23,14 @@ export const homePages = [
 
 export default [
   layout("routes/RootLayout.tsx", [
+    // 主页
     index("routes/IndexLayout.tsx"),
+    // 无藏
     route("/relic-free", "routes/RelicFreeLayout.tsx", [
       index("modules/RelicFree/Selector/index.tsx"),
       route(":stageId", "modules/RelicFree/Stage/index.tsx"),
     ]),
-    route("/home", "routes/HomeLayout.tsx", [
-      // index("modules/Home/Message/Selector.tsx"),
-      route("message", "modules/Home/Message/index.tsx"),
-      route("favorite", "modules/Home/Favorite/index.tsx"),
-      route("link-bilibili", "modules/Home/Link/index.tsx"),
-    ]),
+    // 赛事
     route("/tournament", "routes/TournamentLayout.tsx", [
       index("modules/Tournament/index.tsx"),
       route(
@@ -46,8 +43,20 @@ export default [
         "modules/Tournament/TournamentEdit/index.tsx",
       ),
     ]),
+    // 工具
+    route("/tool", "routes/ToolLayout.tsx", [index("modules/Tool/index.tsx")]),
+    // 种子
     // route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
+    // 个人中心
+    route("/home", "routes/HomeLayout.tsx", [
+      // index("modules/Home/Message/Selector.tsx"),
+      route("message", "modules/Home/Message/index.tsx"),
+      route("favorite", "modules/Home/Favorite/index.tsx"),
+      route("link-bilibili", "modules/Home/Link/index.tsx"),
+    ]),
+    // 赞助
     route("/sponsor", "modules/Standalone/Sponsorship.tsx"),
+    // 404
     route("*", "modules/Standalone/NotFoundPage.tsx"),
   ]),
 ] satisfies RouteConfig;

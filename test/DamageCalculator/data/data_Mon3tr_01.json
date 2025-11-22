@@ -1,0 +1,1897 @@
+{
+    "charInput": {
+        "phaseLevel": 2,
+        "phase": {
+            "characterPrefabKey": "char_4179_monstr",
+            "rangeId": "y-2",
+            "maxLevel": 90,
+            "attributesKeyFrames": [
+                {
+                    "level": 1,
+                    "data": {
+                        "maxHp": 1492,
+                        "atk": 422,
+                        "def": 176,
+                        "magicResistance": 0,
+                        "cost": 18,
+                        "blockCnt": 1,
+                        "moveSpeed": 1,
+                        "attackSpeed": 100,
+                        "baseAttackTime": 2.85,
+                        "respawnTime": 70,
+                        "hpRecoveryPerSec": 0,
+                        "spRecoveryPerSec": 1,
+                        "maxDeployCount": 1,
+                        "maxDeckStackCnt": 0,
+                        "tauntLevel": 0,
+                        "massLevel": 0,
+                        "baseForceLevel": 0,
+                        "stunImmune": false,
+                        "silenceImmune": false,
+                        "sleepImmune": false,
+                        "frozenImmune": false,
+                        "levitateImmune": false,
+                        "disarmedCombatImmune": false,
+                        "fearedImmune": false
+                    }
+                },
+                {
+                    "level": 90,
+                    "data": {
+                        "maxHp": 1735,
+                        "atk": 528,
+                        "def": 221,
+                        "magicResistance": 0,
+                        "cost": 18,
+                        "blockCnt": 1,
+                        "moveSpeed": 1,
+                        "attackSpeed": 100,
+                        "baseAttackTime": 2.85,
+                        "respawnTime": 70,
+                        "hpRecoveryPerSec": 0,
+                        "spRecoveryPerSec": 1,
+                        "maxDeployCount": 1,
+                        "maxDeckStackCnt": 0,
+                        "tauntLevel": 0,
+                        "massLevel": 0,
+                        "baseForceLevel": 0,
+                        "stunImmune": false,
+                        "silenceImmune": false,
+                        "sleepImmune": false,
+                        "frozenImmune": false,
+                        "levitateImmune": false,
+                        "disarmedCombatImmune": false,
+                        "fearedImmune": false
+                    }
+                }
+            ],
+            "evolveCost": [
+                {
+                    "id": "3263",
+                    "count": 4,
+                    "type": "MATERIAL"
+                },
+                {
+                    "id": "30145",
+                    "count": 4,
+                    "type": "MATERIAL"
+                },
+                {
+                    "id": "30014",
+                    "count": 2,
+                    "type": "MATERIAL"
+                }
+            ]
+        },
+        "level": 1,
+        "attribute": {
+            "maxHp": 9344,
+            "atk": 2380,
+            "def": 1,
+            "magicResistance": 0,
+            "cost": 22,
+            "blockCnt": 2,
+            "moveSpeed": 1,
+            "attackSpeed": 100,
+            "baseAttackTime": 2.5,
+            "respawnTime": 70,
+            "hpRecoveryPerSec": 0,
+            "spRecoveryPerSec": 1,
+            "maxDeployCount": 1,
+            "maxDeckStackCnt": 0,
+            "tauntLevel": 0,
+            "massLevel": 0,
+            "baseForceLevel": 0,
+            "stunImmune": false,
+            "silenceImmune": false,
+            "sleepImmune": false,
+            "frozenImmune": false,
+            "levitateImmune": false,
+            "disarmedCombatImmune": false,
+            "fearedImmune": false,
+            "damageScale": 1,
+            "damage_scale": 1
+        },
+        "skillKey": "skchr_monstr_3",
+        "skillLevel": 9,
+        "skill": {
+            "name": "策略：熔毁",
+            "rangeId": "x-4",
+            "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+            "skillType": "MANUAL",
+            "durationType": "NONE",
+            "spData": {
+                "spType": "INCREASE_WHEN_ATTACK",
+                "levelUpCost": null,
+                "maxChargeTime": 1,
+                "spCost": 15,
+                "initSp": 11,
+                "increment": 1
+            },
+            "prefabId": "skchr_monstr_3",
+            "duration": 25,
+            "blackboard": [
+                {
+                    "key": "atk",
+                    "value": 3.3,
+                    "valueStr": null
+                },
+                {
+                    "key": "damage_per_second",
+                    "value": 80,
+                    "valueStr": null
+                },
+                {
+                    "key": "max_hp",
+                    "value": 5000,
+                    "valueStr": null
+                },
+                {
+                    "key": "block_cnt",
+                    "value": 2,
+                    "valueStr": null
+                },
+                {
+                    "key": "base_attack_time",
+                    "value": -1.5,
+                    "valueStr": null
+                },
+                {
+                    "key": "attack@heal_scale",
+                    "value": 0.5,
+                    "valueStr": null
+                }
+            ]
+        },
+        "uniEquipLevel": 2,
+        "potential": 5,
+        "charsBuffInGame": {
+            "atk": 2.5,
+            "maxHp": 1,
+            "damageResistance": 0.31,
+            "damageScale": 1.1
+        }
+    },
+    "enemyInput": {
+        "maxHp": 0,
+        "atk": 0,
+        "def": 0,
+        "magicResistance": 0,
+        "blockCnt": 0,
+        "moveSpeed": 0,
+        "attackSpeed": 0,
+        "baseAttackTime": 0,
+        "epDamageResistance": 0,
+        "epResistance": 0
+    },
+    "charData": {
+        "name": "Mon3tr",
+        "description": "恢复友方单位生命，且会在<@ba.kw>3</>个友方单位间跳跃，每次跳跃治疗量降低25%",
+        "canUseGeneralPotentialItem": true,
+        "canUseActivityPotentialItem": false,
+        "potentialItemId": "p_char_4179_monstr",
+        "activityPotentialItemId": null,
+        "classicPotentialItemId": null,
+        "nationId": "rhodes",
+        "groupId": null,
+        "teamId": null,
+        "displayNumber": "R003",
+        "appellation": "Mon3tr",
+        "position": "RANGED",
+        "tagList": [
+            "治疗",
+            "输出",
+            "支援"
+        ],
+        "itemUsage": "特别顾问Mon3tr，选择与罗德岛同行。",
+        "itemDesc": "我们都很熟悉这个名字，但我们需要重新认识她。",
+        "itemObtainApproach": "招募寻访",
+        "isNotObtainable": false,
+        "isSpChar": false,
+        "maxPotentialLevel": 5,
+        "rarity": "TIER_6",
+        "profession": "MEDIC",
+        "subProfessionId": "chainhealer",
+        "trait": {
+            "candidates": [
+                {
+                    "unlockCondition": {
+                        "phase": "PHASE_0",
+                        "level": 1
+                    },
+                    "requiredPotentialRank": 0,
+                    "blackboard": [
+                        {
+                            "key": "attack@chain.max_target",
+                            "value": 3,
+                            "valueStr": null
+                        },
+                        {
+                            "key": "attack@chain.atk_scale",
+                            "value": 0.75,
+                            "valueStr": null
+                        }
+                    ],
+                    "overrideDescripton": "恢复友方单位生命，且会在<@ba.kw>3</>个友方单位间跳跃，每次跳跃治疗量降低25%",
+                    "prefabKey": "-1",
+                    "rangeId": null
+                }
+            ]
+        },
+        "phases": [
+            {
+                "characterPrefabKey": "char_4179_monstr",
+                "rangeId": "y-1",
+                "maxLevel": 50,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 952,
+                            "atk": 184,
+                            "def": 96,
+                            "magicResistance": 0,
+                            "cost": 16,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 50,
+                        "data": {
+                            "maxHp": 1253,
+                            "atk": 303,
+                            "def": 140,
+                            "magicResistance": 0,
+                            "cost": 16,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": null
+            },
+            {
+                "characterPrefabKey": "char_4179_monstr",
+                "rangeId": "y-2",
+                "maxLevel": 80,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 1253,
+                            "atk": 303,
+                            "def": 140,
+                            "magicResistance": 0,
+                            "cost": 18,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 80,
+                        "data": {
+                            "maxHp": 1492,
+                            "atk": 422,
+                            "def": 176,
+                            "magicResistance": 0,
+                            "cost": 18,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": [
+                    {
+                        "id": "3261",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30042",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30052",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "characterPrefabKey": "char_4179_monstr",
+                "rangeId": "y-2",
+                "maxLevel": 90,
+                "attributesKeyFrames": [
+                    {
+                        "level": 1,
+                        "data": {
+                            "maxHp": 1492,
+                            "atk": 422,
+                            "def": 176,
+                            "magicResistance": 0,
+                            "cost": 18,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    },
+                    {
+                        "level": 90,
+                        "data": {
+                            "maxHp": 1735,
+                            "atk": 528,
+                            "def": 221,
+                            "magicResistance": 0,
+                            "cost": 18,
+                            "blockCnt": 1,
+                            "moveSpeed": 1,
+                            "attackSpeed": 100,
+                            "baseAttackTime": 2.85,
+                            "respawnTime": 70,
+                            "hpRecoveryPerSec": 0,
+                            "spRecoveryPerSec": 1,
+                            "maxDeployCount": 1,
+                            "maxDeckStackCnt": 0,
+                            "tauntLevel": 0,
+                            "massLevel": 0,
+                            "baseForceLevel": 0,
+                            "stunImmune": false,
+                            "silenceImmune": false,
+                            "sleepImmune": false,
+                            "frozenImmune": false,
+                            "levitateImmune": false,
+                            "disarmedCombatImmune": false,
+                            "fearedImmune": false
+                        }
+                    }
+                ],
+                "evolveCost": [
+                    {
+                        "id": "3263",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30145",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30014",
+                        "count": 2,
+                        "type": "MATERIAL"
+                    }
+                ]
+            }
+        ],
+        "skills": [
+            {
+                "skillId": "skchr_monstr_1",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31064",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30013",
+                                "count": 10,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31084",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31014",
+                                "count": 9,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30135",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30094",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                }
+            },
+            {
+                "skillId": "skchr_monstr_2",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30044",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30093",
+                                "count": 3,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31044",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31094",
+                                "count": 9,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30155",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30014",
+                                "count": 2,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                }
+            },
+            {
+                "skillId": "skchr_monstr_3",
+                "overridePrefabKey": null,
+                "overrideTokenKey": null,
+                "levelUpCostCond": [
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 28800,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 8,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31054",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31023",
+                                "count": 7,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 57600,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 12,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31074",
+                                "count": 4,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30104",
+                                "count": 7,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    },
+                    {
+                        "unlockCond": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "lvlUpTime": 86400,
+                        "levelUpCost": [
+                            {
+                                "id": "3303",
+                                "count": 15,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "30145",
+                                "count": 6,
+                                "type": "MATERIAL"
+                            },
+                            {
+                                "id": "31024",
+                                "count": 1,
+                                "type": "MATERIAL"
+                            }
+                        ]
+                    }
+                ],
+                "unlockCond": {
+                    "phase": "PHASE_2",
+                    "level": 1
+                }
+            }
+        ],
+        "displayTokenDict": {
+            "token_10050_monstr_prosts": true
+        },
+        "talents": [
+            {
+                "candidates": [
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_0",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+3%，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.03,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_0",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 2,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+8%<@ba.talpu>（+5%）</>，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.08,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_1",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+5%，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.05,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_1",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 2,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+10%<@ba.talpu>（+5%）</>，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.1,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+15%，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.15,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 2,
+                        "prefabKey": "1",
+                        "name": "自我修复",
+                        "description": "可以在攻击范围内的地面使用一个仅可被自身治疗的重构体，重构体周围友方单位的攻击力+20%<@ba.talpu>（+5%）</>，重构体受到自身和Mon3tr治疗时，可额外进行一次不会衰减的治疗跳跃",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "atk",
+                                "value": 0.2,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    }
+                ]
+            },
+            {
+                "candidates": [
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_1",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "2",
+                        "name": "战术协同",
+                        "description": "自身或重构体造成治疗时，使目标及自身的攻击速度+10，持续10秒（无法叠加）",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "buff_duration",
+                                "value": 10,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "attack_speed",
+                                "value": 10,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_1",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 5,
+                        "prefabKey": "2",
+                        "name": "战术协同",
+                        "description": "自身或重构体造成治疗时，使目标及自身的攻击速度+12<@ba.talpu>（+2）</>，持续10秒（无法叠加）",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "buff_duration",
+                                "value": 10,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "attack_speed",
+                                "value": 12,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 0,
+                        "prefabKey": "2",
+                        "name": "战术协同",
+                        "description": "自身或重构体造成治疗时，使目标及自身的攻击速度+20，持续10秒（无法叠加）",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "buff_duration",
+                                "value": 10,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "attack_speed",
+                                "value": 20,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    },
+                    {
+                        "unlockCondition": {
+                            "phase": "PHASE_2",
+                            "level": 1
+                        },
+                        "requiredPotentialRank": 5,
+                        "prefabKey": "2",
+                        "name": "战术协同",
+                        "description": "自身或重构体造成治疗时，使目标及自身的攻击速度+22<@ba.talpu>（+2）</>，持续10秒（无法叠加）",
+                        "rangeId": null,
+                        "blackboard": [
+                            {
+                                "key": "buff_duration",
+                                "value": 10,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "attack_speed",
+                                "value": 22,
+                                "valueStr": null
+                            }
+                        ],
+                        "tokenKey": "token_10050_monstr_prosts",
+                        "isHideTalent": false
+                    }
+                ]
+            }
+        ],
+        "potentialRanks": [
+            {
+                "type": "BUFF",
+                "description": "部署费用-1",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "COST",
+                                "formulaItem": "ADDITION",
+                                "value": -1,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "CUSTOM",
+                "description": "第一天赋效果增强",
+                "buff": null,
+                "equivalentCost": null
+            },
+            {
+                "type": "BUFF",
+                "description": "攻击力+25",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "ATK",
+                                "formulaItem": "ADDITION",
+                                "value": 25,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "BUFF",
+                "description": "部署费用-1",
+                "buff": {
+                    "attributes": {
+                        "abnormalFlags": null,
+                        "abnormalImmunes": null,
+                        "abnormalAntis": null,
+                        "abnormalCombos": null,
+                        "abnormalComboImmunes": null,
+                        "attributeModifiers": [
+                            {
+                                "attributeType": "COST",
+                                "formulaItem": "ADDITION",
+                                "value": -1,
+                                "loadFromBlackboard": false,
+                                "fetchBaseValueFromSourceEntity": false
+                            }
+                        ]
+                    }
+                },
+                "equivalentCost": null
+            },
+            {
+                "type": "CUSTOM",
+                "description": "第二天赋效果增强",
+                "buff": null,
+                "equivalentCost": null
+            }
+        ],
+        "favorKeyFrames": [
+            {
+                "level": 0,
+                "data": {
+                    "maxHp": 0,
+                    "atk": 0,
+                    "def": 0,
+                    "magicResistance": 0,
+                    "cost": 0,
+                    "blockCnt": 0,
+                    "moveSpeed": 0,
+                    "attackSpeed": 0,
+                    "baseAttackTime": 0,
+                    "respawnTime": 0,
+                    "hpRecoveryPerSec": 0,
+                    "spRecoveryPerSec": 0,
+                    "maxDeployCount": 0,
+                    "maxDeckStackCnt": 0,
+                    "tauntLevel": 0,
+                    "massLevel": 0,
+                    "baseForceLevel": 0,
+                    "stunImmune": false,
+                    "silenceImmune": false,
+                    "sleepImmune": false,
+                    "frozenImmune": false,
+                    "levitateImmune": false,
+                    "disarmedCombatImmune": false,
+                    "fearedImmune": false
+                }
+            },
+            {
+                "level": 50,
+                "data": {
+                    "maxHp": 500,
+                    "atk": 30,
+                    "def": 0,
+                    "magicResistance": 0,
+                    "cost": 0,
+                    "blockCnt": 0,
+                    "moveSpeed": 0,
+                    "attackSpeed": 0,
+                    "baseAttackTime": 0,
+                    "respawnTime": 0,
+                    "hpRecoveryPerSec": 0,
+                    "spRecoveryPerSec": 0,
+                    "maxDeployCount": 0,
+                    "maxDeckStackCnt": 0,
+                    "tauntLevel": 0,
+                    "massLevel": 0,
+                    "baseForceLevel": 0,
+                    "stunImmune": false,
+                    "silenceImmune": false,
+                    "sleepImmune": false,
+                    "frozenImmune": false,
+                    "levitateImmune": false,
+                    "disarmedCombatImmune": false,
+                    "fearedImmune": false
+                }
+            }
+        ],
+        "allSkillLvlup": [
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3301",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3301",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30061",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30031",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_0",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30012",
+                        "count": 7,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30022",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30052",
+                        "count": 4,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3302",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30023",
+                        "count": 7,
+                        "type": "MATERIAL"
+                    }
+                ]
+            },
+            {
+                "unlockCond": {
+                    "phase": "PHASE_1",
+                    "level": 1
+                },
+                "lvlUpCost": [
+                    {
+                        "id": "3303",
+                        "count": 8,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "31053",
+                        "count": 5,
+                        "type": "MATERIAL"
+                    },
+                    {
+                        "id": "30033",
+                        "count": 3,
+                        "type": "MATERIAL"
+                    }
+                ]
+            }
+        ]
+    },
+    "skillData": {
+        "skillId": "skchr_monstr_3",
+        "iconId": null,
+        "hidden": false,
+        "levels": [
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 0,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 0,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 0,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 5,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 5,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.6,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 5,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.7,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 7,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 2.8,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 8,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 9,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 3.1,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            },
+            {
+                "name": "策略：熔毁",
+                "rangeId": "x-4",
+                "description": "攻击范围改变，<$ba.addash>移动</>至重构体位置，攻击力<@ba.vup>+{atk:0%}</>，攻击间隔降低，阻挡数<@ba.vup>+{block_cnt}</>，生命上限<@ba.vup>+{max_hp}</>，每秒流失<@ba.vdown>{damage_per_second}</>点生命值，同时攻击阻挡的所有敌人，伤害类型变为<@ba.vup>真实</>，攻击治疗自身相当于攻击力<@ba.vup>{attack@heal_scale:0%}</>的生命值\\n<@ba.rem>技能结束或受到致命伤害时，返回初始位置</>",
+                "skillType": "MANUAL",
+                "durationType": "NONE",
+                "spData": {
+                    "spType": "INCREASE_WHEN_ATTACK",
+                    "levelUpCost": null,
+                    "maxChargeTime": 1,
+                    "spCost": 15,
+                    "initSp": 11,
+                    "increment": 1
+                },
+                "prefabId": "skchr_monstr_3",
+                "duration": 25,
+                "blackboard": [
+                    {
+                        "key": "atk",
+                        "value": 3.3,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "damage_per_second",
+                        "value": 80,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "max_hp",
+                        "value": 5000,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "block_cnt",
+                        "value": 2,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "base_attack_time",
+                        "value": -1.5,
+                        "valueStr": null
+                    },
+                    {
+                        "key": "attack@heal_scale",
+                        "value": 0.5,
+                        "valueStr": null
+                    }
+                ]
+            }
+        ]
+    },
+    "relics": [
+        {
+            "relicData": {
+                "id": "rogue_4_relic_legacy_154",
+                "name": "诸王的冠冕",
+                "description": "无名的诸王啊，纵使王国毁灭，仍愿您护佑伊比利亚。",
+                "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+                "obtainApproach": "在集成战略模式中获得",
+                "iconId": "rogue_4_relic_legacy_154",
+                "type": "RELIC",
+                "subType": "NONE",
+                "rarity": "SUPER_RARE",
+                "value": 16,
+                "sortId": 999,
+                "canSacrifice": true,
+                "unlockCondDesc": null,
+                "buffs": [
+                    {
+                        "key": "global_buff_normal",
+                        "blackboard": [
+                            {
+                                "key": "key",
+                                "value": 0,
+                                "valueStr": "rogue_2_relic_mark[king_suit]"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "char_ability_new",
+                        "blackboard": [
+                            {
+                                "key": "key",
+                                "value": 0,
+                                "valueStr": "rogue_2_atk_up[life_point][king_suit]"
+                            },
+                            {
+                                "key": "rogue_2_atk_up[king_suit].atk",
+                                "value": 0.5,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "rogue_2_atk_up[king_suit][bonus].atk",
+                                "value": 1.5,
+                                "valueStr": null
+                            }
+                        ]
+                    }
+                ],
+                "show": true
+            },
+            "id": "rogue_4_relic_legacy_154",
+            "name": "诸王的冠冕",
+            "value": 16,
+            "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+            "show": true,
+            "isActive": true,
+            "userActive": true,
+            "isFavorite": false,
+            "hasLayer": false,
+            "layer": 0,
+            "buffs": [
+                {
+                    "key": "global_buff_normal",
+                    "isActive": false,
+                    "charResult": {},
+                    "enemyResult": {}
+                },
+                {
+                    "key": "char_ability_new",
+                    "isActive": true,
+                    "charResult": {
+                        "atk": 1.5
+                    },
+                    "enemyResult": {}
+                }
+            ]
+        },
+        {
+            "relicData": {
+                "id": "rogue_4_relic_legacy_171",
+                "name": "几丁质刺刃",
+                "description": "一种更有效的外骨骼生长方案。能够撕裂猎物，抵御打击，也可以化作同胞的美食。",
+                "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+                "obtainApproach": "在集成战略模式中获得",
+                "iconId": "rogue_4_relic_legacy_171",
+                "type": "RELIC",
+                "subType": "NONE",
+                "rarity": "SUPER_RARE",
+                "value": 16,
+                "sortId": 999,
+                "canSacrifice": true,
+                "unlockCondDesc": null,
+                "buffs": [
+                    {
+                        "key": "char_random_target_attribute",
+                        "blackboard": [
+                            {
+                                "key": "cnt",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "multiplier@atk",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "multiplier@max_hp",
+                                "value": 1,
+                                "valueStr": null
+                            },
+                            {
+                                "key": "effect",
+                                "value": 0,
+                                "valueStr": "relic_1_m17_buff_01_start"
+                            },
+                            {
+                                "key": "selector.profession",
+                                "value": 0,
+                                "valueStr": "warrior|sniper|tank|medic|support|caster|special|pioneer"
+                            }
+                        ]
+                    }
+                ],
+                "show": true
+            },
+            "id": "rogue_4_relic_legacy_171",
+            "name": "几丁质刺刃",
+            "value": 16,
+            "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+            "show": true,
+            "isActive": true,
+            "userActive": true,
+            "isFavorite": false,
+            "hasLayer": false,
+            "layer": 0,
+            "buffs": [
+                {
+                    "key": "char_random_target_attribute",
+                    "isActive": true,
+                    "charResult": {
+                        "atk": 1,
+                        "max_hp": 1
+                    },
+                    "enemyResult": {}
+                }
+            ]
+        }
+    ]
+}

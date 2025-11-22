@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import type { CharBasicData, CharsBasic } from "~/types/gameData";
+import type { CharBasicData, CharId, SkillId } from "~/types/gameData";
 import type { TeamMemberData } from "~/types/recordType";
 
 async function URLValidation(url: string) {
@@ -107,14 +107,21 @@ function avToBv(av: number) {
   return bv.join("");
 }
 
+/**
+ * 从干员字符串中解析出干员名称与技能信息
+ * @param charStr 干员字符串
+ * @param character_basic 干员基础数据
+ * @returns 干员名称、技能ID、技能顺序
+ */
 function charStrToData(
   charStr: string,
-  character_basic: CharsBasic,
-): TeamMemberData {
+  character_basic: Record<CharId, CharBasicData>,
+): Partial<TeamMemberData> {
   let charId = "",
     name = "",
     skillStr = "",
     skillId = "",
+    skillName = "",
     charNameStr = charStr.trim();
   const skillStrMatch = charNameStr.match(/(?<!-)\d$/);
   if (skillStrMatch) {
@@ -129,14 +136,22 @@ function charStrToData(
   if (charData) {
     name = charData.name;
     charId = charData.charId;
-    if (Object.values(charData.skills).length > 0) {
-      skillId =
-        Object.values(charData.skills).find(
-          (skill) => skillStr === skill.skillOrder.toString(),
-        )?.skillId || "error";
+    if (skillStr && Object.values(charData.skills).length > 0) {
+      try {
+        skillId =
+          Object.values(charData.skills).find(
+            (skill) => skillStr === skill.skillOrder.toString(),
+          )?.skillId || "error";
+        skillName = skillId
+          ? character_basic[charId as CharId].skills[skillId as SkillId]?.name
+          : "error";
+      } catch (err) {
+        console.error(err);
+        console.log(name, charId, skillId);
+      }
     }
   }
-  return { charId, name, skillId, skillStr, charData };
+  return { charId, name, skillId, skillStr, skillName, charData };
 }
 
 export { URLValidation, charStrToData };

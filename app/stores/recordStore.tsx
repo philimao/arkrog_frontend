@@ -1,5 +1,6 @@
 import { create } from "zustand/index";
 import type { RecordType } from "~/types/recordType";
+import { devtools } from "zustand/middleware";
 
 type RecordStore = {
   activeRecord?: RecordType;
@@ -7,12 +8,17 @@ type RecordStore = {
   clearActiveRecord: () => void;
 };
 
-export const useRecordStore = create<RecordStore>((set) => ({
-  activeRecord: undefined,
-  setActiveRecord: (record) => {
-    set({ activeRecord: record });
-  },
-  clearActiveRecord: () => {
-    set({ activeRecord: undefined });
-  },
-}));
+export const useRecordStore = create<RecordStore>()(
+  devtools(
+    (set) => ({
+      activeRecord: undefined,
+      setActiveRecord: (record) => {
+        set({ activeRecord: record }, undefined, "setActiveRecord");
+      },
+      clearActiveRecord: () => {
+        set({ activeRecord: undefined }, undefined, "clearActiveRecord");
+      },
+    }),
+    { name: "recordStore" },
+  ),
+);

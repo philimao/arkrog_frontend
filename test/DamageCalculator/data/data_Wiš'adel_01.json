@@ -1,0 +1,2407 @@
+{
+  "charInput": {
+    "phaseLevel": 2,
+    "phase": {
+      "characterPrefabKey": "char_1035_wisdel",
+      "rangeId": "3-9",
+      "maxLevel": 90,
+      "attributesKeyFrames": [
+        {
+          "level": 1,
+          "data": {
+            "maxHp": 1434,
+            "atk": 583,
+            "def": 209,
+            "magicResistance": 15,
+            "cost": 25,
+            "blockCnt": 1,
+            "moveSpeed": 1,
+            "attackSpeed": 100,
+            "baseAttackTime": 2.1,
+            "respawnTime": 70,
+            "hpRecoveryPerSec": 0,
+            "spRecoveryPerSec": 1,
+            "maxDeployCount": 1,
+            "maxDeckStackCnt": 0,
+            "tauntLevel": 0,
+            "massLevel": 0,
+            "baseForceLevel": 0,
+            "stunImmune": false,
+            "silenceImmune": false,
+            "sleepImmune": false,
+            "frozenImmune": false,
+            "levitateImmune": false,
+            "disarmedCombatImmune": false,
+            "fearedImmune": false
+          }
+        },
+        {
+          "level": 90,
+          "data": {
+            "maxHp": 1888,
+            "atk": 687,
+            "def": 256,
+            "magicResistance": 15,
+            "cost": 25,
+            "blockCnt": 1,
+            "moveSpeed": 1,
+            "attackSpeed": 100,
+            "baseAttackTime": 2.1,
+            "respawnTime": 70,
+            "hpRecoveryPerSec": 0,
+            "spRecoveryPerSec": 1,
+            "maxDeployCount": 1,
+            "maxDeckStackCnt": 0,
+            "tauntLevel": 0,
+            "massLevel": 0,
+            "baseForceLevel": 0,
+            "stunImmune": false,
+            "silenceImmune": false,
+            "sleepImmune": false,
+            "frozenImmune": false,
+            "levitateImmune": false,
+            "disarmedCombatImmune": false,
+            "fearedImmune": false
+          }
+        }
+      ],
+      "evolveCost": [
+        {
+          "id": "3243",
+          "count": 4,
+          "type": "MATERIAL"
+        },
+        {
+          "id": "30145",
+          "count": 3,
+          "type": "MATERIAL"
+        },
+        {
+          "id": "30064",
+          "count": 6,
+          "type": "MATERIAL"
+        }
+      ]
+    },
+    "level": 1,
+    "attribute": {
+      "maxHp": 9344,
+      "atk": 2380,
+      "def": 1,
+      "magicResistance": 0,
+      "cost": 22,
+      "blockCnt": 2,
+      "moveSpeed": 1,
+      "attackSpeed": 100,
+      "baseAttackTime": 2.5,
+      "respawnTime": 70,
+      "hpRecoveryPerSec": 0,
+      "spRecoveryPerSec": 1,
+      "maxDeployCount": 1,
+      "maxDeckStackCnt": 0,
+      "tauntLevel": 0,
+      "massLevel": 0,
+      "baseForceLevel": 0,
+      "stunImmune": false,
+      "silenceImmune": false,
+      "sleepImmune": false,
+      "frozenImmune": false,
+      "levitateImmune": false,
+      "disarmedCombatImmune": false,
+      "fearedImmune": false,
+      "damageScale": 1,
+      "damage_scale": 1
+    },
+    "skillKey": "skchr_wisdel_2",
+    "skillLevel": 9,
+    "skill": {
+      "name": "爆裂黎明",
+      "rangeId": null,
+      "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+      "skillType": "MANUAL",
+      "durationType": "AMMO",
+      "spData": {
+        "spType": "INCREASE_WITH_TIME",
+        "levelUpCost": null,
+        "maxChargeTime": 1,
+        "spCost": 50,
+        "initSp": 40,
+        "increment": 1
+      },
+      "prefabId": "skchr_wisdel_3",
+      "duration": -1,
+      "blackboard": [
+        {
+          "key": "atk",
+          "value": 1.8,
+          "valueStr": null
+        },
+        {
+          "key": "max_cnt",
+          "value": 2,
+          "valueStr": null
+        },
+        {
+          "key": "base_attack_time",
+          "value": 2.9,
+          "valueStr": null
+        },
+        {
+          "key": "attack@atk_scale_3",
+          "value": 2.2,
+          "valueStr": null
+        },
+        {
+          "key": "attack@prob",
+          "value": 1,
+          "valueStr": null
+        },
+        {
+          "key": "attack@trigger_time",
+          "value": 6,
+          "valueStr": null
+        },
+        {
+          "key": "sp",
+          "value": 3,
+          "valueStr": null
+        }
+      ]
+    },
+    "uniEquipId": "uniequip_002_wisdel",
+    "uniEquipLevel": 2,
+    "uniEquip": {
+      "equipLevel": 3,
+      "parts": [
+        {
+          "resKey": null,
+          "target": "TRAIT_DATA_ONLY",
+          "isToken": false,
+          "validInGameTag": null,
+          "addOrOverrideTalentDataBundle": {
+            "candidates": null
+          },
+          "overrideTraitDataBundle": {
+            "candidates": [
+              {
+                "additionalDescription": null,
+                "unlockCondition": {
+                  "phase": "PHASE_2",
+                  "level": 60
+                },
+                "requiredPotentialRank": 0,
+                "blackboard": [
+                  {
+                    "key": "attack@append_atk_scale",
+                    "value": 0.5,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@enable_third_attack",
+                    "value": 1,
+                    "valueStr": null
+                  }
+                ],
+                "overrideDescripton": "攻击对小范围的<@ba.kw>地面</>敌人造成<@ba.kw>三次</>物理伤害（后两次为余震，伤害降低至攻击力的50％）",
+                "prefabKey": "-1",
+                "rangeId": null
+              }
+            ]
+          }
+        },
+        {
+          "resKey": null,
+          "target": "TALENT_DATA_ONLY",
+          "isToken": false,
+          "validInGameTag": null,
+          "addOrOverrideTalentDataBundle": {
+            "candidates": [
+              {
+                "displayRangeId": false,
+                "upgradeDescription": "攻击时对主目标的攻击力提升至125%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成175%攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                "talentIndex": 0,
+                "unlockCondition": {
+                  "phase": "PHASE_2",
+                  "level": 60
+                },
+                "requiredPotentialRank": 0,
+                "prefabKey": "1",
+                "name": "好礼",
+                "description": null,
+                "rangeId": null,
+                "blackboard": [
+                  {
+                    "key": "attack@main_atk_scale",
+                    "value": 1.25,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@prob",
+                    "value": 0.15,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@bomb_atk_scale",
+                    "value": 1.75,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@stun",
+                    "value": 1,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@range_radius",
+                    "value": 1.1,
+                    "valueStr": null
+                  }
+                ],
+                "tokenKey": null,
+                "isHideTalent": false
+              },
+              {
+                "displayRangeId": false,
+                "upgradeDescription": "攻击时对主目标的攻击力提升至125%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成185%<@ba.talpu>（+10%）</>攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                "talentIndex": 0,
+                "unlockCondition": {
+                  "phase": "PHASE_2",
+                  "level": 60
+                },
+                "requiredPotentialRank": 4,
+                "prefabKey": "1",
+                "name": "好礼",
+                "description": null,
+                "rangeId": null,
+                "blackboard": [
+                  {
+                    "key": "attack@main_atk_scale",
+                    "value": 1.25,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@prob",
+                    "value": 0.15,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@bomb_atk_scale",
+                    "value": 1.85,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@stun",
+                    "value": 1,
+                    "valueStr": null
+                  },
+                  {
+                    "key": "attack@range_radius",
+                    "value": 1.1,
+                    "valueStr": null
+                  }
+                ],
+                "tokenKey": null,
+                "isHideTalent": false
+              }
+            ]
+          },
+          "overrideTraitDataBundle": {
+            "candidates": null
+          }
+        }
+      ],
+      "attributeBlackboard": [
+        {
+          "key": "atk",
+          "value": 65,
+          "valueStr": null
+        },
+        {
+          "key": "attack_speed",
+          "value": 7,
+          "valueStr": null
+        }
+      ],
+      "tokenAttributeBlackboard": {}
+    },
+    "potential": 5,
+    "charsBuffInGame": {
+      "atk": 2.5,
+      "maxHp": 1,
+      "damageResistance": 0.31,
+      "damageScale": 1.1
+    }
+  },
+  "enemyInput": {
+    "maxHp": 0,
+    "atk": 0,
+    "def": 0,
+    "magicResistance": 0,
+    "blockCnt": 0,
+    "moveSpeed": 0,
+    "attackSpeed": 0,
+    "baseAttackTime": 0,
+    "epDamageResistance": 0,
+    "epResistance": 0
+  },
+  "charData": {
+    "name": "维什戴尔",
+    "description": "攻击对小范围的<@ba.kw>地面</>敌人造成<@ba.kw>两次</>物理伤害（第二次为余震，伤害降低至攻击力的一半）",
+    "canUseGeneralPotentialItem": true,
+    "canUseActivityPotentialItem": false,
+    "potentialItemId": "p_char_1035_wisdel",
+    "activityPotentialItemId": null,
+    "classicPotentialItemId": null,
+    "nationId": null,
+    "groupId": "babel",
+    "teamId": null,
+    "displayNumber": "B00W",
+    "appellation": "Wiš'adel",
+    "position": "RANGED",
+    "tagList": ["输出"],
+    "itemUsage": "萨卡兹雇佣兵维什戴尔，战场上最危险的信号。",
+    "itemDesc": "她很乐意别人用这个新名字来称呼她。",
+    "itemObtainApproach": "招募寻访",
+    "isNotObtainable": false,
+    "isSpChar": true,
+    "maxPotentialLevel": 5,
+    "rarity": "TIER_6",
+    "profession": "SNIPER",
+    "subProfessionId": "bombarder",
+    "trait": {
+      "candidates": [
+        {
+          "unlockCondition": {
+            "phase": "PHASE_0",
+            "level": 1
+          },
+          "requiredPotentialRank": 0,
+          "blackboard": [
+            {
+              "key": "attack@append_atk_scale",
+              "value": 0.5,
+              "valueStr": null
+            },
+            {
+              "key": "attack@enable_third_attack",
+              "value": 0,
+              "valueStr": null
+            }
+          ],
+          "overrideDescripton": null,
+          "prefabKey": "-1",
+          "rangeId": null
+        }
+      ]
+    },
+    "phases": [
+      {
+        "characterPrefabKey": "char_1035_wisdel",
+        "rangeId": "3-3",
+        "maxLevel": 50,
+        "attributesKeyFrames": [
+          {
+            "level": 1,
+            "data": {
+              "maxHp": 849,
+              "atk": 340,
+              "def": 128,
+              "magicResistance": 10,
+              "cost": 23,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          },
+          {
+            "level": 50,
+            "data": {
+              "maxHp": 1132,
+              "atk": 460,
+              "def": 167,
+              "magicResistance": 10,
+              "cost": 23,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          }
+        ],
+        "evolveCost": null
+      },
+      {
+        "characterPrefabKey": "char_1035_wisdel",
+        "rangeId": "3-9",
+        "maxLevel": 80,
+        "attributesKeyFrames": [
+          {
+            "level": 1,
+            "data": {
+              "maxHp": 1132,
+              "atk": 460,
+              "def": 167,
+              "magicResistance": 10,
+              "cost": 25,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          },
+          {
+            "level": 80,
+            "data": {
+              "maxHp": 1434,
+              "atk": 583,
+              "def": 209,
+              "magicResistance": 10,
+              "cost": 25,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          }
+        ],
+        "evolveCost": [
+          {
+            "id": "3241",
+            "count": 5,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30022",
+            "count": 9,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30062",
+            "count": 3,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "characterPrefabKey": "char_1035_wisdel",
+        "rangeId": "3-9",
+        "maxLevel": 90,
+        "attributesKeyFrames": [
+          {
+            "level": 1,
+            "data": {
+              "maxHp": 1434,
+              "atk": 583,
+              "def": 209,
+              "magicResistance": 15,
+              "cost": 25,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          },
+          {
+            "level": 90,
+            "data": {
+              "maxHp": 1888,
+              "atk": 687,
+              "def": 256,
+              "magicResistance": 15,
+              "cost": 25,
+              "blockCnt": 1,
+              "moveSpeed": 1,
+              "attackSpeed": 100,
+              "baseAttackTime": 2.1,
+              "respawnTime": 70,
+              "hpRecoveryPerSec": 0,
+              "spRecoveryPerSec": 1,
+              "maxDeployCount": 1,
+              "maxDeckStackCnt": 0,
+              "tauntLevel": 0,
+              "massLevel": 0,
+              "baseForceLevel": 0,
+              "stunImmune": false,
+              "silenceImmune": false,
+              "sleepImmune": false,
+              "frozenImmune": false,
+              "levitateImmune": false,
+              "disarmedCombatImmune": false,
+              "fearedImmune": false
+            }
+          }
+        ],
+        "evolveCost": [
+          {
+            "id": "3243",
+            "count": 4,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30145",
+            "count": 3,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30064",
+            "count": 6,
+            "type": "MATERIAL"
+          }
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "skillId": "skchr_wisdel_1",
+        "overridePrefabKey": null,
+        "overrideTokenKey": null,
+        "levelUpCostCond": [
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 28800,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 8,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30054",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31053",
+                "count": 4,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 57600,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 12,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30074",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30084",
+                "count": 8,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 86400,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 15,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30135",
+                "count": 6,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31014",
+                "count": 6,
+                "type": "MATERIAL"
+              }
+            ]
+          }
+        ],
+        "unlockCond": {
+          "phase": "PHASE_0",
+          "level": 1
+        }
+      },
+      {
+        "skillId": "skchr_wisdel_2",
+        "overridePrefabKey": null,
+        "overrideTokenKey": null,
+        "levelUpCostCond": [
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 28800,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 8,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31054",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30043",
+                "count": 7,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 57600,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 12,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31074",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30014",
+                "count": 10,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 86400,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 15,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30145",
+                "count": 6,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31064",
+                "count": 4,
+                "type": "MATERIAL"
+              }
+            ]
+          }
+        ],
+        "unlockCond": {
+          "phase": "PHASE_1",
+          "level": 1
+        }
+      },
+      {
+        "skillId": "skchr_wisdel_3",
+        "overridePrefabKey": null,
+        "overrideTokenKey": "token_10035_wisdel_wward",
+        "levelUpCostCond": [
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 28800,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 8,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31074",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31033",
+                "count": 6,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 57600,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 12,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31034",
+                "count": 4,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "31054",
+                "count": 7,
+                "type": "MATERIAL"
+              }
+            ]
+          },
+          {
+            "unlockCond": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "lvlUpTime": 86400,
+            "levelUpCost": [
+              {
+                "id": "3303",
+                "count": 15,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30155",
+                "count": 6,
+                "type": "MATERIAL"
+              },
+              {
+                "id": "30054",
+                "count": 4,
+                "type": "MATERIAL"
+              }
+            ]
+          }
+        ],
+        "unlockCond": {
+          "phase": "PHASE_2",
+          "level": 1
+        }
+      }
+    ],
+    "displayTokenDict": {
+      "token_10035_wisdel_wward": true
+    },
+    "talents": [
+      {
+        "candidates": [
+          {
+            "unlockCondition": {
+              "phase": "PHASE_1",
+              "level": 1
+            },
+            "requiredPotentialRank": 0,
+            "prefabKey": "1",
+            "name": "好礼",
+            "description": "攻击时为主目标附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成120%攻击力的物理伤害并使其<$ba.stun>晕眩</>0.5秒",
+            "rangeId": null,
+            "blackboard": [
+              {
+                "key": "attack@main_atk_scale",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "attack@prob",
+                "value": 0.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@bomb_atk_scale",
+                "value": 1.2,
+                "valueStr": null
+              },
+              {
+                "key": "attack@stun",
+                "value": 0.5,
+                "valueStr": null
+              },
+              {
+                "key": "attack@range_radius",
+                "value": 1.1,
+                "valueStr": null
+              }
+            ],
+            "tokenKey": null,
+            "isHideTalent": false
+          },
+          {
+            "unlockCondition": {
+              "phase": "PHASE_1",
+              "level": 1
+            },
+            "requiredPotentialRank": 4,
+            "prefabKey": "1",
+            "name": "好礼",
+            "description": "攻击时为主目标附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成130%<@ba.talpu>（+10%）</>攻击力的物理伤害并使其<$ba.stun>晕眩</>0.5秒",
+            "rangeId": null,
+            "blackboard": [
+              {
+                "key": "attack@main_atk_scale",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "attack@prob",
+                "value": 0.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@bomb_atk_scale",
+                "value": 1.3,
+                "valueStr": null
+              },
+              {
+                "key": "attack@stun",
+                "value": 0.5,
+                "valueStr": null
+              },
+              {
+                "key": "attack@range_radius",
+                "value": 1.1,
+                "valueStr": null
+              }
+            ],
+            "tokenKey": null,
+            "isHideTalent": false
+          },
+          {
+            "unlockCondition": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "requiredPotentialRank": 0,
+            "prefabKey": "1",
+            "name": "好礼",
+            "description": "攻击时对主目标的攻击力提升至115%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成150%攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+            "rangeId": null,
+            "blackboard": [
+              {
+                "key": "attack@main_atk_scale",
+                "value": 1.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@prob",
+                "value": 0.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@bomb_atk_scale",
+                "value": 1.5,
+                "valueStr": null
+              },
+              {
+                "key": "attack@stun",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "attack@range_radius",
+                "value": 1.1,
+                "valueStr": null
+              }
+            ],
+            "tokenKey": null,
+            "isHideTalent": false
+          },
+          {
+            "unlockCondition": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "requiredPotentialRank": 4,
+            "prefabKey": "1",
+            "name": "好礼",
+            "description": "攻击时对主目标的攻击力提升至115%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成160%<@ba.talpu>（+10%）</>攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+            "rangeId": null,
+            "blackboard": [
+              {
+                "key": "attack@main_atk_scale",
+                "value": 1.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@prob",
+                "value": 0.15,
+                "valueStr": null
+              },
+              {
+                "key": "attack@bomb_atk_scale",
+                "value": 1.6,
+                "valueStr": null
+              },
+              {
+                "key": "attack@stun",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "attack@range_radius",
+                "value": 1.1,
+                "valueStr": null
+              }
+            ],
+            "tokenKey": null,
+            "isHideTalent": false
+          }
+        ]
+      },
+      {
+        "candidates": [
+          {
+            "unlockCondition": {
+              "phase": "PHASE_2",
+              "level": 1
+            },
+            "requiredPotentialRank": 0,
+            "prefabKey": "2",
+            "name": "死魂灵的余息",
+            "description": "部署后立刻在攻击范围内召唤一个魂灵之影，在魂灵之影周围时获得<$ba.camou>迷彩</>",
+            "rangeId": null,
+            "blackboard": [],
+            "tokenKey": "token_10035_wisdel_wward",
+            "isHideTalent": false
+          }
+        ]
+      }
+    ],
+    "potentialRanks": [
+      {
+        "type": "BUFF",
+        "description": "部署费用-1",
+        "buff": {
+          "attributes": {
+            "abnormalFlags": null,
+            "abnormalImmunes": null,
+            "abnormalAntis": null,
+            "abnormalCombos": null,
+            "abnormalComboImmunes": null,
+            "attributeModifiers": [
+              {
+                "attributeType": "COST",
+                "formulaItem": "ADDITION",
+                "value": -1,
+                "loadFromBlackboard": false,
+                "fetchBaseValueFromSourceEntity": false
+              }
+            ]
+          }
+        },
+        "equivalentCost": null
+      },
+      {
+        "type": "BUFF",
+        "description": "再部署时间-4秒",
+        "buff": {
+          "attributes": {
+            "abnormalFlags": null,
+            "abnormalImmunes": null,
+            "abnormalAntis": null,
+            "abnormalCombos": null,
+            "abnormalComboImmunes": null,
+            "attributeModifiers": [
+              {
+                "attributeType": "RESPAWN_TIME",
+                "formulaItem": "ADDITION",
+                "value": -4,
+                "loadFromBlackboard": false,
+                "fetchBaseValueFromSourceEntity": false
+              }
+            ]
+          }
+        },
+        "equivalentCost": null
+      },
+      {
+        "type": "BUFF",
+        "description": "攻击力+32",
+        "buff": {
+          "attributes": {
+            "abnormalFlags": null,
+            "abnormalImmunes": null,
+            "abnormalAntis": null,
+            "abnormalCombos": null,
+            "abnormalComboImmunes": null,
+            "attributeModifiers": [
+              {
+                "attributeType": "ATK",
+                "formulaItem": "ADDITION",
+                "value": 32,
+                "loadFromBlackboard": false,
+                "fetchBaseValueFromSourceEntity": false
+              }
+            ]
+          }
+        },
+        "equivalentCost": null
+      },
+      {
+        "type": "CUSTOM",
+        "description": "第一天赋效果增强",
+        "buff": null,
+        "equivalentCost": null
+      },
+      {
+        "type": "BUFF",
+        "description": "部署费用-1",
+        "buff": {
+          "attributes": {
+            "abnormalFlags": null,
+            "abnormalImmunes": null,
+            "abnormalAntis": null,
+            "abnormalCombos": null,
+            "abnormalComboImmunes": null,
+            "attributeModifiers": [
+              {
+                "attributeType": "COST",
+                "formulaItem": "ADDITION",
+                "value": -1,
+                "loadFromBlackboard": false,
+                "fetchBaseValueFromSourceEntity": false
+              }
+            ]
+          }
+        },
+        "equivalentCost": null
+      }
+    ],
+    "favorKeyFrames": [
+      {
+        "level": 0,
+        "data": {
+          "maxHp": 0,
+          "atk": 0,
+          "def": 0,
+          "magicResistance": 0,
+          "cost": 0,
+          "blockCnt": 0,
+          "moveSpeed": 0,
+          "attackSpeed": 0,
+          "baseAttackTime": 0,
+          "respawnTime": 0,
+          "hpRecoveryPerSec": 0,
+          "spRecoveryPerSec": 0,
+          "maxDeployCount": 0,
+          "maxDeckStackCnt": 0,
+          "tauntLevel": 0,
+          "massLevel": 0,
+          "baseForceLevel": 0,
+          "stunImmune": false,
+          "silenceImmune": false,
+          "sleepImmune": false,
+          "frozenImmune": false,
+          "levitateImmune": false,
+          "disarmedCombatImmune": false,
+          "fearedImmune": false
+        }
+      },
+      {
+        "level": 50,
+        "data": {
+          "maxHp": 0,
+          "atk": 90,
+          "def": 0,
+          "magicResistance": 0,
+          "cost": 0,
+          "blockCnt": 0,
+          "moveSpeed": 0,
+          "attackSpeed": 0,
+          "baseAttackTime": 0,
+          "respawnTime": 0,
+          "hpRecoveryPerSec": 0,
+          "spRecoveryPerSec": 0,
+          "maxDeployCount": 0,
+          "maxDeckStackCnt": 0,
+          "tauntLevel": 0,
+          "massLevel": 0,
+          "baseForceLevel": 0,
+          "stunImmune": false,
+          "silenceImmune": false,
+          "sleepImmune": false,
+          "frozenImmune": false,
+          "levitateImmune": false,
+          "disarmedCombatImmune": false,
+          "fearedImmune": false
+        }
+      }
+    ],
+    "allSkillLvlup": [
+      {
+        "unlockCond": {
+          "phase": "PHASE_0",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3301",
+            "count": 5,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "unlockCond": {
+          "phase": "PHASE_0",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3301",
+            "count": 5,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30031",
+            "count": 6,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30041",
+            "count": 4,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "unlockCond": {
+          "phase": "PHASE_0",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3302",
+            "count": 8,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30042",
+            "count": 4,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "unlockCond": {
+          "phase": "PHASE_1",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3302",
+            "count": 8,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30052",
+            "count": 4,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30012",
+            "count": 5,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "unlockCond": {
+          "phase": "PHASE_1",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3302",
+            "count": 8,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "30023",
+            "count": 7,
+            "type": "MATERIAL"
+          }
+        ]
+      },
+      {
+        "unlockCond": {
+          "phase": "PHASE_1",
+          "level": 1
+        },
+        "lvlUpCost": [
+          {
+            "id": "3303",
+            "count": 8,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "31043",
+            "count": 5,
+            "type": "MATERIAL"
+          },
+          {
+            "id": "31063",
+            "count": 3,
+            "type": "MATERIAL"
+          }
+        ]
+      }
+    ]
+  },
+  "skillData": {
+    "skillId": "skchr_wisdel_3",
+    "iconId": null,
+    "hidden": false,
+    "levels": [
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 70,
+          "initSp": 25,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 0.95,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.6,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 68,
+          "initSp": 25,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.65,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 66,
+          "initSp": 25,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.1,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.7,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 64,
+          "initSp": 30,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.2,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.75,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 62,
+          "initSp": 30,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.3,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.8,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 60,
+          "initSp": 30,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.4,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.85,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 58,
+          "initSp": 35,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.5,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 2,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 1.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 55,
+          "initSp": 36,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.6,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 2,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 2,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 53,
+          "initSp": 38,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.7,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 2,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 2.1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      },
+      {
+        "name": "爆裂黎明",
+        "rangeId": null,
+        "description": "立刻在攻击范围内召唤<@ba.vup>{max_cnt}</>个魂灵之影（最多存在3个，技能结束后保留），攻击力<@ba.vup>+{atk:0%}</>，攻击间隔<@ba.vdown>大幅增大</>，攻击时攻击力提升至<@ba.vup>{attack@atk_scale_3:0%}</>，溅射范围<@ba.vup>大幅扩大</>且第一天赋的发动概率提高至<@ba.vup>{attack@prob:0%}</>\\n<@ba.rem>攻击装有{attack@trigger_time}发弹药，打完后结束（可随时停止技能）</>",
+        "skillType": "MANUAL",
+        "durationType": "AMMO",
+        "spData": {
+          "spType": "INCREASE_WITH_TIME",
+          "levelUpCost": null,
+          "maxChargeTime": 1,
+          "spCost": 50,
+          "initSp": 40,
+          "increment": 1
+        },
+        "prefabId": "skchr_wisdel_3",
+        "duration": -1,
+        "blackboard": [
+          {
+            "key": "atk",
+            "value": 1.8,
+            "valueStr": null
+          },
+          {
+            "key": "max_cnt",
+            "value": 2,
+            "valueStr": null
+          },
+          {
+            "key": "base_attack_time",
+            "value": 2.9,
+            "valueStr": null
+          },
+          {
+            "key": "attack@atk_scale_3",
+            "value": 2.2,
+            "valueStr": null
+          },
+          {
+            "key": "attack@prob",
+            "value": 1,
+            "valueStr": null
+          },
+          {
+            "key": "attack@trigger_time",
+            "value": 6,
+            "valueStr": null
+          },
+          {
+            "key": "sp",
+            "value": 3,
+            "valueStr": null
+          }
+        ]
+      }
+    ]
+  },
+  "uniEquipData": {
+    "phases": [
+      {
+        "equipLevel": 1,
+        "parts": [
+          {
+            "resKey": null,
+            "target": "TRAIT_DATA_ONLY",
+            "isToken": false,
+            "validInGameTag": null,
+            "addOrOverrideTalentDataBundle": {
+              "candidates": null
+            },
+            "overrideTraitDataBundle": {
+              "candidates": [
+                {
+                  "additionalDescription": null,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 0,
+                  "blackboard": [
+                    {
+                      "key": "attack@append_atk_scale",
+                      "value": 0.5,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@enable_third_attack",
+                      "value": 1,
+                      "valueStr": null
+                    }
+                  ],
+                  "overrideDescripton": "攻击对小范围的<@ba.kw>地面</>敌人造成<@ba.kw>三次</>物理伤害（后两次为余震，伤害降低至攻击力的50％）",
+                  "prefabKey": "-1",
+                  "rangeId": null
+                }
+              ]
+            }
+          }
+        ],
+        "attributeBlackboard": [
+          {
+            "key": "atk",
+            "value": 45,
+            "valueStr": null
+          },
+          {
+            "key": "attack_speed",
+            "value": 5,
+            "valueStr": null
+          }
+        ],
+        "tokenAttributeBlackboard": {}
+      },
+      {
+        "equipLevel": 2,
+        "parts": [
+          {
+            "resKey": null,
+            "target": "TRAIT_DATA_ONLY",
+            "isToken": false,
+            "validInGameTag": null,
+            "addOrOverrideTalentDataBundle": {
+              "candidates": null
+            },
+            "overrideTraitDataBundle": {
+              "candidates": [
+                {
+                  "additionalDescription": null,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 0,
+                  "blackboard": [
+                    {
+                      "key": "attack@append_atk_scale",
+                      "value": 0.5,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@enable_third_attack",
+                      "value": 1,
+                      "valueStr": null
+                    }
+                  ],
+                  "overrideDescripton": "攻击对小范围的<@ba.kw>地面</>敌人造成<@ba.kw>三次</>物理伤害（后两次为余震，伤害降低至攻击力的50％）",
+                  "prefabKey": "-1",
+                  "rangeId": null
+                }
+              ]
+            }
+          },
+          {
+            "resKey": null,
+            "target": "TALENT_DATA_ONLY",
+            "isToken": false,
+            "validInGameTag": null,
+            "addOrOverrideTalentDataBundle": {
+              "candidates": [
+                {
+                  "displayRangeId": false,
+                  "upgradeDescription": "攻击时对主目标的攻击力提升至120%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成170%攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                  "talentIndex": 0,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 0,
+                  "prefabKey": "1",
+                  "name": "好礼",
+                  "description": null,
+                  "rangeId": null,
+                  "blackboard": [
+                    {
+                      "key": "attack@main_atk_scale",
+                      "value": 1.2,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@prob",
+                      "value": 0.15,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@bomb_atk_scale",
+                      "value": 1.7,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@stun",
+                      "value": 1,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@range_radius",
+                      "value": 1.1,
+                      "valueStr": null
+                    }
+                  ],
+                  "tokenKey": null,
+                  "isHideTalent": false
+                },
+                {
+                  "displayRangeId": false,
+                  "upgradeDescription": "攻击时对主目标的攻击力提升至120%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成180%<@ba.talpu>（+10%）</>攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                  "talentIndex": 0,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 4,
+                  "prefabKey": "1",
+                  "name": "好礼",
+                  "description": null,
+                  "rangeId": null,
+                  "blackboard": [
+                    {
+                      "key": "attack@main_atk_scale",
+                      "value": 1.2,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@prob",
+                      "value": 0.15,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@bomb_atk_scale",
+                      "value": 1.8,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@stun",
+                      "value": 1,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@range_radius",
+                      "value": 1.1,
+                      "valueStr": null
+                    }
+                  ],
+                  "tokenKey": null,
+                  "isHideTalent": false
+                }
+              ]
+            },
+            "overrideTraitDataBundle": {
+              "candidates": null
+            }
+          }
+        ],
+        "attributeBlackboard": [
+          {
+            "key": "atk",
+            "value": 55,
+            "valueStr": null
+          },
+          {
+            "key": "attack_speed",
+            "value": 6,
+            "valueStr": null
+          }
+        ],
+        "tokenAttributeBlackboard": {}
+      },
+      {
+        "equipLevel": 3,
+        "parts": [
+          {
+            "resKey": null,
+            "target": "TRAIT_DATA_ONLY",
+            "isToken": false,
+            "validInGameTag": null,
+            "addOrOverrideTalentDataBundle": {
+              "candidates": null
+            },
+            "overrideTraitDataBundle": {
+              "candidates": [
+                {
+                  "additionalDescription": null,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 0,
+                  "blackboard": [
+                    {
+                      "key": "attack@append_atk_scale",
+                      "value": 0.5,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@enable_third_attack",
+                      "value": 1,
+                      "valueStr": null
+                    }
+                  ],
+                  "overrideDescripton": "攻击对小范围的<@ba.kw>地面</>敌人造成<@ba.kw>三次</>物理伤害（后两次为余震，伤害降低至攻击力的50％）",
+                  "prefabKey": "-1",
+                  "rangeId": null
+                }
+              ]
+            }
+          },
+          {
+            "resKey": null,
+            "target": "TALENT_DATA_ONLY",
+            "isToken": false,
+            "validInGameTag": null,
+            "addOrOverrideTalentDataBundle": {
+              "candidates": [
+                {
+                  "displayRangeId": false,
+                  "upgradeDescription": "攻击时对主目标的攻击力提升至125%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成175%攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                  "talentIndex": 0,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 0,
+                  "prefabKey": "1",
+                  "name": "好礼",
+                  "description": null,
+                  "rangeId": null,
+                  "blackboard": [
+                    {
+                      "key": "attack@main_atk_scale",
+                      "value": 1.25,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@prob",
+                      "value": 0.15,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@bomb_atk_scale",
+                      "value": 1.75,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@stun",
+                      "value": 1,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@range_radius",
+                      "value": 1.1,
+                      "valueStr": null
+                    }
+                  ],
+                  "tokenKey": null,
+                  "isHideTalent": false
+                },
+                {
+                  "displayRangeId": false,
+                  "upgradeDescription": "攻击时对主目标的攻击力提升至125%并为其附着残影，残影受到维什戴尔的余震影响时有15%概率爆炸，对周围所有敌人造成185%<@ba.talpu>（+10%）</>攻击力的物理伤害并使其<$ba.stun>晕眩</>1秒",
+                  "talentIndex": 0,
+                  "unlockCondition": {
+                    "phase": "PHASE_2",
+                    "level": 60
+                  },
+                  "requiredPotentialRank": 4,
+                  "prefabKey": "1",
+                  "name": "好礼",
+                  "description": null,
+                  "rangeId": null,
+                  "blackboard": [
+                    {
+                      "key": "attack@main_atk_scale",
+                      "value": 1.25,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@prob",
+                      "value": 0.15,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@bomb_atk_scale",
+                      "value": 1.85,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@stun",
+                      "value": 1,
+                      "valueStr": null
+                    },
+                    {
+                      "key": "attack@range_radius",
+                      "value": 1.1,
+                      "valueStr": null
+                    }
+                  ],
+                  "tokenKey": null,
+                  "isHideTalent": false
+                }
+              ]
+            },
+            "overrideTraitDataBundle": {
+              "candidates": null
+            }
+          }
+        ],
+        "attributeBlackboard": [
+          {
+            "key": "atk",
+            "value": 65,
+            "valueStr": null
+          },
+          {
+            "key": "attack_speed",
+            "value": 7,
+            "valueStr": null
+          }
+        ],
+        "tokenAttributeBlackboard": {}
+      }
+    ]
+  },
+  "relics": [
+    {
+      "relicData": {
+        "id": "rogue_4_relic_legacy_154",
+        "name": "诸王的冠冕",
+        "description": "无名的诸王啊，纵使王国毁灭，仍愿您护佑伊比利亚。",
+        "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+        "obtainApproach": "在集成战略模式中获得",
+        "iconId": "rogue_4_relic_legacy_154",
+        "type": "RELIC",
+        "subType": "NONE",
+        "rarity": "SUPER_RARE",
+        "value": 16,
+        "sortId": 999,
+        "canSacrifice": true,
+        "unlockCondDesc": null,
+        "buffs": [
+          {
+            "key": "global_buff_normal",
+            "blackboard": [
+              {
+                "key": "key",
+                "value": 0,
+                "valueStr": "rogue_2_relic_mark[king_suit]"
+              }
+            ]
+          },
+          {
+            "key": "char_ability_new",
+            "blackboard": [
+              {
+                "key": "key",
+                "value": 0,
+                "valueStr": "rogue_2_atk_up[life_point][king_suit]"
+              },
+              {
+                "key": "rogue_2_atk_up[king_suit].atk",
+                "value": 0.5,
+                "valueStr": null
+              },
+              {
+                "key": "rogue_2_atk_up[king_suit][bonus].atk",
+                "value": 1.5,
+                "valueStr": null
+              }
+            ]
+          }
+        ],
+        "show": true
+      },
+      "id": "rogue_4_relic_legacy_154",
+      "name": "诸王的冠冕",
+      "value": 16,
+      "usage": "目标生命为1时，所有我方单位的攻击力+50%，集齐3件及以上国王收藏品后变为+150%",
+      "show": true,
+      "isActive": true,
+      "userActive": true,
+      "isFavorite": false,
+      "hasLayer": false,
+      "layer": 0,
+      "buffs": [
+        {
+          "key": "global_buff_normal",
+          "isActive": false,
+          "charResult": {},
+          "enemyResult": {}
+        },
+        {
+          "key": "char_ability_new",
+          "isActive": true,
+          "charResult": {
+            "atk": 1.5
+          },
+          "enemyResult": {}
+        }
+      ]
+    },
+    {
+      "relicData": {
+        "id": "rogue_4_relic_legacy_171",
+        "name": "几丁质刺刃",
+        "description": "一种更有效的外骨骼生长方案。能够撕裂猎物，抵御打击，也可以化作同胞的美食。",
+        "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+        "obtainApproach": "在集成战略模式中获得",
+        "iconId": "rogue_4_relic_legacy_171",
+        "type": "RELIC",
+        "subType": "NONE",
+        "rarity": "SUPER_RARE",
+        "value": 16,
+        "sortId": 999,
+        "canSacrifice": true,
+        "unlockCondDesc": null,
+        "buffs": [
+          {
+            "key": "char_random_target_attribute",
+            "blackboard": [
+              {
+                "key": "cnt",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "multiplier@atk",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "multiplier@max_hp",
+                "value": 1,
+                "valueStr": null
+              },
+              {
+                "key": "effect",
+                "value": 0,
+                "valueStr": "relic_1_m17_buff_01_start"
+              },
+              {
+                "key": "selector.profession",
+                "value": 0,
+                "valueStr": "warrior|sniper|tank|medic|support|caster|special|pioneer"
+              }
+            ]
+          }
+        ],
+        "show": true
+      },
+      "id": "rogue_4_relic_legacy_171",
+      "name": "几丁质刺刃",
+      "value": 16,
+      "usage": "战斗开始时，使随机一名干员在本局内攻击力+100%，生命+100%",
+      "show": true,
+      "isActive": true,
+      "userActive": true,
+      "isFavorite": false,
+      "hasLayer": false,
+      "layer": 0,
+      "buffs": [
+        {
+          "key": "char_random_target_attribute",
+          "isActive": true,
+          "charResult": {
+            "atk": 1,
+            "max_hp": 1
+          },
+          "enemyResult": {}
+        }
+      ]
+    }
+  ]
+}

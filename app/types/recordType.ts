@@ -21,7 +21,9 @@ export interface TeamMemberData {
   charId: string;
   name: string;
   skillId: string;
-  skillStr?: string;
-  uniequipId?: string;
+  skillStr: string;
+  skillName: string;
+  uniequipId: string;
+  uniequipName: string;
   charData?: CharBasicData;
 }

@@ -12,6 +12,7 @@ import {
 import type { Route } from "./+types/root";
 import app from "./styles/app.css?url";
 import variable from "./styles/variable.css?url";
+import basic from "./styles/basic.css?url";
 import React from "react";
 import { HeroUIProvider } from "@heroui/react";
 
@@ -22,28 +23,23 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.gstatic.com",
     crossOrigin: "anonymous",
   },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
   // Preload CSS
   { rel: "preload", href: app, as: "style" },
   { rel: "stylesheet", href: app },
   { rel: "preload", href: variable, as: "style" },
   { rel: "stylesheet", href: variable },
+  { rel: "preload", href: basic, as: "style" },
+  { rel: "stylesheet", href: basic },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const isDev = import.meta.env.MODE === "development";
+  // const isDev = import.meta.env.MODE === "development";
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        {isDev && <script src="http://localhost:8097"></script>}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        {/*{isDev && <script src="http://localhost:8097"></script>}*/}
         <title>影语集 - 集成战略攻略分享</title>
         <Meta />
         <Links />
@@ -76,10 +72,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : message;
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
+    details = error.status === 404 ? "The requested page could not be found." : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;

@@ -1,3 +1,1 @@
-export type BasicObject = {
-  [key in string]: any;
-};
+export type BasicObject = Record<string, any>;

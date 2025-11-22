@@ -70,9 +70,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
   const addFiles = async (newFiles: File[]) => {
     const allowedFiles = newFiles.filter((file) => {
       return (
-        file.type.startsWith("image/") &&
-        isFileExtensionAllowed(file) &&
-        !files.find((f) => f.file.name === file.name) // 避免重复添加
+        file.type.startsWith("image/") && isFileExtensionAllowed(file) && !files.find((f) => f.file.name === file.name) // 避免重复添加
       );
     });
 
@@ -83,9 +81,9 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
     const newFilesWithPreview = await Promise.all(
       allowedFiles.map(async (file) => ({
-        id: await hashString(file.name),
-        filename: file.name.substring(0, file.name.lastIndexOf('.')) || file.name,
-        ext:  file.name.split('.')?.slice(1)?.pop() || '', //  file.name.split(".")[1],
+        id: await hashString(file.name, 16),
+        filename: file.name.split(".")[0],
+        ext: file.name.split(".")[1],
         prefix: "",
         preview: URL.createObjectURL(file), // 生成预览 URL
         file,
@@ -97,9 +95,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
   // 删除文件
   const removeFile = (file: FileWithPreview) => {
-    setFiles((prevFiles) =>
-      prevFiles.filter((f) => f.file.name !== file.file.name),
-    );
+    setFiles((prevFiles) => prevFiles.filter((f) => f.file.name !== file.file.name));
   };
 
   // 清空所有文件
@@ -165,11 +161,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
       // 当任务列表发生更新时
       const updateFunc = (data: { list: COS.TaskList }) => {
-        if (
-          data.list.every((item) =>
-            ["error", "success", "canceled"].includes(item.state),
-          )
-        ) {
+        if (data.list.every((item) => ["error", "success", "canceled"].includes(item.state))) {
           setIsUploading(false);
           cos.off("list-update", updateFunc);
           // console.log(data.list);
@@ -182,12 +174,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
         files: files.map((fileWithPreview) => {
           const file = fileWithPreview.file;
           const Key =
-            fileWithPreview.prefix +
-            generateCosDateKey() +
-            "_" +
-            fileWithPreview.filename +
-            "." +
-            fileWithPreview.ext;
+            fileWithPreview.prefix + generateCosDateKey() + "_" + fileWithPreview.filename + "." + fileWithPreview.ext;
           return {
             Bucket: Bucket,
             Region: Region,
@@ -208,9 +195,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
               });
             },
             Headers: {
-              "x-cos-meta-username": encodeURIComponent(
-                userInfo?.username || "",
-              ),
+              "x-cos-meta-username": encodeURIComponent(userInfo?.username || ""),
               "x-cos-meta-filename": encodeURIComponent(file.name),
             },
           };
@@ -223,8 +208,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
           // 从cos key还原filename
           const filenameWithDate = options.Key.split("/").slice(-1)[0];
           const filename = filenameWithDate.split("_").slice(1).join("_");
-          const id =
-            files.find((f) => f.filename + "." + f.ext === filename)?.id || "";
+          const id = files.find((f) => f.filename + "." + f.ext === filename)?.id || "";
           if (!id) throw new Error("Invalid file id");
           setTaskMap((prev) => {
             const updated = { ...prev };
@@ -239,9 +223,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
       });
     } catch (err) {
       console.log(err);
-      toast.error(
-        `上传失败！\n${(err as Error).name}: ${(err as Error).message}`,
-      );
+      toast.error(`上传失败！\n${(err as Error).name}: ${(err as Error).message}`);
     }
   };
 

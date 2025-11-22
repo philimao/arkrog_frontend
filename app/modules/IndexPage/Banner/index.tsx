@@ -40,12 +40,12 @@ export default function Banner() {
 
   return (
     <div className="mb-10 w-full relative aspect-banner">
-      {banners && (
+      {banners && banners.length > 0 && (
         <a
           href={banners[activeIndex].target || "#"}
           onClick={(evt) => {
             // 如果不是指向外部链接
-            if (!banners?.[activeIndex].target.startsWith("https")) {
+            if (!banners[activeIndex].target?.startsWith("https")) {
               evt.preventDefault();
               // 如果非空字符串，指向某页面
               if (banners[activeIndex].target) {
@@ -53,9 +53,7 @@ export default function Banner() {
               }
             }
           }}
-          className={
-            banners[activeIndex].target ? "cursor-pointer" : "cursor-default"
-          }
+          className={banners[activeIndex].target ? "cursor-pointer" : "cursor-default"}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -67,10 +65,7 @@ export default function Banner() {
                   index === activeIndex ? "active" : ""
                 }`}
               >
-                <img
-                  src={import.meta.env.VITE_API_BASE_URL + banner.src}
-                  alt="banner"
-                />
+                <img src={banner.src} alt="banner" />
               </div>
             ))}
           </StyledCarousel>

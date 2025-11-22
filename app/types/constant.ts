@@ -1,4 +1,5 @@
 import type { BasicObject } from "~/types/core";
+import { RogueTopic } from "./gameData";
 
 export const StageTypes: BasicObject = {
   normal: "普通",
@@ -20,4 +21,18 @@ export const SeedTypeColors: BasicObject = {
   other: "ak-pink",
 };
 
-export const StageLevels = ["N15", "N18"];
+/**
+ * 可用的关卡难度等级
+ */
+export const StageLevels = ["N0", "N15", "N18"];
+
+/**
+ * 肉鸽主题最高难度等级
+ */
+export const topicMaxLevels = {
+  [RogueTopic.ROGUE_1]: "N18",
+  [RogueTopic.ROGUE_2]: "N18",
+  [RogueTopic.ROGUE_3]: "N15",
+  [RogueTopic.ROGUE_4]: "N18",
+  [RogueTopic.ROGUE_5]: "N15",
+};

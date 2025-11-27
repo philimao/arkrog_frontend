@@ -9,9 +9,20 @@ import { StyledBackButton, StyledBackButtonContainer } from "./components/Shared
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
-  const { tournamentsData } = useTournamentDataStore();
+  // 游戏数据
+  const { fetchGameDataBasic } = useGameDataStore();
+  // 赛事数据
+  const { tournamentsData, fetchTournamentsData } = useTournamentDataStore();
+  const [loaded, setLoaded] = useState(false);
 
-  if (!topics || !tournamentsData) {
+  useEffect(() => {
+    Promise.all([fetchGameDataBasic(), fetchTournamentsData()]).then(() => setLoaded(true));
+    return () => {
+      setLoaded(false);
+    };
+  }, [fetchGameDataBasic, fetchTournamentsData]);
+
+  if (!loaded || !topics || !tournamentsData) {
     return <Loading />;
   } else {
     return <RougeSelector topics={topics} tournamentsData={tournamentsData} />;

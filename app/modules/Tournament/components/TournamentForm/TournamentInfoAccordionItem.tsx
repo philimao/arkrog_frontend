@@ -1,10 +1,12 @@
-import { Select, SelectItem, Tooltip } from "@heroui/react";
+import { Select, SelectItem, Tooltip, useDisclosure } from "@heroui/react";
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
 import { getInputClassName, labelClassName, labelWithTooltipClassName, selectClassName } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
+import MarkdownEditorModal from "~/components/Modal/MarkdownEditorModal";
+import { useState } from "react";
 
 interface TournamentInfoAccordionItemProps {
   formData: TournamentData;
@@ -30,6 +32,21 @@ export default function TournamentInfoAccordionItem({
   handleBlur,
 }: TournamentInfoAccordionItemProps) {
   const { topics } = useGameDataStore();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [editorInitialContent, setEditorInitialContent] = useState("");
+
+  const handleOpenEditor = () => {
+    setEditorInitialContent(formData.rule || "");
+    onOpen();
+  };
+
+  const handleEditorSave = (content: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      rule: content,
+    }));
+    onClose();
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -363,14 +380,19 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div className="mb-4">
-        <label htmlFor="rule" className={labelWithTooltipClassName}>
-          规则
-          <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
-            <span className="px-1">
-              <InformationIcon width="0.75rem" height="0.75rem" />
-            </span>
-          </Tooltip>
-        </label>
+        <div className="flex justify-between items-center mb-1">
+          <label htmlFor="rule" className="flex items-center text-sm font-light">
+            规则
+            <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
+              <span className="px-1">
+                <InformationIcon width="0.75rem" height="0.75rem" />
+              </span>
+            </Tooltip>
+          </label>
+          <button type="button" onClick={handleOpenEditor} className="text-xs text-ak-blue hover:underline">
+            富文本编辑
+          </button>
+        </div>
         <textarea
           id="rule"
           name="rule"
@@ -401,6 +423,13 @@ export default function TournamentInfoAccordionItem({
           rows={4}
         />
       </div>
+      <MarkdownEditorModal
+        isOpen={isOpen}
+        onClose={onClose}
+        initialContent={editorInitialContent}
+        onSave={handleEditorSave}
+        title="编辑规则"
+      />
     </>
   );
 }

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
-import type { RogueKey, TopicData, Topics } from "~/types/gameData";
+import type { RogueKey, TopicData } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
 import { StyledBackButton, StyledBackButtonContainer } from "./components/Shared";
 
@@ -18,7 +18,13 @@ export default function TournamentsWrapper() {
   }
 }
 
-function RougeSelector({ topics, tournamentsData }: { topics: Topics; tournamentsData: TournamentData[] }) {
+function RougeSelector({
+  topics,
+  tournamentsData,
+}: {
+  topics: Record<RogueKey, TopicData>;
+  tournamentsData: TournamentData[];
+}) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const topicsData = Object.values(topics);

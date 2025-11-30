@@ -31,6 +31,14 @@ export interface TournamentData {
   lastEditTime?: number; // 最后编辑时间戳
 }
 
+export interface TournamentGroupData {
+  id: string; // 由新建时name的hash前8位构成，后续修改name不影响id
+  name: string;
+  seasons: string[]; // 下属赛事的id
+  date_created: string;
+  date_updated: string;
+}
+
 export interface TournamentStage {
   name: string;
   startTime: number;

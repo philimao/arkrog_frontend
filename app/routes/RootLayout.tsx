@@ -40,7 +40,7 @@ export default function RootLayout() {
   // 游戏数据
   const { fetchGameDataBasic, fetchGameDataExt } = useGameDataStore();
   // 赛事数据
-  const { fetchTournamentsData } = useTournamentDataStore();
+  const { initTournamentData } = useTournamentDataStore();
   // 桌面端
   const desktop = window.matchMedia("(min-width: 640px)").matches;
   const [loading, setLoading] = useState(true);
@@ -52,11 +52,21 @@ export default function RootLayout() {
       index: [fetchAppData],
       "relic-free": [fetchGameDataBasic, fetchRelicFreeData, fetchStagePreview],
       tool: [fetchGameDataBasic, fetchGameDataExt],
-      tournament: [fetchGameDataBasic, fetchTournamentsData],
+      tournament: [fetchGameDataBasic, initTournamentData],
     };
-    const loadArray = [fetchUserInfo, ...preload[route as keyof typeof preload]];
+    const loadArray = [
+      fetchUserInfo,
+      ...preload[route as keyof typeof preload],
+    ];
     Promise.all(loadArray.map((f) => f())).then(() => setLoading(false));
-  }, [fetchAppData, fetchGameDataBasic, fetchGameDataExt, fetchRelicFreeData, fetchTournamentsData, fetchUserInfo]);
+  }, [
+    fetchAppData,
+    fetchGameDataBasic,
+    fetchGameDataExt,
+    fetchRelicFreeData,
+    initTournamentData,
+    fetchUserInfo,
+  ]);
 
   return (
     <ThemeProvider theme={theme[currentTheme as keyof typeof theme]}>

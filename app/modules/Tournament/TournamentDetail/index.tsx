@@ -4,8 +4,14 @@ import { useNavigate } from "react-router";
 import { ArrowRightIcon } from "~/components/Icons";
 import React, { useEffect, useState } from "react";
 import Loading from "~/components/Loading";
-import { StyledBackButton, StyledBackButtonContainer, StyledEditButton } from "../components/Shared";
+import {
+  StyledBackButton,
+  StyledBackButtonContainer,
+  StyledEditButton,
+  StyledTournamentGroupList,
+} from "../components/Shared";
 import TournamentView from "./TournamentView";
+import type { TournamentData } from "~/types/tournamentsData";
 
 export function SectionContainer({
   title,
@@ -26,7 +32,11 @@ export function SectionContainer({
         <div className="flex items-center gap-4">
           <div className="text-2xl font-bold">{title}</div>
           {showArrowButton && (
-            <ArrowRightIcon className="w-4 h-4 text-light-gray" role="button" onClick={arrowButtonOnClick} />
+            <ArrowRightIcon
+              className="w-4 h-4 text-light-gray"
+              role="button"
+              onClick={arrowButtonOnClick}
+            />
           )}
         </div>
         {navItems}
@@ -40,9 +50,25 @@ export function SectionContainer({
 export default function TournamentDetail() {
   const navigate = useNavigate();
   const { tournamentId } = useParams();
-  const { tournamentsData, fetchTournamentPlayer } = useTournamentDataStore();
+  const { tournamentsData, tournamentGroups, fetchTournamentPlayer } =
+    useTournamentDataStore();
   const [isLoading, setIsLoading] = useState(false);
-  const tournamentData = tournamentsData && tournamentsData.find((tournament) => tournament.id === tournamentId);
+  const tournamentData =
+    tournamentsData &&
+    tournamentsData.find((tournament) => tournament.id === tournamentId);
+
+  const tournamentGroupData =
+    tournamentData &&
+    tournamentGroups &&
+    tournamentGroups.find((group) => group.seasons.includes(tournamentData.id));
+
+  const seasons =
+    tournamentsData &&
+    tournamentGroupData &&
+    tournamentGroupData.seasons.map(
+      (season) =>
+        tournamentsData.find((tournament) => tournament.id === season)!,
+    );
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -69,7 +95,26 @@ export default function TournamentDetail() {
     <TournamentView tournamentData={tournamentData}>
       <StyledBackButtonContainer>
         <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-        <StyledEditButton onClick={() => navigate("edit")}>编辑</StyledEditButton>
+        <StyledEditButton onClick={() => navigate("edit")}>
+          编辑
+        </StyledEditButton>
+        <StyledTournamentGroupList>
+          {seasons &&
+            seasons.map((season: TournamentData) => (
+              <div
+                role="button"
+                onClick={() => navigate(`/tournament/${season.id}`)}
+                key={season.id}
+                style={
+                  season.id === tournamentData.id
+                    ? { backgroundColor: "var(--ak-blue)", color: "black" }
+                    : {}
+                }
+              >
+                <div>{season.name}</div>
+              </div>
+            ))}
+        </StyledTournamentGroupList>
       </StyledBackButtonContainer>
     </TournamentView>
   );

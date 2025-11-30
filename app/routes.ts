@@ -33,10 +33,12 @@ export default [
     // 赛事
     route("/tournament", "routes/TournamentLayout.tsx", [
       index("modules/Tournament/index.tsx"),
+      route("create", "modules/Tournament/TournamentCreate/index.tsx"),
       route(
-        "create",
-        "modules/Tournament/TournamentCreate/index.tsx",
+        "create-group",
+        "modules/Tournament/TournamentCreateGroup/index.tsx",
       ),
+      route("edit-group", "modules/Tournament/TournamentEditGroup/index.tsx"),
       route(":tournamentId", "modules/Tournament/TournamentDetail/index.tsx"),
       route(
         ":tournamentId/edit",

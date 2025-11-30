@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentPlayer,
+  TournamentStage,
+} from "~/types/tournamentsData";
 import { useNavigate } from "react-router";
-import { _post } from "~/utils/tools";
 import { Accordion, AccordionItem } from "@heroui/react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
 import TournamentStagesAccordionItem from "./TournamentStagesAccordionItem";
 import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
@@ -18,7 +22,9 @@ export const getInputClassName = (
   formData: any,
   customInputClass?: string,
 ) => {
-  const isRequired = document.getElementById(fieldName)?.hasAttribute("required");
+  const isRequired = document
+    .getElementById(fieldName)
+    ?.hasAttribute("required");
   const isEmpty = !formData[fieldName] && formData[fieldName] !== 0;
   const defaultClass = customInputClass ? customInputClass : inputClassName;
 
@@ -29,9 +35,11 @@ export const getInputClassName = (
   return defaultClass;
 };
 
-export const inputClassName = "bg-mid-gray w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
+export const inputClassName =
+  "bg-mid-gray w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 export const labelClassName = "block text-sm font-light mb-1";
-export const labelWithTooltipClassName = "flex items-center text-sm font-light mb-1";
+export const labelWithTooltipClassName =
+  "flex items-center text-sm font-light mb-1";
 export const selectClassName = {
   trigger: "bg-mid-gray rounded-none",
   value: "",
@@ -48,15 +56,26 @@ export default function TournamentForm({
 }) {
   const navigate = useNavigate();
   const { userInfo } = useUserInfoStore();
+  const { saveTournament } = useTournamentDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [formData, setFormData] = useState<TournamentData>({} as TournamentData);
+  const [formData, setFormData] = useState<TournamentData>(
+    {} as TournamentData,
+  );
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
-  const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>();
+  const [editingPlayer, setEditingPlayer] = useState<
+    TournamentPlayer | undefined
+  >();
   const [addingLabel, setAddingLabel] = useState<boolean>(false);
-  const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(null);
-  const [editingStage, setEditingStage] = useState<TournamentStage | undefined>();
-  const [expandedKeys, setExpandedKeys] = useState<Set<React.Key>>(new Set(["赛事信息"]));
+  const [editingLabelIndex, setEditingLabelIndex] = useState<number | null>(
+    null,
+  );
+  const [editingStage, setEditingStage] = useState<
+    TournamentStage | undefined
+  >();
+  const [expandedKeys, setExpandedKeys] = useState<Set<React.Key>>(
+    new Set(["赛事信息"]),
+  );
   const formDataRef = useRef<TournamentData>(formData);
   const saveToStorageRef = useRef<boolean>(true);
   const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
@@ -66,7 +85,10 @@ export default function TournamentForm({
   useEffect(() => {
     const saveFormData = () => {
       if (saveToStorageRef.current) {
-        localStorage.setItem(`tournamentForm-${tournamentData?.id}`, JSON.stringify(formDataRef.current));
+        localStorage.setItem(
+          `tournamentForm-${tournamentData?.id}`,
+          JSON.stringify(formDataRef.current),
+        );
       }
     };
 
@@ -85,7 +107,9 @@ export default function TournamentForm({
 
   useEffect(() => {
     let newFormData;
-    const storedData = localStorage.getItem(`tournamentForm-${tournamentData?.id}`);
+    const storedData = localStorage.getItem(
+      `tournamentForm-${tournamentData?.id}`,
+    );
     if (storedData) {
       newFormData = JSON.parse(storedData);
     } else if (tournamentData) {
@@ -142,7 +166,13 @@ export default function TournamentForm({
 
   // Expand all accordion items
   const expandAllAccordionItems = useCallback(() => {
-    const allKeys = ["赛事信息", "赛事阶段", "参赛队伍", "参赛选手", "比赛进程"];
+    const allKeys = [
+      "赛事信息",
+      "赛事阶段",
+      "参赛队伍",
+      "参赛选手",
+      "比赛进程",
+    ];
     setExpandedKeys(new Set(allKeys));
   }, []);
 
@@ -169,43 +199,16 @@ export default function TournamentForm({
       }
 
       try {
-        // 提交赛事数据
-        const response = await _post<{
-          success: boolean;
-          message: string;
-          data?: TournamentData;
-          needSync?: boolean;
-          latestData?: TournamentData;
-          lockedBy?: string;
-        }>("/tournament/save", {
-          tournament: formData,
-          editStartTime: tournamentData ? editStartTimeRef.current : undefined, // 记录进入编辑的时间
-          username: userInfo.username,
-        });
+        const response = await saveTournament(
+          formData,
+          userInfo.username,
+          tournamentData ? editStartTimeRef.current : undefined,
+        );
 
-        if (response.success) {
-          toast.success(response.message);
+        if (response?.success) {
           returnToPrevPage();
-        } else {
-          toast.error(response.message);
         }
-      } catch (error) {
-        const errorMessage = (error as Error).message;
-
-        // 尝试解析错误响应
-        try {
-          const errorData = JSON.parse(errorMessage);
-          if (errorData.needSync && errorData.latestData) {
-            toast.error("数据已被其他用户更新，需要同步本地编辑数据");
-            // 这里可以添加数据同步的逻辑
-          } else if (errorData.lockedBy) {
-            toast.error(`赛事正在被用户 ${errorData.lockedBy} 编辑中`);
-          } else {
-            toast.error(errorData.message || "保存失败");
-          }
-        } catch {
-          toast.error(`保存失败: ${errorMessage}`);
-        }
+        // 错误提示已在 store 中处理
       } finally {
         setIsSubmitting(false);
       }
@@ -275,7 +278,11 @@ export default function TournamentForm({
       <div className="relative">
         <TournamentPreview formData={formData} />
         <div className="flex justify-end space-x-4 mb-6">
-          <button type="button" onClick={handleBackToEdit} className="px-4 py-2 rounded-md text-black bg-light-gray">
+          <button
+            type="button"
+            onClick={handleBackToEdit}
+            className="px-4 py-2 rounded-md text-black bg-light-gray"
+          >
             返回编辑
           </button>
           <button
@@ -292,7 +299,11 @@ export default function TournamentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} onClick={handleAccordionClick}>
+    <form
+      onSubmit={handleSubmit}
+      onKeyDown={handleFormKeyDown}
+      onClick={handleAccordionClick}
+    >
       <Accordion
         ref={accordionRef}
         className="px-0"
@@ -388,7 +399,11 @@ export default function TournamentForm({
         >
           预览
         </button>
-        <button type="submit" className="px-4 py-2 rounded-md text-black bg-ak-blue" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-md text-black bg-ak-blue"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
         </button>
       </div>

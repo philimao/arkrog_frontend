@@ -8,6 +8,23 @@ import type {
 // 强制刷新时的请求配置
 const noCacheConfig = { headers: { "Cache-Control": "no-cache" } };
 
+// 保存赛事的请求参数
+export interface SaveTournamentParams {
+  tournament: TournamentData;
+  editStartTime?: number;
+  username: string;
+}
+
+// 保存赛事的响应类型
+export interface SaveTournamentResponse {
+  success: boolean;
+  message: string;
+  data?: TournamentData;
+  needSync?: boolean;
+  latestData?: TournamentData;
+  lockedBy?: string;
+}
+
 export const tournamentServices = {
   // 初始化数据 - 同时获取赛事和赛事集
   getInitData: (forceRefresh?: boolean) =>
@@ -36,6 +53,10 @@ export const tournamentServices = {
       "/tournament/group/list",
       forceRefresh ? noCacheConfig : undefined,
     ),
+
+  // 保存赛事
+  saveTournament: (params: SaveTournamentParams) =>
+    api.post<SaveTournamentResponse>("/tournament/save", params),
 
   // 保存赛事集
   saveGroup: (data: TournamentGroupData) =>

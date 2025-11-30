@@ -28,10 +28,14 @@ type TournamentDataAction = {
   ) => Promise<void>;
   /** 获取赛事集数据 */
   fetchTournamentGroups: (forceRefresh?: boolean) => Promise<void>;
+  /** 保存赛事数据 */
+  saveTournament: (
+    tournament: TournamentData,
+    username: string,
+    editStartTime?: number,
+  ) => Promise<void>;
   /** 保存赛事集数据 */
-  saveTournamentGroup: (
-    group: TournamentGroupData,
-  ) => Promise<TournamentGroupData | null>;
+  saveTournamentGroup: (group: TournamentGroupData) => Promise<void>;
 };
 
 // 处理赛事数据，计算 ongoing 状态
@@ -130,17 +134,48 @@ export const useTournamentDataStore = create<
         }
       },
 
+      saveTournament: async (
+        tournament: TournamentData,
+        username: string,
+        editStartTime?: number,
+      ) => {
+        try {
+          const response = await tournamentServices.saveTournament({
+            tournament,
+            username,
+            editStartTime,
+          });
+          const data = response.data;
+
+          if (data.success) {
+            toast.success(data.message);
+            // 保存成功后强制刷新数据
+            await get().fetchTournamentsData(true);
+          } else {
+            // 处理特殊错误情况
+            if (data.needSync && data.latestData) {
+              toast.error("数据已被其他用户更新，需要同步本地编辑数据");
+            } else if (data.lockedBy) {
+              toast.error(`赛事正在被用户 ${data.lockedBy} 编辑中`);
+            } else {
+              toast.error(data.message || "保存失败");
+            }
+          }
+        } catch {
+          // 错误已在 api 拦截器中处理
+          return null;
+        }
+      },
+
       saveTournamentGroup: async (group: TournamentGroupData) => {
         try {
           const response = await tournamentServices.saveGroup(group);
           if (response.data.success) {
             toast.success(response.data.message);
             // 保存成功后强制刷新数据
-            await get().initTournamentData(true);
-            return response.data.data;
+            await get().fetchTournamentGroups(true);
           } else {
             toast.error(response.data.message);
-            return null;
           }
         } catch {
           // 错误已在 api 拦截器中处理

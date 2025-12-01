@@ -33,9 +33,9 @@ type TournamentDataAction = {
     tournament: TournamentData,
     username: string,
     editStartTime?: number,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   /** 保存赛事集数据 */
-  saveTournamentGroup: (group: TournamentGroupData) => Promise<void>;
+  saveTournamentGroup: (group: TournamentGroupData) => Promise<boolean>;
 };
 
 // 处理赛事数据，计算 ongoing 状态
@@ -151,6 +151,7 @@ export const useTournamentDataStore = create<
             toast.success(data.message);
             // 保存成功后强制刷新数据
             await get().fetchTournamentsData(true);
+            return true;
           } else {
             // 处理特殊错误情况
             if (data.needSync && data.latestData) {
@@ -160,10 +161,11 @@ export const useTournamentDataStore = create<
             } else {
               toast.error(data.message || "保存失败");
             }
+            return false;
           }
         } catch {
           // 错误已在 api 拦截器中处理
-          return null;
+          return false;
         }
       },
 
@@ -174,12 +176,14 @@ export const useTournamentDataStore = create<
             toast.success(response.data.message);
             // 保存成功后强制刷新数据
             await get().fetchTournamentGroups(true);
+            return true;
           } else {
             toast.error(response.data.message);
+            return false;
           }
         } catch {
           // 错误已在 api 拦截器中处理
-          return null;
+          return false;
         }
       },
     }),

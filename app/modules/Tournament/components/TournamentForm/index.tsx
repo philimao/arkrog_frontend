@@ -205,7 +205,7 @@ export default function TournamentForm({
           tournamentData ? editStartTimeRef.current : undefined,
         );
 
-        if (response?.success) {
+        if (response) {
           returnToPrevPage();
         }
         // 错误提示已在 store 中处理

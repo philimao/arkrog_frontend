@@ -14,16 +14,28 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Loading from "~/components/Loading";
 import { BackIcon, DeleteIcon, FolderIcon } from "~/components/Icons";
+import { useStorageStore } from "~/stores/storageStore";
+import { closeModal } from "~/utils/dom";
 
 const StyledListObjectWrapper = styled.div`
-  max-height: min(38rem, 70vh);
+  height: min(43rem, 80vh);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const StyledNav = styled.div`
   display: flex;
-  margin-bottom: 1rem;
   align-items: center;
+`;
+
+const StyledContentWrapper = styled.div`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 28rem;
+  margin-bottom: 1rem; // 防止内容区被撑高
 `;
 
 const StyledBreadcrumbWrapper = styled.div`
@@ -92,7 +104,9 @@ export default function ListObject({
 }: {
   useCosListHook: UseCosListReturn;
 }) {
-  const { objects, deleteBucketObject } = useCosListHook;
+  const { loaded, objects, deleteBucketObject } = useCosListHook;
+
+  const { onUploadedItemClick } = useStorageStore();
 
   // 文件夹展示 / 时间倒序展示
   const [byFolder, setByFolder] = useState(false);
@@ -147,7 +161,7 @@ export default function ListObject({
     if (byFolder) {
       const joinedLocation = location.join("/");
       return flatPaths.filter(
-        (flatPath) => flatPath.parentPath === joinedLocation,
+        (flatPath) => flatPath.name && flatPath.parentPath === joinedLocation,
       );
     } else {
       return flatPaths.filter((flatPath) => flatPath.content);
@@ -238,7 +252,7 @@ export default function ListObject({
           <span>文件夹</span>
         </StyledDisplaySwitch>
       </StyledNav>
-      <div className="min-h-[28rem] flex flex-col">
+      <StyledContentWrapper>
         {objects.length > 0 ? (
           <StyledObjectTable>
             <tbody>
@@ -249,15 +263,19 @@ export default function ListObject({
                   return (
                     <StyledObject
                       key={flatPath.name}
-                      className={!content ? "cursor-pointer" : ""}
-                      onClick={() =>
-                        !content &&
-                        setLocation((prev) => {
-                          const updated = [...prev];
-                          updated.push(flatPath.name);
-                          return updated;
-                        })
-                      }
+                      className="cursor-pointer hover:bg-dark-gray"
+                      onClick={() => {
+                        if (content) {
+                          onUploadedItemClick?.(content);
+                          closeModal("upload-center");
+                        } else {
+                          setLocation((prev) => {
+                            const updated = [...prev];
+                            updated.push(flatPath.name);
+                            return updated;
+                          });
+                        }
+                      }}
                     >
                       <StyledThumbnailWrapper>
                         {content ? (
@@ -292,15 +310,17 @@ export default function ListObject({
                         {content && (
                           <>
                             <button
-                              onClick={() =>
+                              className="me-2"
+                              onClick={(evt) => {
+                                evt.stopPropagation();
                                 navigator.clipboard
                                   .writeText(content?.url)
-                                  .then(() => toast.info("复制成功！"))
-                              }
+                                  .then(() => toast.info("复制成功！"));
+                              }}
                             >
                               <svg
-                                width="1.5rem"
-                                height="1.5rem"
+                                width="1.2rem"
+                                height="1.2rem"
                                 style={{ fill: "white", stroke: "none" }}
                               >
                                 <use href="#copy" />
@@ -310,9 +330,10 @@ export default function ListObject({
                               <DeleteIcon
                                 className="hover:text-ak-blue"
                                 role="button"
-                                onClick={() =>
-                                  deleteBucketObject([content?.Key])
-                                }
+                                onClick={(evt) => {
+                                  evt.stopPropagation();
+                                  deleteBucketObject([content?.Key]);
+                                }}
                               />
                             </button>
                           </>
@@ -323,6 +344,8 @@ export default function ListObject({
                 })}
             </tbody>
           </StyledObjectTable>
+        ) : loaded ? (
+          <div className="text-center text-2xl pt-[25vh]">暂无数据</div>
         ) : (
           <Loading />
         )}
@@ -338,7 +361,7 @@ export default function ListObject({
             />
           </div>
         )}
-      </div>
+      </StyledContentWrapper>
     </StyledListObjectWrapper>
   );
 }

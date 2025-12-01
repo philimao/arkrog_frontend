@@ -10,12 +10,15 @@ import { Badge } from "@heroui/badge";
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
+import { useStorageStore } from "~/stores/storageStore";
 import { type UseCosListReturn } from "~/hooks/useCosList";
 import { CloseIcon } from "../Icons";
 
 const StyledUploadBoxContainer = styled.div`
-  max-height: min(38rem, 70vh);
-  overflow-y: auto;
+  height: min(43rem, 80vh);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 `;
 
 const StyledUploadBoxWrapper = styled.div`
@@ -25,8 +28,8 @@ const StyledUploadBoxWrapper = styled.div`
 
 const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
   width: 100%;
-  height: ${(props) => (props.$hasFile ? "10rem" : "min(36rem, calc(70vh - 2rem))")};
-  margin-bottom: 1rem;
+  height: ${(props) =>
+    props.$hasFile ? "10rem" : "min(41rem, calc(80vh - 2rem))"};
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -40,9 +43,13 @@ const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
   background: rgba(0, 0, 0, 0.1);
 `;
 
+const StyledUploadFileTableWrapper = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+`;
+
 const StyledUploadFileTable = styled.table`
   width: 100%;
-  margin-bottom: 1rem;
 `;
 
 const StyledUploadFileTableRow = styled.tr`
@@ -147,9 +154,11 @@ export default function UploadBox({
     }
   };
 
-  const resetFileSelection = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+  const resetFileSelection = (
+    e: React.MouseEvent<HTMLInputElement, MouseEvent>,
+  ) => {
     const element = e.target as HTMLInputElement;
-    element.value = '';
+    element.value = "";
   };
 
   // 拖动文件相关处理，如果缺少drop时会打开新窗口
@@ -179,11 +188,18 @@ export default function UploadBox({
   // 获取赛事名称
   const { tournamentId } = useParams();
   const { tournamentsData } = useTournamentDataStore();
+  const { uploadDirectory, uploadLabel } = useStorageStore();
   const tournamentData =
     tournamentsData &&
     tournamentsData.find((tournament) => tournament.id === tournamentId);
 
-  if (!tournamentData)
+  const folder =
+    uploadDirectory ||
+    (tournamentData
+      ? "tournament/" + tournamentData.name.replace(/[!@#$%^&*()+\s]+/g, "_") // 特殊字符处理
+      : "");
+
+  if (!folder)
     return (
       <StyledUploadBoxContainer>
         未检测到待上传的赛事名称
@@ -231,21 +247,21 @@ export default function UploadBox({
         onChange={handleFileSelect}
         onClick={resetFileSelection}
       />
-      <StyledUploadFileTable>
-        <tbody>
-          {files.map((file) => (
-            <FileEntry
-              file={file}
-              folder={
-                "tournament/" +
-                tournamentData.name.replace(/[!@#$%^&*()+\s]+/g, "_") // 特殊字符处理
-              }
-              useCosUploadHook={useCosUploadHook}
-              key={file.filename}
-            />
-          ))}
-        </tbody>
-      </StyledUploadFileTable>
+      <StyledUploadFileTableWrapper>
+        <StyledUploadFileTable>
+          <tbody>
+            {files.map((file) => (
+              <FileEntry
+                file={file}
+                folder={folder}
+                uploadLabel={uploadLabel}
+                useCosUploadHook={useCosUploadHook}
+                key={file.filename}
+              />
+            ))}
+          </tbody>
+        </StyledUploadFileTable>
+      </StyledUploadFileTableWrapper>
       {isUploading && (
         <Progress
           classNames={{
@@ -288,10 +304,12 @@ export default function UploadBox({
 function FileEntry({
   file,
   folder,
+  uploadLabel,
   useCosUploadHook,
 }: {
   file: FileWithPreview;
   folder: string;
+  uploadLabel: string;
   useCosUploadHook: UseCosUploadReturn;
 }) {
   // 修改文件名
@@ -305,6 +323,17 @@ function FileEntry({
     { prefix: folder + "/other/", label: "其他内容" },
   ];
   const [prefix, setPrefix] = useState<string>(options[0].prefix);
+
+  useEffect(() => {
+    if (uploadLabel) {
+      setPrefix(
+        options.find((option) => option.label === uploadLabel)?.prefix ||
+          options[0].prefix,
+      );
+    } else {
+      setPrefix(options[0].prefix);
+    }
+  }, [folder, uploadLabel]);
 
   const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
     useCosUploadHook;
@@ -320,16 +349,15 @@ function FileEntry({
 
   const task = taskMap[file.id];
   const Icon = ({ id }: { id: string }) => (
-    <svg
-      width="1rem"
-      height="1rem"
-      style={{ fill: "white", stroke: "none" }}
-    >
+    <svg width="1rem" height="1rem" style={{ fill: "white", stroke: "none" }}>
       <use href={"#" + id} />
     </svg>
   );
   const control = !task ? (
-    <StyledFileControlButton className="rounded-md p-1 hover:bg-ak-red" onClick={() => removeFile(file)}>
+    <StyledFileControlButton
+      className="rounded-md p-1 hover:bg-ak-red"
+      onClick={() => removeFile(file)}
+    >
       <CloseIcon width="1rem" height="1rem" />
     </StyledFileControlButton>
   ) : task.status === "uploading" ? (
@@ -358,7 +386,10 @@ function FileEntry({
       >
         <Icon id="resume" />
       </StyledFileControlButton>
-      <StyledFileControlButton className="rounded-md p-1 hover:bg-ak-red" onClick={() => cancelTask(file.id)}>
+      <StyledFileControlButton
+        className="rounded-md p-1 hover:bg-ak-red"
+        onClick={() => cancelTask(file.id)}
+      >
         <CloseIcon width="1rem" height="1rem" />
       </StyledFileControlButton>
     </>

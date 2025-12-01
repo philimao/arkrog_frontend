@@ -9,8 +9,13 @@ export type CosObjectWithUrl = CosObject & {
 };
 
 export interface UseCosListReturn {
+  /** COS对象列表 */
   objects: CosObjectWithUrl[];
+  /** 是否加载完成 */
+  loaded: boolean;
+  /** 获取COS对象列表 */
   listBucket: (force?: boolean, Prefix?: string) => Promise<CosObjectWithUrl[]>;
+  /** 删除COS对象 */
   deleteBucketObject: (Keys: COS.Key[]) => Promise<void>;
 }
 
@@ -19,6 +24,10 @@ export interface UseCosListReturn {
  */
 export const useCosList = (): UseCosListReturn => {
   const [objects, setObjects] = useState<CosObjectWithUrl[]>([]);
+  const [currentPrefix, setCurrentPrefix] = useState<string | undefined>(
+    undefined,
+  );
+  const [loaded, setLoaded] = useState(false);
   const { getBucket } = useStorageStore();
 
   /**
@@ -31,8 +40,10 @@ export const useCosList = (): UseCosListReturn => {
     force?: boolean,
     Prefix?: string,
   ): Promise<CosObjectWithUrl[]> => {
-    if (objects.length !== 0 && !force) return objects;
+    if (objects.length !== 0 && !force && Prefix === currentPrefix)
+      return objects;
     try {
+      setLoaded(false);
       const info = await getBucket();
       if (!info) return [];
       const { Bucket, Region, Host } = info;
@@ -51,6 +62,7 @@ export const useCosList = (): UseCosListReturn => {
           new Date(a.LastModified).getTime(),
       );
       setObjects(contents);
+      setCurrentPrefix(Prefix);
       return contents;
     } catch (err) {
       console.log(err);
@@ -58,10 +70,13 @@ export const useCosList = (): UseCosListReturn => {
         `查询文件列表失败！\n${(err as Error).name}: ${(err as Error).message}`,
       );
       return [];
+    } finally {
+      setLoaded(true);
     }
   };
 
   const deleteBucketObject = async (Keys: COS.Key[]) => {
+    if (!window.confirm("确定删除文件？")) return;
     try {
       const info = await getBucket();
       if (!info) return;
@@ -77,10 +92,11 @@ export const useCosList = (): UseCosListReturn => {
         toast.warning(
           `成功删除${data.Deleted.length}个文件，未成功删除${data.Error.length}个文件`,
         );
+        console.log(data);
       } else {
         toast.info("成功删除！");
       }
-      await listBucket(true);
+      await listBucket(true, currentPrefix);
     } catch (err) {
       console.log(err);
       toast.error(`删除文件失败！`);
@@ -89,6 +105,7 @@ export const useCosList = (): UseCosListReturn => {
 
   return {
     objects,
+    loaded,
     listBucket,
     deleteBucketObject,
   };

@@ -1,12 +1,19 @@
 import { Select, SelectItem, Tooltip, useDisclosure } from "@heroui/react";
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { useGameDataStore } from "~/stores/gameDataStore";
+import { useStorageStore } from "~/stores/storageStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
-import { getInputClassName, labelClassName, labelWithTooltipClassName, selectClassName } from ".";
+import {
+  getInputClassName,
+  labelClassName,
+  labelWithTooltipClassName,
+  selectClassName,
+} from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import MarkdownEditorModal from "~/components/Modal/MarkdownEditorModal";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface TournamentInfoAccordionItemProps {
   formData: TournamentData;
@@ -17,7 +24,11 @@ interface TournamentInfoAccordionItemProps {
   editingLabelIndex: number | null;
   setEditingLabelIndex: React.Dispatch<React.SetStateAction<number | null>>;
   touchedFields: Set<string>;
-  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  handleBlur: (
+    e: React.FocusEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => void;
 }
 
 export default function TournamentInfoAccordionItem({
@@ -32,12 +43,27 @@ export default function TournamentInfoAccordionItem({
   handleBlur,
 }: TournamentInfoAccordionItemProps) {
   const { topics } = useGameDataStore();
+  const {
+    setUploadLabel,
+    setUploadDirectory,
+    setOnUploadedItemClick,
+    clearUploadParams,
+  } = useStorageStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editorInitialContent, setEditorInitialContent] = useState("");
 
   const handleOpenEditor = () => {
+    setUploadDirectory(
+      "tournament/" + formData.name.replace(/[!@#$%^&*()+\s]+/g, "_"),
+    );
     setEditorInitialContent(formData.rule || "");
     onOpen();
+  };
+
+  // 关闭编辑器时，清除上传参数
+  const onEditorClose = () => {
+    clearUploadParams();
+    onClose();
   };
 
   const handleEditorSave = (content: string) => {
@@ -45,10 +71,14 @@ export default function TournamentInfoAccordionItem({
       ...prev,
       rule: content,
     }));
-    onClose();
+    onEditorClose();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -98,7 +128,10 @@ export default function TournamentInfoAccordionItem({
         <div>
           <label htmlFor="avatar" className={labelWithTooltipClassName}>
             赛事图标
-            <Tooltip content="点击图标上传图片后，将图片链接粘贴此处" className="bg-light-mid-gray text-black">
+            <Tooltip
+              content="点击图标上传图片后，将图片链接粘贴此处"
+              className="bg-light-mid-gray text-black"
+            >
               <span className="px-1">
                 <InformationIcon width="0.75rem" height="0.75rem" />
               </span>
@@ -118,6 +151,24 @@ export default function TournamentInfoAccordionItem({
             <UploadCenterTrigger
               className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray"
               aria-label="上传赛事图标"
+              beforeOpen={() => {
+                if (!formData.name) {
+                  toast.warning("请先输入赛事名称");
+                  return false;
+                }
+                setUploadLabel("赛事图标");
+                setUploadDirectory(
+                  "tournament/" +
+                    formData.name.replace(/[!@#$%^&*()+\s]+/g, "_"),
+                );
+                setOnUploadedItemClick((item) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    avatar: item.url,
+                  }));
+                });
+                return true;
+              }}
             />
           </div>
         </div>
@@ -131,7 +182,9 @@ export default function TournamentInfoAccordionItem({
               id="rogue"
               name="rogue"
               selectedKeys={[
-                formData.rogue ? topics[formData.rogue as RogueKey].id : Object.values(topics).reverse()[0].id,
+                formData.rogue
+                  ? topics[formData.rogue as RogueKey].id
+                  : Object.values(topics).reverse()[0].id,
               ]}
               onChange={handleChange}
               classNames={selectClassName}
@@ -195,16 +248,26 @@ export default function TournamentInfoAccordionItem({
             value={formData.organizerName}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className={getInputClassName("organizerName", touchedFields, formData)}
+            className={getInputClassName(
+              "organizerName",
+              touchedFields,
+              formData,
+            )}
             onBlur={handleBlur}
             required
           />
         </div>
 
         <div>
-          <label htmlFor="room" className="flex items-center text-sm font-light mb-1">
+          <label
+            htmlFor="room"
+            className="flex items-center text-sm font-light mb-1"
+          >
             观赛直播间
-            <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
+            <Tooltip
+              content="支持Markdown格式"
+              className="bg-light-mid-gray text-black"
+            >
               <span className="px-1">
                 <InformationIcon width="0.75rem" height="0.75rem" />
               </span>
@@ -237,7 +300,11 @@ export default function TournamentInfoAccordionItem({
               placeholder="例：讲述者"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className={getInputClassName("memberAlias", touchedFields, formData)}
+              className={getInputClassName(
+                "memberAlias",
+                touchedFields,
+                formData,
+              )}
               onBlur={handleBlur}
             />
           </div>
@@ -256,7 +323,11 @@ export default function TournamentInfoAccordionItem({
               placeholder="例：创想家"
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              className={getInputClassName("keyMemberAlias", touchedFields, formData)}
+              className={getInputClassName(
+                "keyMemberAlias",
+                touchedFields,
+                formData,
+              )}
               onBlur={handleBlur}
             />
           </div>
@@ -320,7 +391,9 @@ export default function TournamentInfoAccordionItem({
                     e.stopPropagation();
                     setFormData((prev) => ({
                       ...prev,
-                      labels: (formData.labels || []).filter((_, i) => i !== index),
+                      labels: (formData.labels || []).filter(
+                        (_, i) => i !== index,
+                      ),
                     }));
                   }}
                   className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red"
@@ -381,15 +454,25 @@ export default function TournamentInfoAccordionItem({
 
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1">
-          <label htmlFor="rule" className="flex items-center text-sm font-light">
+          <label
+            htmlFor="rule"
+            className="flex items-center text-sm font-light"
+          >
             规则
-            <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
+            <Tooltip
+              content="支持Markdown格式"
+              className="bg-light-mid-gray text-black"
+            >
               <span className="px-1">
                 <InformationIcon width="0.75rem" height="0.75rem" />
               </span>
             </Tooltip>
           </label>
-          <button type="button" onClick={handleOpenEditor} className="text-xs text-ak-blue hover:underline">
+          <button
+            type="button"
+            onClick={handleOpenEditor}
+            className="text-xs text-ak-blue hover:underline"
+          >
             富文本编辑
           </button>
         </div>
@@ -407,7 +490,10 @@ export default function TournamentInfoAccordionItem({
       <div>
         <label htmlFor="detailRule" className={labelWithTooltipClassName}>
           详细规则
-          <Tooltip content="支持Markdown格式" className="bg-light-mid-gray text-black">
+          <Tooltip
+            content="支持Markdown格式"
+            className="bg-light-mid-gray text-black"
+          >
             <span className="px-1">
               <InformationIcon width="0.75rem" height="0.75rem" />
             </span>
@@ -425,7 +511,7 @@ export default function TournamentInfoAccordionItem({
       </div>
       <MarkdownEditorModal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={onEditorClose}
         initialContent={editorInitialContent}
         onSave={handleEditorSave}
         title="编辑规则"

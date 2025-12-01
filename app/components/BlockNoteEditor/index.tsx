@@ -1,12 +1,20 @@
 import "@blocknote/core/fonts/inter.css";
-import { useCreateBlockNote } from "@blocknote/react";
+import {
+  getDefaultReactSlashMenuItems,
+  SuggestionMenuController,
+  useCreateBlockNote,
+} from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import * as locales from "@blocknote/core/locales";
+import { filterSuggestionItems } from "@blocknote/core";
 import "@blocknote/mantine/style.css";
 import { useEffect, useState } from "react";
 import { Button } from "@heroui/react";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import { useStorageStore } from "~/stores/storageStore";
+import { openModal } from "~/utils/dom";
+import { AttachmentIcon } from "~/components/Icons";
 
 interface BlockNoteEditorProps {
   initialMarkdown: string;
@@ -14,7 +22,18 @@ interface BlockNoteEditorProps {
   onCancel: () => void;
 }
 
-export default function BlockNoteEditor({ initialMarkdown, onSave, onCancel }: BlockNoteEditorProps) {
+export default function BlockNoteEditor({
+  initialMarkdown,
+  onSave,
+  onCancel,
+}: BlockNoteEditorProps) {
+  const {
+    uploadDirectory,
+    setUploadDirectory,
+    setUploadLabel,
+    setOnUploadedItemClick,
+  } = useStorageStore();
+
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     dictionary: locales.zh,
@@ -24,7 +43,9 @@ export default function BlockNoteEditor({ initialMarkdown, onSave, onCancel }: B
   useEffect(() => {
     async function loadContent() {
       if (editor) {
-        const blocks = await editor.tryParseMarkdownToBlocks(initialMarkdown || "");
+        const blocks = await editor.tryParseMarkdownToBlocks(
+          initialMarkdown || "",
+        );
         editor.replaceBlocks(editor.document, blocks);
         setIsLoaded(true);
       }
@@ -37,6 +58,54 @@ export default function BlockNoteEditor({ initialMarkdown, onSave, onCancel }: B
     onSave(markdown);
   };
 
+  const getCustomSlashMenuItems = (editor: any) => {
+    const defaultItems = getDefaultReactSlashMenuItems(editor);
+    // Try to find the group name from existing media items to ensure consistency
+    const mediaItemIndex = defaultItems.findIndex(
+      (i) =>
+        i.title === "图片" ||
+        i.title === "Image" ||
+        (i.aliases && i.aliases.includes("image")),
+    );
+    const mediaGroup =
+      mediaItemIndex !== -1 ? defaultItems[mediaItemIndex].group : "媒体";
+
+    const uploadImageItem = {
+      aliases: ["upload", "cos", "tc"],
+      group: mediaGroup,
+      icon: <AttachmentIcon width="1em" height="1em" />,
+      key: "upload-center",
+      onItemClick: () => {
+        setUploadLabel("其他内容");
+        setUploadDirectory(uploadDirectory);
+        setOnUploadedItemClick((item) => {
+          const currentBlock = editor.getTextCursorPosition().block;
+          // If current block is empty paragraph, replace it. Otherwise insert after.
+          if (
+            currentBlock.type === "paragraph" &&
+            (!currentBlock.content || currentBlock.content.length === 0)
+          ) {
+            editor.replaceBlocks(
+              [currentBlock.id],
+              [{ type: "image", props: { url: item.url } }],
+            );
+          } else {
+            editor.insertBlocks(
+              [{ type: "image", props: { url: item.url } }],
+              currentBlock,
+              "after",
+            );
+          }
+        });
+        openModal("upload-center");
+      },
+      title: "图床上传",
+      subtext: "从上传中心选择图片",
+    };
+    defaultItems.splice(mediaItemIndex, 0, uploadImageItem);
+    return defaultItems;
+  };
+
   if (!isLoaded) {
     return <div>Loading editor...</div>;
   }
@@ -45,7 +114,14 @@ export default function BlockNoteEditor({ initialMarkdown, onSave, onCancel }: B
     <MantineProvider forceColorScheme="dark">
       <div className="flex flex-col h-[600px] w-full bg-[#18181b] rounded-md">
         <div className="flex-grow border border-white/10 rounded-md overflow-y-auto mb-4 p-2 blocknote-container bg-[#1f1f1f]">
-          <BlockNoteView editor={editor} theme="dark" />
+          <BlockNoteView editor={editor} theme="dark" slashMenu={false}>
+            <SuggestionMenuController
+              triggerCharacter={"/"}
+              getItems={async (query) =>
+                filterSuggestionItems(getCustomSlashMenuItems(editor), query)
+              }
+            />
+          </BlockNoteView>
         </div>
         <div className="flex justify-end gap-2">
           <Button color="danger" variant="light" onPress={onCancel}>

@@ -23,7 +23,15 @@
  * ```
  */
 
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  type FocusEvent,
+  useEffect,
+  useMemo,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import { SearchIcon } from "../Icons";
 import { Input, Listbox, ListboxItem, Button } from "@heroui/react";
 
 export interface SearchSelectProps<T> {
@@ -47,8 +55,32 @@ export interface SearchSelectProps<T> {
   placeholder?: string;
   /** 是否禁用 */
   disabled?: boolean;
+  /** 是否必填，用于原生校验 */
+  required?: boolean;
   /** 自定义类名 */
   className?: string;
+  /** 输入框的 name，便于表单校验/上报触摸状态 */
+  inputName?: string;
+  /** 追加到 Input 外层的类名（可用于校验态样式） */
+  inputWrapperClassName?: string;
+  /** 追加到 Input 本体的类名 */
+  inputClassName?: string;
+  /** 是否启用手动触发搜索（高代价场景） */
+  manualSearch?: boolean;
+  /** 手动搜索回调（配合 manualSearch 使用） */
+  onSearch?: (query: string) => Promise<void> | void;
+  /** 手动搜索的外部 loading 状态，可选 */
+  isSearching?: boolean;
+  /** 输入框内容变更回调（便于父组件同步文案） */
+  onInputChange?: (value: string) => void;
+  /** 输入框键盘事件回调 */
+  onInputKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
+  /** 输入框失焦回调 */
+  onInputBlur?: (event: FocusEvent<HTMLInputElement>) => void;
+  /** 搜索按钮的无障碍提示文案 */
+  searchButtonAriaLabel?: string;
+  /** 初始输入框文本（用于回填已有值） */
+  initialInputValue?: string;
 }
 
 export default function SearchSelect<T>({
@@ -62,16 +94,38 @@ export default function SearchSelect<T>({
   getSelectedText,
   placeholder = "搜索...",
   disabled = false,
+  required = false,
   className = "",
+  manualSearch = false,
+  onSearch,
+  isSearching,
+  onInputChange,
+  onInputKeyDown,
+  onInputBlur,
+  searchButtonAriaLabel = "搜索",
+  initialInputValue,
+  inputName,
+  inputWrapperClassName,
+  inputClassName,
 }: SearchSelectProps<T>) {
   const [showListbox, setShowListbox] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(initialInputValue ?? "");
+  const [internalSearching, setInternalSearching] = useState(false);
+  const searchLoading = isSearching ?? internalSearching;
+
+  // 外部初始值变化时同步输入框
+  useEffect(() => {
+    if (initialInputValue !== undefined) {
+      setSearchValue(initialInputValue);
+    }
+  }, [initialInputValue]);
 
   // 使用 useMemo 计算候选项（筛选逻辑轻量，无需防抖）
   const candidates = useMemo(() => {
     if (!items || items.length === 0) return [];
+    if (manualSearch) return items;
     return items.filter((item) => !searchValue || filterFn(item, searchValue));
-  }, [searchValue, items, filterFn]);
+  }, [searchValue, items, filterFn, manualSearch]);
 
   // 处理失焦
   const handleBlur = () => {
@@ -85,6 +139,20 @@ export default function SearchSelect<T>({
     setShowListbox(false);
   };
 
+  // 处理手动搜索
+  const handleSearch = async () => {
+    if (!manualSearch || !onSearch || searchLoading) return;
+    const query = searchValue.trim();
+    if (!query) return;
+    setInternalSearching(true);
+    try {
+      await Promise.resolve(onSearch(query));
+      setShowListbox(true);
+    } finally {
+      setInternalSearching(false);
+    }
+  };
+
   // 处理清除（点击 Button 变回 Input，保留选中项名称）
   const handleClear = () => {
     if (value) {
@@ -93,6 +161,7 @@ export default function SearchSelect<T>({
         ? getSelectedText(value)
         : String(renderSelected(value) ?? "");
       setSearchValue(text);
+      onInputChange?.(text);
     }
     onChange(null);
   };
@@ -112,19 +181,53 @@ export default function SearchSelect<T>({
       ) : (
         // 未选中状态：显示 Input
         <>
-          <Input
-            value={searchValue}
-            onValueChange={setSearchValue}
-            onFocus={() => !disabled && setShowListbox(true)}
-            onBlur={handleBlur}
-            placeholder={placeholder}
-            radius="none"
-            isDisabled={disabled}
-            classNames={{
-              inputWrapper: "bg-mid-gray h-10",
-              input: "text-white",
-            }}
-          />
+          <div className="relative">
+            <Input
+              value={searchValue}
+              onValueChange={(val) => {
+                setSearchValue(val);
+                onInputChange?.(val);
+              }}
+              onKeyDown={(e) => {
+                onInputKeyDown?.(e);
+                if (manualSearch && e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSearch();
+                }
+              }}
+              onFocus={() => !disabled && setShowListbox(true)}
+              onBlur={(e) => {
+                handleBlur();
+                onInputBlur?.(e);
+              }}
+              name={inputName}
+              placeholder={placeholder}
+              radius="none"
+              isDisabled={disabled}
+              isRequired={required}
+              classNames={{
+                inputWrapper: `bg-mid-gray h-10 ${manualSearch ? "pr-12" : ""} ${inputWrapperClassName ?? ""}`,
+                input: `text-white ${inputClassName ?? ""}`,
+              }}
+            />
+            {manualSearch && (
+              <button
+                type="button"
+                aria-label={searchButtonAriaLabel}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[#00000033] rounded hover:bg-dark-gray disabled:opacity-60 disabled:hover:bg-[#00000033]"
+                onClick={() => void handleSearch()}
+                disabled={
+                  disabled || searchLoading || !onSearch || !searchValue.trim()
+                }
+              >
+                {searchLoading ? (
+                  <span className="block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <SearchIcon width="1rem" height="1rem" />
+                )}
+              </button>
+            )}
+          </div>
           {/* 下拉列表 */}
           {showListbox && candidates.length > 0 && (
             <div className="absolute z-50 w-full mt-1 max-h-60 overflow-auto">

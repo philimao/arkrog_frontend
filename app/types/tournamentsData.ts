@@ -69,6 +69,7 @@ export type TournamentPlayer = {
   mid: string;
   name: string;
   face: string;
+  fans?: number;
   teamName?: string;
   finalRank?: number;
   note?: string;

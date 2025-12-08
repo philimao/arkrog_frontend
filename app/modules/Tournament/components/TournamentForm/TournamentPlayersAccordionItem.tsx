@@ -1,18 +1,34 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
-import { AddIcon, CloseIcon, InformationIcon, LinkIcon } from "~/components/Icons";
+import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
+import { SearchSelect } from "~/components/SearchSelect";
 import { useState } from "react";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
-import { getInputClassName, inputClassName, labelClassName, labelWithTooltipClassName, selectClassName } from ".";
+import { toast } from "react-toastify";
+import { miscServices } from "~/services/miscServices";
+import type { SearchUserItem } from "~/types/bilibili";
+import {
+  getInputClassName,
+  inputClassName,
+  labelClassName,
+  labelWithTooltipClassName,
+  selectClassName,
+} from ".";
 
 interface TournamentPlayersAccordionItemProps {
   formData: TournamentData;
   setFormData: React.Dispatch<React.SetStateAction<TournamentData>>;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   editingPlayer: TournamentPlayer | undefined;
-  setEditingPlayer: React.Dispatch<React.SetStateAction<TournamentPlayer | undefined>>;
+  setEditingPlayer: React.Dispatch<
+    React.SetStateAction<TournamentPlayer | undefined>
+  >;
   touchedFields: Set<string>;
-  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  handleBlur: (
+    e: React.FocusEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => void;
 }
 
 export default function TournamentPlayersAccordionItem({
@@ -27,6 +43,16 @@ export default function TournamentPlayersAccordionItem({
   const [newCustomKey, setNewCustomKey] = useState("");
   const [newCustomValue, setNewCustomValue] = useState("");
   const [keyError, setKeyError] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchUserItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  // 记录每个选手对应的已选搜索结果，便于切换编辑时回显
+  const [selectedUserMap, setSelectedUserMap] = useState<
+    Record<string, SearchUserItem | undefined>
+  >({});
+  const isPlayerNameInvalid =
+    !!editingPlayer &&
+    touchedFields.has("playerName") &&
+    !editingPlayer.name.trim();
 
   // Validate key input to only allow [a-zA-Z]
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,11 +112,15 @@ export default function TournamentPlayersAccordionItem({
                 value={newCustomKey}
                 onChange={handleKeyChange}
                 placeholder="例：server"
-                className={getInputClassName("customKey", touchedFields, { customKey: newCustomKey })}
+                className={getInputClassName("customKey", touchedFields, {
+                  customKey: newCustomKey,
+                })}
                 onBlur={handleBlur}
                 maxLength={20}
               />
-              {keyError && <span className="text-xs text-ak-red">{keyError}</span>}
+              {keyError && (
+                <span className="text-xs text-ak-red">{keyError}</span>
+              )}
             </div>
             <div>
               <label htmlFor="customKeyValue" className={labelClassName}>
@@ -102,7 +132,9 @@ export default function TournamentPlayersAccordionItem({
                 value={newCustomValue}
                 onChange={(e) => setNewCustomValue(e.target.value)}
                 placeholder="例：服务器"
-                className={getInputClassName("customKeyValue", touchedFields, { customKeyValue: newCustomValue })}
+                className={getInputClassName("customKeyValue", touchedFields, {
+                  customKeyValue: newCustomValue,
+                })}
                 onBlur={handleBlur}
                 maxLength={20}
               />
@@ -120,71 +152,82 @@ export default function TournamentPlayersAccordionItem({
             </button>
           </div>
         </div>
-        {formData.customPlayerKeys && Object.keys(formData.customPlayerKeys || {}).length > 0 && (
-          <div className="pb-4">
-            <p className={labelWithTooltipClassName}>
-              已有自定义选手信息:
-              {formData.type !== "team" && (
-                <Tooltip
-                  content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
-                  className="bg-light-mid-gray text-black"
-                >
-                  <span className="px-1">
-                    <InformationIcon width="0.75rem" height="0.75rem" />
-                  </span>
-                </Tooltip>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(formData.customPlayerKeys || {}).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-1 bg-mid-gray p-2 rounded">
-                  <span className="text-sm">
-                    {key}: {value}
-                  </span>
-                  {formData.type !== "team" && (
-                    <label className="flex items-center ml-1">
-                      <input
-                        type="checkbox"
-                        checked={formData.groupBy === key}
-                        onChange={() => handleSetGroupBy(key)}
-                        className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
-                      />
-                    </label>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const newCustomKeys = { ...(formData.customPlayerKeys || {}) };
-                      delete newCustomKeys[key];
-
-                      // If this was the groupBy key, reset groupBy
-                      const newGroupBy = formData.groupBy === key ? "" : formData.groupBy;
-
-                      // Need to delete corresponding value from all players
-                      const newPlayers = (formData.players || []).map((player) => {
-                        const newPlayer = { ...player };
-                        delete newPlayer.customPlayerValues[key];
-                        return newPlayer;
-                      });
-
-                      setFormData((prev) => ({
-                        ...prev,
-                        customPlayerKeys: newCustomKeys,
-                        groupBy: newGroupBy,
-                        players: newPlayers,
-                      }));
-                    }}
-                    className="rounded-md p-1 hover:text-white hover:bg-ak-red"
-                    aria-label={`删除自定义选手信息${key}: ${value}`}
+        {formData.customPlayerKeys &&
+          Object.keys(formData.customPlayerKeys || {}).length > 0 && (
+            <div className="pb-4">
+              <p className={labelWithTooltipClassName}>
+                已有自定义选手信息:
+                {formData.type !== "team" && (
+                  <Tooltip
+                    content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
+                    className="bg-light-mid-gray text-black"
                   >
-                    <CloseIcon width="0.7rem" height="0.7rem" />
-                  </button>
-                </div>
-              ))}
+                    <span className="px-1">
+                      <InformationIcon width="0.75rem" height="0.75rem" />
+                    </span>
+                  </Tooltip>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(formData.customPlayerKeys || {}).map(
+                  ([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex items-center gap-1 bg-mid-gray p-2 rounded"
+                    >
+                      <span className="text-sm">
+                        {key}: {value}
+                      </span>
+                      {formData.type !== "team" && (
+                        <label className="flex items-center ml-1">
+                          <input
+                            type="checkbox"
+                            checked={formData.groupBy === key}
+                            onChange={() => handleSetGroupBy(key)}
+                            className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
+                          />
+                        </label>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newCustomKeys = {
+                            ...(formData.customPlayerKeys || {}),
+                          };
+                          delete newCustomKeys[key];
+
+                          // If this was the groupBy key, reset groupBy
+                          const newGroupBy =
+                            formData.groupBy === key ? "" : formData.groupBy;
+
+                          // Need to delete corresponding value from all players
+                          const newPlayers = (formData.players || []).map(
+                            (player) => {
+                              const newPlayer = { ...player };
+                              delete newPlayer.customPlayerValues[key];
+                              return newPlayer;
+                            },
+                          );
+
+                          setFormData((prev) => ({
+                            ...prev,
+                            customPlayerKeys: newCustomKeys,
+                            groupBy: newGroupBy,
+                            players: newPlayers,
+                          }));
+                        }}
+                        className="rounded-md p-1 hover:text-white hover:bg-ak-red"
+                        aria-label={`删除自定义选手信息${key}: ${value}`}
+                      >
+                        <CloseIcon width="0.7rem" height="0.7rem" />
+                      </button>
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
       <div className="flex flex-wrap gap-2 my-4">
         {(formData.players || []).length > 0 &&
@@ -194,26 +237,44 @@ export default function TournamentPlayersAccordionItem({
               className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer?.mid === player.mid ? "bg-ak-blue text-black" : !player.name.trim() ? "bg-ak-dark-red text-white" : "bg-mid-gray text-white"}`}
               onClick={(e) => {
                 e.preventDefault();
-                editingPlayer?.mid === player.mid ? setEditingPlayer(undefined) : setEditingPlayer(player);
+                editingPlayer?.mid === player.mid
+                  ? setEditingPlayer(undefined)
+                  : setEditingPlayer(player);
               }}
             >
-              <div className={`w-16 h-16 aspect-square flex items-center justify-center bg-light-gray text-black`}>
+              <div
+                className={`w-16 h-16 aspect-square flex items-center justify-center bg-light-gray text-black`}
+              >
                 {player.face ? (
-                  <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                  <img
+                    src={player.face}
+                    alt="avatar"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                  />
                 ) : (
-                  <p className="text-5xl">{!player.name ? "?" : player.name[0]}</p>
+                  <p className="text-5xl">
+                    {!player.name ? "?" : player.name[0]}
+                  </p>
                 )}
               </div>
               <div className="pt-1 break-all">
-                {!player.name ? (editingPlayer?.mid === player.mid ? "请填写选手" : "点击填写选手") : player.name}
+                {!player.name
+                  ? editingPlayer?.mid === player.mid
+                    ? "请填写选手"
+                    : "点击填写选手"
+                  : player.name}
               </div>
               <button
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (editingPlayer?.mid === player.mid) setEditingPlayer(undefined);
-                  const newPlayers = (formData.players || []).filter((_, i) => i !== index);
+                  if (editingPlayer?.mid === player.mid)
+                    setEditingPlayer(undefined);
+                  const newPlayers = (formData.players || []).filter(
+                    (_, i) => i !== index,
+                  );
                   setFormData((prev) => ({
                     ...prev,
                     players: newPlayers,
@@ -252,7 +313,10 @@ export default function TournamentPlayersAccordionItem({
           <div className="w-full">
             <label htmlFor="playerName" className={labelWithTooltipClassName}>
               选手名字
-              <Tooltip content="输入名字后点击连接bilibili获取选手头像" className="bg-light-mid-gray text-black">
+              <Tooltip
+                content="输入名字后点击连接bilibili获取选手头像"
+                className="bg-light-mid-gray text-black"
+              >
                 <span className="px-1">
                   <InformationIcon width="0.75rem" height="0.75rem" />
                 </span>
@@ -260,38 +324,117 @@ export default function TournamentPlayersAccordionItem({
               <span className="text-ak-red">*</span>
             </label>
             <div className="flex gap-2 items-center">
-              <input
-                id="playerName"
-                type="text"
-                value={editingPlayer.name}
-                placeholder="例：棋棋Steins"
-                onChange={(e) => {
+              <SearchSelect<SearchUserItem>
+                value={
+                  editingPlayer
+                    ? (selectedUserMap[editingPlayer.mid] ?? null)
+                    : null
+                }
+                onChange={(item) => {
+                  if (!editingPlayer) return;
+                  if (!item) {
+                    setSelectedUserMap((prev) => ({
+                      ...prev,
+                      [editingPlayer.mid]: undefined,
+                    }));
+                    return;
+                  }
+                  const newMid = String(item.mid);
+                  setSelectedUserMap((prev) => {
+                    const next = { ...prev };
+                    if (editingPlayer.mid !== newMid) {
+                      delete next[editingPlayer.mid];
+                    }
+                    next[newMid] = item;
+                    return next;
+                  });
                   const newPlayers = [...(formData.players || [])];
-                  newPlayers.find((p) => p.mid === editingPlayer.mid)!.name = e.target.value.trim();
+                  const target = newPlayers.find(
+                    (p) => p.mid === editingPlayer.mid,
+                  );
+                  if (target) {
+                    const updatedPlayer = {
+                      ...target,
+                      mid: newMid,
+                      name: item.uname,
+                      face: item.upic,
+                      fans: item.fans,
+                    };
+                    const idx = newPlayers.indexOf(target);
+                    newPlayers[idx] = updatedPlayer;
+                    setEditingPlayer(updatedPlayer);
+                  }
                   setFormData((prev) => ({ ...prev, players: newPlayers }));
                 }}
-                onKeyDown={handleKeyDown}
-                className={`${getInputClassName("playerName", touchedFields, { playerName: editingPlayer.name })} grow`}
-                onBlur={handleBlur}
-                maxLength={32}
-                required
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  // call bilibili API
+                items={searchResults}
+                filterFn={() => true}
+                renderItem={(item) => (
+                  <div className="flex items-center gap-3 py-1">
+                    <div className="w-10 h-10 flex-shrink-0 rounded bg-light-gray overflow-hidden">
+                      <img
+                        src={item.upic}
+                        alt={item.uname}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="font-medium truncate">{item.uname}</span>
+                      <span className="text-xs text-gray truncate">
+                        粉丝 {item.fans ?? 0}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                renderSelected={(item) => item.uname}
+                getKey={(item) => String(item.mid)}
+                placeholder="输入B站用户名后点击右侧搜索"
+                manualSearch
+                onSearch={async (query) => {
+                  try {
+                    setSearching(true);
+                    const resp = await miscServices.searchBilibiliUsers(
+                      query,
+                      1,
+                      20,
+                    );
+                    const body = resp.data;
+                    if (body.code !== 0) {
+                      toast.error(body.message || "搜索失败");
+                      setSearchResults([]);
+                      return;
+                    }
+                    setSearchResults(body.data?.result || []);
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("搜索失败，请稍后重试");
+                    setSearchResults([]);
+                  } finally {
+                    setSearching(false);
+                  }
                 }}
-                className="rounded-md px-2 text-black bg-ak-blue inline-flex items-center gap-1 h-6 flex-shrink-0"
-                aria-label="连接bilibili账号"
-              >
-                <LinkIcon /> 连接bilibili
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className={labelClassName}>选手预览</label>
-            <div className="bg-mid-gray p-2">
-              <p>这里放bilibili头像😊</p>
+                isSearching={searching}
+                onInputChange={(val) => {
+                  if (!editingPlayer) return;
+                  const newPlayers = [...(formData.players || [])];
+                  const target = newPlayers.find(
+                    (p) => p.mid === editingPlayer.mid,
+                  );
+                  if (target) {
+                    target.name = val.trim();
+                  }
+                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                }}
+                onInputKeyDown={handleKeyDown}
+                onInputBlur={handleBlur}
+                initialInputValue={editingPlayer?.name ?? ""}
+                inputName="playerName"
+                inputWrapperClassName={
+                  isPlayerNameInvalid ? "outline outline-2 outline-ak-red" : ""
+                }
+                required
+                className="grow"
+              />
             </div>
           </div>
 
@@ -303,7 +446,11 @@ export default function TournamentPlayersAccordionItem({
               <Select
                 id="playerTeam"
                 name="playerTeam"
-                selectedKeys={[formData.teams?.find((team) => team.members.includes(editingPlayer.name))?.id ?? ""]}
+                selectedKeys={[
+                  formData.teams?.find((team) =>
+                    team.members.includes(editingPlayer.name),
+                  )?.id ?? "",
+                ]}
                 onChange={(e) => {
                   const newTeams = [...(formData.teams || [])];
                   newTeams
@@ -314,7 +461,9 @@ export default function TournamentPlayersAccordionItem({
                         ?.members.indexOf(editingPlayer.name)!,
                       1,
                     );
-                  newTeams.find((t) => t.id === e.target.value)?.members.push(editingPlayer.name);
+                  newTeams
+                    .find((t) => t.id === e.target.value)
+                    ?.members.push(editingPlayer.name);
                   setFormData((prev) => ({
                     ...prev,
                     teams: newTeams,
@@ -326,7 +475,7 @@ export default function TournamentPlayersAccordionItem({
               >
                 {(formData.teams || []).map((team) => {
                   return (
-                    <SelectItem key={team.id} value={team.id}>
+                    <SelectItem key={team.id} textValue={team.id}>
                       {team.name}
                     </SelectItem>
                   );
@@ -335,31 +484,40 @@ export default function TournamentPlayersAccordionItem({
             </div>
           )}
 
-          {Object.entries(formData.customPlayerKeys || {}).map(([key, value]) => (
-            <div key={key}>
-              <label htmlFor="customPlayerValue" className={labelClassName}>
-                {value}
-              </label>
-              <input
-                id="customPlayerValue"
-                type="text"
-                value={editingPlayer.customPlayerValues[key] ?? ""}
-                onChange={(e) => {
-                  const newPlayers = [...(formData.players || [])];
-                  const player = newPlayers.find((p) => p.mid === editingPlayer.mid);
-                  if (player) {
-                    player.customPlayerValues[key] = e.target.value.trim();
-                  }
-                  setFormData((prev) => ({ ...prev, players: newPlayers }));
-                }}
-                className={getInputClassName(`customPlayerValue-${key}`, touchedFields, {
-                  [`customPlayerValue-${key}`]: editingPlayer.customPlayerValues[key],
-                })}
-                onBlur={handleBlur}
-                maxLength={32}
-              />
-            </div>
-          ))}
+          {Object.entries(formData.customPlayerKeys || {}).map(
+            ([key, value]) => (
+              <div key={key}>
+                <label htmlFor="customPlayerValue" className={labelClassName}>
+                  {value}
+                </label>
+                <input
+                  id="customPlayerValue"
+                  type="text"
+                  value={editingPlayer.customPlayerValues[key] ?? ""}
+                  onChange={(e) => {
+                    const newPlayers = [...(formData.players || [])];
+                    const player = newPlayers.find(
+                      (p) => p.mid === editingPlayer.mid,
+                    );
+                    if (player) {
+                      player.customPlayerValues[key] = e.target.value.trim();
+                    }
+                    setFormData((prev) => ({ ...prev, players: newPlayers }));
+                  }}
+                  className={getInputClassName(
+                    `customPlayerValue-${key}`,
+                    touchedFields,
+                    {
+                      [`customPlayerValue-${key}`]:
+                        editingPlayer.customPlayerValues[key],
+                    },
+                  )}
+                  onBlur={handleBlur}
+                  maxLength={32}
+                />
+              </div>
+            ),
+          )}
         </div>
       )}
     </>

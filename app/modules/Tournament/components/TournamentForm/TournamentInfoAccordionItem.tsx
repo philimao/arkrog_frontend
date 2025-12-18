@@ -52,13 +52,28 @@ export default function TournamentInfoAccordionItem({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editorInitialContent, setEditorInitialContent] = useState("");
 
-  const handleOpenEditor = () => {
+  const handleOpenEditor = (key: string) => {
     setUploadDirectory(
       "tournament/" + formData.name.replace(/[!@#$%^&*()+\s]+/g, "_"),
     );
-    setEditorInitialContent(formData.rule || "");
+    const initialContent =
+      (formData[key as keyof TournamentData] as string) || "";
+    setEditorInitialContent(initialContent);
+    // 设置保存回调
+    setOnEditorSave(() => (content: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        [key]: content,
+      }));
+      onEditorClose();
+    });
     onOpen();
   };
+
+  // 编辑器保存内容回调，在打开编辑器时设置
+  const [onEditorSave, setOnEditorSave] = useState<(content: string) => void>(
+    () => {},
+  );
 
   // 关闭编辑器时，清除上传参数
   const onEditorClose = () => {
@@ -66,14 +81,7 @@ export default function TournamentInfoAccordionItem({
     onClose();
   };
 
-  const handleEditorSave = (content: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      rule: content,
-    }));
-    onEditorClose();
-  };
-
+  // 更新input内容到formData
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -238,9 +246,18 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label htmlFor="organizerName" className={labelClassName}>
-            主办方 <span className="text-ak-red">*</span>
-          </label>
+          <div className="flex justify-between items-center">
+            <label htmlFor="organizerName" className={labelClassName}>
+              主办方 <span className="text-ak-red">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => handleOpenEditor("organizerName")}
+              className="text-xs text-ak-blue hover:underline"
+            >
+              富文本编辑
+            </button>
+          </div>
           <input
             id="organizerName"
             type="text"
@@ -259,21 +276,20 @@ export default function TournamentInfoAccordionItem({
         </div>
 
         <div>
-          <label
-            htmlFor="room"
-            className="flex items-center text-sm font-light mb-1"
-          >
-            观赛直播间
-            <Tooltip
-              content="支持Markdown格式"
-              className="bg-light-mid-gray text-black"
+          <div className="flex justify-between items-center">
+            <label htmlFor="room" className={labelClassName}>
+              观赛直播间
+              <span className="text-ak-red">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => handleOpenEditor("room")}
+              className="text-xs text-ak-blue hover:underline"
             >
-              <span className="px-1">
-                <InformationIcon width="0.75rem" height="0.75rem" />
-              </span>
-            </Tooltip>
-            <span className="text-ak-red">*</span>
-          </label>
+              富文本编辑
+            </button>
+          </div>
+
           <input
             id="room"
             type="text"
@@ -459,18 +475,10 @@ export default function TournamentInfoAccordionItem({
             className="flex items-center text-sm font-light"
           >
             规则
-            <Tooltip
-              content="支持Markdown格式"
-              className="bg-light-mid-gray text-black"
-            >
-              <span className="px-1">
-                <InformationIcon width="0.75rem" height="0.75rem" />
-              </span>
-            </Tooltip>
           </label>
           <button
             type="button"
-            onClick={handleOpenEditor}
+            onClick={() => handleOpenEditor("rule")}
             className="text-xs text-ak-blue hover:underline"
           >
             富文本编辑
@@ -488,17 +496,18 @@ export default function TournamentInfoAccordionItem({
       </div>
 
       <div>
-        <label htmlFor="detailRule" className={labelWithTooltipClassName}>
-          详细规则
-          <Tooltip
-            content="支持Markdown格式"
-            className="bg-light-mid-gray text-black"
+        <div className="flex justify-between items-center mb-1">
+          <label htmlFor="detailRule" className={labelWithTooltipClassName}>
+            详细规则
+          </label>
+          <button
+            type="button"
+            onClick={() => handleOpenEditor("detailRule")}
+            className="text-xs text-ak-blue hover:underline"
           >
-            <span className="px-1">
-              <InformationIcon width="0.75rem" height="0.75rem" />
-            </span>
-          </Tooltip>
-        </label>
+            富文本编辑
+          </button>
+        </div>
         <textarea
           id="detailRule"
           name="detailRule"
@@ -513,7 +522,7 @@ export default function TournamentInfoAccordionItem({
         isOpen={isOpen}
         onClose={onEditorClose}
         initialContent={editorInitialContent}
-        onSave={handleEditorSave}
+        onSave={onEditorSave}
         title="编辑规则"
       />
     </>

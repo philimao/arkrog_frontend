@@ -1,4 +1,10 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, Spinner } from "@heroui/react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  Spinner,
+} from "@heroui/react";
 import { lazy, Suspense } from "react";
 
 const BlockNoteEditor = lazy(() => import("~/components/BlockNoteEditor"));
@@ -35,12 +41,18 @@ export default function MarkdownEditorModal({
               {isOpen && (
                 <Suspense
                   fallback={
-                    <div className="flex justify-center items-center h-[600px]">
+                    <div className="flex justify-center items-center h-[35rem]">
                       <Spinner label="编辑器加载中..." />
                     </div>
                   }
                 >
-                  <BlockNoteEditor initialMarkdown={initialContent} onSave={onSave} onCancel={onClose} />
+                  <div className="h-[35rem]">
+                    <BlockNoteEditor
+                      initialMarkdown={initialContent}
+                      onSave={onSave}
+                      onCancel={onClose}
+                    />
+                  </div>
                 </Suspense>
               )}
             </ModalBody>

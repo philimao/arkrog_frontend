@@ -1,11 +1,20 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
-import type { TournamentData, TournamentPlayer, TournamentStage } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentPlayer,
+  TournamentStage,
+} from "~/types/tournamentsData";
 import { generateDateArray, isSameDay } from "~/utils/date";
 import { useEffect, useState } from "react";
 import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
-import { getInputClassName, labelClassName, labelWithTooltipClassName } from ".";
+import {
+  getInputClassName,
+  labelClassName,
+  labelWithTooltipClassName,
+} from ".";
 
-const inputClassName = "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
+const inputClassName =
+  "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 const selectClassName = {
   trigger: "bg-[#00000033] rounded-none w-full",
   value: "",
@@ -18,9 +27,15 @@ interface TournamentProgressAccordionItemProps {
   setFormData: React.Dispatch<React.SetStateAction<TournamentData>>;
   handleKeyDown: (e: React.KeyboardEvent) => void;
   editingStage: TournamentStage | undefined;
-  setEditingStage: React.Dispatch<React.SetStateAction<TournamentStage | undefined>>;
+  setEditingStage: React.Dispatch<
+    React.SetStateAction<TournamentStage | undefined>
+  >;
   touchedFields: Set<string>;
-  handleBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  handleBlur: (
+    e: React.FocusEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => void;
 }
 
 export default function TournamentProgressAccordionItem({
@@ -36,14 +51,26 @@ export default function TournamentProgressAccordionItem({
     return <div className="mb-4 text-ak-red">请先添加赛事阶段</div>;
   }
 
-  if (!formData.players || formData.players?.filter((player) => player.name).length === 0) {
+  if (
+    !formData.players ||
+    formData.players?.filter((player) => player.name).length === 0
+  ) {
     return <div className="mb-4 text-ak-red">请先添加参赛选手</div>;
   }
 
-  const dates = generateDateArray(editingStage?.startTime || 0, editingStage?.endTime || 0);
-  const players = formData.players?.filter((player) => player.games.find((game) => game.stage === editingStage?.name));
-  const remainingPlayers = formData.players?.filter((player) => player.name && !players?.includes(player));
-  const [editingPlayer, setEditingPlayer] = useState<TournamentPlayer | undefined>(undefined);
+  const dates = generateDateArray(
+    editingStage?.startTime || 0,
+    editingStage?.endTime || 0,
+  );
+  const players = formData.players?.filter((player) =>
+    player.games.find((game) => game.stage === editingStage?.name),
+  );
+  const remainingPlayers = formData.players?.filter(
+    (player) => player.name && !players?.includes(player),
+  );
+  const [editingPlayer, setEditingPlayer] = useState<
+    TournamentPlayer | undefined
+  >(undefined);
   const [isAddingPlayers, setIsAddingPlayers] = useState<boolean[]>([]);
   const [newCustomKey, setNewCustomKey] = useState("");
   const [newCustomValue, setNewCustomValue] = useState("");
@@ -65,13 +92,18 @@ export default function TournamentProgressAccordionItem({
     if (!newCustomKey || !newCustomValue || !editingStage) return;
 
     // Check if key already exists
-    if (editingStage.customStageKeys && editingStage.customStageKeys[newCustomKey]) {
+    if (
+      editingStage.customStageKeys &&
+      editingStage.customStageKeys[newCustomKey]
+    ) {
       setKeyError("该自定义阶段信息已存在");
       return;
     }
 
     const newStages = [...formData.stages];
-    const stageIndex = newStages.findIndex((stage) => stage.name === editingStage.name);
+    const stageIndex = newStages.findIndex(
+      (stage) => stage.name === editingStage.name,
+    );
 
     if (stageIndex !== -1) {
       newStages[stageIndex] = {
@@ -117,9 +149,15 @@ export default function TournamentProgressAccordionItem({
           <Select
             id="stage"
             name="stage"
-            selectedKeys={[formData.stages?.find((stage) => stage.name === editingStage?.name)?.name ?? ""]}
+            selectedKeys={[
+              formData.stages?.find(
+                (stage) => stage.name === editingStage?.name,
+              )?.name ?? "",
+            ]}
             onChange={(e) => {
-              setEditingStage(formData.stages?.find((stage) => stage.name === e.target.value));
+              setEditingStage(
+                formData.stages?.find((stage) => stage.name === e.target.value),
+              );
             }}
             classNames={{
               trigger: "bg-mid-gray rounded-none w-48",
@@ -131,11 +169,7 @@ export default function TournamentProgressAccordionItem({
             required
           >
             {formData.stages?.map((stage) => {
-              return (
-                <SelectItem key={stage.name} value={stage.name}>
-                  {stage.name}
-                </SelectItem>
-              );
+              return <SelectItem key={stage.name}>{stage.name}</SelectItem>;
             })}
           </Select>
         </div>
@@ -155,11 +189,17 @@ export default function TournamentProgressAccordionItem({
                 value={newCustomKey}
                 onChange={handleKeyChange}
                 placeholder="例：session"
-                className={getInputClassName("customSessionKey", touchedFields, { customSessionKey: newCustomKey })}
+                className={getInputClassName(
+                  "customSessionKey",
+                  touchedFields,
+                  { customSessionKey: newCustomKey },
+                )}
                 onBlur={handleBlur}
                 maxLength={20}
               />
-              {keyError && <span className="text-xs text-ak-red">{keyError}</span>}
+              {keyError && (
+                <span className="text-xs text-ak-red">{keyError}</span>
+              )}
             </div>
             <div>
               <label htmlFor="customKeyValue" className={labelClassName}>
@@ -171,9 +211,13 @@ export default function TournamentProgressAccordionItem({
                 value={newCustomValue}
                 onChange={(e) => setNewCustomValue(e.target.value)}
                 placeholder="例：场地"
-                className={getInputClassName("customSessionKeyValue", touchedFields, {
-                  customSessionKeyValue: newCustomValue,
-                })}
+                className={getInputClassName(
+                  "customSessionKeyValue",
+                  touchedFields,
+                  {
+                    customSessionKeyValue: newCustomValue,
+                  },
+                )}
                 onBlur={handleBlur}
                 maxLength={20}
               />
@@ -183,7 +227,9 @@ export default function TournamentProgressAccordionItem({
             <button
               type="button"
               onClick={handleAddCustomKey}
-              disabled={!newCustomKey || !newCustomValue || !!keyError || !editingStage}
+              disabled={
+                !newCustomKey || !newCustomValue || !!keyError || !editingStage
+              }
               className="cursor-pointer rounded-md p-1 absolute top-8 text-black bg-ak-blue disabled:text-white disabled:bg-mid-gray disabled:cursor-not-allowed"
               aria-label="添加自定义阶段信息"
             >
@@ -191,104 +237,130 @@ export default function TournamentProgressAccordionItem({
             </button>
           </div>
         </div>
-        {editingStage?.customStageKeys && Object.keys(editingStage.customStageKeys).length > 0 && (
-          <div className="pb-4">
-            <p className={labelWithTooltipClassName}>
-              已有自定义阶段信息:
-              {editingStage.type !== "1on1" && (
-                <Tooltip
-                  content="勾选的自定义信息将作为此阶段的分组依据，用于分别计算分组排名"
-                  className="bg-light-mid-gray text-black"
-                >
-                  <span className="px-1">
-                    <InformationIcon width="0.75rem" height="0.75rem" />
-                  </span>
-                </Tooltip>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(editingStage.customStageKeys).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-1 bg-mid-gray p-2 rounded">
-                  <span className="text-sm">
-                    {key}: {value}
-                  </span>
-                  {formData.type !== "team" && editingStage.type !== "1on1" && (
-                    <label className="flex items-center ml-1">
-                      <input
-                        type="checkbox"
-                        checked={formData.groupBy === key}
-                        onChange={() => handleSetGroupBy(key)}
-                        className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
-                      />
-                    </label>
-                  )}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!editingStage) return;
-
-                      const newStages = [...formData.stages];
-                      const stageIndex = newStages.findIndex((stage) => stage.name === editingStage.name);
-
-                      if (stageIndex !== -1) {
-                        const newCustomStageKeys = { ...newStages[stageIndex].customStageKeys };
-                        delete newCustomStageKeys[key];
-
-                        // TODO: If this was the stage's groupBy key, reset groupBy
-                        // const newGroupBy = newStages[stageIndex].groupBy === key ? "" : newStages[stageIndex].groupBy;
-
-                        // Need to delete corresponding value from all players' games
-                        const newPlayers = (formData.players || []).map((player) => {
-                          const newPlayer = { ...player };
-                          newPlayer.games = newPlayer.games.map((game) => {
-                            if (game.stage === editingStage.name) {
-                              const newCustomStageValues = { ...game.customStageValues };
-                              delete newCustomStageValues[key];
-                              return { ...game, customStageValues: newCustomStageValues };
-                            }
-                            return game;
-                          });
-                          return newPlayer;
-                        });
-
-                        newStages[stageIndex] = {
-                          ...newStages[stageIndex],
-                          customStageKeys: newCustomStageKeys,
-                          // TODO: groupBy: newGroupBy,
-                        };
-
-                        setFormData((prev) => ({
-                          ...prev,
-                          stages: newStages,
-                          players: newPlayers,
-                        }));
-
-                        // Update the editingStage reference
-                        setEditingStage(newStages[stageIndex]);
-                      }
-                    }}
-                    className="rounded-md p-1 hover:text-white hover:bg-ak-red"
-                    aria-label={`删除自定义阶段信息${key}: ${value}`}
+        {editingStage?.customStageKeys &&
+          Object.keys(editingStage.customStageKeys).length > 0 && (
+            <div className="pb-4">
+              <p className={labelWithTooltipClassName}>
+                已有自定义阶段信息:
+                {editingStage.type !== "1on1" && (
+                  <Tooltip
+                    content="勾选的自定义信息将作为此阶段的分组依据，用于分别计算分组排名"
+                    className="bg-light-mid-gray text-black"
                   >
-                    <CloseIcon width="0.7rem" height="0.7rem" />
-                  </button>
-                </div>
-              ))}
+                    <span className="px-1">
+                      <InformationIcon width="0.75rem" height="0.75rem" />
+                    </span>
+                  </Tooltip>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(editingStage.customStageKeys).map(
+                  ([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex items-center gap-1 bg-mid-gray p-2 rounded"
+                    >
+                      <span className="text-sm">
+                        {key}: {value}
+                      </span>
+                      {formData.type !== "team" &&
+                        editingStage.type !== "1on1" && (
+                          <label className="flex items-center ml-1">
+                            <input
+                              type="checkbox"
+                              checked={formData.groupBy === key}
+                              onChange={() => handleSetGroupBy(key)}
+                              className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
+                            />
+                          </label>
+                        )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!editingStage) return;
+
+                          const newStages = [...formData.stages];
+                          const stageIndex = newStages.findIndex(
+                            (stage) => stage.name === editingStage.name,
+                          );
+
+                          if (stageIndex !== -1) {
+                            const newCustomStageKeys = {
+                              ...newStages[stageIndex].customStageKeys,
+                            };
+                            delete newCustomStageKeys[key];
+
+                            // TODO: If this was the stage's groupBy key, reset groupBy
+                            // const newGroupBy = newStages[stageIndex].groupBy === key ? "" : newStages[stageIndex].groupBy;
+
+                            // Need to delete corresponding value from all players' games
+                            const newPlayers = (formData.players || []).map(
+                              (player) => {
+                                const newPlayer = { ...player };
+                                newPlayer.games = newPlayer.games.map(
+                                  (game) => {
+                                    if (game.stage === editingStage.name) {
+                                      const newCustomStageValues = {
+                                        ...game.customStageValues,
+                                      };
+                                      delete newCustomStageValues[key];
+                                      return {
+                                        ...game,
+                                        customStageValues: newCustomStageValues,
+                                      };
+                                    }
+                                    return game;
+                                  },
+                                );
+                                return newPlayer;
+                              },
+                            );
+
+                            newStages[stageIndex] = {
+                              ...newStages[stageIndex],
+                              customStageKeys: newCustomStageKeys,
+                              // TODO: groupBy: newGroupBy,
+                            };
+
+                            setFormData((prev) => ({
+                              ...prev,
+                              stages: newStages,
+                              players: newPlayers,
+                            }));
+
+                            // Update the editingStage reference
+                            setEditingStage(newStages[stageIndex]);
+                          }
+                        }}
+                        className="rounded-md p-1 hover:text-white hover:bg-ak-red"
+                        aria-label={`删除自定义阶段信息${key}: ${value}`}
+                      >
+                        <CloseIcon width="0.7rem" height="0.7rem" />
+                      </button>
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
       {dates.map((date, index) => {
         const playersForDate = formData.players?.filter((player) =>
-          player.games.find((game) => game.stage === editingStage?.name && isSameDay(game.date, date)),
+          player.games.find(
+            (game) =>
+              game.stage === editingStage?.name && isSameDay(game.date, date),
+          ),
         );
         const editingGame = editingPlayer?.games.find(
-          (game) => game.stage === editingStage?.name && isSameDay(game.date, date),
+          (game) =>
+            game.stage === editingStage?.name && isSameDay(game.date, date),
         );
         const editingPlayerTeam =
           formData.type === "team" && editingPlayer
-            ? formData.teams?.find((t) => t.members.includes(editingPlayer.name))
+            ? formData.teams?.find((t) =>
+                t.members.includes(editingPlayer.name),
+              )
             : undefined;
         const tempNewPlayer = {
           mid: `newPlayer-${index}`,
@@ -317,14 +389,23 @@ export default function TournamentProgressAccordionItem({
                         className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer?.mid === player.mid ? "bg-ak-blue text-black" : "bg-mid-gray text-white"}`}
                         onClick={(e) => {
                           e.preventDefault();
-                          setEditingPlayer(editingPlayer?.mid === player.mid ? undefined : player);
+                          setEditingPlayer(
+                            editingPlayer?.mid === player.mid
+                              ? undefined
+                              : player,
+                          );
                         }}
                       >
                         <div
                           className={`w-16 h-16 aspect-square flex items-center justify-center ${editingPlayer?.mid === player.mid ? "bg-mid-gray text-white" : "bg-light-gray text-black"}`}
                         >
                           {player.face ? (
-                            <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                            <img
+                              src={player.face}
+                              alt="avatar"
+                              referrerPolicy="no-referrer"
+                              crossOrigin="anonymous"
+                            />
                           ) : (
                             <p className="text-5xl">{player.name[0]}</p>
                           )}
@@ -343,30 +424,43 @@ export default function TournamentProgressAccordionItem({
                             if (editingStage?.type === "1on1") {
                               const rivalMid = newPlayers
                                 .find((p) => p === player)!
-                                .games.find((g) => isSameDay(g.date, date))?.rivalMid;
+                                .games.find((g) =>
+                                  isSameDay(g.date, date),
+                                )?.rivalMid;
 
                               if (rivalMid) {
                                 const rivalIndex = newPlayers.findIndex(
-                                  (p) => p.mid.toString() === rivalMid.toString(),
+                                  (p) =>
+                                    p.mid.toString() === rivalMid.toString(),
                                 );
                                 if (rivalIndex !== -1) {
-                                  const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
+                                  const rivalGameIndex = newPlayers[
+                                    rivalIndex
+                                  ].games.findIndex(
                                     (g) => g.stage === editingStage.name,
                                   );
 
                                   if (rivalGameIndex !== -1) {
                                     // Clear the rival's rivalMid and result
-                                    newPlayers[rivalIndex].games[rivalGameIndex].rivalMid = undefined;
-                                    newPlayers[rivalIndex].games[rivalGameIndex].result = undefined;
+                                    newPlayers[rivalIndex].games[
+                                      rivalGameIndex
+                                    ].rivalMid = undefined;
+                                    newPlayers[rivalIndex].games[
+                                      rivalGameIndex
+                                    ].result = undefined;
                                   }
                                 }
                               }
                             }
 
-                            newPlayers.find((p) => p === player)!.games = newPlayers
-                              .find((p) => p === player)!
-                              .games.filter((g) => !isSameDay(g.date, date));
-                            setFormData((prev) => ({ ...prev, players: newPlayers }));
+                            newPlayers.find((p) => p === player)!.games =
+                              newPlayers
+                                .find((p) => p === player)!
+                                .games.filter((g) => !isSameDay(g.date, date));
+                            setFormData((prev) => ({
+                              ...prev,
+                              players: newPlayers,
+                            }));
                           }}
                           className="ml-1 rounded-md p-1 hover:text-white hover:bg-ak-red absolute top-1 right-1"
                           aria-label="移除选手"
@@ -383,7 +477,11 @@ export default function TournamentProgressAccordionItem({
                       className="p-2 w-[117px] relative rounded-md cursor-pointer bg-ak-dark-red text-white"
                       onClick={(e) => {
                         e.preventDefault();
-                        setEditingPlayer(editingPlayer?.mid === tempNewPlayer.mid ? undefined : tempNewPlayer);
+                        setEditingPlayer(
+                          editingPlayer?.mid === tempNewPlayer.mid
+                            ? undefined
+                            : tempNewPlayer,
+                        );
                       }}
                     >
                       <div className="w-16 h-16 aspect-square flex items-center justify-center bg-light-gray text-black">
@@ -430,11 +528,15 @@ export default function TournamentProgressAccordionItem({
 
               {editingPlayer &&
                 (playersForDate?.find((p) => p.mid === editingPlayer.mid) ||
-                  (isAddingPlayers[index] && editingPlayer.mid === tempNewPlayer.mid)) && (
+                  (isAddingPlayers[index] &&
+                    editingPlayer.mid === tempNewPlayer.mid)) && (
                   <div className="bg-mid-gray text-white mt-4 p-2 rounded-md">
                     {editingPlayer.mid === tempNewPlayer.mid ? (
                       <div className="flex">
-                        <label htmlFor="editingPlayer" className="pt-2 flex-shrink-0">
+                        <label
+                          htmlFor="editingPlayer"
+                          className="pt-2 flex-shrink-0"
+                        >
                           <span className="text-ak-red">*</span> 请选择选手：
                         </label>
                         <Select
@@ -443,8 +545,14 @@ export default function TournamentProgressAccordionItem({
                           classNames={selectClassName}
                           aria-label="选择选手"
                           onChange={(e) => {
-                            if (!e.target.value || e.target.value === "请选择选手") return;
-                            const newPlayer = formData.players?.find((p) => p.mid.toString() === e.target.value);
+                            if (
+                              !e.target.value ||
+                              e.target.value === "请选择选手"
+                            )
+                              return;
+                            const newPlayer = formData.players?.find(
+                              (p) => p.mid.toString() === e.target.value,
+                            );
                             const newPlayers = [...formData.players!];
                             const newDate = new Date(date);
                             newDate.setHours(0, 0, 0, 0);
@@ -455,7 +563,10 @@ export default function TournamentProgressAccordionItem({
                                 stage: editingStage?.name || "",
                                 customStageValues: {},
                               });
-                            setFormData((prev) => ({ ...prev, players: newPlayers }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              players: newPlayers,
+                            }));
                             setEditingPlayer(newPlayer);
                             setIsAddingPlayers((prev) => {
                               const newArray = [...prev];
@@ -467,13 +578,13 @@ export default function TournamentProgressAccordionItem({
                           required
                         >
                           {[
-                            <SelectItem key="请选择选手" value="请选择选手">
+                            <SelectItem key="请选择选手">
                               请选择选手
                             </SelectItem>,
                           ].concat(
                             remainingPlayers?.map((player) => {
                               return (
-                                <SelectItem key={player.mid} value={player.mid}>
+                                <SelectItem key={player.mid}>
                                   {player.name}
                                 </SelectItem>
                               );
@@ -486,7 +597,10 @@ export default function TournamentProgressAccordionItem({
                         <p className="mb-4">正在编辑：{editingPlayer.name}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
                           <div>
-                            <label htmlFor="gameTime" className={labelClassName}>
+                            <label
+                              htmlFor="gameTime"
+                              className={labelClassName}
+                            >
                               比赛时间 <span className="text-ak-red">*</span>
                             </label>
                             <input
@@ -494,21 +608,30 @@ export default function TournamentProgressAccordionItem({
                               type="time"
                               name="gameTime"
                               value={(() => {
-                                const game = editingPlayer.games.find((g) => isSameDay(g.date, date));
+                                const game = editingPlayer.games.find((g) =>
+                                  isSameDay(g.date, date),
+                                );
                                 if (!game) return "";
                                 const gameDate = new Date(game.date);
                                 return `${gameDate.getHours().toString().padStart(2, "0")}:${gameDate.getMinutes().toString().padStart(2, "0")}`;
                               })()}
                               onChange={(e) => {
                                 // Check if the time string is valid
-                                if (e.target.value && /^\d{1,2}:\d{1,2}$/.test(e.target.value)) {
-                                  const newPlayers = [...(formData.players || [])];
+                                if (
+                                  e.target.value &&
+                                  /^\d{1,2}:\d{1,2}$/.test(e.target.value)
+                                ) {
+                                  const newPlayers = [
+                                    ...(formData.players || []),
+                                  ];
                                   const game = newPlayers
                                     .find((p) => p.mid === editingPlayer.mid)!
                                     .games.find((g) => isSameDay(g.date, date));
                                   if (game) {
                                     const currentDate = new Date(game.date);
-                                    const [hours, minutes] = e.target.value.split(":").map(Number);
+                                    const [hours, minutes] = e.target.value
+                                      .split(":")
+                                      .map(Number);
 
                                     // Additional validation to ensure hours and minutes are valid numbers
                                     if (!isNaN(hours) && !isNaN(minutes)) {
@@ -519,7 +642,10 @@ export default function TournamentProgressAccordionItem({
                                       // Ensure the date is valid before updating
                                       if (!isNaN(newDate.getTime())) {
                                         game.date = newDate.getTime();
-                                        setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          players: newPlayers,
+                                        }));
                                       }
                                     }
                                   }
@@ -538,7 +664,10 @@ export default function TournamentProgressAccordionItem({
                           </div>
 
                           <div>
-                            <label htmlFor="starterSquad" className={labelClassName}>
+                            <label
+                              htmlFor="starterSquad"
+                              className={labelClassName}
+                            >
                               开局分队 <span className="text-ak-red">*</span>
                             </label>
                             <input
@@ -554,7 +683,10 @@ export default function TournamentProgressAccordionItem({
                                   .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
                                   game.starterSquad = e.target.value;
-                                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    players: newPlayers,
+                                  }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
@@ -570,7 +702,10 @@ export default function TournamentProgressAccordionItem({
                           </div>
 
                           <div>
-                            <label htmlFor="starterOp" className={labelClassName}>
+                            <label
+                              htmlFor="starterOp"
+                              className={labelClassName}
+                            >
                               开局干员
                             </label>
                             <input
@@ -586,7 +721,10 @@ export default function TournamentProgressAccordionItem({
                                   .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
                                   game.starterOp = e.target.value;
-                                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    players: newPlayers,
+                                  }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
@@ -615,8 +753,13 @@ export default function TournamentProgressAccordionItem({
                                   .find((p) => p.mid === editingPlayer.mid)!
                                   .games.find((g) => isSameDay(g.date, date));
                                 if (game) {
-                                  game.point = e.target.value ? Number(e.target.value) : undefined;
-                                  setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                  game.point = e.target.value
+                                    ? Number(e.target.value)
+                                    : undefined;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    players: newPlayers,
+                                  }));
                                 }
                               }}
                               onKeyDown={handleKeyDown}
@@ -632,11 +775,23 @@ export default function TournamentProgressAccordionItem({
 
                           {formData.type === "team" && editingPlayerTeam && (
                             <div>
-                              <label htmlFor="teamTotalPoints" className={labelWithTooltipClassName}>
-                                <span className="text-ak-blue">{editingPlayerTeam.name}</span>&nbsp;队伍总分
-                                <Tooltip content="根据已有数据自动计算得出" className="bg-light-mid-gray text-black">
+                              <label
+                                htmlFor="teamTotalPoints"
+                                className={labelWithTooltipClassName}
+                              >
+                                <span className="text-ak-blue">
+                                  {editingPlayerTeam.name}
+                                </span>
+                                &nbsp;队伍总分
+                                <Tooltip
+                                  content="根据已有数据自动计算得出"
+                                  className="bg-light-mid-gray text-black"
+                                >
                                   <span className="px-1">
-                                    <InformationIcon width="0.75rem" height="0.75rem" />
+                                    <InformationIcon
+                                      width="0.75rem"
+                                      height="0.75rem"
+                                    />
                                   </span>
                                 </Tooltip>
                               </label>
@@ -647,10 +802,21 @@ export default function TournamentProgressAccordionItem({
                                 value={(() => {
                                   // Calculate sum of points for all players in the same team
                                   const teamPoints = formData.players
-                                    ?.filter((player) => editingPlayerTeam.members.includes(player.name))
+                                    ?.filter((player) =>
+                                      editingPlayerTeam.members.includes(
+                                        player.name,
+                                      ),
+                                    )
                                     .flatMap((player) => player.games)
-                                    .filter((game) => game.stage === editingStage?.name && game.point !== undefined)
-                                    .reduce((sum, game) => sum + (game.point || 0), 0);
+                                    .filter(
+                                      (game) =>
+                                        game.stage === editingStage?.name &&
+                                        game.point !== undefined,
+                                    )
+                                    .reduce(
+                                      (sum, game) => sum + (game.point || 0),
+                                      0,
+                                    );
 
                                   return teamPoints || "";
                                 })()}
@@ -664,61 +830,101 @@ export default function TournamentProgressAccordionItem({
                           {editingStage?.type === "1on1" && (
                             <>
                               <div>
-                                <label htmlFor="rival" className={labelClassName}>
+                                <label
+                                  htmlFor="rival"
+                                  className={labelClassName}
+                                >
                                   对手
                                 </label>
                                 <Select
                                   id="rival"
                                   name="rival"
-                                  selectedKeys={editingGame?.rivalMid ? [editingGame?.rivalMid.toString()] : [""]}
+                                  selectedKeys={
+                                    editingGame?.rivalMid
+                                      ? [editingGame?.rivalMid.toString()]
+                                      : [""]
+                                  }
                                   onChange={(e) => {
                                     const rivalMid = e.target.value;
-                                    const newPlayers = [...(formData.players || [])];
+                                    const newPlayers = [
+                                      ...(formData.players || []),
+                                    ];
 
                                     // Find the current player's game
-                                    const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
-                                    const gameIndex = newPlayers[playerIndex].games.findIndex(
+                                    const playerIndex = newPlayers.findIndex(
+                                      (p) => p.mid === editingPlayer.mid,
+                                    );
+                                    const gameIndex = newPlayers[
+                                      playerIndex
+                                    ].games.findIndex(
                                       (g) => g.stage === editingStage.name,
                                     );
 
                                     if (gameIndex !== -1) {
                                       // Check if there was a previous rival and clear that relationship
                                       const previousRivalMid =
-                                        newPlayers[playerIndex].games[gameIndex].rivalMid?.toString();
+                                        newPlayers[playerIndex].games[
+                                          gameIndex
+                                        ].rivalMid?.toString();
                                       if (previousRivalMid) {
-                                        const previousRivalIndex = newPlayers.findIndex(
-                                          (p) => p.mid.toString() === previousRivalMid,
-                                        );
-                                        if (previousRivalIndex !== -1) {
-                                          const previousRivalGameIndex = newPlayers[previousRivalIndex].games.findIndex(
-                                            (g) => g.stage === editingStage.name,
+                                        const previousRivalIndex =
+                                          newPlayers.findIndex(
+                                            (p) =>
+                                              p.mid.toString() ===
+                                              previousRivalMid,
                                           );
+                                        if (previousRivalIndex !== -1) {
+                                          const previousRivalGameIndex =
+                                            newPlayers[
+                                              previousRivalIndex
+                                            ].games.findIndex(
+                                              (g) =>
+                                                g.stage === editingStage.name,
+                                            );
                                           if (previousRivalGameIndex !== -1) {
                                             // Clear the previous rival's rivalMid and result
-                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].rivalMid =
-                                              undefined;
-                                            newPlayers[previousRivalIndex].games[previousRivalGameIndex].result =
-                                              undefined;
+                                            newPlayers[
+                                              previousRivalIndex
+                                            ].games[
+                                              previousRivalGameIndex
+                                            ].rivalMid = undefined;
+                                            newPlayers[
+                                              previousRivalIndex
+                                            ].games[
+                                              previousRivalGameIndex
+                                            ].result = undefined;
                                           }
                                         }
                                       }
 
                                       // Update current player's rivalMid and clear result when changing rivals
-                                      newPlayers[playerIndex].games[gameIndex].rivalMid = rivalMid;
-                                      newPlayers[playerIndex].games[gameIndex].result = !!rivalMid ? "win" : undefined;
+                                      newPlayers[playerIndex].games[
+                                        gameIndex
+                                      ].rivalMid = rivalMid;
+                                      newPlayers[playerIndex].games[
+                                        gameIndex
+                                      ].result = !!rivalMid ? "win" : undefined;
 
                                       // Find the rival player and update their rivalMid to point to current player
-                                      const rivalIndex = newPlayers.findIndex((p) => p.mid.toString() === rivalMid);
+                                      const rivalIndex = newPlayers.findIndex(
+                                        (p) => p.mid.toString() === rivalMid,
+                                      );
 
                                       if (rivalIndex !== -1) {
-                                        const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
+                                        const rivalGameIndex = newPlayers[
+                                          rivalIndex
+                                        ].games.findIndex(
                                           (g) => g.stage === editingStage.name,
                                         );
 
                                         if (rivalGameIndex !== -1) {
-                                          newPlayers[rivalIndex].games[rivalGameIndex].rivalMid =
+                                          newPlayers[rivalIndex].games[
+                                            rivalGameIndex
+                                          ].rivalMid =
                                             editingPlayer.mid.toString();
-                                          newPlayers[rivalIndex].games[rivalGameIndex].result = "lose";
+                                          newPlayers[rivalIndex].games[
+                                            rivalGameIndex
+                                          ].result = "lose";
                                         } else {
                                           // Create a new game for the rival if it doesn't exist
                                           const newDate = new Date(date);
@@ -726,22 +932,24 @@ export default function TournamentProgressAccordionItem({
                                           newPlayers[rivalIndex].games.push({
                                             date: newDate.getTime(),
                                             stage: editingStage?.name || "",
-                                            rivalMid: editingPlayer.mid.toString(),
+                                            rivalMid:
+                                              editingPlayer.mid.toString(),
                                             result: "lose",
                                             customStageValues: {},
                                           });
                                         }
                                       }
 
-                                      setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                      setFormData((prev) => ({
+                                        ...prev,
+                                        players: newPlayers,
+                                      }));
                                     }
                                   }}
                                   classNames={selectClassName}
                                   aria-label="选择对手"
                                 >
-                                  <SelectItem key="" value="">
-                                    请选择对手
-                                  </SelectItem>
+                                  <SelectItem key="">请选择对手</SelectItem>
                                   {players && editingPlayer ? (
                                     <>
                                       {players
@@ -752,11 +960,12 @@ export default function TournamentProgressAccordionItem({
                                               (g) =>
                                                 g.stage === editingStage.name &&
                                                 g.rivalMid &&
-                                                g.rivalMid.toString() !== editingPlayer.mid.toString(),
+                                                g.rivalMid.toString() !==
+                                                  editingPlayer.mid.toString(),
                                             ),
                                         )
                                         .map((player) => (
-                                          <SelectItem key={player.mid} value={player.mid}>
+                                          <SelectItem key={player.mid}>
                                             {player.name}
                                           </SelectItem>
                                         ))}
@@ -767,57 +976,81 @@ export default function TournamentProgressAccordionItem({
 
                               {editingGame?.rivalMid && (
                                 <div>
-                                  <label htmlFor="result" className={labelClassName}>
+                                  <label
+                                    htmlFor="result"
+                                    className={labelClassName}
+                                  >
                                     比赛结果
                                   </label>
                                   <Select
                                     id="result"
                                     name="result"
-                                    selectedKeys={[editingGame?.result || "win"]}
+                                    selectedKeys={[
+                                      editingGame?.result || "win",
+                                    ]}
                                     onChange={(e) => {
-                                      const result = e.target.value as "win" | "lose";
-                                      const newPlayers = [...(formData.players || [])];
+                                      const result = e.target.value as
+                                        | "win"
+                                        | "lose";
+                                      const newPlayers = [
+                                        ...(formData.players || []),
+                                      ];
 
                                       // Find the current player's game
-                                      const playerIndex = newPlayers.findIndex((p) => p.mid === editingPlayer.mid);
-                                      const gameIndex = newPlayers[playerIndex].games.findIndex(
+                                      const playerIndex = newPlayers.findIndex(
+                                        (p) => p.mid === editingPlayer.mid,
+                                      );
+                                      const gameIndex = newPlayers[
+                                        playerIndex
+                                      ].games.findIndex(
                                         (g) => g.stage === editingStage.name,
                                       );
 
                                       if (gameIndex !== -1) {
                                         // Update current player's result
-                                        newPlayers[playerIndex].games[gameIndex].result = result;
+                                        newPlayers[playerIndex].games[
+                                          gameIndex
+                                        ].result = result;
 
                                         // Find the rival player and update their result to the opposite
-                                        const rivalMid = newPlayers[playerIndex].games[gameIndex].rivalMid;
+                                        const rivalMid =
+                                          newPlayers[playerIndex].games[
+                                            gameIndex
+                                          ].rivalMid;
                                         const rivalIndex = newPlayers.findIndex(
-                                          (p) => p.mid.toString() === rivalMid?.toString(),
+                                          (p) =>
+                                            p.mid.toString() ===
+                                            rivalMid?.toString(),
                                         );
 
                                         if (rivalIndex !== -1) {
-                                          const rivalGameIndex = newPlayers[rivalIndex].games.findIndex(
-                                            (g) => g.stage === editingStage.name,
+                                          const rivalGameIndex = newPlayers[
+                                            rivalIndex
+                                          ].games.findIndex(
+                                            (g) =>
+                                              g.stage === editingStage.name,
                                           );
 
                                           if (rivalGameIndex !== -1) {
                                             // Set opposite result for rival
-                                            newPlayers[rivalIndex].games[rivalGameIndex].result =
+                                            newPlayers[rivalIndex].games[
+                                              rivalGameIndex
+                                            ].result =
                                               result === "win" ? "lose" : "win";
                                           }
                                         }
 
-                                        setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          players: newPlayers,
+                                        }));
                                       }
                                     }}
                                     classNames={selectClassName}
                                     aria-label="选择比赛结果"
                                   >
-                                    <SelectItem key="win" value="win">
-                                      胜利
-                                    </SelectItem>
-                                    <SelectItem key="lose" value="lose">
-                                      失败
-                                    </SelectItem>
+                                    <SelectItem key="win">胜利</SelectItem>
+                                    <SelectItem key="lose">失败</SelectItem>
                                   </Select>
                                 </div>
                               )}
@@ -826,40 +1059,58 @@ export default function TournamentProgressAccordionItem({
 
                           {/* 自定义阶段信息值 */}
                           {editingStage?.customStageKeys &&
-                            Object.entries(editingStage.customStageKeys).map(([key, value]) => (
-                              <div key={key}>
-                                <label htmlFor={`customStageValue-${key}`} className={labelClassName}>
-                                  {value}
-                                </label>
-                                <input
-                                  id={`customStageValue-${key}`}
-                                  type="text"
-                                  value={editingGame?.customStageValues?.[key] || ""}
-                                  onChange={(e) => {
-                                    const newPlayers = [...formData.players!];
-                                    const game = newPlayers
-                                      .find((p) => p.mid === editingPlayer.mid)!
-                                      .games.find((g) => isSameDay(g.date, date));
-                                    if (game) {
-                                      game.customStageValues = {
-                                        ...game.customStageValues,
-                                        [key]: e.target.value,
-                                      };
-                                      setFormData((prev) => ({ ...prev, players: newPlayers }));
+                            Object.entries(editingStage.customStageKeys).map(
+                              ([key, value]) => (
+                                <div key={key}>
+                                  <label
+                                    htmlFor={`customStageValue-${key}`}
+                                    className={labelClassName}
+                                  >
+                                    {value}
+                                  </label>
+                                  <input
+                                    id={`customStageValue-${key}`}
+                                    type="text"
+                                    value={
+                                      editingGame?.customStageValues?.[key] ||
+                                      ""
                                     }
-                                  }}
-                                  onKeyDown={handleKeyDown}
-                                  className={getInputClassName(
-                                    `customStageValue-${key}`,
-                                    touchedFields,
-                                    { [`customStageValue-${key}`]: editingGame?.customStageValues?.[key] },
-                                    inputClassName,
-                                  )}
-                                  onBlur={handleBlur}
-                                  maxLength={32}
-                                />
-                              </div>
-                            ))}
+                                    onChange={(e) => {
+                                      const newPlayers = [...formData.players!];
+                                      const game = newPlayers
+                                        .find(
+                                          (p) => p.mid === editingPlayer.mid,
+                                        )!
+                                        .games.find((g) =>
+                                          isSameDay(g.date, date),
+                                        );
+                                      if (game) {
+                                        game.customStageValues = {
+                                          ...game.customStageValues,
+                                          [key]: e.target.value,
+                                        };
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          players: newPlayers,
+                                        }));
+                                      }
+                                    }}
+                                    onKeyDown={handleKeyDown}
+                                    className={getInputClassName(
+                                      `customStageValue-${key}`,
+                                      touchedFields,
+                                      {
+                                        [`customStageValue-${key}`]:
+                                          editingGame?.customStageValues?.[key],
+                                      },
+                                      inputClassName,
+                                    )}
+                                    onBlur={handleBlur}
+                                    maxLength={32}
+                                  />
+                                </div>
+                              ),
+                            )}
                         </div>
                         <div className="mb-4">
                           <label htmlFor="ending" className={labelClassName}>
@@ -877,7 +1128,10 @@ export default function TournamentProgressAccordionItem({
                                 .games.find((g) => isSameDay(g.date, date));
                               if (game) {
                                 game.ending = e.target.value;
-                                setFormData((prev) => ({ ...prev, players: newPlayers }));
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  players: newPlayers,
+                                }));
                               }
                             }}
                             onKeyDown={handleKeyDown}

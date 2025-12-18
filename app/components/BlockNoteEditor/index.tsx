@@ -40,6 +40,13 @@ export default function BlockNoteEditor({
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const focusEditor = () => {
+    // 让聚焦在本次鼠标事件之后发生，避免被默认行为抢焦点。
+    requestAnimationFrame(() => {
+      editor.focus();
+    });
+  };
+
   useEffect(() => {
     async function loadContent() {
       if (editor) {
@@ -112,11 +119,24 @@ export default function BlockNoteEditor({
 
   return (
     <MantineProvider forceColorScheme="dark">
-      <div className="flex flex-col h-[600px] w-full bg-[#18181b] rounded-md">
-        <div className="flex-grow border border-white/10 rounded-md overflow-y-auto mb-4 p-2 blocknote-container bg-[#1f1f1f]">
+      <div className="flex flex-col h-full w-full bg-[#18181b] rounded-md">
+        <div
+          className="flex-grow border border-white/10 rounded-md overflow-y-auto mb-4 p-2 blocknote-container bg-[#1f1f1f]"
+          onMouseDown={(e) => {
+            // 只在点击容器空白/padding 处时触发；点击编辑器内部不要干预光标/选区行为。
+            if (e.target !== e.currentTarget) return;
+            focusEditor();
+          }}
+        >
           <BlockNoteView editor={editor} theme="dark" slashMenu={false}>
             <SuggestionMenuController
               triggerCharacter={"/"}
+              getItems={async (query) =>
+                filterSuggestionItems(getCustomSlashMenuItems(editor), query)
+              }
+            />
+            <SuggestionMenuController
+              triggerCharacter={"、"}
               getItems={async (query) =>
                 filterSuggestionItems(getCustomSlashMenuItems(editor), query)
               }

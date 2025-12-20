@@ -4,6 +4,9 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { useStorageStore } from "~/stores/storageStore";
 import type { RogueKey } from "~/types/gameData";
 import type { TournamentData } from "~/types/tournamentsData";
+import { SearchSelect } from "~/components/SearchSelect";
+import { miscServices } from "~/services/miscServices";
+import type { SearchUserItem } from "~/types/bilibili";
 import {
   getInputClassName,
   labelClassName,
@@ -51,6 +54,21 @@ export default function TournamentInfoAccordionItem({
   } = useStorageStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editorInitialContent, setEditorInitialContent] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchUserItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  // 记录已选的搜索结果
+  const [selectedUser, setSelectedUser] = useState<SearchUserItem | undefined>(
+    undefined,
+  );
+
+  // 直播间搜索相关状态
+  const [roomSearchResults, setRoomSearchResults] = useState<SearchUserItem[]>(
+    [],
+  );
+  const [roomSearching, setRoomSearching] = useState(false);
+  const [selectedRoomUser, setSelectedRoomUser] = useState<
+    SearchUserItem | undefined
+  >(undefined);
 
   const handleOpenEditor = (key: string) => {
     setUploadDirectory(
@@ -80,6 +98,14 @@ export default function TournamentInfoAccordionItem({
     clearUploadParams();
     onClose();
   };
+
+  const isOrganizerInvalid =
+    touchedFields.has("organizerSearch") &&
+    (!formData.organizers || formData.organizers.length === 0);
+
+  const isRoomInvalid =
+    touchedFields.has("roomSearch") &&
+    (!formData.rooms || formData.rooms.length === 0);
 
   // 更新input内容到formData
   const handleChange = (
@@ -245,64 +271,6 @@ export default function TournamentInfoAccordionItem({
           />
         </div>
 
-        <div>
-          <div className="flex justify-between items-center">
-            <label htmlFor="organizerName" className={labelClassName}>
-              主办方 <span className="text-ak-red">*</span>
-            </label>
-            <button
-              type="button"
-              onClick={() => handleOpenEditor("organizerName")}
-              className="text-xs text-ak-blue hover:underline"
-            >
-              富文本编辑
-            </button>
-          </div>
-          <input
-            id="organizerName"
-            type="text"
-            name="organizerName"
-            value={formData.organizerName}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            className={getInputClassName(
-              "organizerName",
-              touchedFields,
-              formData,
-            )}
-            onBlur={handleBlur}
-            required
-          />
-        </div>
-
-        <div>
-          <div className="flex justify-between items-center">
-            <label htmlFor="room" className={labelClassName}>
-              观赛直播间
-              <span className="text-ak-red">*</span>
-            </label>
-            <button
-              type="button"
-              onClick={() => handleOpenEditor("room")}
-              className="text-xs text-ak-blue hover:underline"
-            >
-              富文本编辑
-            </button>
-          </div>
-
-          <input
-            id="room"
-            type="text"
-            name="room"
-            value={formData.room}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            className={getInputClassName("room", touchedFields, formData)}
-            onBlur={handleBlur}
-            required
-          />
-        </div>
-
         {formData.type === "team" && (
           <div>
             <label htmlFor="memberAlias" className={labelClassName}>
@@ -348,6 +316,287 @@ export default function TournamentInfoAccordionItem({
             />
           </div>
         )}
+      </div>
+
+      <div className="mb-4">
+        <label className={labelWithTooltipClassName}>
+          主办方 <span className="text-ak-red">*</span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {formData.organizers?.map((organizer, index) => (
+            <div
+              key={organizer.mid}
+              className="flex items-center gap-2 px-2 py-1 rounded-md bg-mid-gray"
+            >
+              <div className="w-6 h-6 rounded-full border border-white overflow-hidden flex-shrink-0">
+                <img
+                  src={organizer.avatar}
+                  alt={organizer.name}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-white text-sm">{organizer.name}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    organizers: prev.organizers.filter((_, i) => i !== index),
+                  }));
+                }}
+                className="rounded-md p-1 hover:text-white hover:bg-ak-red"
+                aria-label={`删除组织者${organizer.name}`}
+              >
+                <CloseIcon width="0.7rem" height="0.7rem" />
+              </button>
+            </div>
+          ))}
+
+          <SearchSelect<SearchUserItem>
+            value={selectedUser ?? null}
+            onChange={(item) => {
+              if (!item) {
+                return;
+              }
+              const newMid = String(item.mid);
+              setSelectedUser(item);
+
+              // 检查是否已存在
+              const exists = formData.organizers?.some(
+                (org) => org.mid === newMid,
+              );
+              if (exists) {
+                toast.warning("该组织者已添加");
+                setSelectedUser(undefined);
+                setSearchResults([]);
+                return;
+              }
+
+              // 添加到组织者列表
+              setFormData((prev) => ({
+                ...prev,
+                organizers: [
+                  ...(prev.organizers || []),
+                  {
+                    mid: newMid,
+                    name: item.uname,
+                    avatar: item.upic,
+                  },
+                ],
+              }));
+
+              // 重置搜索状态，保持搜索框可用以便添加下一个
+              setSelectedUser(undefined);
+              setSearchResults([]);
+            }}
+            items={searchResults}
+            filterFn={() => true}
+            renderItem={(item) => (
+              <div className="flex items-center gap-3 py-1">
+                <div className="w-10 h-10 flex-shrink-0 rounded bg-light-gray overflow-hidden">
+                  <img
+                    src={item.upic}
+                    alt={item.uname}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="font-medium truncate">{item.uname}</span>
+                  <span className="text-xs text-gray truncate">
+                    粉丝 {item.fans ?? 0}
+                  </span>
+                </div>
+              </div>
+            )}
+            renderSelected={(item) => item.uname}
+            getKey={(item) => String(item.mid)}
+            placeholder="输入B站用户名"
+            manualSearch
+            onSearch={async (query) => {
+              try {
+                setSearching(true);
+                const resp = await miscServices.searchBilibiliUsers(
+                  query,
+                  1,
+                  20,
+                );
+                const body = resp.data;
+                if (body.code !== 0) {
+                  toast.error(body.message || "搜索失败");
+                  setSearchResults([]);
+                  return;
+                }
+                setSearchResults(body.data?.result || []);
+              } catch (err) {
+                console.error(err);
+                toast.error("搜索失败，请稍后重试");
+                setSearchResults([]);
+              } finally {
+                setSearching(false);
+              }
+            }}
+            isSearching={searching}
+            onInputChange={() => {}}
+            onInputKeyDown={handleKeyDown}
+            onInputBlur={handleBlur}
+            inputName="organizerSearch"
+            className="w-64"
+            onClearResults={() => setSearchResults([])}
+          />
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className={labelClassName}>
+            观赛直播间 <span className="text-ak-red">*</span>
+          </label>
+        </div>
+
+        {/* 已添加的直播间列表 */}
+        <div className="flex flex-wrap gap-2">
+          {formData.rooms?.map((room, index) => (
+            <div
+              key={room.mid}
+              className="flex items-center gap-2 px-2 py-1 rounded-md bg-mid-gray"
+            >
+              <div className="w-6 h-6 rounded-full border border-white overflow-hidden flex-shrink-0">
+                <img
+                  src={room.avatar}
+                  alt={room.name}
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-white text-sm">{room.name}的直播间</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    rooms: prev.rooms.filter((_, i) => i !== index),
+                  }));
+                }}
+                className="rounded-md p-1 hover:text-white hover:bg-ak-red"
+                aria-label={`删除直播间${room.name}`}
+              >
+                <CloseIcon width="0.7rem" height="0.7rem" />
+              </button>
+            </div>
+          ))}
+
+          {/* 添加新直播间的搜索框 */}
+          <SearchSelect<SearchUserItem>
+            value={selectedRoomUser ?? null}
+            onChange={(item) => {
+              if (!item) {
+                return;
+              }
+              const newMid = String(item.mid);
+              setSelectedRoomUser(item);
+
+              // 检查是否已存在
+              const exists = formData.rooms?.some(
+                (room) => room.mid === newMid,
+              );
+              if (exists) {
+                toast.warning("该直播间已添加");
+                setSelectedRoomUser(undefined);
+                setRoomSearchResults([]);
+                return;
+              }
+
+              // 检查是否有直播间ID
+              if (!item.room_id) {
+                toast.warning("该用户暂无直播间");
+                setSelectedRoomUser(undefined);
+                setRoomSearchResults([]);
+                return;
+              }
+
+              // 添加到直播间列表
+              setFormData((prev) => ({
+                ...prev,
+                rooms: [
+                  ...(prev.rooms || []),
+                  {
+                    mid: newMid,
+                    room_id: String(item.room_id),
+                    name: item.uname,
+                    avatar: item.upic,
+                  },
+                ],
+              }));
+
+              // 重置搜索状态
+              setSelectedRoomUser(undefined);
+              setRoomSearchResults([]);
+            }}
+            items={roomSearchResults}
+            filterFn={() => true}
+            renderItem={(item) => (
+              <div className="flex items-center gap-3 py-1">
+                <div className="w-10 h-10 flex-shrink-0 rounded bg-light-gray overflow-hidden">
+                  <img
+                    src={item.upic}
+                    alt={item.uname}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="font-medium truncate">{item.uname}</span>
+                  <span className="text-xs text-gray truncate">
+                    粉丝 {item.fans ?? 0}
+                    {item.room_id && (
+                      <span className="ml-2 text-ak-blue">
+                        {item.is_live ? "🔴直播中" : "⚪未开播"}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            )}
+            renderSelected={(item) => item.uname}
+            getKey={(item) => String(item.mid)}
+            placeholder="输入B站用户名"
+            manualSearch
+            onSearch={async (query) => {
+              try {
+                setRoomSearching(true);
+                const resp = await miscServices.searchBilibiliUsers(
+                  query,
+                  1,
+                  20,
+                );
+                const body = resp.data;
+                if (body.code !== 0) {
+                  toast.error(body.message || "搜索失败");
+                  setRoomSearchResults([]);
+                  return;
+                }
+                setRoomSearchResults(body.data?.result || []);
+              } catch (err) {
+                console.error(err);
+                toast.error("搜索失败，请稍后重试");
+                setRoomSearchResults([]);
+              } finally {
+                setRoomSearching(false);
+              }
+            }}
+            isSearching={roomSearching}
+            onInputChange={() => {}}
+            onInputKeyDown={handleKeyDown}
+            onInputBlur={handleBlur}
+            inputName="roomSearch"
+            className="w-64"
+            onClearResults={() => setRoomSearchResults([])}
+          />
+        </div>
       </div>
 
       <div className="mb-4">

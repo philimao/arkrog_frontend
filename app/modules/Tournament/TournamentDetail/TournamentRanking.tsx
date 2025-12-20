@@ -1,6 +1,10 @@
 import React from "react";
 import { useState } from "react";
-import type { TournamentData, TournamentGame, TournamentTeamStage } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentGame,
+  TournamentTeamStage,
+} from "~/types/tournamentsData";
 import { SectionContainer } from ".";
 import { SortIcon, StarIcon } from "~/components/Icons";
 import { styled } from "styled-components";
@@ -56,25 +60,42 @@ const StyledTeamName = styled.td<{
   $isTopTier: boolean;
   $sortByRanking: boolean;
 }>`
-  box-shadow: inset -1px 0px ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
+  box-shadow: inset -1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
   position: sticky;
   left: 64px;
   background-color: ${(props) => (props.$isTopTier ? "#1c272c" : "#212121")};
 `;
 
 const StyledFinalPoint = styled.td<{ $isTopTier: boolean }>`
-  box-shadow: inset 1px 0px ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
+  box-shadow: inset 1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
 `;
 
 // Helper components
-const StageHeader = ({ stageName, count, nextStageCount, isFinal, isTeam = false }: StageHeaderProps) => (
+const StageHeader = ({
+  stageName,
+  count,
+  nextStageCount,
+  isFinal,
+  isTeam = false,
+}: StageHeaderProps) => (
   <div className="h-8 bg-dark-gray mb-4 inline-flex gap-3 px-4">
     <div className="font-medium text-xl pt-[2px]">{stageName}</div>
-    <StyledStageTitleNum className={`${isFinal ? "text-ak-red" : "text-ak-blue"}`}>{count}</StyledStageTitleNum>
+    <StyledStageTitleNum
+      className={`${isFinal ? "text-ak-red" : "text-ak-blue"}`}
+    >
+      {count}
+    </StyledStageTitleNum>
     {!isFinal && nextStageCount && (
       <>
-        <p className="font-medium text-xl pt-[2px]"> {isTeam ? "队进" : "进"} </p>
-        <StyledStageTitleNum className="text-ak-red">{nextStageCount}</StyledStageTitleNum>
+        <p className="font-medium text-xl pt-[2px]">
+          {" "}
+          {isTeam ? "队进" : "进"}{" "}
+        </p>
+        <StyledStageTitleNum className="text-ak-red">
+          {nextStageCount}
+        </StyledStageTitleNum>
       </>
     )}
     {isTeam && <p className="font-medium text-xl pt-[2px]"> 队</p>}
@@ -90,7 +111,8 @@ const SortableHeader = ({
   sortType: SortByType;
   sortProps: SortProps;
 }) => {
-  const { sortBy, rankingAscending, dateAscending, handleSort, tableId } = sortProps;
+  const { sortBy, rankingAscending, dateAscending, handleSort, tableId } =
+    sortProps;
 
   const getOrder = () => {
     // Check if this table has a sort type set
@@ -105,7 +127,11 @@ const SortableHeader = ({
   return (
     <div className="flex items-center w-max">
       <p>{label}</p>
-      <SortIcon order={getOrder()} role="button" onClick={() => handleSort(sortType, tableId)} />
+      <SortIcon
+        order={getOrder()}
+        role="button"
+        onClick={() => handleSort(sortType, tableId)}
+      />
     </div>
   );
 };
@@ -114,7 +140,11 @@ const SquadDisplay = ({ squadName }: { squadName: string }) => (
   <>
     <span className="hidden md:block">{squadName}</span>
     <span className="block md:hidden">
-      <img src={`/images/squad/${squadName}.png`} alt="squad" className="h-10 aspect-square object-contain" />
+      <img
+        src={`/images/squad/${squadName}.png`}
+        alt="squad"
+        className="h-10 aspect-square object-contain"
+      />
     </span>
   </>
 );
@@ -123,8 +153,12 @@ const SquadDisplay = ({ squadName }: { squadName: string }) => (
 const useSortingState = () => {
   // Initialize with empty objects to store table-specific sort settings
   const [sortBy, setSortBy] = useState<Record<string, SortByType>>({});
-  const [rankingAscending, setRankingAscending] = useState<Record<string, boolean>>({});
-  const [dateAscending, setDateAscending] = useState<Record<string, boolean>>({});
+  const [rankingAscending, setRankingAscending] = useState<
+    Record<string, boolean>
+  >({});
+  const [dateAscending, setDateAscending] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const handleSort = (type: SortByType, tableId: string) => {
     // Update sort type for this specific table
@@ -159,7 +193,11 @@ const useSortingState = () => {
 };
 
 // Helper functions
-const getNextStageCount = (tournamentData: TournamentData, index: number, isTeam: boolean) => {
+const getNextStageCount = (
+  tournamentData: TournamentData,
+  index: number,
+  isTeam: boolean,
+) => {
   if (index === tournamentData.stages.length - 1) return 0;
 
   const nextStage = tournamentData.stages[index + 1];
@@ -169,7 +207,8 @@ const getNextStageCount = (tournamentData: TournamentData, index: number, isTeam
 
   const filterFn = isTeam
     ? (team: any) => team.stages.find((s: any) => s.name === nextStage.name)
-    : (player: any) => player.games.find((g: any) => g.stage === nextStage.name);
+    : (player: any) =>
+        player.games.find((g: any) => g.stage === nextStage.name);
 
   const filteredItems = items.filter(filterFn);
   return filteredItems.length;
@@ -179,7 +218,11 @@ const createRankingMap = (schedule: Map<string, any>) => {
   const ranking = new Map<string, number>();
 
   Array.from(schedule)
-    .sort((a, b) => (a[1].rank && b[1].rank ? a[1].rank - b[1].rank : (b[1].point ?? 0) - (a[1].point ?? 0)))
+    .sort((a, b) =>
+      a[1].rank && b[1].rank
+        ? a[1].rank - b[1].rank
+        : (b[1].point ?? 0) - (a[1].point ?? 0),
+    )
     .forEach((entry, index) => ranking.set(entry[0], index + 1));
 
   return ranking;
@@ -195,8 +238,12 @@ const getSortedRanking = (
 ) => {
   // Get sort settings for this specific table
   const sortBy = sortByMap[tableId] || "point";
-  const rankingAscending = rankingAscendingMap[tableId] !== undefined ? rankingAscendingMap[tableId] : true;
-  const dateAscending = dateAscendingMap[tableId] !== undefined ? dateAscendingMap[tableId] : false;
+  const rankingAscending =
+    rankingAscendingMap[tableId] !== undefined
+      ? rankingAscendingMap[tableId]
+      : true;
+  const dateAscending =
+    dateAscendingMap[tableId] !== undefined ? dateAscendingMap[tableId] : false;
 
   if (sortBy === "point") {
     return Array.from(schedule).sort((a, b) =>
@@ -211,7 +258,9 @@ const getSortedRanking = (
   } else {
     // For date sorting, use playerSchedule for team mode
     const scheduleToSort = playerSchedule || schedule;
-    return Array.from(scheduleToSort).sort((a, b) => (dateAscending ? a[1].date - b[1].date : b[1].date - a[1].date));
+    return Array.from(scheduleToSort).sort((a, b) =>
+      dateAscending ? a[1].date - b[1].date : b[1].date - a[1].date,
+    );
   }
 };
 
@@ -253,11 +302,19 @@ const RankingTable = ({
         <thead className="bg-black-gray">
           <tr>
             <td>
-              <SortableHeader label="排名" sortType="point" sortProps={sortProps} />
+              <SortableHeader
+                label="排名"
+                sortType="point"
+                sortProps={sortProps}
+              />
             </td>
             <td>选手ID</td>
             <td>
-              <SortableHeader label="日程" sortType="date" sortProps={sortProps} />
+              <SortableHeader
+                label="日程"
+                sortType="date"
+                sortProps={sortProps}
+              />
             </td>
             <td>分队</td>
             {Object.keys(tournamentData.customPlayerKeys).map((key) => (
@@ -272,11 +329,16 @@ const RankingTable = ({
         </thead>
         <tbody className="border-collapse">
           {sortedRanking.map((entry, rankIndex) => {
-            const player = tournamentData.players?.find((player) => player.mid === entry[0]);
+            const player = tournamentData.players?.find(
+              (player) => player.mid === entry[0],
+            );
             const isTopTier = topTiers.indexOf(entry[0]) !== -1;
             const nextIsTopTier =
-              rankIndex !== sortedRanking.length - 1 && topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
-            const prevIsTopTier = rankIndex !== 0 && topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
+              rankIndex !== sortedRanking.length - 1 &&
+              topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
+            const prevIsTopTier =
+              rankIndex !== 0 &&
+              topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
 
             return (
               <tr
@@ -286,7 +348,9 @@ const RankingTable = ({
                   ${nextIsTopTier ? "border-b-[#0073A4CC]" : ""}
                   ${prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`}
               >
-                <td className={`w-4 p-4 text-bold text-center ${isTopTier && "text-ak-blue"}`}>
+                <td
+                  className={`w-4 p-4 text-bold text-center ${isTopTier && "text-ak-blue"}`}
+                >
                   {ranking.get(player?.mid || "")}
                 </td>
                 <td>{player?.name}</td>
@@ -362,14 +426,25 @@ const OneOnOneTable = ({
           {Array.from(winnedGames)
             .sort((a, b) => a[1].date - b[1].date)
             .map((entry, groupIndex) => {
-              const winner = tournamentData.players?.find((player) => player.mid === entry[0]);
-              const loser = tournamentData.players?.find((player) => player.mid === entry[1].rivalMid);
+              const winner = tournamentData.players?.find(
+                (player) => player.mid === entry[0],
+              );
+              const loser = tournamentData.players?.find(
+                (player) => player.mid === entry[1].rivalMid,
+              );
               const losedGame = loser && losedGames.get(loser?.mid);
+
+              // console.log(winner, loser, entry);
 
               return (
                 <React.Fragment key={`group-${groupIndex}`}>
-                  <tr key={`${groupIndex}-win`} className="border-y-1 bg-[#1c272c] border-[#0073A4CC]">
-                    <td className="w-12 text-bold text-ak-blue">win</td>
+                  <tr
+                    key={`${groupIndex}-win`}
+                    className="border-y-1 bg-[#1c272c] border-[#0073A4CC]"
+                  >
+                    <td className="w-12 text-bold text-ak-blue">
+                      {entry[1].point === undefined ? "-" : "win"}
+                    </td>
                     <td>{winner?.name}</td>
                     <td>{entry[1].schedule}</td>
                     <td>
@@ -384,8 +459,13 @@ const OneOnOneTable = ({
                     <td className="hidden md:table-cell">{entry[1].ending}</td>
                     <td>{entry[1].point}</td>
                   </tr>
-                  <tr key={`${groupIndex}-lose`} className="bg-black-gray-70 border-b-8 border-b-[#363636]">
-                    <td className="w-12">lose</td>
+                  <tr
+                    key={`${groupIndex}-lose`}
+                    className="bg-black-gray-70 border-b-8 border-b-[#363636]"
+                  >
+                    <td className="w-12">
+                      {entry[1].point === undefined ? "-" : "lose"}
+                    </td>
                     <td>{loser?.name}</td>
                     <td>{losedGame?.schedule}</td>
                     <td>
@@ -398,7 +478,9 @@ const OneOnOneTable = ({
                       Object.keys(losedGame?.customStageValues).map((key) => (
                         <td key={key}>{losedGame?.customStageValues[key]}</td>
                       ))}
-                    <td className="hidden md:table-cell">{losedGame?.ending}</td>
+                    <td className="hidden md:table-cell">
+                      {losedGame?.ending}
+                    </td>
                     <td>{losedGame?.point}</td>
                   </tr>
                 </React.Fragment>
@@ -413,17 +495,26 @@ const OneOnOneTable = ({
 };
 
 // Individual ranking component
-export function TournamentRankingIndividual({ tournamentData }: { tournamentData: TournamentData }) {
+export function TournamentRankingIndividual({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   const players = tournamentData.players!;
+  console.log(players);
 
-  const { sortBy, rankingAscending, dateAscending, handleSort } = useSortingState();
+  const { sortBy, rankingAscending, dateAscending, handleSort } =
+    useSortingState();
 
   return tournamentData.stages?.map((stage, index) => {
     const isFinal = index === tournamentData.stages.length - 1;
 
     if (stage.type === "rank") {
       // TODO: Change to stage.groupBy
-      if (stage.customStageKeys && Object.keys(stage.customStageKeys).includes("group")) {
+      if (
+        stage.customStageKeys &&
+        Object.keys(stage.customStageKeys).includes("group")
+      ) {
         const groups = new Set<string>();
         players.forEach((player) => {
           const game = player.games.find((game) => game.stage === stage.name);
@@ -432,34 +523,53 @@ export function TournamentRankingIndividual({ tournamentData }: { tournamentData
           }
         });
         const sortedGroups = Array.from(groups).sort();
-        return sortedGroups.map((group) => createRankingTable(true, group, sortedGroups));
+        return sortedGroups.map((group) =>
+          createRankingTable(true, group, sortedGroups),
+        );
       } else {
         return createRankingTable(false);
       }
 
-      function createRankingTable(hasGroups: boolean, group?: string, groups?: string[]) {
+      function createRankingTable(
+        hasGroups: boolean,
+        group?: string,
+        groups?: string[],
+      ) {
         const schedule = new Map<string, TournamentGame>();
 
         players.forEach((player) => {
           const game = player.games.find((game) => game.stage === stage.name);
-          if (game && (!hasGroups || game?.customStageValues["group"] === group)) {
+          if (
+            game &&
+            (!hasGroups || game?.customStageValues["group"] === group)
+          ) {
             schedule.set(player.mid, game);
           }
         });
 
         const uniquePlayersCount = schedule.size;
         const uniquePlayersNextStageCount =
-          getNextStageCount(tournamentData, index, false) / (hasGroups && groups ? groups.length : 1);
+          getNextStageCount(tournamentData, index, false) /
+          (hasGroups && groups ? groups.length : 1);
 
         // Create ranking and determine top tiers
         const ranking = createRankingMap(schedule);
-        const topTiers = Array.from(ranking.keys()).slice(0, isFinal ? 3 : uniquePlayersNextStageCount);
+        const topTiers = Array.from(ranking.keys()).slice(
+          0,
+          isFinal ? 3 : uniquePlayersNextStageCount,
+        );
 
         // Generate a unique tableId for this table
         const tableId = `individual-${stage.name}${group ? `-${group}` : ""}`;
 
         // Sort the ranking based on current sort settings for this table
-        const sortedRanking = getSortedRanking(schedule, sortBy, rankingAscending, dateAscending, tableId);
+        const sortedRanking = getSortedRanking(
+          schedule,
+          sortBy,
+          rankingAscending,
+          dateAscending,
+          tableId,
+        );
 
         const sortProps: SortProps = {
           sortBy,
@@ -506,7 +616,11 @@ export function TournamentRankingIndividual({ tournamentData }: { tournamentData
       });
 
       const uniquePlayersCount = winnedGames.size + losedGames.size;
-      const uniquePlayersNextStageCount = getNextStageCount(tournamentData, index, false);
+      const uniquePlayersNextStageCount = getNextStageCount(
+        tournamentData,
+        index,
+        false,
+      );
 
       return (
         <OneOnOneTable
@@ -526,11 +640,16 @@ export function TournamentRankingIndividual({ tournamentData }: { tournamentData
 }
 
 // Team ranking component
-export function TournamentRankingTeam({ tournamentData }: { tournamentData: TournamentData }) {
+export function TournamentRankingTeam({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   const teams = tournamentData.teams!;
   const players = tournamentData.players!;
 
-  const { sortBy, rankingAscending, dateAscending, handleSort } = useSortingState();
+  const { sortBy, rankingAscending, dateAscending, handleSort } =
+    useSortingState();
 
   return tournamentData.stages?.map((stage, index) => {
     // Prepare data for this stage
@@ -544,7 +663,9 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
 
     const teamSchedule = new Map<string, TournamentTeamStage>();
     teams.forEach((team) => {
-      const teamStage = team.stages.find((teamStage) => teamStage.name === stage.name);
+      const teamStage = team.stages.find(
+        (teamStage) => teamStage.name === stage.name,
+      );
       if (teamStage) {
         teamSchedule.set(team.name, teamStage);
       }
@@ -552,11 +673,18 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
 
     const isFinal = index === tournamentData.stages.length - 1;
     const uniqueTeamsCount = teamSchedule.size;
-    const uniqueTeamsNextStageCount = getNextStageCount(tournamentData, index, true);
+    const uniqueTeamsNextStageCount = getNextStageCount(
+      tournamentData,
+      index,
+      true,
+    );
 
     // Create ranking and determine top tiers
     const ranking = createRankingMap(teamSchedule);
-    const topTiers = Array.from(ranking.keys()).slice(0, isFinal ? 1 : uniqueTeamsNextStageCount);
+    const topTiers = Array.from(ranking.keys()).slice(
+      0,
+      isFinal ? 1 : uniqueTeamsNextStageCount,
+    );
 
     // Generate a unique tableId for this team table
     const tableId = `team-${stage.name}`;
@@ -597,12 +725,24 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
             <thead className="sticky top-0 bg-black-gray">
               <tr>
                 <td className="sticky left-0 bg-black-gray">
-                  <SortableHeader label="排名" sortType="point" sortProps={sortProps} />
+                  <SortableHeader
+                    label="排名"
+                    sortType="point"
+                    sortProps={sortProps}
+                  />
                 </td>
-                <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">队伍</td>
-                <td className="sticky left-[144px] sm:left-[192px] bg-black-gray player-name">选手ID</td>
+                <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">
+                  队伍
+                </td>
+                <td className="sticky left-[144px] sm:left-[192px] bg-black-gray player-name">
+                  选手ID
+                </td>
                 <td>
-                  <SortableHeader label="日程" sortType="date" sortProps={sortProps} />
+                  <SortableHeader
+                    label="日程"
+                    sortType="date"
+                    sortProps={sortProps}
+                  />
                 </td>
                 <td>位置</td>
                 <td className="min-w-12">分队</td>
@@ -619,33 +759,51 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
                 ))}
                 <td>结局</td>
                 <td>分数</td>
-                <td className="min-w-20 sticky right-0 bg-black-gray">队伍总分</td>
+                <td className="min-w-20 sticky right-0 bg-black-gray">
+                  队伍总分
+                </td>
               </tr>
             </thead>
             <tbody className="border-collapse">
               {sortedRanking.map((entry, rankIndex) => {
                 const team =
                   sortBy[tableId] === "point"
-                    ? tournamentData.teams?.find((team) => team.name === entry[0])
-                    : tournamentData.teams?.find((team) => team.members.includes(entry[0]));
+                    ? tournamentData.teams?.find(
+                        (team) => team.name === entry[0],
+                      )
+                    : tournamentData.teams?.find((team) =>
+                        team.members.includes(entry[0]),
+                      );
 
                 const players =
                   sortBy[tableId] === "point"
-                    ? tournamentData.players?.filter((player) => team?.members.includes(player.name))
-                    : tournamentData.players?.filter((player) => player.name === entry[0]);
+                    ? tournamentData.players?.filter((player) =>
+                        team?.members.includes(player.name),
+                      )
+                    : tournamentData.players?.filter(
+                        (player) => player.name === entry[0],
+                      );
 
                 const isTopTier = topTiers.indexOf(entry[0]) !== -1;
                 const nextIsTopTier =
-                  rankIndex !== sortedRanking.length - 1 && topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
-                const prevIsTopTier = rankIndex !== 0 && topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
+                  rankIndex !== sortedRanking.length - 1 &&
+                  topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
+                const prevIsTopTier =
+                  rankIndex !== 0 &&
+                  topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
 
                 return players?.map((player, playerIndex) => {
                   const isFirstPlayer = playerIndex === 0;
                   const isLastPlayer = playerIndex === players.length - 1;
-                  const playerGame = player.games.find((game) => game.stage === stage.name);
+                  const playerGame = player.games.find(
+                    (game) => game.stage === stage.name,
+                  );
+
                   const isKeyMember = player.name === team?.keyMember;
                   const isTeamLeader = player.name === team?.leader;
-                  const showRank = (sortBy[tableId] === "point" && isFirstPlayer) || sortBy[tableId] === "date";
+                  const showRank =
+                    (sortBy[tableId] === "point" && isFirstPlayer) ||
+                    sortBy[tableId] === "date";
 
                   return (
                     <tr
@@ -657,7 +815,9 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
                     >
                       {showRank && (
                         <td
-                          rowSpan={sortBy[tableId] === "point" ? players.length : 1}
+                          rowSpan={
+                            sortBy[tableId] === "point" ? players.length : 1
+                          }
                           className={`sticky left-0 whitespace-nowrap w-4 p-4 text-bold text-center
                             ${isTopTier ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
                         >
@@ -667,12 +827,20 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
 
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
-                          <StyledTeamName $isTopTier={isTopTier} $sortByRanking={true} rowSpan={players.length}>
+                          <StyledTeamName
+                            $isTopTier={isTopTier}
+                            $sortByRanking={true}
+                            rowSpan={players.length}
+                          >
                             {entry[0]}
                           </StyledTeamName>
                         )
                       ) : (
-                        <StyledTeamName $isTopTier={isTopTier} $sortByRanking={false} className="max-w-32 truncate">
+                        <StyledTeamName
+                          $isTopTier={isTopTier}
+                          $sortByRanking={false}
+                          className="max-w-32 truncate"
+                        >
                           {team?.name}
                         </StyledTeamName>
                       )}
@@ -688,14 +856,22 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
                         {player.name}
                       </td>
 
-                      <td className="whitespace-nowrap">{playerGame?.schedule}</td>
                       <td className="whitespace-nowrap">
-                        {isKeyMember ? tournamentData.keyMemberAlias : tournamentData.memberAlias}
+                        {playerGame?.schedule}
                       </td>
                       <td className="whitespace-nowrap">
-                        <SquadDisplay squadName={playerGame?.starterSquad || ""} />
+                        {isKeyMember
+                          ? tournamentData.keyMemberAlias
+                          : tournamentData.memberAlias}
                       </td>
-                      <td className="whitespace-nowrap">{playerGame?.starterOp}</td>
+                      <td className="whitespace-nowrap">
+                        <SquadDisplay
+                          squadName={playerGame?.starterSquad || ""}
+                        />
+                      </td>
+                      <td className="whitespace-nowrap">
+                        {playerGame?.starterOp}
+                      </td>
                       {Object.values(player.customPlayerValues).map((value) => (
                         <td className="whitespace-nowrap" key={value}>
                           {value}
@@ -707,7 +883,9 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
                             {playerGame.customStageValues[key]}
                           </td>
                         ))}
-                      <td className="whitespace-nowrap">{playerGame?.ending}</td>
+                      <td className="whitespace-nowrap">
+                        {playerGame?.ending}
+                      </td>
                       <td className="whitespace-nowrap">{playerGame?.point}</td>
 
                       {sortBy[tableId] === "point" ? (
@@ -725,7 +903,11 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
                           $isTopTier={isTopTier}
                           className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
                         >
-                          {team?.stages.find((teamStage) => teamStage.name === stage.name)?.point}
+                          {
+                            team?.stages.find(
+                              (teamStage) => teamStage.name === stage.name,
+                            )?.point
+                          }
                         </StyledFinalPoint>
                       )}
                     </tr>
@@ -743,7 +925,11 @@ export function TournamentRankingTeam({ tournamentData }: { tournamentData: Tour
 }
 
 // Main wrapper component
-export default function TournamentRankingWrapper({ tournamentData }: { tournamentData: TournamentData }) {
+export default function TournamentRankingWrapper({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   if (!tournamentData.stages || tournamentData.stages.length === 0) {
     return (
       <div>
@@ -752,8 +938,12 @@ export default function TournamentRankingWrapper({ tournamentData }: { tournamen
     );
   }
 
-  const renderTeam = tournamentData.type === "team" && tournamentData.teams?.length && tournamentData.players?.length;
-  const renderIndividual = tournamentData.type === "individual" && tournamentData.players?.length;
+  const renderTeam =
+    tournamentData.type === "team" &&
+    tournamentData.teams?.length &&
+    tournamentData.players?.length;
+  const renderIndividual =
+    tournamentData.type === "individual" && tournamentData.players?.length;
 
   return (
     <div>

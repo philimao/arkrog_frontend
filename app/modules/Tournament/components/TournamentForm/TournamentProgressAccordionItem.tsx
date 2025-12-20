@@ -13,6 +13,26 @@ import {
   labelWithTooltipClassName,
 } from ".";
 
+// Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
+const calculateSchedule = (
+  gameDate: number,
+  stageStartTime: number,
+): string => {
+  const startDate = new Date(stageStartTime);
+  startDate.setHours(0, 0, 0, 0);
+  const gameDateObj = new Date(gameDate);
+  gameDateObj.setHours(0, 0, 0, 0);
+
+  const diffTime = gameDateObj.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays >= 0) {
+    return `Day${diffDays + 1}`;
+  }
+
+  return "";
+};
+
 const inputClassName =
   "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 const selectClassName = {
@@ -556,11 +576,18 @@ export default function TournamentProgressAccordionItem({
                             const newPlayers = [...formData.players!];
                             const newDate = new Date(date);
                             newDate.setHours(0, 0, 0, 0);
+                            const gameDate = newDate.getTime();
                             newPlayers
                               .find((p) => p.mid === newPlayer?.mid)!
                               .games.push({
-                                date: newDate.getTime(),
+                                date: gameDate,
                                 stage: editingStage?.name || "",
+                                schedule: editingStage?.startTime
+                                  ? calculateSchedule(
+                                      gameDate,
+                                      editingStage.startTime,
+                                    )
+                                  : undefined,
                                 customStageValues: {},
                               });
                             setFormData((prev) => ({
@@ -642,6 +669,13 @@ export default function TournamentProgressAccordionItem({
                                       // Ensure the date is valid before updating
                                       if (!isNaN(newDate.getTime())) {
                                         game.date = newDate.getTime();
+                                        // Update schedule when date changes
+                                        if (editingStage?.startTime) {
+                                          game.schedule = calculateSchedule(
+                                            newDate.getTime(),
+                                            editingStage.startTime,
+                                          );
+                                        }
                                         setFormData((prev) => ({
                                           ...prev,
                                           players: newPlayers,
@@ -929,9 +963,16 @@ export default function TournamentProgressAccordionItem({
                                           // Create a new game for the rival if it doesn't exist
                                           const newDate = new Date(date);
                                           newDate.setHours(0, 0, 0, 0);
+                                          const gameDate = newDate.getTime();
                                           newPlayers[rivalIndex].games.push({
-                                            date: newDate.getTime(),
+                                            date: gameDate,
                                             stage: editingStage?.name || "",
+                                            schedule: editingStage?.startTime
+                                              ? calculateSchedule(
+                                                  gameDate,
+                                                  editingStage.startTime,
+                                                )
+                                              : undefined,
                                             rivalMid:
                                               editingPlayer.mid.toString(),
                                             result: "lose",

@@ -10,6 +10,8 @@ import {
   StyledBackButtonContainer,
 } from "./components/Shared";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import Markdown from "react-markdown";
+import BilibiliUser from "~/components/BilibiliUser";
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -57,12 +59,15 @@ function RougeSelector({
     }
   }, [searchParams, topics]);
 
+  // 当前主题的赛事
   const tournaments = tournamentsData
     .filter((tournament) => tournament.rogue === currentTopic.id)
     .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime);
-  const ongoingTournaments = tournaments.filter(
-    (tournament) => tournament.ongoing,
-  );
+  // 展示所有当前比赛，不分主题
+  const ongoingTournaments = tournamentsData
+    .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime)
+    .filter((tournament) => tournament.ongoing);
+  // 轮播实现
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -109,12 +114,25 @@ function RougeSelector({
                 }
                 {
                   <div>
-                    版本：{currentTopic.name}
+                    版本：{topics[tournament.rogue as RogueKey].name}
                     {tournament.edition}
                   </div>
                 }
                 {<div>难度：{tournament.level}</div>}
-                {<div>主办方：{tournament.organizerName}</div>}
+                {
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      {tournament.organizers?.map((organizer, index) => (
+                        <BilibiliUser
+                          key={organizer.mid}
+                          mid={organizer.mid}
+                          name={organizer.name}
+                          face={organizer.avatar}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                }
               </div>
             </div>
           ))}

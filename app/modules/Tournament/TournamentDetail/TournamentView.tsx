@@ -8,6 +8,7 @@ import TournamentInfo from "./TournamentInfo";
 import TournamentRanking from "./TournamentRanking";
 import TournamentFinalResult from "./TournamentFinalResult";
 import { SectionContainer } from ".";
+import BilibiliUser from "~/components/BilibiliUser";
 
 export interface TournamentViewProps {
   tournamentData: TournamentData;
@@ -15,12 +16,18 @@ export interface TournamentViewProps {
   showPreviewBanner?: boolean;
 }
 
-export default function TournamentView({ tournamentData, children, showPreviewBanner = false }: TournamentViewProps) {
+export default function TournamentView({
+  tournamentData,
+  children,
+  showPreviewBanner = false,
+}: TournamentViewProps) {
   const { topics } = useGameDataStore();
 
   if (!topics) return <Loading />;
 
-  const topicData = tournamentData.rogue ? topics[tournamentData.rogue as RogueKey] : Object.values(topics)[0];
+  const topicData = tournamentData.rogue
+    ? topics[tournamentData.rogue as RogueKey]
+    : Object.values(topics)[0];
 
   const renderHeader = () => {
     return (
@@ -38,9 +45,13 @@ export default function TournamentView({ tournamentData, children, showPreviewBa
         )}
         <div className="flex flex-col gap-4 pr-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
-            <div className="text-4xl lg:text-6xl font-bold">{tournamentData.name}</div>
+            <div className="text-4xl lg:text-6xl font-bold">
+              {tournamentData.name}
+            </div>
             <div className="flex items-center gap-6">
-              {tournamentData.ongoing && <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>}
+              {tournamentData.ongoing && (
+                <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
+              )}
             </div>
           </div>
           <div className="text-ak-blue">
@@ -64,19 +75,32 @@ export default function TournamentView({ tournamentData, children, showPreviewBa
   };
 
   const renderPlayer = (playerInfo: string, column?: boolean) => {
-    const player = tournamentData.players?.find((player) => player.mid === playerInfo || player.name === playerInfo);
+    const player = tournamentData.players?.find(
+      (player) => player.mid === playerInfo || player.name === playerInfo,
+    );
     return (
       <>
         {player && (
-          <div className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}>
+          <div
+            className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}
+          >
             <div className="w-16 h-16 aspect-square bg-mid-gray flex items-center justify-center">
               {player.face ? (
-                <img src={player.face} alt="avatar" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                <img
+                  src={player.face}
+                  alt="avatar"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                />
               ) : (
                 <p className="text-5xl text-white">{player.name[0]}</p>
               )}
             </div>
-            <div className={`text-white ${column ? "text-sm text-center" : ""}`}>{player.name}</div>
+            <div
+              className={`text-white ${column ? "text-sm text-center" : ""}`}
+            >
+              {player.name}
+            </div>
           </div>
         )}
       </>
@@ -85,16 +109,52 @@ export default function TournamentView({ tournamentData, children, showPreviewBa
 
   return (
     <div className="relative">
-      {showPreviewBanner && <div className="bg-ak-dark-red py-2 text-xl font-bold mb-6 text-center">预览模式</div>}
+      {showPreviewBanner && (
+        <div className="bg-ak-dark-red py-2 text-xl font-bold mb-6 text-center">
+          预览模式
+        </div>
+      )}
       {children}
       {renderHeader()}
       <div className="mb-16">
-        <SectionContainer title="比赛规则" content={tournamentData.rule} />
+        <SectionContainer
+          title="比赛规则"
+          content={<Markdown>{tournamentData.rule}</Markdown>}
+        />
       </div>
 
       <div className="my-16 grid sm:grid-cols-3 gap-8">
-        <SectionContainer title="主办方" content={tournamentData.organizerName} />
-        <SectionContainer title="观赛直播间" content={<Markdown>{tournamentData.room}</Markdown>} />
+        <SectionContainer
+          title="主办方"
+          content={
+            <div>
+              {tournamentData.organizers?.map((organizer, index) => (
+                <BilibiliUser
+                  key={organizer.mid}
+                  mid={organizer.mid}
+                  name={organizer.name}
+                  face={organizer.avatar}
+                />
+              ))}
+            </div>
+          }
+        />
+        <SectionContainer
+          title="观赛直播间"
+          content={
+            <div>
+              {tournamentData.rooms?.map((room, index) => (
+                <BilibiliUser
+                  key={room.mid}
+                  mid={room.mid}
+                  name={room.name}
+                  face={room.avatar}
+                  room_id={room.room_id}
+                />
+              ))}
+            </div>
+          }
+        />
         <SectionContainer
           title="比赛时间"
           content={
@@ -112,7 +172,10 @@ export default function TournamentView({ tournamentData, children, showPreviewBa
 
       <TournamentFinalResult tournamentData={tournamentData} />
 
-      <TournamentInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
+      <TournamentInfo
+        tournamentData={tournamentData}
+        renderPlayer={renderPlayer}
+      />
 
       <TournamentRanking tournamentData={tournamentData} />
     </div>

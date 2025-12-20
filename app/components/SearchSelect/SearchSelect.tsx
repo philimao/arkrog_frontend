@@ -81,6 +81,8 @@ export interface SearchSelectProps<T> {
   searchButtonAriaLabel?: string;
   /** 初始输入框文本（用于回填已有值） */
   initialInputValue?: string;
+  /** 选择后清除搜索结果的回调（用于manualSearch模式） */
+  onClearResults?: () => void;
 }
 
 export default function SearchSelect<T>({
@@ -107,6 +109,7 @@ export default function SearchSelect<T>({
   inputName,
   inputWrapperClassName,
   inputClassName,
+  onClearResults,
 }: SearchSelectProps<T>) {
   const [showListbox, setShowListbox] = useState(false);
   const [searchValue, setSearchValue] = useState(initialInputValue ?? "");
@@ -137,6 +140,7 @@ export default function SearchSelect<T>({
     onChange(item);
     setSearchValue("");
     setShowListbox(false);
+    onClearResults?.();
   };
 
   // 处理手动搜索

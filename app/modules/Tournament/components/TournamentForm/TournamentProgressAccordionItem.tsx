@@ -14,6 +14,7 @@ import {
 } from ".";
 import { useInputSuggestions } from "~/hooks/useInputSuggestions";
 import { starterSquads } from "~/utils/gamedataConst";
+import { toast } from "react-toastify";
 
 // Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
 const calculateSchedule = (
@@ -103,6 +104,7 @@ export default function TournamentProgressAccordionItem({
     if (!formData.players) return {};
 
     const initialCache: Record<string, string[]> = {
+      date: new Set<string>(),
       starterSquad: new Set<string>(
         starterSquads[formData.rogue as keyof typeof starterSquads],
       ),
@@ -113,6 +115,14 @@ export default function TournamentProgressAccordionItem({
     // 收集所有选手的比赛数据
     formData.players.forEach((player) => {
       player.games.forEach((game) => {
+        // 收集比赛时间
+        if (game.date) {
+          const dateStr = new Date(game.date).toLocaleTimeString("zh-CN", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          (initialCache.date as any).add(dateStr);
+        }
         // 收集开局干员
         if (game.starterOp?.trim()) {
           (initialCache.starterOp as any).add(game.starterOp.trim());
@@ -862,9 +872,60 @@ export default function TournamentProgressAccordionItem({
                           <div>
                             <label
                               htmlFor="gameTime"
-                              className={labelClassName}
+                              className={labelClassName + " flex"}
                             >
-                              比赛时间 <span className="text-ak-red">*</span>
+                              比赛时间（可粘贴）
+                              <span className="text-ak-red">*</span>
+                              <div className="flex gap-1 ms-auto">
+                                {getSuggestions("date").map((dateStr) => {
+                                  return (
+                                    <span
+                                      className="px-1 cursor-pointer bg-[#00000033] hover:bg-[#00000055]"
+                                      key={dateStr}
+                                      onClick={() => {
+                                        const newPlayers = [
+                                          ...(formData.players || []),
+                                        ];
+                                        const game = newPlayers
+                                          .find(
+                                            (p) => p.mid === editingPlayer.mid,
+                                          )!
+                                          .games.find((g) =>
+                                            isSameDay(g.date, date),
+                                          );
+                                        if (game) {
+                                          const [hours, minutes] = dateStr
+                                            .split(":")
+                                            .map(Number);
+                                          const newDate = new Date();
+                                          newDate.setHours(
+                                            hours,
+                                            minutes,
+                                            0,
+                                            0,
+                                          );
+                                          if (!isNaN(newDate.getTime())) {
+                                            game.date = newDate.getTime();
+                                            // Update schedule when date changes
+                                            if (editingStage?.startTime) {
+                                              game.schedule = calculateSchedule(
+                                                newDate.getTime(),
+                                                editingStage.startTime,
+                                              );
+                                            }
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              players: newPlayers,
+                                            }));
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      {dateStr}
+                                    </span>
+                                  );
+                                })}
+                              </div>
                             </label>
                             <input
                               id="gameTime"
@@ -898,6 +959,7 @@ export default function TournamentProgressAccordionItem({
 
                                     // Additional validation to ensure hours and minutes are valid numbers
                                     if (!isNaN(hours) && !isNaN(minutes)) {
+                                      addToCache("date", e.target.value);
                                       // Create new date with same date but updated time
                                       const newDate = new Date(currentDate);
                                       newDate.setHours(hours, minutes, 0, 0);
@@ -928,6 +990,50 @@ export default function TournamentProgressAccordionItem({
                                 { gameTime: editingGame?.date },
                                 inputClassName,
                               )}
+                              onPaste={(evt) => {
+                                const newPlayers = [
+                                  ...(formData.players || []),
+                                ];
+                                const game = newPlayers
+                                  .find((p) => p.mid === editingPlayer.mid)!
+                                  .games.find((g) => isSameDay(g.date, date));
+                                const pasteData =
+                                  evt.clipboardData.getData("text");
+                                if (!pasteData) {
+                                  return toast.warning("粘贴内容为空");
+                                }
+                                if (
+                                  game &&
+                                  pasteData &&
+                                  /\d{1,2}:\d{1,2}/.test(pasteData)
+                                ) {
+                                  const [hours, minutes] =
+                                    pasteData
+                                      .match(/\d{1,2}:\d{1,2}/)?.[0]
+                                      ?.split(":")
+                                      ?.map(Number) || [];
+                                  const newDate = new Date();
+                                  newDate.setHours(hours, minutes, 0, 0);
+                                  // Ensure the date is valid before updating
+                                  if (!isNaN(newDate.getTime())) {
+                                    addToCache("date", `${hours}:${minutes}`);
+                                    game.date = newDate.getTime();
+                                    // Update schedule when date changes
+                                    if (editingStage?.startTime) {
+                                      game.schedule = calculateSchedule(
+                                        newDate.getTime(),
+                                        editingStage.startTime,
+                                      );
+                                    }
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      players: newPlayers,
+                                    }));
+                                  }
+                                } else {
+                                  toast.warning("粘贴内容不满足HH:MM格式");
+                                }
+                              }}
                               onBlur={handleBlur}
                               required
                             />

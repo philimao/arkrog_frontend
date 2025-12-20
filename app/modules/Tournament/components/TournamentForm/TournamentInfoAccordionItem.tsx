@@ -421,7 +421,12 @@ export default function TournamentInfoAccordionItem({
                   setSearchResults([]);
                   return;
                 }
-                setSearchResults(body.data?.result || []);
+                if (!body.data?.result) {
+                  toast.error("搜索结果为空");
+                  setSearchResults([]);
+                } else {
+                  setSearchResults(body.data.result);
+                }
               } catch (err) {
                 console.error(err);
                 toast.error("搜索失败，请稍后重试");
@@ -571,7 +576,12 @@ export default function TournamentInfoAccordionItem({
                   setRoomSearchResults([]);
                   return;
                 }
-                setRoomSearchResults(body.data?.result || []);
+                if (!body.data?.result) {
+                  toast.error("搜索结果为空");
+                  setRoomSearchResults([]);
+                } else {
+                  setRoomSearchResults(body.data.result);
+                }
               } catch (err) {
                 console.error(err);
                 toast.error("搜索失败，请稍后重试");

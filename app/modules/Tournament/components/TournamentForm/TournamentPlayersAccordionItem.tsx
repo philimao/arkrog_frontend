@@ -430,7 +430,7 @@ export default function TournamentPlayersAccordionItem({
                 )}
                 renderSelected={(item) => item.uname}
                 getKey={(item) => String(item.mid)}
-                placeholder="输入B站用户名后点击右侧搜索"
+                placeholder="输入B站用户名后点击右侧搜索（外服用户不搜索）"
                 manualSearch
                 onSearch={async (query) => {
                   try {
@@ -446,7 +446,12 @@ export default function TournamentPlayersAccordionItem({
                       setSearchResults([]);
                       return;
                     }
-                    setSearchResults(body.data?.result || []);
+                    if (!body.data?.result) {
+                      toast.error("搜索结果为空");
+                      setSearchResults([]);
+                    } else {
+                      setSearchResults(body.data.result);
+                    }
                   } catch (err) {
                     console.error(err);
                     toast.error("搜索失败，请稍后重试");

@@ -13,6 +13,7 @@ import {
   labelWithTooltipClassName,
 } from ".";
 import { useInputSuggestions } from "~/hooks/useInputSuggestions";
+import { starterSquads } from "~/utils/gamedataConst";
 
 // Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
 const calculateSchedule = (
@@ -102,7 +103,9 @@ export default function TournamentProgressAccordionItem({
     if (!formData.players) return {};
 
     const initialCache: Record<string, string[]> = {
-      starterSquad: new Set<string>(),
+      starterSquad: new Set<string>(
+        starterSquads[formData.rogue as keyof typeof starterSquads],
+      ),
       starterOp: new Set<string>(),
       ending: new Set<string>(),
     } as any;
@@ -110,10 +113,6 @@ export default function TournamentProgressAccordionItem({
     // 收集所有选手的比赛数据
     formData.players.forEach((player) => {
       player.games.forEach((game) => {
-        // 收集开局分队
-        if (game.starterSquad?.trim()) {
-          (initialCache.starterSquad as any).add(game.starterSquad.trim());
-        }
         // 收集开局干员
         if (game.starterOp?.trim()) {
           (initialCache.starterOp as any).add(game.starterOp.trim());

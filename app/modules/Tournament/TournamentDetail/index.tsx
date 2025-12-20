@@ -12,6 +12,7 @@ import {
 } from "../components/Shared";
 import TournamentView from "./TournamentView";
 import type { TournamentData } from "~/types/tournamentsData";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 
 export function SectionContainer({
   title,
@@ -52,6 +53,9 @@ export default function TournamentDetail() {
   const { tournamentId } = useParams();
   const { tournamentsData, tournamentGroups, fetchTournamentPlayer } =
     useTournamentDataStore();
+  const { userInfo } = useUserInfoStore();
+  const editable = userInfo?.level && userInfo.level > 2;
+
   const [isLoading, setIsLoading] = useState(false);
   const tournamentData =
     tournamentsData &&
@@ -95,9 +99,11 @@ export default function TournamentDetail() {
     <TournamentView tournamentData={tournamentData}>
       <StyledBackButtonContainer>
         <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-        <StyledEditButton onClick={() => navigate("edit")}>
-          编辑
-        </StyledEditButton>
+        {editable && (
+          <StyledEditButton onClick={() => navigate("edit")}>
+            编辑
+          </StyledEditButton>
+        )}
         <StyledTournamentGroupList>
           {seasons &&
             seasons.map((season: TournamentData) => (

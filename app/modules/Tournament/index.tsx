@@ -9,6 +9,7 @@ import {
   StyledBackButton,
   StyledBackButtonContainer,
 } from "./components/Shared";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -44,6 +45,8 @@ function RougeSelector({
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const topicsData = Object.values(topics);
+  const { userInfo } = useUserInfoStore();
+  const editable = userInfo?.level && userInfo.level > 2;
 
   const currentTopic: TopicData = useMemo(() => {
     const topicId = searchParams.get("topicId");
@@ -195,19 +198,21 @@ function RougeSelector({
     <div>
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
       <div className="relative flex mb-12">
-        <StyledBackButtonContainer>
-          <div className="relative">
-            <StyledBackButton onClick={() => navigate("create")}>
-              新建赛事
-            </StyledBackButton>
-            <StyledBackButton
-              onClick={() => navigate("create-group")}
-              style={{ top: "6.5rem" }}
-            >
-              新建赛事集
-            </StyledBackButton>
-          </div>
-        </StyledBackButtonContainer>
+        {editable && (
+          <StyledBackButtonContainer>
+            <div className="relative">
+              <StyledBackButton onClick={() => navigate("create")}>
+                新建赛事
+              </StyledBackButton>
+              <StyledBackButton
+                onClick={() => navigate("create-group")}
+                style={{ top: "6.5rem" }}
+              >
+                新建赛事集
+              </StyledBackButton>
+            </div>
+          </StyledBackButtonContainer>
+        )}
         {topicsData.reverse().map((topic) => (
           <div
             key={topic.id}

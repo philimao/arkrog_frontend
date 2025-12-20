@@ -9,6 +9,7 @@ import TournamentRanking from "./TournamentRanking";
 import TournamentFinalResult from "./TournamentFinalResult";
 import { SectionContainer } from ".";
 import BilibiliUser from "~/components/BilibiliUser";
+import { openModal } from "~/utils/dom";
 
 export interface TournamentViewProps {
   tournamentData: TournamentData;
@@ -116,11 +117,19 @@ export default function TournamentView({
       )}
       {children}
       {renderHeader()}
-      <div className="mb-16">
+      <div className="mb-16 relative">
         <SectionContainer
           title="比赛规则"
           content={<Markdown>{tournamentData.rule}</Markdown>}
         />
+        {tournamentData.detailRule && (
+          <div
+            className="absolute right-0 top-0 h-8 leading-8 text-ak-blue text-sm cursor-pointer"
+            onClick={() => openModal("tournament-rules")}
+          >
+            详细规则
+          </div>
+        )}
       </div>
 
       <div className="my-16 grid sm:grid-cols-3 gap-8">

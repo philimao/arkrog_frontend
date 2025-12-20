@@ -10,7 +10,6 @@ import {
   StyledBackButtonContainer,
 } from "./components/Shared";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import Markdown from "react-markdown";
 import BilibiliUser from "~/components/BilibiliUser";
 
 export default function TournamentsWrapper() {
@@ -113,14 +112,15 @@ function RougeSelector({
                   </div>
                 }
                 {
-                  <div>
+                  <div className="h-7 leading-7">
                     版本：{topics[tournament.rogue as RogueKey].name}
                     {tournament.edition}
                   </div>
                 }
-                {<div>难度：{tournament.level}</div>}
+                {<div className="h-7 leading-7">难度：{tournament.level}</div>}
                 {
-                  <div>
+                  <div className="flex items-center h-7">
+                    <div>主办：</div>
                     <div className="flex flex-wrap gap-2">
                       {tournament.organizers?.map((organizer, index) => (
                         <BilibiliUser
@@ -128,6 +128,7 @@ function RougeSelector({
                           mid={organizer.mid}
                           name={organizer.name}
                           face={organizer.avatar}
+                          size={6}
                         />
                       ))}
                     </div>

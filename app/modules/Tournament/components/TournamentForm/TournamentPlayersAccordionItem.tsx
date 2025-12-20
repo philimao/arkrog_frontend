@@ -1,7 +1,7 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
-import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
+import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { SearchSelect } from "~/components/SearchSelect";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
 import { toast } from "react-toastify";
@@ -14,6 +14,7 @@ import {
   labelWithTooltipClassName,
   selectClassName,
 } from ".";
+import { useInputSuggestions } from "~/hooks/useInputSuggestions";
 
 interface TournamentPlayersAccordionItemProps {
   formData: TournamentData;
@@ -49,6 +50,43 @@ export default function TournamentPlayersAccordionItem({
   const [selectedUserMap, setSelectedUserMap] = useState<
     Record<string, SearchUserItem | undefined>
   >({});
+
+  // 从现有选手数据中提取所有自定义字段的值，作为初始缓存
+  const extractInitialCache = (): Record<string, string[]> => {
+    if (!formData.customPlayerKeys || !formData.players) return {};
+
+    const initialCache: Record<string, string[]> = {};
+
+    // 遍历所有自定义字段
+    Object.keys(formData.customPlayerKeys).forEach((key) => {
+      const values = new Set<string>();
+
+      // 收集所有选手在该字段的值
+      formData.players?.forEach((player) => {
+        const value = player.customPlayerValues?.[key];
+        if (value && value.trim()) {
+          values.add(value.trim());
+        }
+      });
+
+      // 将 Set 转为数组
+      if (values.size > 0) {
+        initialCache[key] = Array.from(values);
+      }
+    });
+
+    return initialCache;
+  };
+
+  // 使用输入建议 hook，传入初始缓存数据
+  const {
+    addToCache,
+    getSuggestions,
+    showSuggestions,
+    setShowSuggestions,
+    suggestionListRef,
+  } = useInputSuggestions(extractInitialCache());
+
   const isPlayerNameInvalid =
     !!editingPlayer &&
     touchedFields.has("playerName") &&
@@ -104,7 +142,7 @@ export default function TournamentPlayersAccordionItem({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <div>
               <label htmlFor="customKey" className={labelClassName}>
-                自定义选手信息标识（仅限英文）
+                自定义选手信息标识，用于选手分类（仅限英文）
               </label>
               <input
                 id="customKey"
@@ -148,7 +186,21 @@ export default function TournamentPlayersAccordionItem({
               className="cursor-pointer rounded-md p-1 absolute top-8 text-black bg-ak-blue disabled:text-white disabled:bg-mid-gray disabled:cursor-not-allowed"
               aria-label="添加自定义选手信息"
             >
-              <AddIcon />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 3L4.5 8.5L2 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           </div>
         </div>
@@ -178,16 +230,14 @@ export default function TournamentPlayersAccordionItem({
                       <span className="text-sm">
                         {key}: {value}
                       </span>
-                      {formData.type !== "team" && (
-                        <label className="flex items-center ml-1">
-                          <input
-                            type="checkbox"
-                            checked={formData.groupBy === key}
-                            onChange={() => handleSetGroupBy(key)}
-                            className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
-                          />
-                        </label>
-                      )}
+                      <label className="flex items-center ml-1">
+                        <input
+                          type="checkbox"
+                          checked={formData.groupBy === key}
+                          onChange={() => handleSetGroupBy(key)}
+                          className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
+                        />
+                      </label>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -479,7 +529,7 @@ export default function TournamentPlayersAccordionItem({
 
           {Object.entries(formData.customPlayerKeys || {}).map(
             ([key, value]) => (
-              <div key={key}>
+              <div key={key} className="relative">
                 <label htmlFor="customPlayerValue" className={labelClassName}>
                   {value}
                 </label>
@@ -505,9 +555,48 @@ export default function TournamentPlayersAccordionItem({
                         editingPlayer.customPlayerValues[key],
                     },
                   )}
-                  onBlur={handleBlur}
+                  onFocus={() => setShowSuggestions(key)}
+                  onBlur={(e) => {
+                    handleBlur(e);
+                    const currentValue = editingPlayer.customPlayerValues[key];
+                    if (currentValue?.trim()) {
+                      addToCache(key, currentValue);
+                    }
+                    // 延迟关闭建议列表，以便点击建议项能够触发
+                    setTimeout(() => setShowSuggestions(null), 200);
+                  }}
                   maxLength={32}
                 />
+                {showSuggestions === key && getSuggestions(key).length > 0 && (
+                  <div
+                    ref={suggestionListRef}
+                    className="absolute z-10 w-full mt-1 bg-dark-gray border border-mid-gray rounded-md shadow-lg max-h-60 overflow-y-auto"
+                  >
+                    {getSuggestions(key).map((suggestion, idx) => (
+                      <div
+                        key={idx}
+                        className="px-3 py-2 cursor-pointer hover:bg-mid-gray text-white transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // 防止触发 input 的 blur
+                          const newPlayers = [...(formData.players || [])];
+                          const player = newPlayers.find(
+                            (p) => p.mid === editingPlayer.mid,
+                          );
+                          if (player) {
+                            player.customPlayerValues[key] = suggestion;
+                          }
+                          setFormData((prev) => ({
+                            ...prev,
+                            players: newPlayers,
+                          }));
+                          setShowSuggestions(null);
+                        }}
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ),
           )}

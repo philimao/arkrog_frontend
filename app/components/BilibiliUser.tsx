@@ -3,9 +3,16 @@ interface BilibiliUserProps {
   name: string;
   face: string;
   room_id?: string;
+  size?: number;
 }
 
-export default function BilibiliUser({ mid, name, face, room_id }: BilibiliUserProps) {
+export default function BilibiliUser({
+  mid,
+  name,
+  face,
+  room_id,
+  size,
+}: BilibiliUserProps) {
   const displayName = room_id ? `${name}的直播间` : name;
   const handleClick = () => {
     if (room_id) {
@@ -15,12 +22,23 @@ export default function BilibiliUser({ mid, name, face, room_id }: BilibiliUserP
     }
   };
 
+  const avatarSizeClass = size ? `w-${size} h-${size}` : "w-10 h-10";
+  const paddingSizeClass = size && size < 7 ? `p-1 gap-1` : "p-2 gap-3";
+
   return (
     <div
       onClick={handleClick}
-      className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-mid-gray transition-colors"
+      className={
+        paddingSizeClass +
+        " flex items-center rounded-md cursor-pointer hover:bg-mid-gray transition-colors"
+      }
     >
-      <div className="w-10 h-10 rounded-full border border-white overflow-hidden flex-shrink-0">
+      <div
+        className={
+          avatarSizeClass +
+          " rounded-full border border-white overflow-hidden flex-shrink-0"
+        }
+      >
         <img
           src={face}
           alt={name}

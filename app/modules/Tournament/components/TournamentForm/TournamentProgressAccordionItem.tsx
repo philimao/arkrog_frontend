@@ -6,12 +6,13 @@ import type {
 } from "~/types/tournamentsData";
 import { generateDateArray, isSameDay } from "~/utils/date";
 import { useEffect, useState } from "react";
-import { AddIcon, CloseIcon, InformationIcon } from "~/components/Icons";
+import { CloseIcon, InformationIcon } from "~/components/Icons";
 import {
   getInputClassName,
   labelClassName,
   labelWithTooltipClassName,
 } from ".";
+import { useInputSuggestions } from "~/hooks/useInputSuggestions";
 
 // Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
 const calculateSchedule = (
@@ -96,6 +97,68 @@ export default function TournamentProgressAccordionItem({
   const [newCustomValue, setNewCustomValue] = useState("");
   const [keyError, setKeyError] = useState("");
 
+  // 从现有比赛数据中提取所有字段的值，作为初始缓存
+  const extractInitialCache = (): Record<string, string[]> => {
+    if (!formData.players) return {};
+
+    const initialCache: Record<string, string[]> = {
+      starterSquad: new Set<string>(),
+      starterOp: new Set<string>(),
+      ending: new Set<string>(),
+    } as any;
+
+    // 收集所有选手的比赛数据
+    formData.players.forEach((player) => {
+      player.games.forEach((game) => {
+        // 收集开局分队
+        if (game.starterSquad?.trim()) {
+          (initialCache.starterSquad as any).add(game.starterSquad.trim());
+        }
+        // 收集开局干员
+        if (game.starterOp?.trim()) {
+          (initialCache.starterOp as any).add(game.starterOp.trim());
+        }
+        // 收集结局
+        if (game.ending?.trim()) {
+          (initialCache.ending as any).add(game.ending.trim());
+        }
+        // 收集自定义阶段字段值
+        if (game.customStageValues) {
+          Object.entries(game.customStageValues).forEach(([key, value]) => {
+            if (value?.trim()) {
+              if (!initialCache[`customStageValue-${key}`]) {
+                initialCache[`customStageValue-${key}`] =
+                  new Set<string>() as any;
+              }
+              (initialCache[`customStageValue-${key}`] as any).add(
+                value.trim(),
+              );
+            }
+          });
+        }
+      });
+    });
+
+    // 将 Set 转为数组
+    const result: Record<string, string[]> = {};
+    Object.entries(initialCache).forEach(([key, valueSet]) => {
+      if ((valueSet as any).size > 0) {
+        result[key] = Array.from(valueSet as any);
+      }
+    });
+
+    return result;
+  };
+
+  // 使用输入建议 hook，传入初始缓存数据
+  const {
+    addToCache,
+    getSuggestions,
+    showSuggestions,
+    setShowSuggestions,
+    suggestionListRef,
+  } = useInputSuggestions(extractInitialCache());
+
   // Validate key input to only allow [a-zA-Z]
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -148,8 +211,14 @@ export default function TournamentProgressAccordionItem({
     setNewCustomValue("");
   };
 
-  // TODO: Set a key as groupBy for the stage
-  const handleSetGroupBy = (key: string) => {};
+  // 设置为全局分组依据
+  const handleSetGroupBy = (key: string) => {
+    const newGroupBy = formData.groupBy === key ? "" : key;
+    setFormData((prev) => ({
+      ...prev,
+      groupBy: newGroupBy,
+    }));
+  };
 
   useEffect(() => {
     if (!editingStage) {
@@ -195,13 +264,164 @@ export default function TournamentProgressAccordionItem({
         </div>
       </div>
 
+      {/** 常用阶段信息标示 */}
+      <div className="mb-4">
+        <label className={labelClassName}>常用阶段信息标示</label>
+        <div className="flex gap-2 flex-wrap mt-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (!editingStage) return;
+
+              const newStages = [...formData.stages];
+              const stageIndex = newStages.findIndex(
+                (stage) => stage.name === editingStage.name,
+              );
+
+              if (stageIndex !== -1) {
+                newStages[stageIndex] = {
+                  ...newStages[stageIndex],
+                  customStageKeys: {
+                    ...newStages[stageIndex].customStageKeys,
+                    note: "备注",
+                  },
+                };
+
+                setFormData((prev) => ({
+                  ...prev,
+                  stages: newStages,
+                }));
+
+                setEditingStage(newStages[stageIndex]);
+              }
+            }}
+            disabled={editingStage?.customStageKeys?.note !== undefined}
+            className={`px-3 py-1.5 transition-colors text-sm ${
+              editingStage?.customStageKeys?.note !== undefined
+                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
+                : "bg-[#00000033] hover:bg-[#00000055]"
+            }`}
+          >
+            备注
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!editingStage) return;
+
+              const newStages = [...formData.stages];
+              const stageIndex = newStages.findIndex(
+                (stage) => stage.name === editingStage.name,
+              );
+
+              if (stageIndex !== -1) {
+                newStages[stageIndex] = {
+                  ...newStages[stageIndex],
+                  customStageKeys: {
+                    ...newStages[stageIndex].customStageKeys,
+                    level: "难度等级",
+                  },
+                };
+
+                setFormData((prev) => ({
+                  ...prev,
+                  stages: newStages,
+                }));
+
+                setEditingStage(newStages[stageIndex]);
+              }
+            }}
+            disabled={editingStage?.customStageKeys?.level !== undefined}
+            className={`px-3 py-1.5 transition-colors text-sm ${
+              editingStage?.customStageKeys?.level !== undefined
+                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
+                : "bg-[#00000033] hover:bg-[#00000055]"
+            }`}
+          >
+            难度等级
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!editingStage) return;
+
+              const newStages = [...formData.stages];
+              const stageIndex = newStages.findIndex(
+                (stage) => stage.name === editingStage.name,
+              );
+
+              if (stageIndex !== -1) {
+                newStages[stageIndex] = {
+                  ...newStages[stageIndex],
+                  customStageKeys: {
+                    ...newStages[stageIndex].customStageKeys,
+                    duration: "比赛时长",
+                  },
+                };
+
+                setFormData((prev) => ({
+                  ...prev,
+                  stages: newStages,
+                }));
+
+                setEditingStage(newStages[stageIndex]);
+              }
+            }}
+            disabled={editingStage?.customStageKeys?.duration !== undefined}
+            className={`px-3 py-1.5 transition-colors text-sm ${
+              editingStage?.customStageKeys?.duration !== undefined
+                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
+                : "bg-[#00000033] hover:bg-[#00000055]"
+            }`}
+          >
+            比赛时长
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!editingStage) return;
+
+              const newStages = [...formData.stages];
+              const stageIndex = newStages.findIndex(
+                (stage) => stage.name === editingStage.name,
+              );
+
+              if (stageIndex !== -1) {
+                newStages[stageIndex] = {
+                  ...newStages[stageIndex],
+                  customStageKeys: {
+                    ...newStages[stageIndex].customStageKeys,
+                    playback: "回放链接",
+                  },
+                };
+
+                setFormData((prev) => ({
+                  ...prev,
+                  stages: newStages,
+                }));
+
+                setEditingStage(newStages[stageIndex]);
+              }
+            }}
+            disabled={editingStage?.customStageKeys?.playback !== undefined}
+            className={`px-3 py-1.5 transition-colors text-sm ${
+              editingStage?.customStageKeys?.playback !== undefined
+                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
+                : "bg-[#00000033] hover:bg-[#00000055]"
+            }`}
+          >
+            回放链接
+          </button>
+        </div>
+      </div>
+
       {/* 自定义阶段信息 */}
       <div className="border-b-1 border-b-mid-gray mb-4">
         <div className="flex pb-4 gap-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             <div>
               <label htmlFor="customKey" className={labelClassName}>
-                自定义阶段信息标识（仅限英文）
+                自定义阶段信息标识，记录额外信息（仅限英文）
               </label>
               <input
                 id="customKey"
@@ -253,7 +473,21 @@ export default function TournamentProgressAccordionItem({
               className="cursor-pointer rounded-md p-1 absolute top-8 text-black bg-ak-blue disabled:text-white disabled:bg-mid-gray disabled:cursor-not-allowed"
               aria-label="添加自定义阶段信息"
             >
-              <AddIcon />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 12 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 3L4.5 8.5L2 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           </div>
         </div>
@@ -283,6 +517,7 @@ export default function TournamentProgressAccordionItem({
                       <span className="text-sm">
                         {key}: {value}
                       </span>
+                      {/* 当赛事类型不为团体赛，且该阶段不为1on1时，允许设置分组依据 */}
                       {formData.type !== "team" &&
                         editingStage.type !== "1on1" && (
                           <label className="flex items-center ml-1">
@@ -365,6 +600,8 @@ export default function TournamentProgressAccordionItem({
             </div>
           )}
       </div>
+
+      {/* 按日程设置选手赛况 */}
       {dates.map((date, index) => {
         const playersForDate = formData.players?.filter((player) =>
           player.games.find(
@@ -697,12 +934,12 @@ export default function TournamentProgressAccordionItem({
                             />
                           </div>
 
-                          <div>
+                          <div className="relative">
                             <label
                               htmlFor="starterSquad"
                               className={labelClassName}
                             >
-                              开局分队 <span className="text-ak-red">*</span>
+                              开局分队
                             </label>
                             <input
                               id="starterSquad"
@@ -730,12 +967,59 @@ export default function TournamentProgressAccordionItem({
                                 { starterSquad: editingGame?.starterSquad },
                                 inputClassName,
                               )}
-                              onBlur={handleBlur}
-                              required
+                              onFocus={() => setShowSuggestions("starterSquad")}
+                              onBlur={(e) => {
+                                handleBlur(e);
+                                const currentValue = editingGame?.starterSquad;
+                                if (currentValue?.trim()) {
+                                  addToCache("starterSquad", currentValue);
+                                }
+                                setTimeout(() => setShowSuggestions(null), 200);
+                              }}
                             />
+                            {showSuggestions === "starterSquad" &&
+                              getSuggestions("starterSquad").length > 0 && (
+                                <div
+                                  ref={suggestionListRef}
+                                  className="absolute z-10 w-full mt-1 bg-dark-gray border border-mid-gray rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                >
+                                  {getSuggestions("starterSquad").map(
+                                    (suggestion, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="px-3 py-2 cursor-pointer hover:bg-mid-gray text-white transition-colors"
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          const newPlayers = [
+                                            ...formData.players!,
+                                          ];
+                                          const game = newPlayers
+                                            .find(
+                                              (p) =>
+                                                p.mid === editingPlayer.mid,
+                                            )!
+                                            .games.find((g) =>
+                                              isSameDay(g.date, date),
+                                            );
+                                          if (game) {
+                                            game.starterSquad = suggestion;
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              players: newPlayers,
+                                            }));
+                                          }
+                                          setShowSuggestions(null);
+                                        }}
+                                      >
+                                        {suggestion}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
                           </div>
 
-                          <div>
+                          <div className="relative">
                             <label
                               htmlFor="starterOp"
                               className={labelClassName}
@@ -768,8 +1052,56 @@ export default function TournamentProgressAccordionItem({
                                 { starterOp: editingGame?.starterOp },
                                 inputClassName,
                               )}
-                              onBlur={handleBlur}
+                              onFocus={() => setShowSuggestions("starterOp")}
+                              onBlur={(e) => {
+                                handleBlur(e);
+                                const currentValue = editingGame?.starterOp;
+                                if (currentValue?.trim()) {
+                                  addToCache("starterOp", currentValue);
+                                }
+                                setTimeout(() => setShowSuggestions(null), 200);
+                              }}
                             />
+                            {showSuggestions === "starterOp" &&
+                              getSuggestions("starterOp").length > 0 && (
+                                <div
+                                  ref={suggestionListRef}
+                                  className="absolute z-10 w-full mt-1 bg-dark-gray border border-mid-gray rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                >
+                                  {getSuggestions("starterOp").map(
+                                    (suggestion, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="px-3 py-2 cursor-pointer hover:bg-mid-gray text-white transition-colors"
+                                        onMouseDown={(e) => {
+                                          e.preventDefault();
+                                          const newPlayers = [
+                                            ...formData.players!,
+                                          ];
+                                          const game = newPlayers
+                                            .find(
+                                              (p) =>
+                                                p.mid === editingPlayer.mid,
+                                            )!
+                                            .games.find((g) =>
+                                              isSameDay(g.date, date),
+                                            );
+                                          if (game) {
+                                            game.starterOp = suggestion;
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              players: newPlayers,
+                                            }));
+                                          }
+                                          setShowSuggestions(null);
+                                        }}
+                                      >
+                                        {suggestion}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              )}
                           </div>
 
                           <div>
@@ -1102,7 +1434,7 @@ export default function TournamentProgressAccordionItem({
                           {editingStage?.customStageKeys &&
                             Object.entries(editingStage.customStageKeys).map(
                               ([key, value]) => (
-                                <div key={key}>
+                                <div key={key} className="relative">
                                   <label
                                     htmlFor={`customStageValue-${key}`}
                                     className={labelClassName}
@@ -1146,14 +1478,78 @@ export default function TournamentProgressAccordionItem({
                                       },
                                       inputClassName,
                                     )}
-                                    onBlur={handleBlur}
+                                    onFocus={() =>
+                                      setShowSuggestions(
+                                        `customStageValue-${key}`,
+                                      )
+                                    }
+                                    onBlur={(e) => {
+                                      handleBlur(e);
+                                      const currentValue =
+                                        editingGame?.customStageValues?.[key];
+                                      if (currentValue?.trim()) {
+                                        addToCache(
+                                          `customStageValue-${key}`,
+                                          currentValue,
+                                        );
+                                      }
+                                      setTimeout(
+                                        () => setShowSuggestions(null),
+                                        200,
+                                      );
+                                    }}
                                     maxLength={32}
                                   />
+                                  {showSuggestions ===
+                                    `customStageValue-${key}` &&
+                                    getSuggestions(`customStageValue-${key}`)
+                                      .length > 0 && (
+                                      <div
+                                        ref={suggestionListRef}
+                                        className="absolute z-10 w-full mt-1 bg-dark-gray border border-mid-gray rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                      >
+                                        {getSuggestions(
+                                          `customStageValue-${key}`,
+                                        ).map((suggestion, idx) => (
+                                          <div
+                                            key={idx}
+                                            className="px-3 py-2 cursor-pointer hover:bg-mid-gray text-white transition-colors"
+                                            onMouseDown={(e) => {
+                                              e.preventDefault();
+                                              const newPlayers = [
+                                                ...formData.players!,
+                                              ];
+                                              const game = newPlayers
+                                                .find(
+                                                  (p) =>
+                                                    p.mid === editingPlayer.mid,
+                                                )!
+                                                .games.find((g) =>
+                                                  isSameDay(g.date, date),
+                                                );
+                                              if (game) {
+                                                game.customStageValues = {
+                                                  ...game.customStageValues,
+                                                  [key]: suggestion,
+                                                };
+                                                setFormData((prev) => ({
+                                                  ...prev,
+                                                  players: newPlayers,
+                                                }));
+                                              }
+                                              setShowSuggestions(null);
+                                            }}
+                                          >
+                                            {suggestion}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                 </div>
                               ),
                             )}
                         </div>
-                        <div className="mb-4">
+                        <div className="mb-4 relative">
                           <label htmlFor="ending" className={labelClassName}>
                             结局
                           </label>
@@ -1177,7 +1573,54 @@ export default function TournamentProgressAccordionItem({
                             }}
                             onKeyDown={handleKeyDown}
                             className={inputClassName}
+                            onFocus={() => setShowSuggestions("ending")}
+                            onBlur={(e) => {
+                              const currentValue = editingGame?.ending;
+                              if (currentValue?.trim()) {
+                                addToCache("ending", currentValue);
+                              }
+                              setTimeout(() => setShowSuggestions(null), 200);
+                            }}
                           />
+                          {showSuggestions === "ending" &&
+                            getSuggestions("ending").length > 0 && (
+                              <div
+                                ref={suggestionListRef}
+                                className="absolute z-10 w-full mt-1 bg-dark-gray border border-mid-gray rounded-md shadow-lg max-h-60 overflow-y-auto"
+                              >
+                                {getSuggestions("ending").map(
+                                  (suggestion, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="px-3 py-2 cursor-pointer hover:bg-mid-gray text-white transition-colors"
+                                      onMouseDown={(e) => {
+                                        e.preventDefault();
+                                        const newPlayers = [
+                                          ...formData.players!,
+                                        ];
+                                        const game = newPlayers
+                                          .find(
+                                            (p) => p.mid === editingPlayer.mid,
+                                          )!
+                                          .games.find((g) =>
+                                            isSameDay(g.date, date),
+                                          );
+                                        if (game) {
+                                          game.ending = suggestion;
+                                          setFormData((prev) => ({
+                                            ...prev,
+                                            players: newPlayers,
+                                          }));
+                                        }
+                                        setShowSuggestions(null);
+                                      }}
+                                    >
+                                      {suggestion}
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            )}
                         </div>
                       </div>
                     )}

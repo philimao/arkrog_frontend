@@ -162,14 +162,6 @@ export default function TournamentInfoAccordionItem({
         <div>
           <label htmlFor="avatar" className={labelWithTooltipClassName}>
             赛事图标
-            <Tooltip
-              content="点击图标上传图片后，将图片链接粘贴此处"
-              className="bg-light-mid-gray text-black"
-            >
-              <span className="px-1">
-                <InformationIcon width="0.75rem" height="0.75rem" />
-              </span>
-            </Tooltip>
           </label>
           <div className="relative">
             <input
@@ -210,7 +202,7 @@ export default function TournamentInfoAccordionItem({
         {topics && (
           <div>
             <label htmlFor="rogue" className={labelClassName}>
-              肉鸽 <span className="text-ak-red">*</span>
+              肉鸽主题 <span className="text-ak-red">*</span>
             </label>
             <Select
               id="rogue"
@@ -723,7 +715,7 @@ export default function TournamentInfoAccordionItem({
             htmlFor="rule"
             className="flex items-center text-sm font-light"
           >
-            规则
+            规则（文字展示，不宜过长）
           </label>
           <button
             type="button"
@@ -747,7 +739,7 @@ export default function TournamentInfoAccordionItem({
       <div>
         <div className="flex justify-between items-center mb-1">
           <label htmlFor="detailRule" className={labelWithTooltipClassName}>
-            详细规则
+            详细规则（可插入主办方制作的规则图片）
           </label>
           <button
             type="button"

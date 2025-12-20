@@ -42,7 +42,11 @@ const NavButtons = ({
 // Team components
 const TeamAvatar = ({ avatarUrl }: { avatarUrl: string }) => (
   <div className="flex items-center justify-center">
-    <img src={avatarUrl} alt="team avatar" className="h-16 aspect-square object-contain" />
+    <img
+      src={avatarUrl}
+      alt="team avatar"
+      className="h-16 aspect-square object-contain"
+    />
   </div>
 );
 
@@ -65,7 +69,12 @@ const TeamMembersCell = ({
   <div className="p-4 flex gap-x-12 gap-y-4 justify-center flex-wrap">
     {members.map((member, index) => (
       <div className="relative" key={index}>
-        {leader === member && <StarIcon className="text-ak-blue absolute -left-4 top-6" width="1rem" />}
+        {leader === member && (
+          <StarIcon
+            className="text-ak-blue absolute -left-4 top-6"
+            width="1rem"
+          />
+        )}
         {renderPlayer(member, true)}
       </div>
     ))}
@@ -73,7 +82,10 @@ const TeamMembersCell = ({
 );
 
 // Main components
-export function TournamentPlayerInfo({ tournamentData, renderPlayer }: TournamentComponentProps) {
+export function TournamentPlayerInfo({
+  tournamentData,
+  renderPlayer,
+}: TournamentComponentProps) {
   const players = tournamentData.players;
   if (!players?.length) return <div>暂无参赛选手</div>;
 
@@ -85,6 +97,7 @@ export function TournamentPlayerInfo({ tournamentData, renderPlayer }: Tournamen
 
   if (tournamentData.groupBy) {
     tournamentData.players?.forEach((player) => {
+      // 在选手信息中寻找自定义的groupBy值
       // groupBy = "server"
       // player.customPlayerValues = {server: "简中服"}
       const groupValue = player.customPlayerValues[tournamentData.groupBy];
@@ -93,21 +106,31 @@ export function TournamentPlayerInfo({ tournamentData, renderPlayer }: Tournamen
         groups.add(groupValue);
         groupSchedule.set(player.mid, groupValue);
       }
-      // 决赛缺少session域，则不会进行分组
+      // 在赛事阶段信息中寻找自定义的groupBy值
       // groupBy = "session"
       // game.customStageValues = {session: "大粽场"}
-      const game = player.games.find((game) => game.stage === tournamentData.stages[0].name);
+      const game = player.games.find(
+        (game) => game.stage === tournamentData.stages[0].name,
+      );
       const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
       if (stageGroupValue) {
-        groupBy = tournamentData.stages[0].customStageKeys[tournamentData.groupBy];
+        groupBy =
+          tournamentData.stages[0].customStageKeys[tournamentData.groupBy];
         groups.add(stageGroupValue);
         groupSchedule.set(player.mid, stageGroupValue);
+      }
+      // 定义了groupBy，但在选手和阶段中都没有值，且先前已有选手有分组，则显示为“-”
+      if (!groupValue && !stageGroupValue && groupSchedule.size > 0) {
+        groups.add("-");
+        groupSchedule.set(player.mid, "-");
       }
     });
   }
 
   players.forEach((player) => {
-    const game = player.games.find((game) => game.stage === tournamentData.stages[0].name);
+    const game = player.games.find(
+      (game) => game.stage === tournamentData.stages[0].name,
+    );
     if (game) {
       schedule.set(player.mid, game);
     }
@@ -124,7 +147,10 @@ export function TournamentPlayerInfo({ tournamentData, renderPlayer }: Tournamen
       <tbody className="divide-y divide-mid-gray">
         {groups.size ? (
           Array.from(groups).map((group, groupIndex) => (
-            <tr key={groupIndex} className="bg-black-gray-70 divide-x divide-mid-gray">
+            <tr
+              key={groupIndex}
+              className="bg-black-gray-70 divide-x divide-mid-gray"
+            >
               <td className="text-center text-light-gray py-4">{group}</td>
               <td className="text-light-gray py-4 align-top">
                 <div className="flex gap-4 px-4 flex-wrap w-fit max-w-[600px] m-auto">
@@ -156,7 +182,10 @@ export function TournamentPlayerInfo({ tournamentData, renderPlayer }: Tournamen
   );
 }
 
-export function TournamentTeamInfo({ tournamentData, renderPlayer }: TournamentComponentProps) {
+export function TournamentTeamInfo({
+  tournamentData,
+  renderPlayer,
+}: TournamentComponentProps) {
   const teams = tournamentData.teams;
   if (!teams?.length) return <div>暂无参赛队伍</div>;
 
@@ -179,7 +208,11 @@ export function TournamentTeamInfo({ tournamentData, renderPlayer }: TournamentC
               <TeamNameCell name={team.name} id={team.id} />
             </td>
             <td>
-              <TeamMembersCell members={team.members} leader={team.leader} renderPlayer={renderPlayer} />
+              <TeamMembersCell
+                members={team.members}
+                leader={team.leader}
+                renderPlayer={renderPlayer}
+              />
             </td>
           </tr>
         ))}
@@ -188,23 +221,40 @@ export function TournamentTeamInfo({ tournamentData, renderPlayer }: TournamentC
   );
 }
 
-export default function TournamentInfoWrapper({ tournamentData, renderPlayer }: TournamentComponentProps) {
+export default function TournamentInfoWrapper({
+  tournamentData,
+  renderPlayer,
+}: TournamentComponentProps) {
   const [navItem, setNavItem] = useState(0);
 
-  const navItems = [tournamentData.type === "team" ? "参赛队伍" : "参赛选手", "比赛进程"] as const;
+  const navItems = [
+    tournamentData.type === "team" ? "参赛队伍" : "参赛选手",
+    "比赛进程",
+  ] as const;
 
   const renderContent = () => {
     if (navItem === 0) {
       return tournamentData.type === "team" ? (
-        <TournamentTeamInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
+        <TournamentTeamInfo
+          tournamentData={tournamentData}
+          renderPlayer={renderPlayer}
+        />
       ) : (
-        <TournamentPlayerInfo tournamentData={tournamentData} renderPlayer={renderPlayer} />
+        <TournamentPlayerInfo
+          tournamentData={tournamentData}
+          renderPlayer={renderPlayer}
+        />
       );
     }
 
     if (!tournamentData.players) return <div>暂无比赛进程</div>;
 
-    return <TournamentProgress tournamentData={tournamentData} renderPlayer={renderPlayer} />;
+    return (
+      <TournamentProgress
+        tournamentData={tournamentData}
+        renderPlayer={renderPlayer}
+      />
+    );
   };
 
   return (
@@ -212,7 +262,13 @@ export default function TournamentInfoWrapper({ tournamentData, renderPlayer }: 
       <SectionContainer
         title="赛程信息"
         content={renderContent()}
-        navItems={<NavButtons items={navItems} activeIndex={navItem} onSelect={setNavItem} />}
+        navItems={
+          <NavButtons
+            items={navItems}
+            activeIndex={navItem}
+            onSelect={setNavItem}
+          />
+        }
       />
     </div>
   );

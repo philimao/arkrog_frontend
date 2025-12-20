@@ -358,12 +358,16 @@ const RankingTable = ({
                 <td>
                   <SquadDisplay squadName={entry[1].starterSquad} />
                 </td>
-                {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-                  <td key={key}>{player?.customPlayerValues[key]}</td>
-                ))}
-                {Object.keys(entry[1].customStageValues).map((key) => (
-                  <td key={key}>{entry[1].customStageValues[key]}</td>
-                ))}
+                <>
+                  {Object.keys(tournamentData.customPlayerKeys).map((key) => (
+                    <td key={key}>{player?.customPlayerValues[key]}</td>
+                  ))}
+                </>
+                <>
+                  {Object.keys(stage.customStageKeys).map((key) => (
+                    <td key={key}>{entry[1].customStageValues[key] || ""}</td>
+                  ))}
+                </>
                 <td className="hidden md:table-cell">{entry[1].ending}</td>
                 <td>{entry[1].point}</td>
               </tr>
@@ -434,8 +438,6 @@ const OneOnOneTable = ({
               );
               const losedGame = loser && losedGames.get(loser?.mid);
 
-              // console.log(winner, loser, entry);
-
               return (
                 <React.Fragment key={`group-${groupIndex}`}>
                   <tr
@@ -450,12 +452,20 @@ const OneOnOneTable = ({
                     <td>
                       <SquadDisplay squadName={entry[1].starterSquad || ""} />
                     </td>
-                    {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-                      <td key={key}>{winner?.customPlayerValues[key]}</td>
-                    ))}
-                    {Object.keys(entry[1].customStageValues).map((key) => (
-                      <td key={key}>{entry[1].customStageValues[key]}</td>
-                    ))}
+                    <>
+                      {Object.keys(tournamentData.customPlayerKeys).map(
+                        (key) => (
+                          <td key={key}>{winner?.customPlayerValues[key]}</td>
+                        ),
+                      )}
+                    </>
+                    <>
+                      {Object.keys(stage.customStageKeys).map((key) => (
+                        <td key={key}>
+                          {entry[1].customStageValues[key] || ""}
+                        </td>
+                      ))}
+                    </>
                     <td className="hidden md:table-cell">{entry[1].ending}</td>
                     <td>{entry[1].point}</td>
                   </tr>
@@ -471,13 +481,20 @@ const OneOnOneTable = ({
                     <td>
                       <SquadDisplay squadName={losedGame?.starterSquad || ""} />
                     </td>
-                    {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-                      <td key={key}>{loser?.customPlayerValues[key]}</td>
-                    ))}
-                    {losedGame &&
-                      Object.keys(losedGame?.customStageValues).map((key) => (
-                        <td key={key}>{losedGame?.customStageValues[key]}</td>
+                    <>
+                      {Object.keys(tournamentData.customPlayerKeys).map(
+                        (key) => (
+                          <td key={key}>{loser?.customPlayerValues[key]}</td>
+                        ),
+                      )}
+                    </>
+                    <>
+                      {Object.keys(stage.customStageKeys).map((key) => (
+                        <td key={key}>
+                          {entry[1].customStageValues[key] || ""}
+                        </td>
                       ))}
+                    </>
                     <td className="hidden md:table-cell">
                       {losedGame?.ending}
                     </td>
@@ -501,7 +518,6 @@ export function TournamentRankingIndividual({
   tournamentData: TournamentData;
 }) {
   const players = tournamentData.players!;
-  console.log(players);
 
   const { sortBy, rankingAscending, dateAscending, handleSort } =
     useSortingState();

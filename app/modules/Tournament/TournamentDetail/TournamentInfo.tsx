@@ -121,8 +121,8 @@ export function TournamentPlayerInfo({
       }
       // 定义了groupBy，但在选手和阶段中都没有值，且先前已有选手有分组，则显示为“-”
       if (!groupValue && !stageGroupValue && groupSchedule.size > 0) {
-        groups.add("-");
-        groupSchedule.set(player.mid, "-");
+        groups.add("未分组");
+        groupSchedule.set(player.mid, "未分组");
       }
     });
   }

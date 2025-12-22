@@ -894,10 +894,13 @@ export default function TournamentProgressAccordionItem({
                                             isSameDay(g.date, date),
                                           );
                                         if (game) {
+                                          const currentDate = new Date(
+                                            game.date,
+                                          );
                                           const [hours, minutes] = dateStr
                                             .split(":")
                                             .map(Number);
-                                          const newDate = new Date();
+                                          const newDate = new Date(currentDate);
                                           newDate.setHours(
                                             hours,
                                             minutes,
@@ -1007,12 +1010,13 @@ export default function TournamentProgressAccordionItem({
                                   pasteData &&
                                   /\d{1,2}:\d{1,2}/.test(pasteData)
                                 ) {
+                                  const currentDate = new Date(game.date);
                                   const [hours, minutes] =
                                     pasteData
                                       .match(/\d{1,2}:\d{1,2}/)?.[0]
                                       ?.split(":")
                                       ?.map(Number) || [];
-                                  const newDate = new Date();
+                                  const newDate = new Date(currentDate);
                                   newDate.setHours(hours, minutes, 0, 0);
                                   // Ensure the date is valid before updating
                                   if (!isNaN(newDate.getTime())) {

@@ -6,6 +6,7 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import COS from "cos-js-sdk-v5";
 import { useStorageStore } from "~/stores/storageStore";
 import { hashString } from "~/utils/tools";
+import { compressImageForUpload } from "~/components/COS/compressImage";
 
 export type FileWithPreview = {
   id: string; // hash
@@ -39,7 +40,7 @@ export interface UseCosUploadReturn {
   restartTask: (filename: string) => void;
 }
 
-const extWhiteList = ["jpg", "jpeg", "png", "gif"];
+const extWhiteList = ["jpg", "jpeg", "png", "gif", "webp"];
 
 const defaultProgress = {
   loaded: 0,
@@ -70,12 +71,16 @@ export const useCosUpload = (): UseCosUploadReturn => {
   const addFiles = async (newFiles: File[]) => {
     const allowedFiles = newFiles.filter((file) => {
       return (
-        file.type.startsWith("image/") && isFileExtensionAllowed(file) && !files.find((f) => f.file.name === file.name) // 避免重复添加
+        file.type.startsWith("image/") &&
+        isFileExtensionAllowed(file) &&
+        !files.find((f) => f.file.name === file.name) // 避免重复添加
       );
     });
 
     if (allowedFiles.length === 0) {
-      toast.warning("请选择至少一个有效的图片文件（jpg, jpeg, png, gif）");
+      toast.warning(
+        "请选择至少一个有效的图片文件（jpg, jpeg, png, gif, webp）",
+      );
       return;
     }
 
@@ -95,7 +100,9 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
   // 删除文件
   const removeFile = (file: FileWithPreview) => {
-    setFiles((prevFiles) => prevFiles.filter((f) => f.file.name !== file.file.name));
+    setFiles((prevFiles) =>
+      prevFiles.filter((f) => f.file.name !== file.file.name),
+    );
   };
 
   // 清空所有文件
@@ -159,9 +166,63 @@ export const useCosUpload = (): UseCosUploadReturn => {
       if (!info) return;
       const { Bucket, Region } = info;
 
+      // 压缩文件处理（跳过GIF文件）
+      const processedFiles = await Promise.all(
+        files.map(async (fileWithPreview) => {
+          const file = fileWithPreview.file;
+
+          // GIF文件不需要压缩
+          if (file.type === "image/gif") {
+            return fileWithPreview;
+          }
+
+          // 检查是否为图片文件且需要压缩
+          if (
+            file.type.startsWith("image/") &&
+            ["image/jpeg", "image/jpg", "image/png"].includes(file.type)
+          ) {
+            try {
+              // 根据prefix确定上传类型
+              const isAvatarType = ["/avatar/", "/team/"].some((kw) =>
+                fileWithPreview.prefix.includes(kw),
+              );
+              const uploadType = isAvatarType ? "赛事头像" : "其他内容";
+
+              const compressedResult = await compressImageForUpload(
+                file,
+                uploadType,
+                fileWithPreview.filename,
+              );
+
+              // 返回更新后的文件信息
+              return {
+                ...fileWithPreview,
+                file: compressedResult.file,
+                filename: compressedResult.filename,
+                ext: compressedResult.ext,
+              };
+            } catch (error) {
+              console.error("压缩文件失败:", error);
+              // 压缩失败时使用原文件
+              return fileWithPreview;
+            }
+          }
+
+          // 非图片文件或不需要压缩的文件直接返回
+          return fileWithPreview;
+        }),
+      );
+
+      // 更新UI显示的文件信息（文件名、扩展名、文件大小等）
+      setFiles(processedFiles);
+
       // 当任务列表发生更新时
       const updateFunc = (data: { list: COS.TaskList }) => {
-        if (data.list.every((item) => ["error", "success", "canceled"].includes(item.state))) {
+        if (
+          data.list.every((item) =>
+            ["error", "success", "canceled"].includes(item.state),
+          )
+        ) {
           setIsUploading(false);
           cos.off("list-update", updateFunc);
           // console.log(data.list);
@@ -171,10 +232,15 @@ export const useCosUpload = (): UseCosUploadReturn => {
 
       setIsUploading(true);
       await cos.uploadFiles({
-        files: files.map((fileWithPreview) => {
+        files: processedFiles.map((fileWithPreview) => {
           const file = fileWithPreview.file;
           const Key =
-            fileWithPreview.prefix + generateCosDateKey() + "_" + fileWithPreview.filename + "." + fileWithPreview.ext;
+            fileWithPreview.prefix +
+            generateCosDateKey() +
+            "_" +
+            fileWithPreview.filename +
+            "." +
+            fileWithPreview.ext;
           return {
             Bucket: Bucket,
             Region: Region,
@@ -195,7 +261,9 @@ export const useCosUpload = (): UseCosUploadReturn => {
               });
             },
             Headers: {
-              "x-cos-meta-username": encodeURIComponent(userInfo?.username || ""),
+              "x-cos-meta-username": encodeURIComponent(
+                userInfo?.username || "",
+              ),
               "x-cos-meta-filename": encodeURIComponent(file.name),
             },
           };
@@ -208,7 +276,9 @@ export const useCosUpload = (): UseCosUploadReturn => {
           // 从cos key还原filename
           const filenameWithDate = options.Key.split("/").slice(-1)[0];
           const filename = filenameWithDate.split("_").slice(1).join("_");
-          const id = files.find((f) => f.filename + "." + f.ext === filename)?.id || "";
+          const id =
+            processedFiles.find((f) => f.filename + "." + f.ext === filename)
+              ?.id || "";
           if (!id) throw new Error("Invalid file id");
           setTaskMap((prev) => {
             const updated = { ...prev };
@@ -223,7 +293,9 @@ export const useCosUpload = (): UseCosUploadReturn => {
       });
     } catch (err) {
       console.log(err);
-      toast.error(`上传失败！\n${(err as Error).name}: ${(err as Error).message}`);
+      toast.error(
+        `上传失败！\n${(err as Error).name}: ${(err as Error).message}`,
+      );
     }
   };
 

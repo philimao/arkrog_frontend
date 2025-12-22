@@ -13,12 +13,15 @@ import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { useStorageStore } from "~/stores/storageStore";
 import { type UseCosListReturn } from "~/hooks/useCosList";
 import { CloseIcon } from "../Icons";
+import ImageCropper from "./ImageCropper";
 
 const StyledUploadBoxContainer = styled.div`
   height: min(43rem, 80vh);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
 `;
 
 const StyledUploadBoxWrapper = styled.div`
@@ -46,6 +49,7 @@ const StyledUploadBox = styled.div<{ $hasFile: boolean; $isDragging: boolean }>`
 const StyledUploadFileTableWrapper = styled.div`
   flex-grow: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
 `;
 
 const StyledUploadFileTable = styled.table`
@@ -70,8 +74,36 @@ const StyledThumbnailWrapper = styled.td`
   height: 7rem;
   display: flex;
   justify-content: center;
+  position: relative;
+  cursor: pointer;
+
   & > img {
     object-fit: contain;
+    transition: filter 0.2s ease;
+  }
+
+  &:hover > img {
+    filter: brightness(0.5);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2rem;
+    height: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' fill='none'%3E%3Cpath d='M21.2799 6.40005L11.7399 15.94C10.7899 16.89 7.96987 17.33 7.33987 16.7C6.70987 16.07 7.13987 13.25 8.08987 12.3L17.6399 2.75002C17.8754 2.49308 18.1605 2.28654 18.4781 2.14284C18.7956 1.99914 19.139 1.92124 19.4875 1.9139C19.8359 1.90657 20.1823 1.96991 20.5056 2.10012C20.8289 2.23033 21.1225 2.42473 21.3686 2.67153C21.6147 2.91833 21.8083 3.21243 21.9376 3.53609C22.0669 3.85976 22.1294 4.20626 22.1211 4.55471C22.1128 4.90316 22.0339 5.24635 21.8894 5.5635C21.7448 5.88065 21.5375 6.16524 21.2799 6.40005V6.40005Z' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke='%23fff'/%3E%3Cpath d='M11 4H6C4.93913 4 3.92178 4.42142 3.17163 5.17157C2.42149 5.92172 2 6.93913 2 8V18C2 19.0609 2.42149 20.0783 3.17163 20.8284C3.92178 21.5786 4.93913 22 6 22H17C19.21 22 20 20.2 20 18V13' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke='%23fff'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    opacity: 1;
   }
 `;
 
@@ -116,6 +148,10 @@ export default function UploadBox({
 
   // 新增状态：是否正在拖拽进入视口
   const [isDraggingOverViewport, setIsDraggingOverViewport] = useState(false);
+
+  // 裁剪相关状态
+  const [cropFile, setCropFile] = useState<FileWithPreview | null>(null);
+  const [isCropping, setIsCropping] = useState(false);
 
   // 全局拖拽事件监听
   useEffect(() => {
@@ -185,6 +221,54 @@ export default function UploadBox({
     }
   };
 
+  // 裁剪相关处理函数
+  const handleOpenCropper = (file: FileWithPreview) => {
+    setCropFile(file);
+    setIsCropping(true);
+  };
+
+  const handleCloseCropper = () => {
+    setIsCropping(false);
+    setCropFile(null);
+  };
+
+  const handleCropSave = useCallback(
+    (croppedBlob: Blob) => {
+      if (!cropFile) return;
+
+      // 创建新文件
+      const newFile = new File(
+        [croppedBlob],
+        cropFile.filename + "." + cropFile.ext,
+        {
+          type: croppedBlob.type || "image/jpeg",
+        },
+      );
+
+      // 更新文件列表
+      useCosUploadHook.setFiles((files) => {
+        return files.map((f) => {
+          if (f.id === cropFile.id) {
+            // 释放旧的preview URL
+            URL.revokeObjectURL(f.preview);
+            // 创建新的preview URL
+            const newPreview = URL.createObjectURL(newFile);
+            return {
+              ...f,
+              file: newFile,
+              preview: newPreview,
+            };
+          }
+          return f;
+        });
+      });
+
+      handleCloseCropper();
+      toast.success("裁剪成功！");
+    },
+    [cropFile, useCosUploadHook],
+  );
+
   // 获取赛事名称
   const { tournamentId } = useParams();
   const { tournamentsData } = useTournamentDataStore();
@@ -226,13 +310,13 @@ export default function UploadBox({
               <>
                 在这里松开
                 <br />
-                （jpg, jpeg, png, gif，最大10MB）
+                （jpg, jpeg, png, gif, webp，最大10MB）
               </>
             ) : (
               <>
                 点击或拖动图片文件
                 <br />
-                （jpg, jpeg, png, gif，最大10MB）
+                （jpg, jpeg, png, gif, webp，最大10MB）
               </>
             )}
           </span>
@@ -240,7 +324,7 @@ export default function UploadBox({
       </StyledUploadBoxWrapper>
       <input
         type="file"
-        accept="image/jpg,image/jpeg,image/png,image/gif"
+        accept="image/jpg,image/jpeg,image/png,image/gif,image/webp"
         multiple
         ref={fileInputRef}
         className="hidden"
@@ -256,6 +340,7 @@ export default function UploadBox({
                 folder={folder}
                 uploadLabel={uploadLabel}
                 useCosUploadHook={useCosUploadHook}
+                onOpenCropper={handleOpenCropper}
                 key={file.filename}
               />
             ))}
@@ -297,6 +382,13 @@ export default function UploadBox({
         </div>
       )}
       <SVG />
+      {isCropping && cropFile && (
+        <ImageCropper
+          file={cropFile}
+          onClose={handleCloseCropper}
+          onSave={handleCropSave}
+        />
+      )}
     </StyledUploadBoxContainer>
   );
 }
@@ -306,11 +398,13 @@ function FileEntry({
   folder,
   uploadLabel,
   useCosUploadHook,
+  onOpenCropper,
 }: {
   file: FileWithPreview;
   folder: string;
   uploadLabel: string;
   useCosUploadHook: UseCosUploadReturn;
+  onOpenCropper: (file: FileWithPreview) => void;
 }) {
   // 修改文件名
   const [editing, setEditing] = useState(false);
@@ -396,7 +490,10 @@ function FileEntry({
   );
   return (
     <StyledUploadFileTableRow key={file.id}>
-      <StyledThumbnailWrapper>
+      <StyledThumbnailWrapper
+        onClick={() => onOpenCropper(file)}
+        title="点击裁剪图片"
+      >
         <img src={file.preview} alt={file.filename} />
       </StyledThumbnailWrapper>
       <StyledFilename>
@@ -412,6 +509,7 @@ function FileEntry({
             <svg
               width="1rem"
               height="1rem"
+              className={task?.status === "finished" ? "hidden" : "block"}
               style={{ stroke: "white", cursor: "pointer" }}
               onClick={() => {
                 setFiles((files) => {
@@ -431,9 +529,12 @@ function FileEntry({
             <svg
               width="1rem"
               height="1rem"
+              className={
+                (task?.status === "finished" ? "hidden" : "block") +
+                " flex-shrink-0"
+              }
               style={{ fill: "white", stroke: "none", cursor: "pointer" }}
               onClick={() => setEditing(true)}
-              className="flex-shrink-0"
             >
               <use href="#pencil" />
             </svg>

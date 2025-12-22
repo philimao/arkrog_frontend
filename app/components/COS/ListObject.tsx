@@ -262,7 +262,7 @@ export default function ListObject({
                   const content = flatPath.content;
                   return (
                     <StyledObject
-                      key={flatPath.name}
+                      key={flatPath.fullPath}
                       className="cursor-pointer hover:bg-dark-gray"
                       onClick={() => {
                         if (content) {

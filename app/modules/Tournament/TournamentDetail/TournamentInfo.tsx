@@ -106,21 +106,22 @@ export function TournamentPlayerInfo({
         groups.add(groupValue);
         groupSchedule.set(player.mid, groupValue);
       }
-      // 在赛事阶段信息中寻找自定义的groupBy值
-      // groupBy = "session"
-      // game.customStageValues = {session: "大粽场"}
-      const game = player.games.find(
-        (game) => game.stage === tournamentData.stages[0].name,
-      );
-      const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
-      if (stageGroupValue) {
-        groupBy =
-          tournamentData.stages[0].customStageKeys[tournamentData.groupBy];
-        groups.add(stageGroupValue);
-        groupSchedule.set(player.mid, stageGroupValue);
-      }
-      // 定义了groupBy，但在选手和阶段中都没有值，且先前已有选手有分组，则显示为“-”
-      if (!groupValue && !stageGroupValue && groupSchedule.size > 0) {
+      // 弃用，全局groupBy与赛事阶段groupBy隔离
+      // // 在赛事阶段信息中寻找自定义的groupBy值
+      // // groupBy = "session"
+      // // game.customStageValues = {session: "大粽场"}
+      // const game = player.games.find(
+      //   (game) => game.stage === tournamentData.stages[0].name,
+      // );
+      // const stageGroupValue = game?.customStageValues[tournamentData.groupBy];
+      // if (stageGroupValue) {
+      //   groupBy =
+      //     tournamentData.stages[0].customStageKeys[tournamentData.groupBy];
+      //   groups.add(stageGroupValue);
+      //   groupSchedule.set(player.mid, stageGroupValue);
+      // }
+      // 定义了groupBy，但在选手中没有值，且先前已有选手有分组，则显示为“未分组”
+      if (!groupValue && groupSchedule.size > 0) {
         groups.add("未分组");
         groupSchedule.set(player.mid, "未分组");
       }

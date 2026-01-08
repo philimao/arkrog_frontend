@@ -526,16 +526,16 @@ export function TournamentRankingIndividual({
     const isFinal = index === tournamentData.stages.length - 1;
 
     if (stage.type === "rank") {
-      // TODO: Change to stage.groupBy
       if (
         stage.customStageKeys &&
-        Object.keys(stage.customStageKeys).includes("group")
+        stage.groupBy &&
+        stage.customStageKeys[stage.groupBy]
       ) {
         const groups = new Set<string>();
         players.forEach((player) => {
           const game = player.games.find((game) => game.stage === stage.name);
           if (game) {
-            groups.add(game.customStageValues["group"]);
+            groups.add(game.customStageValues[stage.groupBy]);
           }
         });
         const sortedGroups = Array.from(groups).sort();

@@ -220,13 +220,67 @@ export default function TournamentProgressAccordionItem({
     setNewCustomValue("");
   };
 
-  // 设置为全局分组依据
+  // 常用阶段信息标示配置
+  const commonStageKeys: { key: string; value: string }[] = [
+    { key: "session", value: "场地" },
+    { key: "group", value: "分组" },
+    { key: "note", value: "备注" },
+    { key: "level", value: "难度等级" },
+    { key: "duration", value: "比赛时长" },
+    { key: "playback", value: "回放链接" },
+  ];
+
+  // 添加常用阶段信息标示
+  const handleAddCommonStageKey = (key: string, value: string) => {
+    if (!editingStage) return;
+
+    const newStages = [...formData.stages];
+    const stageIndex = newStages.findIndex(
+      (stage) => stage.name === editingStage.name,
+    );
+
+    if (stageIndex !== -1) {
+      newStages[stageIndex] = {
+        ...newStages[stageIndex],
+        customStageKeys: {
+          ...newStages[stageIndex].customStageKeys,
+          [key]: value,
+        },
+      };
+
+      setFormData((prev) => ({
+        ...prev,
+        stages: newStages,
+      }));
+
+      setEditingStage(newStages[stageIndex]);
+    }
+  };
+
+  // 设置当前阶段的分组依据
   const handleSetGroupBy = (key: string) => {
-    const newGroupBy = formData.groupBy === key ? "" : key;
-    setFormData((prev) => ({
-      ...prev,
-      groupBy: newGroupBy,
-    }));
+    if (!editingStage) return;
+
+    const newStages = [...formData.stages];
+    const stageIndex = newStages.findIndex(
+      (stage) => stage.name === editingStage.name,
+    );
+
+    if (stageIndex !== -1) {
+      const newGroupBy = newStages[stageIndex].groupBy === key ? "" : key;
+      newStages[stageIndex] = {
+        ...newStages[stageIndex],
+        groupBy: newGroupBy,
+      };
+
+      setFormData((prev) => ({
+        ...prev,
+        stages: newStages,
+      }));
+
+      // Update the editingStage reference
+      setEditingStage(newStages[stageIndex]);
+    }
   };
 
   useEffect(() => {
@@ -277,150 +331,21 @@ export default function TournamentProgressAccordionItem({
       <div className="mb-4">
         <label className={labelClassName}>常用阶段信息标示</label>
         <div className="flex gap-2 flex-wrap mt-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (!editingStage) return;
-
-              const newStages = [...formData.stages];
-              const stageIndex = newStages.findIndex(
-                (stage) => stage.name === editingStage.name,
-              );
-
-              if (stageIndex !== -1) {
-                newStages[stageIndex] = {
-                  ...newStages[stageIndex],
-                  customStageKeys: {
-                    ...newStages[stageIndex].customStageKeys,
-                    note: "备注",
-                  },
-                };
-
-                setFormData((prev) => ({
-                  ...prev,
-                  stages: newStages,
-                }));
-
-                setEditingStage(newStages[stageIndex]);
-              }
-            }}
-            disabled={editingStage?.customStageKeys?.note !== undefined}
-            className={`px-3 py-1.5 transition-colors text-sm ${
-              editingStage?.customStageKeys?.note !== undefined
-                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
-                : "bg-[#00000033] hover:bg-[#00000055]"
-            }`}
-          >
-            备注
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (!editingStage) return;
-
-              const newStages = [...formData.stages];
-              const stageIndex = newStages.findIndex(
-                (stage) => stage.name === editingStage.name,
-              );
-
-              if (stageIndex !== -1) {
-                newStages[stageIndex] = {
-                  ...newStages[stageIndex],
-                  customStageKeys: {
-                    ...newStages[stageIndex].customStageKeys,
-                    level: "难度等级",
-                  },
-                };
-
-                setFormData((prev) => ({
-                  ...prev,
-                  stages: newStages,
-                }));
-
-                setEditingStage(newStages[stageIndex]);
-              }
-            }}
-            disabled={editingStage?.customStageKeys?.level !== undefined}
-            className={`px-3 py-1.5 transition-colors text-sm ${
-              editingStage?.customStageKeys?.level !== undefined
-                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
-                : "bg-[#00000033] hover:bg-[#00000055]"
-            }`}
-          >
-            难度等级
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (!editingStage) return;
-
-              const newStages = [...formData.stages];
-              const stageIndex = newStages.findIndex(
-                (stage) => stage.name === editingStage.name,
-              );
-
-              if (stageIndex !== -1) {
-                newStages[stageIndex] = {
-                  ...newStages[stageIndex],
-                  customStageKeys: {
-                    ...newStages[stageIndex].customStageKeys,
-                    duration: "比赛时长",
-                  },
-                };
-
-                setFormData((prev) => ({
-                  ...prev,
-                  stages: newStages,
-                }));
-
-                setEditingStage(newStages[stageIndex]);
-              }
-            }}
-            disabled={editingStage?.customStageKeys?.duration !== undefined}
-            className={`px-3 py-1.5 transition-colors text-sm ${
-              editingStage?.customStageKeys?.duration !== undefined
-                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
-                : "bg-[#00000033] hover:bg-[#00000055]"
-            }`}
-          >
-            比赛时长
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (!editingStage) return;
-
-              const newStages = [...formData.stages];
-              const stageIndex = newStages.findIndex(
-                (stage) => stage.name === editingStage.name,
-              );
-
-              if (stageIndex !== -1) {
-                newStages[stageIndex] = {
-                  ...newStages[stageIndex],
-                  customStageKeys: {
-                    ...newStages[stageIndex].customStageKeys,
-                    playback: "回放链接",
-                  },
-                };
-
-                setFormData((prev) => ({
-                  ...prev,
-                  stages: newStages,
-                }));
-
-                setEditingStage(newStages[stageIndex]);
-              }
-            }}
-            disabled={editingStage?.customStageKeys?.playback !== undefined}
-            className={`px-3 py-1.5 transition-colors text-sm ${
-              editingStage?.customStageKeys?.playback !== undefined
-                ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
-                : "bg-[#00000033] hover:bg-[#00000055]"
-            }`}
-          >
-            回放链接
-          </button>
+          {commonStageKeys.map(({ key, value }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleAddCommonStageKey(key, value)}
+              disabled={editingStage?.customStageKeys?.[key] !== undefined}
+              className={`px-3 py-1.5 transition-colors text-sm ${
+                editingStage?.customStageKeys?.[key] !== undefined
+                  ? "bg-[#00000022] text-gray-500 cursor-not-allowed"
+                  : "bg-[#00000033] hover:bg-[#00000055]"
+              }`}
+            >
+              {value}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -532,7 +457,7 @@ export default function TournamentProgressAccordionItem({
                           <label className="flex items-center ml-1">
                             <input
                               type="checkbox"
-                              checked={formData.groupBy === key}
+                              checked={editingStage.groupBy === key}
                               onChange={() => handleSetGroupBy(key)}
                               className="mr-1 accent-ak-blue w-4 h-4 cursor-pointer"
                             />
@@ -555,8 +480,11 @@ export default function TournamentProgressAccordionItem({
                             };
                             delete newCustomStageKeys[key];
 
-                            // TODO: If this was the stage's groupBy key, reset groupBy
-                            // const newGroupBy = newStages[stageIndex].groupBy === key ? "" : newStages[stageIndex].groupBy;
+                            // If this was the stage's groupBy key, reset groupBy
+                            const newGroupBy =
+                              newStages[stageIndex].groupBy === key
+                                ? ""
+                                : newStages[stageIndex].groupBy;
 
                             // Need to delete corresponding value from all players' games
                             const newPlayers = (formData.players || []).map(
@@ -584,7 +512,7 @@ export default function TournamentProgressAccordionItem({
                             newStages[stageIndex] = {
                               ...newStages[stageIndex],
                               customStageKeys: newCustomStageKeys,
-                              // TODO: groupBy: newGroupBy,
+                              groupBy: newGroupBy,
                             };
 
                             setFormData((prev) => ({
@@ -877,57 +805,64 @@ export default function TournamentProgressAccordionItem({
                               比赛时间（可粘贴）
                               <span className="text-ak-red">*</span>
                               <div className="flex gap-1 ms-auto">
-                                {getSuggestions("date").map((dateStr) => {
-                                  return (
-                                    <span
-                                      className="px-1 cursor-pointer bg-[#00000033] hover:bg-[#00000055]"
-                                      key={dateStr}
-                                      onClick={() => {
-                                        const newPlayers = [
-                                          ...(formData.players || []),
-                                        ];
-                                        const game = newPlayers
-                                          .find(
-                                            (p) => p.mid === editingPlayer.mid,
-                                          )!
-                                          .games.find((g) =>
-                                            isSameDay(g.date, date),
-                                          );
-                                        if (game) {
-                                          const currentDate = new Date(
-                                            game.date,
-                                          );
-                                          const [hours, minutes] = dateStr
-                                            .split(":")
-                                            .map(Number);
-                                          const newDate = new Date(currentDate);
-                                          newDate.setHours(
-                                            hours,
-                                            minutes,
-                                            0,
-                                            0,
-                                          );
-                                          if (!isNaN(newDate.getTime())) {
-                                            game.date = newDate.getTime();
-                                            // Update schedule when date changes
-                                            if (editingStage?.startTime) {
-                                              game.schedule = calculateSchedule(
-                                                newDate.getTime(),
-                                                editingStage.startTime,
-                                              );
+                                {getSuggestions("date")
+                                  .reverse()
+                                  .slice(0, 6)
+                                  .map((dateStr) => {
+                                    return (
+                                      <span
+                                        className="px-1 cursor-pointer bg-[#00000033] hover:bg-[#00000055]"
+                                        key={dateStr}
+                                        onClick={() => {
+                                          const newPlayers = [
+                                            ...(formData.players || []),
+                                          ];
+                                          const game = newPlayers
+                                            .find(
+                                              (p) =>
+                                                p.mid === editingPlayer.mid,
+                                            )!
+                                            .games.find((g) =>
+                                              isSameDay(g.date, date),
+                                            );
+                                          if (game) {
+                                            const currentDate = new Date(
+                                              game.date,
+                                            );
+                                            const [hours, minutes] = dateStr
+                                              .split(":")
+                                              .map(Number);
+                                            const newDate = new Date(
+                                              currentDate,
+                                            );
+                                            newDate.setHours(
+                                              hours,
+                                              minutes,
+                                              0,
+                                              0,
+                                            );
+                                            if (!isNaN(newDate.getTime())) {
+                                              game.date = newDate.getTime();
+                                              // Update schedule when date changes
+                                              if (editingStage?.startTime) {
+                                                game.schedule =
+                                                  calculateSchedule(
+                                                    newDate.getTime(),
+                                                    editingStage.startTime,
+                                                  );
+                                              }
+                                              setFormData((prev) => ({
+                                                ...prev,
+                                                players: newPlayers,
+                                              }));
                                             }
-                                            setFormData((prev) => ({
-                                              ...prev,
-                                              players: newPlayers,
-                                            }));
                                           }
-                                        }
-                                      }}
-                                    >
-                                      {dateStr}
-                                    </span>
-                                  );
-                                })}
+                                        }}
+                                      >
+                                        {dateStr}
+                                      </span>
+                                    );
+                                  })}
                               </div>
                             </label>
                             <input

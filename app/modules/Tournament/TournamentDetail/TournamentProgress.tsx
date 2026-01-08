@@ -83,7 +83,7 @@ const DateNavigation = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       onMouseDown={onMouseDown}
       onClickCapture={onClickCapture}
@@ -218,10 +218,12 @@ const IndividualScheduleRow = ({
   entry,
   renderPlayer,
   tournamentData,
+  currentStage,
 }: {
   entry: [string, TournamentGame];
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
+  currentStage: TournamentStage;
 }) => {
   const player = tournamentData.players?.find(
     (player) => player.mid === entry[0],
@@ -271,9 +273,10 @@ const IndividualScheduleRow = ({
       {entry[1].point && (
         <td>
           <div className="flex flex-col justify-center items-center text-center">
-            {Object.keys(entry[1].customStageValues).map((key) => (
-              <p key={key}>{entry[1].customStageValues[key]}</p>
-            ))}
+            {currentStage.groupBy &&
+              entry[1].customStageValues[currentStage.groupBy] && (
+                <p>{entry[1].customStageValues[currentStage.groupBy]}</p>
+              )}
             <PointDisplay point={entry[1].point} />
           </div>
         </td>
@@ -291,10 +294,12 @@ const TeamScheduleRow = ({
   entry,
   renderPlayer,
   tournamentData,
+  currentStage,
 }: {
   entry: [string, TournamentGame];
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
+  currentStage: TournamentStage;
 }) => {
   const team = tournamentData.teams?.find((team) =>
     team.members.includes(entry[0]),
@@ -341,13 +346,14 @@ const TeamScheduleRow = ({
         </div>
       </td>
       {/* custom fields */}
-      {Object.values(entry[1].customStageValues).map((value, index) => (
-        <td className="hidden sm:table-cell p-2 min-w-16" key={index}>
-          <div className="flex justify-center items-center text-center">
-            {value}
-          </div>
-        </td>
-      ))}
+      {currentStage.groupBy &&
+        entry[1].customStageValues[currentStage.groupBy] && (
+          <td className="hidden sm:table-cell p-2 min-w-16">
+            <div className="flex justify-center items-center text-center">
+              {entry[1].customStageValues[currentStage.groupBy]}
+            </div>
+          </td>
+        )}
       {/* Ending */}
       <td className="hidden sm:table-cell p-2">
         <div className="flex justify-center items-center text-center">
@@ -376,10 +382,12 @@ const TeamScheduleRow = ({
 // Schedule table components
 const IndividualScheduleTable = ({
   schedule,
+  currentStage,
   renderPlayer,
   tournamentData,
 }: {
   schedule: Map<string, TournamentGame>;
+  currentStage: TournamentStage;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
@@ -399,6 +407,7 @@ const IndividualScheduleTable = ({
           entry={entry}
           renderPlayer={renderPlayer}
           tournamentData={tournamentData}
+          currentStage={currentStage}
         />
       ))}
     </tbody>
@@ -407,10 +416,12 @@ const IndividualScheduleTable = ({
 
 const TeamScheduleTable = ({
   schedule,
+  currentStage,
   renderPlayer,
   tournamentData,
 }: {
   schedule: Map<string, TournamentGame>;
+  currentStage: TournamentStage;
   renderPlayer: (playerMid: string, column?: boolean) => React.ReactNode;
   tournamentData: TournamentData;
 }) => {
@@ -430,6 +441,7 @@ const TeamScheduleTable = ({
           entry={entry}
           renderPlayer={renderPlayer}
           tournamentData={tournamentData}
+          currentStage={currentStage}
         />
       ))}
     </tbody>
@@ -489,12 +501,14 @@ export default function TournamentProgress({
       {isTeam ? (
         <TeamScheduleTable
           schedule={schedule}
+          currentStage={currentStage}
           renderPlayer={renderPlayer}
           tournamentData={tournamentData}
         />
       ) : (
         <IndividualScheduleTable
           schedule={schedule}
+          currentStage={currentStage}
           renderPlayer={renderPlayer}
           tournamentData={tournamentData}
         />

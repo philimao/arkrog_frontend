@@ -44,7 +44,7 @@ export interface TournamentData {
   ongoing?: boolean;
   /** 绑定在选手信息上的自定义keys，{server:"服务器"} */
   customPlayerKeys: Record<string, string>;
-  /** 用于分组的key，可以从customPlayerKeys或customStageKeys中获取 */
+  /** 用于分组的key，可以从customPlayerKeys中获取 */
   groupBy: string;
   /** 赛事阶段 */
   stages: TournamentStage[];
@@ -80,6 +80,8 @@ export interface TournamentStage {
   type: "rank" | "1on1";
   /** 绑定在具体比赛上的自定义keys，{session:"场地", strategy："美愿"}，value在TournamentGame中 */
   customStageKeys: Record<string, string>;
+  /** 用于分组的key，可以从customStageKeys中获取 */
+  groupBy: string;
 }
 
 export interface TournamentTeam {

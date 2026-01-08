@@ -201,6 +201,7 @@ export default function TournamentStagesAccordionItem({
             endTime: now + 86400000, // +1 day
             type: "rank" as const,
             customStageKeys: customStageKeys,
+            groupBy: "",
           };
           setFormData((prev) => ({
             ...prev,

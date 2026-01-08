@@ -1,15 +1,25 @@
-import type { TournamentData } from "~/types/tournamentsData";
+import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
 import { styled } from "styled-components";
 import { SectionContainer } from ".";
 import { StarIcon } from "~/components/Icons";
 
 // Styled components
 const StyledFinalResultAvatar = styled.div`
-  background: linear-gradient(to top right, transparent 0%, transparent 85%, var(--ak-blue) 85%, var(--ak-blue) 100%);
+  background: linear-gradient(
+    to top right,
+    transparent 0%,
+    transparent 85%,
+    var(--ak-blue) 85%,
+    var(--ak-blue) 100%
+  );
 
   .imgWrapper {
     padding: 4px;
-    background: linear-gradient(to bottom, white 0%, var(--light-mid-gray) 100%);
+    background: linear-gradient(
+      to bottom,
+      white 0%,
+      var(--light-mid-gray) 100%
+    );
   }
 `;
 
@@ -33,7 +43,13 @@ const rankMap: { [key: number]: string } = {
 };
 
 // Helper components
-const PlayerAvatar = ({ imageSrc, name }: { imageSrc: string; name: string }) => (
+const PlayerAvatar = ({
+  imageSrc,
+  name,
+}: {
+  imageSrc: string;
+  name: string;
+}) => (
   <StyledFinalResultAvatar className="shrink-0 w-20 h-20 sm:min-w-20 sm:min-h-20 aspect-square pt-1 pr-1">
     <div className="imgWrapper w-full h-full">
       {imageSrc ? (
@@ -45,7 +61,9 @@ const PlayerAvatar = ({ imageSrc, name }: { imageSrc: string; name: string }) =>
           crossOrigin="anonymous"
         />
       ) : (
-        <p className="bg-mid-gray w-full h-full flex items-center justify-center text-5xl text-white">{name[0]}</p>
+        <p className="bg-mid-gray w-full h-full flex items-center justify-center text-5xl text-white">
+          {name[0]}
+        </p>
       )}
     </div>
   </StyledFinalResultAvatar>
@@ -58,29 +76,59 @@ const ResultCardHeader = ({ rank }: { rank: number }) => (
   </div>
 );
 
-// Helper functions
-const getTopTiers = <T extends { finalRank?: number }>(items: T[] | undefined, maxRank: number): T[] => {
-  return (
-    items
-      ?.filter((item) => item.finalRank && 0 < item.finalRank && item.finalRank <= maxRank)
-      .sort((a, b) => (a.finalRank && b.finalRank ? a.finalRank - b.finalRank : 0)) || []
-  );
+/** 获取指定数量排名靠前的玩家/队伍，如果没有设置finalRank，则根据point排序 */
+const getTopTiers = <
+  T extends { finalRank?: number; games: { stage: string; point?: number }[] },
+>(
+  items: T[] | undefined,
+  stageName: string,
+  maxRank: number,
+): T[] => {
+  if (!items) return [];
+
+  // 如果 finalRank 不为空，则根据 finalRank 排序，否则根据 finalPoint 排序
+  const _items = items.map((item) => {
+    const game = item.games.find((game) => game.stage === stageName);
+    return {
+      ...item,
+      finalPoint: game?.point || Number.NEGATIVE_INFINITY,
+      _finalRank: 0,
+    };
+  });
+
+  _items
+    .sort((a, b) => b.finalPoint - a.finalPoint)
+    .forEach((item, index) => {
+      item._finalRank = item.finalRank ?? index + 1;
+    });
+
+  return _items.sort((a, b) => a._finalRank - b._finalRank).slice(0, maxRank);
 };
 
 // Individual tournament result component
-export function TournamentFinalResultIndividual({ tournamentData }: { tournamentData: TournamentData }) {
+export function TournamentFinalResultIndividual({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   if (!tournamentData.stages || tournamentData.stages.length === 0) {
     return <>暂无比赛结果</>;
   }
 
   const final = tournamentData.stages[tournamentData.stages.length - 1];
   const isFinalOneOnOne = final.type === "1on1";
-  const topTiers = getTopTiers(tournamentData.players, isFinalOneOnOne ? 2 : 3);
+  const topTiers = getTopTiers(
+    tournamentData.players,
+    final.name,
+    isFinalOneOnOne ? 2 : 3,
+  );
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
 
   return (
-    <div className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}>
+    <div
+      className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}
+    >
       {topTiers.map((player, index) => {
         const lastGame = player.games[player.games.length - 1];
         const rank = index + 1;
@@ -92,7 +140,9 @@ export function TournamentFinalResultIndividual({ tournamentData }: { tournament
               <PlayerAvatar imageSrc={player.face} name={player.name} />
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{player.name}</div>
-                <div className="text-ak-blue text-xl pt-2">{lastGame.point}</div>
+                <div className="text-ak-blue text-xl pt-2">
+                  {lastGame.point}
+                </div>
               </div>
               <img
                 src={`/images/squad/${lastGame.starterSquad}.png`}
@@ -100,7 +150,9 @@ export function TournamentFinalResultIndividual({ tournamentData }: { tournament
                 className="absolute bottom-0 right-0 h-14 aspect-square object-contain self-end opacity-30"
               />
             </div>
-            <div className="bg-black-gray text-center p-2">{lastGame.ending}</div>
+            <div className="bg-black-gray text-center p-2">
+              {lastGame.ending}
+            </div>
           </div>
         );
       })}
@@ -135,7 +187,9 @@ const TeamMemberRow = ({
   const hasPoint = !!lastGame?.point;
 
   // Get custom stage values keys if they exist
-  const customStageKeys = hasCustomStageValues ? Object.keys(lastGame.customStageValues) : [];
+  const customStageKeys = hasCustomStageValues
+    ? Object.keys(lastGame.customStageValues)
+    : [];
 
   // Count visible items to calculate widths (each custom stage value counts as one item)
   const visibleItemsCount = [
@@ -161,13 +215,20 @@ const TeamMemberRow = ({
         </span>
       )}
       {hasName && <div style={{ width: getWidth(true) }}>{player.name}</div>}
-      {hasRole && <div style={{ width: getWidth() }}>{isKeyMember ? keyMemberAlias : memberAlias}</div>}
+      {hasRole && (
+        <div style={{ width: getWidth() }}>
+          {isKeyMember ? keyMemberAlias : memberAlias}
+        </div>
+      )}
       {hasSquad && (
         <>
           <div className="hidden lg:block" style={{ width: getWidth(true) }}>
             {lastGame.starterSquad}
           </div>
-          <div className="flex justify-center items-center lg:hidden" style={{ width: getWidth() }}>
+          <div
+            className="flex justify-center items-center lg:hidden"
+            style={{ width: getWidth() }}
+          >
             <img
               src={`/images/squad/${lastGame.starterSquad}.png`}
               alt="squad"
@@ -188,12 +249,29 @@ const TeamMemberRow = ({
 };
 
 // Team tournament result component
-export function TournamentFinalResultTeam({ tournamentData }: { tournamentData: TournamentData }) {
+export function TournamentFinalResultTeam({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   if (!tournamentData.teams || tournamentData.teams.length === 0) {
     return <>暂无比赛结果</>;
   }
 
-  const topTiers = getTopTiers(tournamentData.teams, 2);
+  const final = tournamentData.stages[tournamentData.stages.length - 1];
+
+  // 很tricky的格式转换，用于统一team和player类型
+  const teams = tournamentData.teams.map((team) => {
+    return {
+      ...team,
+      games: team.stages.map((stage) => ({
+        stage: stage.name,
+        point: stage.point,
+      })),
+    };
+  });
+
+  const topTiers = getTopTiers(teams, final.name, 2);
 
   if (!topTiers?.length) return <>暂无比赛结果</>;
 
@@ -210,11 +288,15 @@ export function TournamentFinalResultTeam({ tournamentData }: { tournamentData: 
               <PlayerAvatar imageSrc={team.avatar} name={team.name} />
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{team.name}</div>
-                <div className="text-ak-blue text-xl pt-2">{lastStage.point}</div>
+                <div className="text-ak-blue text-xl pt-2">
+                  {lastStage.point}
+                </div>
               </div>
             </div>
             {team.members.map((member, memberIndex) => {
-              const player = tournamentData.players?.find((player) => player.name === member);
+              const player = tournamentData.players?.find(
+                (player) => player.name === member,
+              );
               const isKeyMember = team.keyMember === member;
               const isTeamLeader = team.leader === member;
 
@@ -237,7 +319,11 @@ export function TournamentFinalResultTeam({ tournamentData }: { tournamentData: 
 }
 
 // Main wrapper component
-export default function TournamentFinalResultWrapper({ tournamentData }: { tournamentData: TournamentData }) {
+export default function TournamentFinalResultWrapper({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) {
   if (!tournamentData.stages || tournamentData.stages.length === 0) {
     return null;
   }

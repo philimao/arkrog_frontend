@@ -806,6 +806,7 @@ export default function TournamentProgressAccordionItem({
                               <span className="text-ak-red">*</span>
                               <div className="flex gap-1 ms-auto">
                                 {getSuggestions("date")
+                                  .slice()
                                   .reverse()
                                   .slice(0, 6)
                                   .map((dateStr) => {

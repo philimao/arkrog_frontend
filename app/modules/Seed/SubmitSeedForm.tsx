@@ -5,6 +5,7 @@ import {
   Input,
   type InputProps,
   ModalBody,
+  ModalFooter,
   ModalHeader,
   Select,
   SelectItem,
@@ -25,7 +26,6 @@ import { toast } from "react-toastify";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { SeedTypes } from "~/types/constant";
 import ModalTemplate from "~/components/Modal";
-import { ModalFooter } from "@heroui/modal";
 import type { RecordType } from "~/types/recordType";
 import { _post, mergeArray } from "~/utils/tools";
 import type { SeedType } from "~/types/seedType";

@@ -3,13 +3,13 @@ import {
   Modal,
   ModalBody,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   Input,
   Form,
 } from "@heroui/react";
 import React, { type FormEvent } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import { ModalFooter } from "@heroui/modal";
 import { StyledModalContent } from "~/modules/TopNav/styled";
 import { toast } from "react-toastify";
 import { EyeClosedIcon, EyeOpenIcon, CloseIcon } from "~/components/Icons";

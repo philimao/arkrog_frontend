@@ -99,7 +99,7 @@ export default function TournamentDetail() {
     <TournamentView tournamentData={tournamentData}>
       <StyledBackButtonContainer>
         <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-        {editable && (
+        {!!editable && (
           <StyledEditButton onClick={() => navigate("edit")}>
             编辑
           </StyledEditButton>

@@ -5,8 +5,7 @@ import {
   useCosUpload,
   type UseCosUploadReturn,
 } from "~/hooks/useCosUpload";
-import { Button, Progress, Select, SelectItem } from "@heroui/react";
-import { Badge } from "@heroui/badge";
+import { Badge, Button, Progress, Select, SelectItem } from "@heroui/react";
 import { toast } from "react-toastify";
 import { useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";

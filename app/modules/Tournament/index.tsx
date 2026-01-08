@@ -217,7 +217,7 @@ function RougeSelector({
     <div>
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
       <div className="relative flex mb-12">
-        {editable && (
+        {!!editable && (
           <StyledBackButtonContainer>
             <div className="relative">
               <StyledBackButton onClick={() => navigate("create")}>

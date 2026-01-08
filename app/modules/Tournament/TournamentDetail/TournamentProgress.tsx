@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type {
   TournamentData,
   TournamentGame,
@@ -35,33 +35,86 @@ const DateNavigation = ({
   dates: Date[];
   activeIndex: number;
   setActiveIndex: (index: number) => void;
-}) => (
-  <div className="bg-black-gray flex hide-scroll overflow-scroll mb-4 mt-8 sm:mt-4 gap-[1px]">
-    {dates.map((date, index) => (
-      <StyledNav
-        key={index}
-        className={
-          "flex justify-center items-center gap-x-2 p-1 flex-wrap " +
-          `${activeIndex === index && "bg-ak-blue"}`
-        }
-        role="button"
-        onClick={() => setActiveIndex(index)}
-        style={{
-          minWidth: `calc(${Math.max(100 / dates.length, 18)}% - 1px)`,
-        }}
-      >
-        <div
-          className={`font-bold ${activeIndex === index ? "text-black" : "text-white"}`}
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const moved = useRef(false);
+
+  const DRAG_THRESHOLD = 5; // px
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    isDragging.current = true;
+    moved.current = false;
+
+    startX.current = e.pageX;
+    scrollLeft.current = containerRef.current.scrollLeft;
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+
+    const walk = e.pageX - startX.current;
+
+    if (Math.abs(walk) > DRAG_THRESHOLD) {
+      moved.current = true;
+      containerRef.current.scrollLeft = scrollLeft.current - walk;
+    }
+  };
+
+  const onMouseUp = () => {
+    isDragging.current = false;
+
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+  };
+
+  const onClickCapture = (e: React.MouseEvent) => {
+    // If user dragged, prevent button click
+    if (moved.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  return (
+    <div 
+      ref={containerRef}
+      onMouseDown={onMouseDown}
+      onClickCapture={onClickCapture}
+      className="bg-black-gray flex hide-scroll overflow-scroll mb-4 mt-8 sm:mt-4 gap-[1px] select-none"
+    >
+      {dates.map((date, index) => (
+        <StyledNav
+          key={index}
+          className={
+            "flex justify-center items-center gap-x-2 p-1 flex-wrap " +
+            `${activeIndex === index && "bg-ak-blue"}`
+          }
+          role="button"
+          onClick={() => setActiveIndex(index)}
+          style={{
+            minWidth: `calc(${Math.max(100 / dates.length, 18)}% - 1px)`,
+          }}
         >
-          Day{index + 1}
-        </div>
-        <div
-          className={`${activeIndex === index ? "text-black" : "text-light-mid-gray"}`}
-        >{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
-      </StyledNav>
-    ))}
-  </div>
-);
+          <div
+            className={`font-bold ${activeIndex === index ? "text-black" : "text-white"}`}
+          >
+            Day{index + 1}
+          </div>
+          <div
+            className={`${activeIndex === index ? "text-black" : "text-light-mid-gray"}`}
+          >{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
+        </StyledNav>
+      ))}
+    </div>
+  );
+};
 
 const StageNavigation = ({
   currentStageIndex,

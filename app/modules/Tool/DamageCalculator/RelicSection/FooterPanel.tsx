@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import { Badge } from "@heroui/badge";
+import { Badge } from "@heroui/react";
 import BuffPanel from "~/modules/Tool/DamageCalculator/RelicSection/BuffPanel";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {

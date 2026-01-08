@@ -1,6 +1,7 @@
 import {
   Button,
   ModalBody,
+  ModalFooter,
   ModalHeader,
   Textarea,
   useDisclosure,
@@ -10,7 +11,6 @@ import ModalTemplate from "~/components/Modal";
 import { useRecordStore } from "~/stores/recordStore";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import type { RogueKey } from "~/types/gameData";
-import { ModalFooter } from "@heroui/modal";
 import { StageTypes } from "~/types/constant";
 import { toast } from "react-toastify";
 import { _post } from "~/utils/tools";

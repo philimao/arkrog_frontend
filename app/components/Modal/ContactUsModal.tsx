@@ -3,10 +3,10 @@ import {
   Input,
   ModalBody,
   ModalHeader,
+  ModalFooter,
   Textarea,
   useDisclosure,
 } from "@heroui/react";
-import { ModalFooter } from "@heroui/modal";
 import ModalTemplate from "~/components/Modal/index";
 import React, { useState } from "react";
 import { toast } from "react-toastify";

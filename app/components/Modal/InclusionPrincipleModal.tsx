@@ -3,10 +3,10 @@ import Loading from "~/components/Loading";
 import Markdown from "react-markdown";
 import {
   ModalBody,
+  ModalFooter,
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
-import { ModalFooter } from "@heroui/modal";
 import ModalTemplate from "~/components/Modal";
 
 export default function InclusionPrincipleModal({ id }: { id: string }) {

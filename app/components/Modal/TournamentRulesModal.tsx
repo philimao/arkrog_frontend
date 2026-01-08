@@ -1,6 +1,5 @@
 import Loading from "~/components/Loading";
-import { ModalBody, ModalHeader, useDisclosure } from "@heroui/react";
-import { ModalFooter } from "@heroui/modal";
+import { ModalBody, ModalFooter, ModalHeader, useDisclosure } from "@heroui/react";
 import ModalTemplate from "~/components/Modal";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { useParams } from "react-router";

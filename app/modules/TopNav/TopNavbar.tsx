@@ -1,4 +1,5 @@
 import {
+  Input,
   Divider,
   Navbar,
   NavbarBrand,
@@ -7,7 +8,6 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import { Input } from "@heroui/input";
 import React, { useState } from "react";
 import UserOrLogin from "~/modules/TopNav/UserOrLogin";
 import { Link } from "react-router";

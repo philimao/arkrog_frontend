@@ -540,7 +540,7 @@ export function TournamentRankingIndividual({
         });
         const sortedGroups = Array.from(groups).sort();
         return sortedGroups.map((group) =>
-          createRankingTable(true, group, sortedGroups),
+          createRankingTable(true, stage.groupBy, group, sortedGroups),
         );
       } else {
         return createRankingTable(false);
@@ -548,6 +548,7 @@ export function TournamentRankingIndividual({
 
       function createRankingTable(
         hasGroups: boolean,
+        groupBy?: string,
         group?: string,
         groups?: string[],
       ) {
@@ -557,7 +558,7 @@ export function TournamentRankingIndividual({
           const game = player.games.find((game) => game.stage === stage.name);
           if (
             game &&
-            (!hasGroups || game?.customStageValues["group"] === group)
+            (!hasGroups || game?.customStageValues[groupBy!] === group)
           ) {
             schedule.set(player.mid, game);
           }

@@ -897,7 +897,6 @@ export default function TournamentProgressAccordionItem({
 
                                     // Additional validation to ensure hours and minutes are valid numbers
                                     if (!isNaN(hours) && !isNaN(minutes)) {
-                                      addToCache("date", e.target.value);
                                       // Create new date with same date but updated time
                                       const newDate = new Date(currentDate);
                                       newDate.setHours(hours, minutes, 0, 0);
@@ -955,7 +954,6 @@ export default function TournamentProgressAccordionItem({
                                   newDate.setHours(hours, minutes, 0, 0);
                                   // Ensure the date is valid before updating
                                   if (!isNaN(newDate.getTime())) {
-                                    addToCache("date", `${hours}:${minutes}`);
                                     game.date = newDate.getTime();
                                     // Update schedule when date changes
                                     if (editingStage?.startTime) {
@@ -973,7 +971,10 @@ export default function TournamentProgressAccordionItem({
                                   toast.warning("粘贴内容不满足HH:MM格式");
                                 }
                               }}
-                              onBlur={handleBlur}
+                              onBlur={(evt) => {
+                                addToCache("date", evt.target.value);
+                                handleBlur(evt);
+                              }}
                               required
                             />
                           </div>

@@ -98,7 +98,7 @@ export default function TournamentDetail() {
   return (
     <TournamentView tournamentData={tournamentData}>
       <StyledBackButtonContainer>
-        <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
+        <StyledBackButton onClick={() => navigate(`/tournament?topicId=${tournamentData.rogue}`)}>返回</StyledBackButton>
         {!!editable && (
           <StyledEditButton onClick={() => navigate("edit")}>
             编辑

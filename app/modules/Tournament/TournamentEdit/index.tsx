@@ -48,15 +48,19 @@ export default function TournamentEdit() {
     loadPlayers();
   }, [tournamentsData, tournamentId, fetchTournamentPlayer, tournamentData, editLock.lockStatus.canEdit]);
 
+  const backButton = (
+    <StyledBackButtonContainer>
+      <div className="relative">
+        <StyledBackButton onClick={() => navigate(`/tournament/${tournamentId}`)}>返回</StyledBackButton>
+      </div>
+    </StyledBackButtonContainer>
+  );
+
   // 加载中状态
   if (editLock.isLoading) {
     return (
       <div className="relative">
-        <StyledBackButtonContainer>
-          <div className="relative">
-            <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-          </div>
-        </StyledBackButtonContainer>
+        {backButton}
         <div className="text-2xl font-bold">加载中...</div>
       </div>
     );
@@ -66,11 +70,7 @@ export default function TournamentEdit() {
   if (!tournamentData) {
     return (
       <div className="relative">
-        <StyledBackButtonContainer>
-          <div className="relative">
-            <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-          </div>
-        </StyledBackButtonContainer>
+        {backButton}
         <div className="text-2xl font-bold">暂未收录此比赛</div>
       </div>
     );
@@ -80,11 +80,7 @@ export default function TournamentEdit() {
   if (editLock.lockStatus.isLocked && !editLock.lockStatus.canEdit) {
     return (
       <div className="relative">
-        <StyledBackButtonContainer>
-          <div className="relative">
-            <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-          </div>
-        </StyledBackButtonContainer>
+        {backButton}
         <div className="text-2xl font-bold text-red-600">
           该赛事正在被 {editLock.lockStatus.lockedBy} 编辑，请稍后再试
         </div>
@@ -94,11 +90,7 @@ export default function TournamentEdit() {
 
   return (
     <div className="relative">
-      <StyledBackButtonContainer>
-        <div className="relative">
-          <StyledBackButton onClick={() => navigate(-1)}>返回</StyledBackButton>
-        </div>
-      </StyledBackButtonContainer>
+      {backButton}
       <h1 className="text-[1.5rem] font-bold">编辑{tournamentData.name}</h1>
       {editLock.lockStatus.canEdit && <div className="text-sm text-green-600 mb-2">当前由您锁定编辑中</div>}
       <StyledDivider />

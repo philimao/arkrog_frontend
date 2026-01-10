@@ -111,8 +111,14 @@ export default function TournamentForm({
     const storedData = localStorage.getItem(
       `tournamentForm-${tournamentData?.id}`,
     );
-    if (storedData) {
-      newFormData = JSON.parse(storedData);
+
+    if (
+      storedData &&
+      (newFormData = JSON.parse(storedData)) &&
+      newFormData.lastEditTime &&
+      newFormData.lastEditTime > (tournamentData?.lastEditTime || 0)
+    ) {
+      // 仅当存储的数据比当前数据新时，才使用存储的数据
     } else if (tournamentData) {
       newFormData = structuredClone(tournamentData);
     } else {

@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import { heroui } from "@heroui/react";
+import typography from "@tailwindcss/typography";
 
 const colorExt = {
   "ak-blue": "var(--ak-blue)",
@@ -81,5 +82,5 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  plugins: [heroui(), typography],
 } satisfies Config;

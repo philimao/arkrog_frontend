@@ -3,7 +3,7 @@ import { ModalBody, ModalFooter, ModalHeader, useDisclosure } from "@heroui/reac
 import ModalTemplate from "~/components/Modal";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { useParams } from "react-router";
-import Markdown from "react-markdown";
+import Markdown from "~/components/Markdown";
 
 export default function TournamentRulesModal({ id }: { id: string }) {
   const { isOpen, onOpen, onClose } = useDisclosure();

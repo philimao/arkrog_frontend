@@ -67,19 +67,9 @@ export default function BlockNoteEditor({
 
   const getCustomSlashMenuItems = (editor: any) => {
     const defaultItems = getDefaultReactSlashMenuItems(editor);
-    // Try to find the group name from existing media items to ensure consistency
-    const mediaItemIndex = defaultItems.findIndex(
-      (i) =>
-        i.title === "图片" ||
-        i.title === "Image" ||
-        (i.aliases && i.aliases.includes("image")),
-    );
-    const mediaGroup =
-      mediaItemIndex !== -1 ? defaultItems[mediaItemIndex].group : "媒体";
-
     const uploadImageItem = {
       aliases: ["upload", "cos", "tc"],
-      group: mediaGroup,
+      group: "上传",
       icon: <AttachmentIcon width="1em" height="1em" />,
       key: "upload-center",
       onItemClick: () => {
@@ -109,7 +99,7 @@ export default function BlockNoteEditor({
       title: "图床上传",
       subtext: "从上传中心选择图片",
     };
-    defaultItems.splice(mediaItemIndex, 0, uploadImageItem);
+    defaultItems.splice(0, 0, uploadImageItem);
     return defaultItems;
   };
 

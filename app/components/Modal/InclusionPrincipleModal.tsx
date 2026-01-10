@@ -1,6 +1,6 @@
 import { useAppDataStore } from "~/stores/appDataStore";
 import Loading from "~/components/Loading";
-import Markdown from "react-markdown";
+import Markdown from "~/components/Markdown";
 import {
   ModalBody,
   ModalFooter,

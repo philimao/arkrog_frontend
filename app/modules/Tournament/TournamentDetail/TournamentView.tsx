@@ -3,7 +3,7 @@ import type { TournamentData } from "~/types/tournamentsData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import Loading from "~/components/Loading";
 import type { RogueKey } from "~/types/gameData";
-import Markdown from "react-markdown";
+import Markdown from "~/components/Markdown";
 import TournamentInfo from "./TournamentInfo";
 import TournamentRanking from "./TournamentRanking";
 import TournamentFinalResult from "./TournamentFinalResult";

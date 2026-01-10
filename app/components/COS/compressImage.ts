@@ -85,6 +85,16 @@ export const compressImageForUpload = async (
     URL.revokeObjectURL(imageUrl);
   }
 
+  // 检查头像类型图片的比例
+  if (uploadType === "赛事头像") {
+    const aspectRatio = image.width / image.height;
+    const tolerance = 0.1; // 允许10%的误差范围
+
+    if (aspectRatio < 1 - tolerance || aspectRatio > 1 + tolerance) {
+      throw new Error(`ASPECT_RATIO_INVALID:${uploadType}`);
+    }
+  }
+
   // 根据上传类型确定最大宽度
   let maxWidth: number;
   if (uploadType === "赛事头像" || uploadType === "队伍头像") {

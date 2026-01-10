@@ -10,9 +10,9 @@ import { toast } from "react-toastify";
 import { useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import { useStorageStore } from "~/stores/storageStore";
-import { type UseCosListReturn } from "~/hooks/useCosList";
 import { CloseIcon } from "../Icons";
 import ImageCropper from "./ImageCropper";
+import { closeModal } from "~/utils/dom";
 
 const StyledUploadBoxContainer = styled.div`
   height: min(43rem, 80vh);
@@ -74,14 +74,17 @@ const StyledThumbnailWrapper = styled.td`
   display: flex;
   justify-content: center;
   position: relative;
-  cursor: pointer;
+
+  &.active {
+    cursor: pointer;
+  }
 
   & > img {
     object-fit: contain;
     transition: filter 0.2s ease;
   }
 
-  &:hover > img {
+  &.active:hover > img {
     filter: brightness(0.5);
   }
 
@@ -101,7 +104,7 @@ const StyledThumbnailWrapper = styled.td`
     pointer-events: none;
   }
 
-  &:hover::after {
+  &.active:hover::after {
     opacity: 1;
   }
 `;
@@ -127,11 +130,7 @@ const StyledSelectPrefix = styled.td`
 
 const StyledFileControlButton = styled.button``;
 
-export default function UploadBox({
-  useCosListHook,
-}: {
-  useCosListHook: UseCosListReturn;
-}) {
+export default function UploadBox() {
   const useCosUploadHook = useCosUpload();
   const {
     files,
@@ -142,10 +141,9 @@ export default function UploadBox({
     progress,
     taskMap,
   } = useCosUploadHook;
-  const { listBucket } = useCosListHook;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 新增状态：是否正在拖拽进入视口
+  // 是否正在拖拽进入视口
   const [isDraggingOverViewport, setIsDraggingOverViewport] = useState(false);
 
   // 裁剪相关状态
@@ -364,9 +362,9 @@ export default function UploadBox({
       )}
       {files.length > 0 && !isUploading && (
         <div className="text-end">
-          {Object.values(taskMap).length === 0 && (
+          {Object.values(taskMap).length !== files.length && (
             <Button
-              onPress={() => uploadFiles().then(() => listBucket(true))}
+              onPress={() => uploadFiles()}
               className="bg-ak-blue text-black rounded-none font-bold me-2"
             >
               上传文件
@@ -431,6 +429,8 @@ function FileEntry({
   const { setFiles, removeFile, taskMap, cancelTask, pauseTask, restartTask } =
     useCosUploadHook;
 
+  const { onUploadedItemClick } = useStorageStore();
+
   useEffect(() => {
     setFiles((files) => {
       const updated = [...files];
@@ -463,11 +463,12 @@ function FileEntry({
     <StyledFileControlButton>上传失败</StyledFileControlButton>
   ) : task.status === "finished" ? (
     <StyledFileControlButton
-      onClick={() =>
+      onClick={(e) => {
+        e.stopPropagation();
         navigator.clipboard
-          .writeText(task.location)
-          .then(() => toast.info("复制成功！"))
-      }
+          .writeText("https://" + task.location)
+          .then(() => toast.info("复制成功！"));
+      }}
     >
       <Icon id="copy" />
     </StyledFileControlButton>
@@ -487,17 +488,49 @@ function FileEntry({
       </StyledFileControlButton>
     </>
   );
+
+  const handleRowClick = () => {
+    if (task?.status === "finished" && onUploadedItemClick) {
+      // 从task.location提取Key (location格式为: bucket.region.myqcloud.com/key)
+      const locationParts = task.location.split("/");
+      const key = locationParts.slice(1).join("/");
+
+      onUploadedItemClick({
+        Key: key,
+        LastModified: new Date().toISOString(),
+        ETag: "",
+        Size: String(file.file.size),
+        Owner: { ID: "" },
+        StorageClass: "STANDARD",
+        url: "https://" + task.location,
+      });
+      closeModal("upload-center");
+    }
+  };
+
   return (
-    <StyledUploadFileTableRow key={file.id}>
+    <StyledUploadFileTableRow
+      key={file.id}
+      onClick={handleRowClick}
+      className={
+        task?.status === "finished" ? "hover:bg-dark-gray cursor-pointer" : ""
+      }
+    >
+      {/* 缩略图 */}
       <StyledThumbnailWrapper
-        onClick={() => onOpenCropper(file)}
-        title="点击裁剪图片"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!task) onOpenCropper(file);
+        }}
+        title={!task ? "点击裁剪图片" : undefined}
+        className={!task ? "active" : ""}
       >
         <img src={file.preview} alt={file.filename} />
       </StyledThumbnailWrapper>
+      {/* 文件名 */}
       <StyledFilename>
         {editing ? (
-          <div className="text">
+          <div className="text" onClick={(e) => e.stopPropagation()}>
             <input
               type="text"
               value={filename}
@@ -510,7 +543,8 @@ function FileEntry({
               height="1rem"
               className={task?.status === "finished" ? "hidden" : "block"}
               style={{ stroke: "white", cursor: "pointer" }}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setFiles((files) => {
                   const i = files.findIndex((f) => f.id === file.id);
                   files[i].filename = filename;
@@ -533,14 +567,18 @@ function FileEntry({
                 " flex-shrink-0"
               }
               style={{ fill: "white", stroke: "none", cursor: "pointer" }}
-              onClick={() => setEditing(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(true);
+              }}
             >
               <use href="#pencil" />
             </svg>
           </div>
         )}
       </StyledFilename>
-      <StyledSelectPrefix>
+      {/* 选择传输目录 */}
+      <StyledSelectPrefix onClick={(e) => e.stopPropagation()}>
         <Select
           radius="none"
           aria-label="select prefix"
@@ -554,6 +592,7 @@ function FileEntry({
             popoverContent: "bg-mid-gray rounded-none",
             listbox: "rounded-none",
           }}
+          disabled={!!task}
         >
           {options.map((option) => (
             <SelectItem key={option.prefix}>{option.label}</SelectItem>
@@ -575,7 +614,9 @@ function FileEntry({
           </span>
         </Badge>
       </td>
-      <td className="text-center">{control}</td>
+      <td className="text-center" onClick={(e) => e.stopPropagation()}>
+        {control}
+      </td>
     </StyledUploadFileTableRow>
   );
 }

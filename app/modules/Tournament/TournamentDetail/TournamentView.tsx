@@ -168,12 +168,23 @@ export default function TournamentView({
           title="比赛时间"
           content={
             tournamentData.stages && tournamentData.stages.length > 0
-              ? tournamentData.stages.map((stage, index) => (
-                  <div key={index} className="flex flex-wrap">
-                    <div>{`${stage.name}：`}</div>
-                    <div>{`${new Date(stage.startTime).getFullYear()}年${new Date(stage.startTime).getMonth() + 1}月${new Date(stage.startTime).getDate()}日~${new Date(stage.endTime).getMonth() + 1}月${new Date(stage.endTime).getDate()}日`}</div>
-                  </div>
-                ))
+              ? tournamentData.stages.map((stage, index) => {
+                  const startDate = new Date(stage.startTime);
+                  const endDate = new Date(stage.endTime);
+                  const isSameYear =
+                    startDate.getFullYear() === endDate.getFullYear();
+
+                  const timeRange = isSameYear
+                    ? `${startDate.getFullYear()}年${startDate.getMonth() + 1}月${startDate.getDate()}日~${endDate.getMonth() + 1}月${endDate.getDate()}日`
+                    : `${startDate.getFullYear()}年${startDate.getMonth() + 1}月${startDate.getDate()}日~${endDate.getFullYear()}年${endDate.getMonth() + 1}月${endDate.getDate()}日`;
+
+                  return (
+                    <div key={index} className="flex flex-wrap">
+                      <div>{`${stage.name}：`}</div>
+                      <div>{timeRange}</div>
+                    </div>
+                  );
+                })
               : "暂无比赛时间"
           }
         />

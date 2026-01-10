@@ -47,7 +47,7 @@ function RougeSelector({
   const navigate = useNavigate();
   const topicsData = Object.values(topics);
   const { userInfo } = useUserInfoStore();
-  const editable = userInfo?.level && userInfo.level > 2;
+  const editable = userInfo?.level && userInfo.level > 3;
 
   const currentTopic: TopicData = useMemo(() => {
     const topicId = searchParams.get("topicId");

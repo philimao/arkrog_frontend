@@ -53,12 +53,16 @@ const defaultProgress = {
  * 负责COS上行内容的处理
  */
 export const useCosUpload = (): UseCosUploadReturn => {
-  const [files, setFiles] = useState<FileWithPreview[]>([]);
   const { getBucket } = useStorageStore();
   const { userInfo } = useUserInfoStore();
 
+  // 所有上传文件列表
+  const [files, setFiles] = useState<FileWithPreview[]>([]);
+  // 正在上传/已上传的任务列表
   const [taskMap, setTaskMap] = useState<TaskMapType>({});
+  // 是否正在上传
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  // 上传进度
   const [progress, setProgress] = useState<COS.ProgressInfo>(defaultProgress);
 
   // 检查文件扩展名是否在白名单中
@@ -166,9 +170,19 @@ export const useCosUpload = (): UseCosUploadReturn => {
       if (!info) return;
       const { Bucket, Region } = info;
 
+      // 过滤掉已上传完成的文件
+      const filesToUpload = files.filter(
+        (file) => !taskMap[file.id] || taskMap[file.id].status !== "finished",
+      );
+
+      if (filesToUpload.length === 0) {
+        toast.info("没有需要上传的新文件");
+        return;
+      }
+
       // 压缩文件处理（跳过GIF文件）
       const processedFiles = await Promise.all(
-        files.map(async (fileWithPreview) => {
+        filesToUpload.map(async (fileWithPreview) => {
           const file = fileWithPreview.file;
 
           // GIF文件不需要压缩
@@ -183,10 +197,13 @@ export const useCosUpload = (): UseCosUploadReturn => {
           ) {
             try {
               // 根据prefix确定上传类型
-              const isAvatarType = ["/avatar/", "/team/"].some((kw) =>
-                fileWithPreview.prefix.includes(kw),
-              );
-              const uploadType = isAvatarType ? "赛事头像" : "其他内容";
+              const isAvatarType = fileWithPreview.prefix.includes("/avatar/");
+              const isTeamType = fileWithPreview.prefix.includes("/team/");
+              const uploadType = isAvatarType
+                ? "赛事头像"
+                : isTeamType
+                  ? "队伍头像"
+                  : "其他内容";
 
               const compressedResult = await compressImageForUpload(
                 file,
@@ -203,6 +220,20 @@ export const useCosUpload = (): UseCosUploadReturn => {
               };
             } catch (error) {
               console.error("压缩文件失败:", error);
+
+              // 检查是否为比例不符合要求的错误
+              if (
+                error instanceof Error &&
+                error.message.startsWith("ASPECT_RATIO_INVALID:")
+              ) {
+                const uploadType = error.message.split(":")[1];
+                toast.warning(
+                  `${uploadType}要求为正方形，点击图片缩略图进行裁剪`,
+                );
+                // 中断上传任务，抛出错误让上传流程停止
+                throw error;
+              }
+
               // 压缩失败时使用原文件
               return fileWithPreview;
             }
@@ -214,7 +245,12 @@ export const useCosUpload = (): UseCosUploadReturn => {
       );
 
       // 更新UI显示的文件信息（文件名、扩展名、文件大小等）
-      setFiles(processedFiles);
+      setFiles((prevFiles) =>
+        prevFiles.map((f) => {
+          const processedFile = processedFiles.find((pf) => pf.id === f.id);
+          return processedFile || f;
+        }),
+      );
 
       // 当任务列表发生更新时
       const updateFunc = (data: { list: COS.TaskList }) => {
@@ -224,6 +260,7 @@ export const useCosUpload = (): UseCosUploadReturn => {
           )
         ) {
           setIsUploading(false);
+          setProgress(defaultProgress);
           cos.off("list-update", updateFunc);
           // console.log(data.list);
         }
@@ -293,6 +330,18 @@ export const useCosUpload = (): UseCosUploadReturn => {
       });
     } catch (err) {
       console.log(err);
+
+      // 如果是比例不符合要求的错误，已经在前面显示了警告，不需要再显示错误
+      if (
+        err instanceof Error &&
+        err.message.startsWith("ASPECT_RATIO_INVALID:")
+      ) {
+        // 中断上传
+        setIsUploading(false);
+        setProgress(defaultProgress);
+        return;
+      }
+
       toast.error(
         `上传失败！\n${(err as Error).name}: ${(err as Error).message}`,
       );

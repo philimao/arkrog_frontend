@@ -123,7 +123,11 @@ export function TournamentFinalResultIndividual({
     isFinalOneOnOne ? 2 : 3,
   );
 
-  if (!topTiers?.length) return <>暂无比赛结果</>;
+  if (
+    !topTiers?.length ||
+    topTiers.every((player) => player.games.length === 0)
+  )
+    return <>暂无比赛结果</>;
 
   return (
     <div
@@ -132,6 +136,8 @@ export function TournamentFinalResultIndividual({
       {topTiers.map((player, index) => {
         const lastGame = player.games[player.games.length - 1];
         const rank = index + 1;
+
+        if (!lastGame) return null;
 
         return (
           <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">

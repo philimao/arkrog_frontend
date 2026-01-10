@@ -87,7 +87,7 @@ const StageHeader = ({
     >
       {count}
     </StyledStageTitleNum>
-    {!isFinal && nextStageCount && (
+    {!isFinal && nextStageCount !== 0 && (
       <>
         <p className="font-medium text-xl pt-[2px]">
           {" "}

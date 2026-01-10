@@ -397,9 +397,13 @@ export default function TournamentInfoAccordionItem({
                 </div>
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <span className="font-medium truncate">{item.uname}</span>
-                  <span className="text-xs text-gray truncate">
-                    粉丝 {item.fans ?? 0}
-                  </span>
+                  {item.fans && item.fans > -1 ? (
+                    <span className="text-xs text-gray truncate">
+                      粉丝 {item.fans ?? 0}
+                    </span>
+                  ) : (
+                    <span>请设置为此临时值</span>
+                  )}
                 </div>
               </div>
             )}
@@ -428,9 +432,24 @@ export default function TournamentInfoAccordionItem({
                   setSearchResults(body.data.result);
                 }
               } catch (err) {
-                console.error(err);
-                toast.error("搜索失败，请稍后重试");
-                setSearchResults([]);
+                if ((err as any).status === 502) {
+                  setSearchResults([
+                    {
+                      mid: 0,
+                      uname: query,
+                      upic: "https://static.hdslb.com/images/member/noface.gif",
+                      fans: -1,
+                      sign: "",
+                      room_id: 22450647,
+                      level: 6,
+                      gender: 0,
+                      is_live: false,
+                      is_upuser: false,
+                    },
+                  ]);
+                } else {
+                  setSearchResults([]);
+                }
               } finally {
                 setSearching(false);
               }
@@ -547,14 +566,18 @@ export default function TournamentInfoAccordionItem({
                 </div>
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <span className="font-medium truncate">{item.uname}</span>
-                  <span className="text-xs text-gray truncate">
-                    粉丝 {item.fans ?? 0}
-                    {item.room_id && (
-                      <span className="ml-2 text-ak-blue">
-                        {item.is_live ? "🔴直播中" : "⚪未开播"}
-                      </span>
-                    )}
-                  </span>
+                  {item.fans && item.fans > -1 ? (
+                    <span className="text-xs text-gray truncate">
+                      粉丝 {item.fans ?? 0}
+                      {item.room_id && (
+                        <span className="ml-2 text-ak-blue">
+                          {item.is_live ? "🔴直播中" : "⚪未开播"}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span>请设置为此临时值</span>
+                  )}
                 </div>
               </div>
             )}
@@ -584,8 +607,24 @@ export default function TournamentInfoAccordionItem({
                 }
               } catch (err) {
                 console.error(err);
-                toast.error("搜索失败，请稍后重试");
-                setRoomSearchResults([]);
+                if ((err as any).status === 502) {
+                  setRoomSearchResults([
+                    {
+                      mid: 0,
+                      uname: query,
+                      upic: "https://static.hdslb.com/images/member/noface.gif",
+                      fans: -1,
+                      sign: "",
+                      room_id: 22450647,
+                      level: 6,
+                      gender: 0,
+                      is_live: false,
+                      is_upuser: false,
+                    },
+                  ]);
+                } else {
+                  setRoomSearchResults([]);
+                }
               } finally {
                 setRoomSearching(false);
               }

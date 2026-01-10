@@ -5,7 +5,7 @@ import type {
   TournamentPlayer,
   TournamentStage,
 } from "~/types/tournamentsData";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Accordion, AccordionItem } from "@heroui/react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
@@ -55,6 +55,7 @@ export default function TournamentForm({
   tournamentData?: TournamentData;
 }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { userInfo } = useUserInfoStore();
   const { saveTournament } = useTournamentDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,9 +117,14 @@ export default function TournamentForm({
       newFormData = structuredClone(tournamentData);
     } else {
       // Default data for new tournament
+      const tournamentNameParam = searchParams.get("tournamentName");
+      const tournamentName = tournamentNameParam
+        ? decodeURIComponent(tournamentNameParam)
+        : "";
+
       newFormData = {
         id: "",
-        name: "",
+        name: tournamentName,
         groupId: "",
         avatar: "",
         rogue: "rogue_4",
@@ -220,7 +226,7 @@ export default function TournamentForm({
     if (tournamentData) {
       navigate(`/tournament/${tournamentData.id}`);
     } else {
-      navigate(-1);
+      navigate("/tournament");
     }
   };
 

@@ -13,6 +13,7 @@ import {
 import TournamentView from "./TournamentView";
 import type { TournamentData } from "~/types/tournamentsData";
 import { useUserInfoStore } from "~/stores/userInfoStore";
+import { api } from "~/services/api";
 
 export function SectionContainer({
   title,
@@ -54,7 +55,7 @@ export default function TournamentDetail() {
   const { tournamentsData, tournamentGroups, fetchTournamentPlayer } =
     useTournamentDataStore();
   const { userInfo } = useUserInfoStore();
-  const editable = userInfo?.level && userInfo.level > 2;
+  const [editable, setEditable] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const tournamentData =
@@ -73,6 +74,35 @@ export default function TournamentDetail() {
       (season) =>
         tournamentsData.find((tournament) => tournament.id === season)!,
     );
+
+  useEffect(() => {
+    const checkPermission = async () => {
+      if (!tournamentId) {
+        setEditable(false);
+        return;
+      }
+
+      // Level 3+ 用户需要查询具体权限
+      if (userInfo?.level && userInfo.level >= 3) {
+        try {
+          const response = await api.get(
+            `/permission/resource/tournament:${tournamentId}`,
+          );
+          // 检查是否有写入权限
+          const hasWritePermission =
+            response.data.permissions.includes("write");
+          setEditable(hasWritePermission);
+        } catch (error) {
+          console.error("查询权限失败:", error);
+          setEditable(false);
+        }
+      } else {
+        setEditable(false);
+      }
+    };
+
+    checkPermission();
+  }, [userInfo?.level, tournamentId]);
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -98,7 +128,13 @@ export default function TournamentDetail() {
   return (
     <TournamentView tournamentData={tournamentData}>
       <StyledBackButtonContainer>
-        <StyledBackButton onClick={() => navigate(`/tournament?topicId=${tournamentData.rogue}`)}>返回</StyledBackButton>
+        <StyledBackButton
+          onClick={() =>
+            navigate(`/tournament?topicId=${tournamentData.rogue}`)
+          }
+        >
+          返回
+        </StyledBackButton>
         {!!editable && (
           <StyledEditButton onClick={() => navigate("edit")}>
             编辑

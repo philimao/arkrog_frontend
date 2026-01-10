@@ -137,6 +137,7 @@ export default function TournamentInfoAccordionItem({
             onKeyDown={handleKeyDown}
             className={getInputClassName("name", touchedFields, formData)}
             onBlur={handleBlur}
+            disabled
             required
           />
         </div>

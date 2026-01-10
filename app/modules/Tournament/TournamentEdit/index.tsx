@@ -2,16 +2,23 @@ import { useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import TournamentForm from "../components/TournamentForm";
-import { StyledBackButton, StyledBackButtonContainer, StyledDivider } from "../components/Shared";
+import {
+  StyledBackButton,
+  StyledBackButtonContainer,
+  StyledDivider,
+} from "../components/Shared";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useEditLock } from "~/hooks/useEditLock";
 import EditLockConfirmModal from "~/components/EditLock/EditLockConfirmModal";
+import TournamentPermission from "../TournamentPermission";
 
 export default function TournamentEdit() {
   const { tournamentId } = useParams();
   const { userInfo } = useUserInfoStore();
   const { tournamentsData, fetchTournamentPlayer } = useTournamentDataStore();
-  const tournamentData = tournamentsData && tournamentsData.find((tournament) => tournament.id === tournamentId);
+  const tournamentData =
+    tournamentsData &&
+    tournamentsData.find((tournament) => tournament.id === tournamentId);
   const navigate = useNavigate();
 
   // 稳定的回调函数
@@ -41,17 +48,32 @@ export default function TournamentEdit() {
   // 加载选手数据
   useEffect(() => {
     const loadPlayers = async () => {
-      if (tournamentId && tournamentData && !tournamentData.players && editLock.lockStatus.canEdit) {
+      if (
+        tournamentId &&
+        tournamentData &&
+        !tournamentData.players &&
+        editLock.lockStatus.canEdit
+      ) {
         await fetchTournamentPlayer(tournamentId);
       }
     };
     loadPlayers();
-  }, [tournamentsData, tournamentId, fetchTournamentPlayer, tournamentData, editLock.lockStatus.canEdit]);
+  }, [
+    tournamentsData,
+    tournamentId,
+    fetchTournamentPlayer,
+    tournamentData,
+    editLock.lockStatus.canEdit,
+  ]);
 
   const backButton = (
     <StyledBackButtonContainer>
       <div className="relative">
-        <StyledBackButton onClick={() => navigate(`/tournament/${tournamentId}`)}>返回</StyledBackButton>
+        <StyledBackButton
+          onClick={() => navigate(`/tournament/${tournamentId}`)}
+        >
+          返回
+        </StyledBackButton>
       </div>
     </StyledBackButtonContainer>
   );
@@ -92,9 +114,16 @@ export default function TournamentEdit() {
     <div className="relative">
       {backButton}
       <h1 className="text-[1.5rem] font-bold">编辑{tournamentData.name}</h1>
-      {editLock.lockStatus.canEdit && <div className="text-sm text-green-600 mb-2">当前由您锁定编辑中</div>}
+      {editLock.lockStatus.canEdit && (
+        <div className="text-sm text-green-600 mb-2">当前由您锁定编辑中</div>
+      )}
       <StyledDivider />
       <TournamentForm tournamentData={tournamentData} edit />
+
+      {/* 赛事授权 */}
+      {userInfo?.level! > 3 && (
+        <TournamentPermission tournamentData={tournamentData} />
+      )}
 
       {/* 编辑确认弹窗 */}
       <EditLockConfirmModal

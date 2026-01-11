@@ -36,6 +36,28 @@ const calculateSchedule = (
   return "";
 };
 
+/**
+ * 助手函数，用于排序日期缓存
+ * @param a 时间字符串，格式为 "HH:mm"
+ * @param b 时间字符串，格式为 "HH:mm"
+ * @returns 时间差，单位为毫秒
+ */
+const sortDateCache = (a: string, b: string) => {
+  const dateA = new Date().setHours(
+    Number(a.split(":")[0]),
+    Number(a.split(":")[1]),
+    0,
+    0,
+  );
+  const dateB = new Date().setHours(
+    Number(b.split(":")[0]),
+    Number(b.split(":")[1]),
+    0,
+    0,
+  );
+  return dateB - dateA;
+};
+
 const inputClassName =
   "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 const selectClassName = {
@@ -973,7 +995,11 @@ export default function TournamentProgressAccordionItem({
                                 }
                               }}
                               onBlur={(evt) => {
-                                addToCache("date", evt.target.value);
+                                addToCache(
+                                  "date",
+                                  evt.target.value,
+                                  sortDateCache,
+                                );
                                 handleBlur(evt);
                               }}
                               required
@@ -1596,8 +1622,30 @@ export default function TournamentProgressAccordionItem({
                             )}
                         </div>
                         <div className="mb-4 relative">
-                          <label htmlFor="ending" className={labelClassName}>
-                            结局
+                          <label
+                            htmlFor="ending"
+                            className={labelWithTooltipClassName}
+                          >
+                            <span>结局</span>
+                            <Tooltip
+                              content={
+                                <div>
+                                  如果顺利完赛，记为“通关【朝谒】【授法】”
+                                  <br />
+                                  如果死于道中，记为“战胜【朝谒】，死于紧急洞天福地”
+                                  <br />
+                                  仅Boss关卡使用中文括号标注
+                                </div>
+                              }
+                              className="bg-light-mid-gray text-black"
+                            >
+                              <span className="px-1">
+                                <InformationIcon
+                                  width="0.75rem"
+                                  height="0.75rem"
+                                />
+                              </span>
+                            </Tooltip>
                           </label>
                           <input
                             id="ending"

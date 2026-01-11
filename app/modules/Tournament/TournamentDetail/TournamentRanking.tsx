@@ -266,6 +266,7 @@ const getSortedRanking = (
 
 const RankingTable = ({
   stage,
+  groupBy = "",
   group = "",
   index,
   tournamentData,
@@ -278,6 +279,7 @@ const RankingTable = ({
   sortedRanking,
 }: {
   stage: any;
+  groupBy?: string;
   group?: string;
   index: number;
   tournamentData: TournamentData;
@@ -320,9 +322,11 @@ const RankingTable = ({
             {Object.keys(tournamentData.customPlayerKeys).map((key) => (
               <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
             ))}
-            {Object.keys(stage.customStageKeys).map((key) => (
-              <td key={key}>{stage.customStageKeys[key]}</td>
-            ))}
+            {Object.keys(stage.customStageKeys)
+              .filter((key) => key !== groupBy)
+              .map((key) => (
+                <td key={key}>{stage.customStageKeys[key]}</td>
+              ))}
             <td className="hidden md:table-cell">结局</td>
             <td>分数</td>
           </tr>
@@ -364,9 +368,11 @@ const RankingTable = ({
                   ))}
                 </>
                 <>
-                  {Object.keys(stage.customStageKeys).map((key) => (
-                    <td key={key}>{entry[1].customStageValues[key] || ""}</td>
-                  ))}
+                  {Object.keys(stage.customStageKeys)
+                    .filter((key) => key !== groupBy)
+                    .map((key) => (
+                      <td key={key}>{entry[1].customStageValues[key] || ""}</td>
+                    ))}
                 </>
                 <td className="hidden md:table-cell">{entry[1].ending}</td>
                 <td>{entry[1].point}</td>
@@ -603,6 +609,7 @@ export function TournamentRankingIndividual({
           <RankingTable
             key={hasGroups ? group : index}
             stage={stage}
+            groupBy={groupBy}
             group={group}
             index={hasGroups && groups ? groups.indexOf(group!) : index}
             tournamentData={tournamentData}

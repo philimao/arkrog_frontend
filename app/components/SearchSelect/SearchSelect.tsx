@@ -211,7 +211,7 @@ export default function SearchSelect<T>({
               isRequired={required}
               classNames={{
                 inputWrapper: `bg-mid-gray h-10 ${manualSearch ? "pr-12" : ""} ${inputWrapperClassName ?? ""}`,
-                input: `text-white ${inputClassName ?? ""}`,
+                input: `text-white outline-none ${inputClassName ?? ""}`,
               }}
             />
             {manualSearch && (

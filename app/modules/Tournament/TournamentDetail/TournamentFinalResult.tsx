@@ -134,7 +134,7 @@ export function TournamentFinalResultIndividual({
       className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}
     >
       {topTiers.map((player, index) => {
-        const lastGame = player.games[player.games.length - 1];
+        const lastGame = player.games.find((game) => game.stage === final.name);
         const rank = index + 1;
 
         if (!lastGame) return null;

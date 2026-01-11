@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 
 interface UseInputSuggestionsReturn {
-  addToCache: (key: string, value: string) => void;
+  addToCache: (
+    key: string,
+    value: string,
+    sortFunc?: (a: string, b: string) => number,
+  ) => void;
   getSuggestions: (key: string) => string[];
   showSuggestions: string | null;
   setShowSuggestions: (key: string | null) => void;
@@ -47,8 +51,13 @@ export function useInputSuggestions(
    * 添加值到缓存
    * @param key 字段标识
    * @param value 要缓存的值
+   * @param sortFunc 排序函数，用于排序建议列表
    */
-  const addToCache = (key: string, value: string) => {
+  const addToCache = (
+    key: string,
+    value: string,
+    sortFunc?: (a: string, b: string) => number,
+  ) => {
     const trimmedValue = value.trim();
     if (!trimmedValue) return;
 
@@ -61,7 +70,7 @@ export function useInputSuggestions(
       // 添加新值到数组开头（最新的在前面）
       return {
         ...prev,
-        [key]: [trimmedValue, ...existingValues],
+        [key]: [trimmedValue, ...existingValues.sort(sortFunc ?? (() => 0))],
       };
     });
   };

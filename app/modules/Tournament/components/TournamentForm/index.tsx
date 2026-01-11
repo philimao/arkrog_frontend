@@ -86,6 +86,7 @@ export default function TournamentForm({
   useEffect(() => {
     const saveFormData = () => {
       if (saveToStorageRef.current) {
+        formDataRef.current.lastEditTime = Date.now();
         localStorage.setItem(
           `tournamentForm-${tournamentData?.id}`,
           JSON.stringify(formDataRef.current),

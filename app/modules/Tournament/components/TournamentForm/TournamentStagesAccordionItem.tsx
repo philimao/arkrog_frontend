@@ -205,7 +205,7 @@ export default function TournamentStagesAccordionItem({
           };
           setFormData((prev) => ({
             ...prev,
-            stages: [...(prev.stages || []), newStage],
+            stages: [...(prev.stages || []), newStage].sort((a, b) => a.startTime - b.startTime), // 按开始时间排序
           }));
         }}
         className="w-full px-4 py-2 mb-2 text-ak-blue rounded-md hover:bg-mid-gray"

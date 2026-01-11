@@ -32,7 +32,7 @@ export default function TournamentView({
 
   const renderHeader = () => {
     return (
-      <div className="flex gap-4 mb-16">
+      <div className="flex gap-4 mb-8 sm:mb-16">
         {tournamentData.avatar && (
           <div className="w-full max-w-40">
             <img
@@ -49,11 +49,11 @@ export default function TournamentView({
             <div className="text-4xl lg:text-6xl font-bold">
               {tournamentData.name}
             </div>
-            <div className="flex items-center gap-6">
-              {tournamentData.ongoing && (
+            {tournamentData.ongoing && (
+              <div className="flex items-center gap-6">
                 <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           <div className="text-ak-blue">
             {topicData.name +
@@ -64,7 +64,10 @@ export default function TournamentView({
           {tournamentData.labels && tournamentData.labels.length > 0 && (
             <div className="flex gap-2 flex-wrap">
               {tournamentData.labels.map((label, index) => (
-                <div key={index} className="bg-black-gray-70 px-2 rounded-sm">
+                <div
+                  key={index}
+                  className="bg-black-gray-70 px-2 rounded-sm whitespace-nowrap"
+                >
                   {label}
                 </div>
               ))}

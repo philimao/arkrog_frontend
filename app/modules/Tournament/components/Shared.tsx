@@ -13,6 +13,22 @@ export const StyledBackButtonContainer = styled.div`
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
+
+  @media (max-width: 768px) {
+    position: relative;
+    transform: none;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    & > * {
+      position: relative !important;
+      top: unset !important;
+    }
+  }
 `;
 
 export const StyledBackButton = styled.button`

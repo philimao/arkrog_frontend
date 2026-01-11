@@ -77,6 +77,9 @@ export default function BlockNoteEditor({
         setUploadDirectory(uploadDirectory);
         setOnUploadedItemClick((item) => {
           const currentBlock = editor.getTextCursorPosition().block;
+          const name = (
+            item.url.match(/\/([^/]+?)\.\w+$/)?.[1] || "_图片"
+          ).split("_")[1];
           // If current block is empty paragraph, replace it. Otherwise insert after.
           if (
             currentBlock.type === "paragraph" &&
@@ -84,11 +87,11 @@ export default function BlockNoteEditor({
           ) {
             editor.replaceBlocks(
               [currentBlock.id],
-              [{ type: "image", props: { url: item.url } }],
+              [{ type: "image", props: { name, url: item.url } }],
             );
           } else {
             editor.insertBlocks(
-              [{ type: "image", props: { url: item.url } }],
+              [{ type: "image", props: { name, url: item.url } }],
               currentBlock,
               "after",
             );

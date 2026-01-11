@@ -764,6 +764,15 @@ export default function TournamentProgressAccordionItem({
                                   : undefined,
                                 customStageValues: {},
                               });
+                            
+                            const playerIndex = newPlayers.findIndex(
+                              (p) => p.mid === newPlayer?.mid,
+                            );
+                            if (playerIndex !== -1) {
+                              newPlayers[playerIndex].games.sort(
+                              (a, b) => a.date - b.date,
+                              );
+                            }
                             setFormData((prev) => ({
                               ...prev,
                               players: newPlayers,

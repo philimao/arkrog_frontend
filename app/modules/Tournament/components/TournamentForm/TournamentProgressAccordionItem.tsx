@@ -5,7 +5,7 @@ import type {
   TournamentStage,
 } from "~/types/tournamentsData";
 import { generateDateArray, isSameDay } from "~/utils/date";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import {
   getInputClassName,
@@ -103,9 +103,9 @@ export default function TournamentProgressAccordionItem({
     return <div className="mb-4 text-ak-red">请先添加参赛选手</div>;
   }
 
-  const dates = generateDateArray(
-    editingStage?.startTime || 0,
-    editingStage?.endTime || 0,
+  const dates = useMemo(
+    () => generateDateArray(editingStage?.startTime || 0, editingStage?.endTime || 0),
+    [editingStage?.startTime, editingStage?.endTime]
   );
   const players = formData.players?.filter((player) =>
     player.games.find((game) => game.stage === editingStage?.name),
@@ -120,6 +120,9 @@ export default function TournamentProgressAccordionItem({
   const [newCustomKey, setNewCustomKey] = useState("");
   const [newCustomValue, setNewCustomValue] = useState("");
   const [keyError, setKeyError] = useState("");
+  const [playersForDate, setPlayersForDate] = useState<Set<TournamentPlayer>[]>(
+    Array.from({ length: dates.length }, () => new Set<TournamentPlayer>())
+  );
 
   // 从现有比赛数据中提取所有字段的值，作为初始缓存
   const extractInitialCache = (): Record<string, string[]> => {
@@ -304,6 +307,31 @@ export default function TournamentProgressAccordionItem({
       setEditingStage(newStages[stageIndex]);
     }
   };
+
+  useEffect(() => {
+    setPlayersForDate(
+      dates.map((date) => {
+        const players = formData.players?.filter((player) =>
+          player.games.find(
+            (game) =>
+              game.stage === editingStage?.name && isSameDay(game.date, date)
+          )
+        ).sort((a, b) => {
+          const gameA = a.games.find(
+            (game) =>
+              game.stage === editingStage?.name && isSameDay(game.date, date)
+          );
+          const gameB = b.games.find(
+            (game) =>
+              game.stage === editingStage?.name && isSameDay(game.date, date)
+          );
+          
+          return (gameA?.date || 0) - (gameB?.date || 0);
+        }) || [];
+        return new Set(players);
+      })
+    );
+  }, [dates, editingStage]);
 
   useEffect(() => {
     if (!editingStage) {
@@ -562,12 +590,6 @@ export default function TournamentProgressAccordionItem({
 
       {/* 按日程设置选手赛况 */}
       {dates.map((date, index) => {
-        const playersForDate = formData.players?.filter((player) =>
-          player.games.find(
-            (game) =>
-              game.stage === editingStage?.name && isSameDay(game.date, date),
-          ),
-        );
         const editingGame = editingPlayer?.games.find(
           (game) =>
             game.stage === editingStage?.name && isSameDay(game.date, date),
@@ -597,8 +619,8 @@ export default function TournamentProgressAccordionItem({
             <div className="w-full">
               {/* 已填写选手 */}
               <div className="flex flex-wrap gap-2">
-                {playersForDate &&
-                  playersForDate.map((player) => {
+                {playersForDate[index].size > 0 &&
+                  Array.from(playersForDate[index]).map((player) => {
                     return (
                       <div
                         key={player.mid}
@@ -673,6 +695,12 @@ export default function TournamentProgressAccordionItem({
                               newPlayers
                                 .find((p) => p === player)!
                                 .games.filter((g) => !isSameDay(g.date, date));
+                            setPlayersForDate((prev) => {
+                              const newPlayersForDate = [...prev];
+                              newPlayersForDate[index] = new Set(newPlayersForDate[index]);
+                              newPlayersForDate[index].delete(player);
+                              return newPlayersForDate;
+                            });
                             setFormData((prev) => ({
                               ...prev,
                               players: newPlayers,
@@ -743,7 +771,7 @@ export default function TournamentProgressAccordionItem({
               </div>
 
               {editingPlayer &&
-                (playersForDate?.find((p) => p.mid === editingPlayer.mid) ||
+                (Array.from(playersForDate[index]).find((p) => p.mid === editingPlayer.mid) ||
                   (isAddingPlayers[index] &&
                     editingPlayer.mid === tempNewPlayer.mid)) && (
                   <div className="bg-mid-gray text-white mt-4 p-2 rounded-md">
@@ -795,6 +823,12 @@ export default function TournamentProgressAccordionItem({
                                 (a, b) => a.date - b.date,
                               );
                             }
+                            setPlayersForDate((prev) => {
+                              const newPlayersForDate = [...prev];
+                              newPlayersForDate[index] = new Set(newPlayersForDate[index]);
+                              newPlayersForDate[index].add(newPlayer!);
+                              return newPlayersForDate;
+                            });
                             setFormData((prev) => ({
                               ...prev,
                               players: newPlayers,

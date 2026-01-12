@@ -104,8 +104,12 @@ export default function TournamentProgressAccordionItem({
   }
 
   const dates = useMemo(
-    () => generateDateArray(editingStage?.startTime || 0, editingStage?.endTime || 0),
-    [editingStage?.startTime, editingStage?.endTime]
+    () =>
+      generateDateArray(
+        editingStage?.startTime || 0,
+        editingStage?.endTime || 0,
+      ),
+    [editingStage?.startTime, editingStage?.endTime],
   );
   const players = formData.players?.filter((player) =>
     player.games.find((game) => game.stage === editingStage?.name),
@@ -121,7 +125,7 @@ export default function TournamentProgressAccordionItem({
   const [newCustomValue, setNewCustomValue] = useState("");
   const [keyError, setKeyError] = useState("");
   const [playersForDate, setPlayersForDate] = useState<Set<TournamentPlayer>[]>(
-    Array.from({ length: dates.length }, () => new Set<TournamentPlayer>())
+    Array.from({ length: dates.length }, () => new Set<TournamentPlayer>()),
   );
 
   // 从现有比赛数据中提取所有字段的值，作为初始缓存
@@ -311,25 +315,31 @@ export default function TournamentProgressAccordionItem({
   useEffect(() => {
     setPlayersForDate(
       dates.map((date) => {
-        const players = formData.players?.filter((player) =>
-          player.games.find(
-            (game) =>
-              game.stage === editingStage?.name && isSameDay(game.date, date)
-          )
-        ).sort((a, b) => {
-          const gameA = a.games.find(
-            (game) =>
-              game.stage === editingStage?.name && isSameDay(game.date, date)
-          );
-          const gameB = b.games.find(
-            (game) =>
-              game.stage === editingStage?.name && isSameDay(game.date, date)
-          );
-          
-          return (gameA?.date || 0) - (gameB?.date || 0);
-        }) || [];
+        const players =
+          formData.players
+            ?.filter((player) =>
+              player.games.find(
+                (game) =>
+                  game.stage === editingStage?.name &&
+                  isSameDay(game.date, date),
+              ),
+            )
+            .sort((a, b) => {
+              const gameA = a.games.find(
+                (game) =>
+                  game.stage === editingStage?.name &&
+                  isSameDay(game.date, date),
+              );
+              const gameB = b.games.find(
+                (game) =>
+                  game.stage === editingStage?.name &&
+                  isSameDay(game.date, date),
+              );
+
+              return (gameA?.date || 0) - (gameB?.date || 0);
+            }) || [];
         return new Set(players);
-      })
+      }),
     );
   }, [dates, editingStage]);
 
@@ -619,7 +629,7 @@ export default function TournamentProgressAccordionItem({
             <div className="w-full">
               {/* 已填写选手 */}
               <div className="flex flex-wrap gap-2">
-                {playersForDate[index].size > 0 &&
+                {playersForDate[index]?.size > 0 &&
                   Array.from(playersForDate[index]).map((player) => {
                     return (
                       <div
@@ -697,7 +707,9 @@ export default function TournamentProgressAccordionItem({
                                 .games.filter((g) => !isSameDay(g.date, date));
                             setPlayersForDate((prev) => {
                               const newPlayersForDate = [...prev];
-                              newPlayersForDate[index] = new Set(newPlayersForDate[index]);
+                              newPlayersForDate[index] = new Set(
+                                newPlayersForDate[index],
+                              );
                               newPlayersForDate[index].delete(player);
                               return newPlayersForDate;
                             });
@@ -771,7 +783,9 @@ export default function TournamentProgressAccordionItem({
               </div>
 
               {editingPlayer &&
-                (Array.from(playersForDate[index]).find((p) => p.mid === editingPlayer.mid) ||
+                (Array.from(playersForDate[index]).find(
+                  (p) => p.mid === editingPlayer.mid,
+                ) ||
                   (isAddingPlayers[index] &&
                     editingPlayer.mid === tempNewPlayer.mid)) && (
                   <div className="bg-mid-gray text-white mt-4 p-2 rounded-md">
@@ -825,7 +839,9 @@ export default function TournamentProgressAccordionItem({
                             }
                             setPlayersForDate((prev) => {
                               const newPlayersForDate = [...prev];
-                              newPlayersForDate[index] = new Set(newPlayersForDate[index]);
+                              newPlayersForDate[index] = new Set(
+                                newPlayersForDate[index],
+                              );
                               newPlayersForDate[index].add(newPlayer!);
                               return newPlayersForDate;
                             });
@@ -1263,9 +1279,17 @@ export default function TournamentProgressAccordionItem({
                                 <span className="text-ak-blue">
                                   {editingPlayerTeam.name}
                                 </span>
-                                &nbsp;队伍总分
+                                &nbsp;队伍积分
                                 <Tooltip
-                                  content="根据已有数据自动计算得出"
+                                  content={
+                                    <div>
+                                      根据已有数据自动计算得出
+                                      <br />
+                                      如果为淘汰赛制，积分为该队伍选手总获胜场次
+                                      <br />
+                                      如果为积分赛制，积分为该队伍选手总得分
+                                    </div>
+                                  }
                                   className="bg-light-mid-gray text-black"
                                 >
                                   <span className="px-1">
@@ -1281,6 +1305,8 @@ export default function TournamentProgressAccordionItem({
                                 type="number"
                                 name="teamTotalPoints"
                                 value={(() => {
+                                  const isRanking =
+                                    editingStage?.type === "rank";
                                   // Calculate sum of points for all players in the same team
                                   const teamPoints = formData.players
                                     ?.filter((player) =>
@@ -1292,14 +1318,22 @@ export default function TournamentProgressAccordionItem({
                                     .filter(
                                       (game) =>
                                         game.stage === editingStage?.name &&
-                                        game.point !== undefined,
+                                        (isRanking
+                                          ? game.point !== undefined
+                                          : game.result !== undefined),
                                     )
                                     .reduce(
-                                      (sum, game) => sum + (game.point || 0),
+                                      (sum, game) =>
+                                        sum +
+                                        ((isRanking
+                                          ? game.point
+                                          : game.result === "win"
+                                            ? 1
+                                            : 0) || 0),
                                       0,
                                     );
 
-                                  return teamPoints || "";
+                                  return teamPoints || "0";
                                 })()}
                                 className={`${inputClassName} text-ak-blue cursor-not-allowed`}
                                 readOnly

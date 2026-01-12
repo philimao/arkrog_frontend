@@ -304,21 +304,22 @@ const TeamScheduleRow = ({
   const team = tournamentData.teams?.find((team) =>
     team.members.includes(entry[0]),
   );
-
   return (
     <tr className="divide-x divide-mid-gray">
       {/* Team Avatar */}
-      <td>
-        <div className="flex justify-center items-center min-w-20">
-          <img
-            src={team?.avatar}
-            className="h-16 w-16 aspect-square"
-            alt="avatar"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-          />
-        </div>
-      </td>
+      {team?.avatar && (
+        <td>
+          <div className="flex justify-center items-center min-w-20">
+            <img
+              src={team?.avatar}
+              className="h-16 w-16 aspect-square"
+              alt="avatar"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
+          </div>
+        </td>
+      )}
       {/* Player */}
       <td className="hidden lg:table-cell p-4 max-w-60">
         <div className="flex items-center">{renderPlayer(entry[0])}</div>
@@ -329,22 +330,26 @@ const TeamScheduleRow = ({
         </div>
       </td>
       {/* Squad & OP */}
-      <td className="hidden md:table-cell p-2 w-48">
-        <div className="flex flex-col justify-center items-center text-center gap-1">
-          <p>{entry[1].starterSquad}</p>
-          <p>{entry[1].starterOp}</p>
-        </div>
-      </td>
-      <td className="table-cell p-4 md:hidden">
-        <div className="flex flex-col justify-center items-center gap-2 text-center">
-          <img
-            src={`/images/squad/${entry[1].starterSquad}.png`}
-            alt="squad"
-            className="h-10 aspect-square object-contain"
-          />
-          <p>{entry[1].starterOp}</p>
-        </div>
-      </td>
+      {(entry[1].starterSquad || entry[1].starterOp) && (
+        <td className="hidden md:table-cell p-2 w-48">
+          <div className="flex flex-col justify-center items-center text-center gap-1">
+            <p>{entry[1].starterSquad}</p>
+            <p>{entry[1].starterOp}</p>
+          </div>
+        </td>
+      )}
+      {entry[1].starterSquad && (
+        <td className="table-cell p-4 md:hidden">
+          <div className="flex flex-col justify-center items-center gap-2 text-center">
+            <img
+              src={`/images/squad/${entry[1].starterSquad}.png`}
+              alt="squad"
+              className="h-10 aspect-square object-contain"
+            />
+            <p>{entry[1].starterOp}</p>
+          </div>
+        </td>
+      )}
       {/* custom fields */}
       {currentStage.groupBy &&
         entry[1].customStageValues[currentStage.groupBy] && (
@@ -355,22 +360,26 @@ const TeamScheduleRow = ({
           </td>
         )}
       {/* Ending */}
-      <td className="hidden sm:table-cell p-2">
-        <div className="flex justify-center items-center text-center">
-          {entry[1].ending}
-        </div>
-      </td>
+      {entry[1].ending && (
+        <td className="hidden sm:table-cell p-2">
+          <div className="flex justify-center items-center text-center">
+            {entry[1].ending}
+          </div>
+        </td>
+      )}
       {/* Role & Points */}
-      <td>
-        <div className="flex flex-col justify-center items-center p-2 text-center min-w-16">
-          <p>
-            {entry[0] === team?.keyMember
-              ? tournamentData.keyMemberAlias
-              : tournamentData.memberAlias}
-          </p>
-          <p className="text-ak-blue text-xl">{entry[1].point}</p>
-        </div>
-      </td>
+      {entry[1].point !== undefined && (
+        <td>
+          <div className="flex flex-col justify-center items-center p-2 text-center min-w-16">
+            <p>
+              {entry[0] === team?.keyMember
+                ? tournamentData.keyMemberAlias
+                : tournamentData.memberAlias}
+            </p>
+            <p className="text-ak-blue text-xl">{entry[1].point}</p>
+          </div>
+        </td>
+      )}
       {/* Time */}
       <td>
         <TimeDisplay date={entry[1].date} />

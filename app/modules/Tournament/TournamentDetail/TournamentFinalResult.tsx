@@ -260,7 +260,12 @@ export function TournamentFinalResultTeam({
 }: {
   tournamentData: TournamentData;
 }) {
-  if (!tournamentData.teams || tournamentData.teams.length === 0) {
+  if (
+    !tournamentData.teams ||
+    tournamentData.teams.length === 0 ||
+    !tournamentData.players ||
+    tournamentData.players.length === 0
+  ) {
     return <>暂无比赛结果</>;
   }
 
@@ -268,12 +273,20 @@ export function TournamentFinalResultTeam({
 
   // 很tricky的格式转换，用于统一team和player类型
   const teams = tournamentData.teams.map((team) => {
+    const stageGames = tournamentData
+      .players!.filter((p) => team.members.includes(p.name))
+      .map((p) => p.games.find((g) => g.stage === final.name))
+      .filter((g) => g !== undefined);
+    const point =
+      final.type === "rank"
+        ? stageGames.reduce((acc, game) => acc + (game.point || 0), 0)
+        : stageGames.reduce(
+            (acc, game) => acc + (game.result === "win" ? 1 : 0),
+            0,
+          );
     return {
       ...team,
-      games: team.stages.map((stage) => ({
-        stage: stage.name,
-        point: stage.point,
-      })),
+      games: [{ stage: final.name, point }],
     };
   });
 
@@ -284,10 +297,10 @@ export function TournamentFinalResultTeam({
   return (
     <div className="grid lg:grid-cols-2 gap-8">
       {topTiers.map((team, index) => {
-        const lastStage = team.stages[team.stages.length - 1];
+        const lastGame = team.games[team.games.length - 1];
         const rank = index + 1;
 
-        if (!lastStage) return null;
+        if (!lastGame) return null;
 
         return (
           <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
@@ -297,7 +310,7 @@ export function TournamentFinalResultTeam({
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{team.name}</div>
                 <div className="text-ak-blue text-xl pt-2">
-                  {lastStage.point}
+                  {(final.type === "1on1" ? "队伍积分：" : "") + lastGame.point}
                 </div>
               </div>
             </div>

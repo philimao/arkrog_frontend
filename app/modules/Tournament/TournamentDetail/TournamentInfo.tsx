@@ -190,11 +190,13 @@ export function TournamentTeamInfo({
   const teams = tournamentData.teams;
   if (!teams?.length) return <div>暂无参赛队伍</div>;
 
+  const hasAvatar = teams.some((team) => team.avatar);
+
   return (
     <table className="w-full border-collapse table-auto divide-y divide-mid-gray">
       <thead className="bg-black-gray">
         <tr className="divide-x divide-mid-gray">
-          <td className="p-4 text-center">队徽</td>
+          {hasAvatar && <td className="p-4 text-center">队徽</td>}
           <td className="p-4 text-center">队名</td>
           <td className="p-4 text-center">队员</td>
         </tr>
@@ -202,9 +204,11 @@ export function TournamentTeamInfo({
       <tbody className="bg-black-gray-70 border-collapse divide-y divide-mid-gray">
         {teams?.map((team, index) => (
           <tr key={index} className="divide-x divide-mid-gray">
-            <td>
-              <TeamAvatar avatarUrl={team.avatar} />
-            </td>
+            {hasAvatar && (
+              <td>
+                <TeamAvatar avatarUrl={team.avatar} />
+              </td>
+            )}
             <td>
               <TeamNameCell name={team.name} id={team.id} />
             </td>

@@ -1,10 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import type {
-  TournamentData,
-  TournamentGame,
-  TournamentTeamStage,
-} from "~/types/tournamentsData";
+import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
 import { SectionContainer } from ".";
 import { SortIcon, StarIcon } from "~/components/Icons";
 import { styled } from "styled-components";
@@ -54,6 +50,12 @@ const StyledTeamTable = styled.table`
   .player-name {
     padding-left: 30px;
   }
+`;
+
+const StyledTeamWinLose = styled.td<{ $isWinner: boolean }>`
+  position: sticky;
+  box-shadow: inset -1px 0px var(--mid-gray);
+  color: ${(props) => (props.$isWinner ? "var(--ak-blue)" : "white")};
 `;
 
 const StyledTeamName = styled.td<{
@@ -418,7 +420,7 @@ const OneOnOneTable = ({
       <StyledIndividualTable className="w-full border-collapse table-auto">
         <thead className="bg-black-gray">
           <tr>
-            <td>结果</td>
+            <td className="whitespace-nowrap">结果</td>
             <td>选手ID</td>
             <td>日程</td>
             <td>分队</td>
@@ -685,13 +687,47 @@ export function TournamentRankingTeam({
       }
     });
 
-    const teamSchedule = new Map<string, TournamentTeamStage>();
+    /** 获取Stage中定义的customStageKey数量，用于填充队伍中未参与该阶段选手的customStageValues */
+    const customStageKeyLen = Object.keys(stage.customStageKeys).length;
+
+    /** 是否为淘汰赛 */
+    const isOneOnOne = stage.type === "1on1";
+    /** 淘汰赛对手映射 */
+    const teamRivalMap = new Map<string, string>();
+
+    /** 队伍日程 */
+    const teamSchedule = new Map<string, { name: string; point: number }>();
     teams.forEach((team) => {
-      const teamStage = team.stages.find(
-        (teamStage) => teamStage.name === stage.name,
-      );
-      if (teamStage) {
-        teamSchedule.set(team.name, teamStage);
+      /** 获取队伍在该阶段的所有比赛 */
+      const stageGames = players
+        .filter((p) => team.members.includes(p.name))
+        .map((p) => p.games.find((g) => g.stage === stage.name))
+        .filter((g) => g !== undefined);
+      if (stageGames.length !== 0) {
+        // 对于团体赛，如果为积分赛赛制，积分point为各选手总分
+        // 如果为个人淘汰赛制，积分point为该队伍选手总获胜场次
+        const point =
+          stage.type === "rank"
+            ? stageGames.reduce((acc, game) => acc + (game.point || 0), 0)
+            : stageGames.reduce(
+                (acc, game) => acc + (game.result === "win" ? 1 : 0),
+                0,
+              );
+        teamSchedule.set(team.name, {
+          name: stage.name,
+          point,
+        });
+        // 如果是淘汰赛赛制，设置队伍的对手
+        if (isOneOnOne && !teamRivalMap.has(team.name)) {
+          const rivalMid = stageGames[0].rivalMid;
+          const rivalName = players.find((p) => p.mid === rivalMid)?.name;
+          if (rivalName) {
+            const rivalTeam = teams.find((t) => t.members.includes(rivalName));
+            if (rivalTeam) {
+              teamRivalMap.set(team.name, rivalTeam.name);
+            }
+          }
+        }
       }
     });
 
@@ -723,6 +759,20 @@ export function TournamentRankingTeam({
       playerSchedule,
     );
 
+    if (isOneOnOne && sortBy[tableId] === "point") {
+      // 如果是团队淘汰赛，按照胜者、败者依次排序
+      sortedRanking.slice(0, sortedRanking.length / 2).map((entry) => {
+        const teamName = entry[0];
+        const rivalTeamName = teamRivalMap.get(teamName);
+        const winnedIndex = sortedRanking.findIndex((e) => e[0] === teamName);
+        const loseIndex = sortedRanking.findIndex(
+          (e) => e[0] === rivalTeamName,
+        );
+        const loseGame = sortedRanking.splice(loseIndex, 1)[0];
+        sortedRanking.splice(winnedIndex + 1, 0, loseGame);
+      });
+    }
+
     const sortProps: SortProps = {
       sortBy,
       rankingAscending,
@@ -730,6 +780,7 @@ export function TournamentRankingTeam({
       handleSort,
       tableId,
     };
+
     if (sortBy[tableId] === undefined) {
       handleSort("point", tableId);
     }
@@ -749,11 +800,19 @@ export function TournamentRankingTeam({
             <thead className="sticky top-0 bg-black-gray">
               <tr>
                 <td className="sticky left-0 bg-black-gray">
-                  <SortableHeader
-                    label="排名"
-                    sortType="point"
-                    sortProps={sortProps}
-                  />
+                  {isOneOnOne ? (
+                    <SortableHeader
+                      label="结果"
+                      sortType="point"
+                      sortProps={sortProps}
+                    />
+                  ) : (
+                    <SortableHeader
+                      label="排名"
+                      sortType="point"
+                      sortProps={sortProps}
+                    />
+                  )}
                 </td>
                 <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">
                   队伍
@@ -782,9 +841,17 @@ export function TournamentRankingTeam({
                   </td>
                 ))}
                 <td>结局</td>
+
+                {isOneOnOne && (
+                  <>
+                    <td>对手</td>
+                    <td>结果</td>
+                  </>
+                )}
+
                 <td>分数</td>
                 <td className="min-w-20 sticky right-0 bg-black-gray">
-                  队伍总分
+                  队伍积分
                 </td>
               </tr>
             </thead>
@@ -826,33 +893,56 @@ export function TournamentRankingTeam({
                   const isKeyMember = player.name === team?.keyMember;
                   const isTeamLeader = player.name === team?.leader;
                   const showRank =
-                    (sortBy[tableId] === "point" && isFirstPlayer) ||
-                    sortBy[tableId] === "date";
+                    !isOneOnOne &&
+                    ((sortBy[tableId] === "point" && isFirstPlayer) ||
+                      sortBy[tableId] === "date");
+
+                  /** 根据排序方式+奇偶性判断是否为胜者组 */
+                  const isWinner = rankingAscending[tableId]
+                    ? rankIndex % 2 === 0
+                    : rankIndex % 2 === 1;
+                  /** 是否为奇数，奇数组下方添加边框 */
+                  const isOdd = rankIndex % 2 === 1;
+                  /** 对手名称 */
+                  const rivalName = tournamentData.players?.find(
+                    (p) => p.mid === playerGame?.rivalMid,
+                  )?.name;
+
+                  const className = `border-y-1
+                        ${isTopTier || isWinner ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
+                        ${isLastPlayer && nextIsTopTier ? "border-b-[#0073A4CC] " : ""}
+                        ${isLastPlayer && isOdd ? "border-b-8 border-b-[#363636]" : ""}
+                        ${isFirstPlayer && prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`
+                    .replace(/\s+/g, " ")
+                    .replace(/\n/g, "");
 
                   return (
-                    <tr
-                      key={playerIndex}
-                      className={`border-y-1
-                        ${isTopTier ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
-                        ${isLastPlayer && nextIsTopTier ? "border-b-[#0073A4CC]" : ""}
-                        ${isFirstPlayer && prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`}
-                    >
+                    <tr key={playerIndex} className={className}>
                       {showRank && (
                         <td
                           rowSpan={
                             sortBy[tableId] === "point" ? players.length : 1
                           }
                           className={`sticky left-0 whitespace-nowrap w-4 p-4 text-bold text-center
-                            ${isTopTier ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
+                            ${isTopTier || isWinner ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
                         >
                           {ranking.get(team?.name || "")}
                         </td>
                       )}
 
+                      {isOneOnOne && isFirstPlayer && (
+                        <StyledTeamWinLose
+                          $isWinner={isWinner}
+                          rowSpan={players.length}
+                        >
+                          {isWinner ? "win" : "lose"}
+                        </StyledTeamWinLose>
+                      )}
+
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
                           <StyledTeamName
-                            $isTopTier={isTopTier}
+                            $isTopTier={isTopTier || isWinner}
                             $sortByRanking={true}
                             rowSpan={players.length}
                           >
@@ -861,7 +951,7 @@ export function TournamentRankingTeam({
                         )
                       ) : (
                         <StyledTeamName
-                          $isTopTier={isTopTier}
+                          $isTopTier={isTopTier || isWinner}
                           $sortByRanking={false}
                           className="max-w-32 truncate"
                         >
@@ -870,7 +960,7 @@ export function TournamentRankingTeam({
                       )}
 
                       <td
-                        className={`sticky left-[144px] sm:left-[192px] ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}
+                        className={`sticky left-[144px] sm:left-[192px] ${isTopTier || isWinner ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}
                       >
                         {isTeamLeader && (
                           <div className="absolute top-0 left-2 h-full flex items-center">
@@ -901,37 +991,50 @@ export function TournamentRankingTeam({
                           {value}
                         </td>
                       ))}
-                      {playerGame &&
-                        Object.keys(playerGame.customStageValues).map((key) => (
-                          <td key={key} className="whitespace-nowrap">
-                            {playerGame.customStageValues[key]}
-                          </td>
-                        ))}
+                      {playerGame
+                        ? Object.keys(stage.customStageKeys).map((key) => (
+                            <td key={key} className="whitespace-nowrap">
+                              {playerGame.customStageValues[key] || "-"}
+                            </td>
+                          ))
+                        : Array(customStageKeyLen)
+                            .fill(0)
+                            .map((_, index) => (
+                              <td key={index} className="whitespace-nowrap">
+                                -
+                              </td>
+                            ))}
                       <td className="whitespace-nowrap">
                         {playerGame?.ending}
                       </td>
+
+                      {stage.type === "1on1" && (
+                        <>
+                          <td className="whitespace-nowrap">{rivalName}</td>
+                          <td className="whitespace-nowrap">
+                            {playerGame?.result}
+                          </td>
+                        </>
+                      )}
+
                       <td className="whitespace-nowrap">{playerGame?.point}</td>
 
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
                           <StyledFinalPoint
-                            $isTopTier={isTopTier}
+                            $isTopTier={isTopTier || isWinner}
                             rowSpan={players.length}
-                            className={`sticky right-0 whitespace-nowrap text-center ${isTopTier ? "bg-[#1c272c]" : "bg-[#212121]"}`}
+                            className={`sticky right-0 whitespace-nowrap text-center ${isTopTier || isWinner ? "bg-[#1c272c]" : "bg-[#212121]"}`}
                           >
                             {entry[1].point}
                           </StyledFinalPoint>
                         )
                       ) : (
                         <StyledFinalPoint
-                          $isTopTier={isTopTier}
+                          $isTopTier={isTopTier || isWinner}
                           className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
                         >
-                          {
-                            team?.stages.find(
-                              (teamStage) => teamStage.name === stage.name,
-                            )?.point
-                          }
+                          {teamSchedule.get(team!.name)?.point}
                         </StyledFinalPoint>
                       )}
                     </tr>

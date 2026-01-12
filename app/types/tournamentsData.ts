@@ -101,17 +101,6 @@ export interface TournamentTeam {
   leader: string;
   /** 队伍关键成员 */
   keyMember: string;
-  /** 比赛阶段 */
-  stages: TournamentTeamStage[];
-}
-
-export interface TournamentTeamStage {
-  /** 阶段名称 */
-  name: string;
-  /** 队伍总分 */
-  point?: number;
-  /** 队伍排名 */
-  rank?: number;
 }
 
 export type TournamentPlayer = {

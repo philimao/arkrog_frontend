@@ -15,6 +15,7 @@ import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
 import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
+import { URLValidation } from "~/utils/record";
 
 export const getInputClassName = (
   fieldName: string,
@@ -144,7 +145,8 @@ export default function TournamentForm({
         labels: [],
         rule: "",
         organizers: [],
-        room: "",
+        rooms: [],
+        playback: "",
         stages: [],
         players: [],
         teams: [],
@@ -211,6 +213,20 @@ export default function TournamentForm({
       }
 
       try {
+        // 对于Bilibili链接，进行格式化处理
+        if (formData.playback) {
+          formData.playback = await URLValidation(formData.playback);
+        }
+        for (let player of formData.players!) {
+          for (let game of player.games) {
+            if (game.customStageValues.playback) {
+              game.customStageValues.playback = await URLValidation(
+                game.customStageValues.playback,
+              );
+            }
+          }
+        }
+
         const response = await saveTournament(
           formData,
           userInfo.username,

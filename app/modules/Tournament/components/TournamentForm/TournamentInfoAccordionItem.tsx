@@ -17,6 +17,7 @@ import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import MarkdownEditorModal from "~/components/Modal/MarkdownEditorModal";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { URLValidation } from "~/utils/record";
 
 interface TournamentInfoAccordionItemProps {
   formData: TournamentData;
@@ -309,6 +310,36 @@ export default function TournamentInfoAccordionItem({
             />
           </div>
         )}
+
+        <div>
+          <label htmlFor="playback" className={labelClassName}>
+            回放链接
+          </label>
+          <input
+            id="playback"
+            type="text"
+            name="playback"
+            value={formData.playback}
+            placeholder="当赛事结束后，直播间链接可被替换为回放链接"
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onPaste={(evt) => {
+              evt.preventDefault();
+              const url = evt.clipboardData.getData("text");
+              URLValidation(url).then((validatedURL) => {
+                console.log(validatedURL);
+                if (validatedURL) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    playback: validatedURL,
+                  }));
+                }
+              });
+            }}
+            className={getInputClassName("playback", touchedFields, formData)}
+            onBlur={handleBlur}
+          />
+        </div>
       </div>
 
       <div className="mb-4">

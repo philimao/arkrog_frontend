@@ -186,23 +186,15 @@ const TeamMemberRow = ({
   const hasName = !!player?.name;
   const hasRole = true; // Role is always shown (keyMemberAlias or memberAlias)
   const hasSquad = !!lastGame?.starterSquad;
-  const hasCustomStageValues =
-    !!lastGame?.customStageValues &&
-    typeof lastGame.customStageValues === "object" &&
-    Object.keys(lastGame.customStageValues).length > 0;
   const hasPoint = !!lastGame?.point;
 
-  // Get custom stage values keys if they exist
-  const customStageKeys = hasCustomStageValues
-    ? Object.keys(lastGame.customStageValues)
-    : [];
+  // not to display custom values to avoid content overflow
 
   // Count visible items to calculate widths (each custom stage value counts as one item)
   const visibleItemsCount = [
     hasName ? 1 : 0,
     hasRole ? 1 : 0,
     hasSquad ? 1 : 0,
-    customStageKeys.length,
     hasPoint ? 1 : 0,
   ].reduce((sum, count) => sum + count, 0);
 
@@ -243,12 +235,6 @@ const TeamMemberRow = ({
           </div>
         </>
       )}
-      {hasCustomStageValues &&
-        customStageKeys.map((key) => (
-          <div key={key} style={{ width: getWidth() }}>
-            {lastGame.customStageValues[key]}
-          </div>
-        ))}
       {hasPoint && <div style={{ width: getWidth() }}>{lastGame.point}</div>}
     </div>
   );

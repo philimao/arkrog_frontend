@@ -15,6 +15,7 @@ import {
 import { useInputSuggestions } from "~/hooks/useInputSuggestions";
 import { starterSquads } from "~/utils/gamedataConst";
 import { toast } from "react-toastify";
+import { URLValidation } from "~/utils/record";
 
 // Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
 const calculateSchedule = (
@@ -1618,6 +1619,40 @@ export default function TournamentProgressAccordionItem({
                                       }
                                     }}
                                     onKeyDown={handleKeyDown}
+                                    onPaste={(evt) => {
+                                      if (key === "playback") {
+                                        evt.preventDefault();
+                                        const url =
+                                          evt.clipboardData.getData("text");
+                                        URLValidation(url).then(
+                                          (validatedURL) => {
+                                            if (validatedURL) {
+                                              const newPlayers = [
+                                                ...formData.players!,
+                                              ];
+                                              const game = newPlayers
+                                                .find(
+                                                  (p) =>
+                                                    p.mid === editingPlayer.mid,
+                                                )!
+                                                .games.find((g) =>
+                                                  isSameDay(g.date, date),
+                                                );
+                                              if (game) {
+                                                game.customStageValues = {
+                                                  ...game.customStageValues,
+                                                  playback: validatedURL,
+                                                };
+                                                setFormData((prev) => ({
+                                                  ...prev,
+                                                  players: newPlayers,
+                                                }));
+                                              }
+                                            }
+                                          },
+                                        );
+                                      }
+                                    }}
                                     className={getInputClassName(
                                       `customStageValue-${key}`,
                                       touchedFields,

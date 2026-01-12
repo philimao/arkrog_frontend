@@ -40,8 +40,8 @@ export interface TournamentData {
     name: string;
     avatar: string;
   }[];
-  /** 是否正在进行 */
-  ongoing?: boolean;
+  /** 回放链接 */
+  playback: string;
   /** 绑定在选手信息上的自定义keys，{server:"服务器"} */
   customPlayerKeys: Record<string, string>;
   /** 用于分组的key，可以从customPlayerKeys中获取 */
@@ -49,9 +49,11 @@ export interface TournamentData {
   /** 赛事阶段 */
   stages: TournamentStage[];
   /** 团队信息 */
-  teams?: TournamentTeam[];
+  teams: TournamentTeam[];
   /** 选手信息 */
-  players?: TournamentPlayer[];
+  players: TournamentPlayer[];
+  /** 是否正在进行 */
+  ongoing?: boolean;
   /** 最后编辑时间戳 */
   lastEditTime?: number;
 }

@@ -55,6 +55,7 @@ const StyledTeamTable = styled.table`
 const StyledTeamWinLose = styled.td<{ $isWinner: boolean }>`
   position: sticky;
   box-shadow: inset -1px 0px var(--mid-gray);
+  left: 0;
   color: ${(props) => (props.$isWinner ? "var(--ak-blue)" : "white")};
 `;
 
@@ -994,7 +995,25 @@ export function TournamentRankingTeam({
                       {playerGame
                         ? Object.keys(stage.customStageKeys).map((key) => (
                             <td key={key} className="whitespace-nowrap">
-                              {playerGame.customStageValues[key] || "-"}
+                              {!playerGame.customStageValues[key] ? (
+                                "-"
+                              ) : key === "playback" ? (
+                                <a
+                                  href={playerGame.customStageValues[key]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    className="text-ak-blue"
+                                  >
+                                    <use href="#bilibili-svg" />
+                                  </svg>
+                                </a>
+                              ) : (
+                                playerGame.customStageValues[key]
+                              )}
                             </td>
                           ))
                         : Array(customStageKeyLen)

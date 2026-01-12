@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import type { CharBasicData, CharId, SkillId } from "~/types/gameData";
 import type { TeamMemberData } from "~/types/recordType";
 
-async function URLValidation(url: string) {
+async function URLValidation(url: string): Promise<string> {
   if (url === "#") return url;
   let newURL = url.trim().split(" ")[0];
   newURL = newURL.replace("http:", "https:");
@@ -82,11 +82,12 @@ async function URLValidation(url: string) {
     if (!u.protocol.includes("https")) {
       console.log(u);
       toast.warning("请使用HTTPS协议！");
-      return false;
+      return newURL;
     } else return newURL;
   } catch (err) {
     console.log(newURL, err);
     toast.warning("链接格式不合法！");
+    return newURL;
   }
 }
 

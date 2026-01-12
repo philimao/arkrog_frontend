@@ -151,22 +151,43 @@ export default function TournamentView({
             </div>
           }
         />
-        <SectionContainer
-          title="观赛直播间"
-          content={
-            <div>
-              {tournamentData.rooms?.map((room, index) => (
-                <BilibiliUser
-                  key={room.mid}
-                  mid={room.mid}
-                  name={room.name}
-                  face={room.avatar}
-                  room_id={room.room_id}
-                />
-              ))}
-            </div>
-          }
-        />
+        {!tournamentData.ongoing && tournamentData.playback ? (
+          <SectionContainer
+            title="比赛回放"
+            content={
+              <div className="h-14 p-2 flex items-center rounded-md cursor-pointer hover:bg-mid-gray transition-colors">
+                <a
+                  className="flex items-center gap-2 text-ak-blue"
+                  href={tournamentData.playback}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg width="24" height="24">
+                    <use href="#bilibili-svg" />
+                  </svg>
+                  点击跳转回放链接
+                </a>
+              </div>
+            }
+          />
+        ) : (
+          <SectionContainer
+            title="观赛直播间"
+            content={
+              <div>
+                {tournamentData.rooms?.map((room, index) => (
+                  <BilibiliUser
+                    key={room.mid}
+                    mid={room.mid}
+                    name={room.name}
+                    face={room.avatar}
+                    room_id={room.room_id}
+                  />
+                ))}
+              </div>
+            }
+          />
+        )}
         <SectionContainer
           title="比赛时间"
           content={
@@ -201,6 +222,24 @@ export default function TournamentView({
       />
 
       <TournamentRanking tournamentData={tournamentData} />
+
+      {Svg}
     </div>
   );
 }
+
+const Svg = (
+  <svg className="hidden">
+    <symbol
+      id="bilibili-svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        clip-rule="evenodd"
+        d="M4.977 3.561a1.31 1.31 0 111.818-1.884l2.828 2.728c.08.078.149.163.205.254h4.277a1.32 1.32 0 01.205-.254l2.828-2.728a1.31 1.31 0 011.818 1.884L17.82 4.66h.848A5.333 5.333 0 0124 9.992v7.34a5.333 5.333 0 01-5.333 5.334H5.333A5.333 5.333 0 010 17.333V9.992a5.333 5.333 0 015.333-5.333h.781L4.977 3.56zm.356 3.67a2.667 2.667 0 00-2.666 2.667v7.529a2.667 2.667 0 002.666 2.666h13.334a2.667 2.667 0 002.666-2.666v-7.53a2.667 2.667 0 00-2.666-2.666H5.333zm1.334 5.192a1.333 1.333 0 112.666 0v1.192a1.333 1.333 0 11-2.666 0v-1.192zM16 11.09c-.736 0-1.333.597-1.333 1.333v1.192a1.333 1.333 0 102.666 0v-1.192c0-.736-.597-1.333-1.333-1.333z"
+      />
+    </symbol>
+  </svg>
+);

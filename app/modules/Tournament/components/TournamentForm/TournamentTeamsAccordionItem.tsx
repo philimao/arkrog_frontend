@@ -288,7 +288,6 @@ export default function TournamentTeamsAccordionItem({
             members: [],
             leader: "",
             keyMember: "",
-            stages: [],
           };
           setFormData((prev) => ({
             ...prev,

@@ -786,13 +786,13 @@ export default function TournamentProgressAccordionItem({
                                   : undefined,
                                 customStageValues: {},
                               });
-                            
+
                             const playerIndex = newPlayers.findIndex(
                               (p) => p.mid === newPlayer?.mid,
                             );
                             if (playerIndex !== -1) {
                               newPlayers[playerIndex].games.sort(
-                              (a, b) => a.date - b.date,
+                                (a, b) => a.date - b.date,
                               );
                             }
                             setFormData((prev) => ({
@@ -1579,7 +1579,7 @@ export default function TournamentProgressAccordionItem({
                                         200,
                                       );
                                     }}
-                                    maxLength={32}
+                                    maxLength={128}
                                   />
                                   {showSuggestions ===
                                     `customStageValue-${key}` &&

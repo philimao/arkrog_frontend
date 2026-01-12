@@ -287,6 +287,8 @@ export function TournamentFinalResultTeam({
         const lastStage = team.stages[team.stages.length - 1];
         const rank = index + 1;
 
+        if (!lastStage) return null;
+
         return (
           <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
             <ResultCardHeader rank={rank} />

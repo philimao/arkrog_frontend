@@ -154,8 +154,8 @@ function RougeSelector({
     tournaments
       .sort(
         (a, b) =>
-          new Date(b.stages[0].startTime).getTime() -
-          new Date(a.stages[0].startTime).getTime(),
+          new Date(b.stages[0]?.startTime || 0).getTime() -
+          new Date(a.stages[0]?.startTime || 0).getTime(),
       )
       .map((tournament) => {
         const edition = tournament.edition;

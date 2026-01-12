@@ -589,7 +589,7 @@ export default function TournamentPlayersAccordionItem({
                     // 延迟关闭建议列表，以便点击建议项能够触发
                     setTimeout(() => setShowSuggestions(null), 200);
                   }}
-                  maxLength={32}
+                  maxLength={128}
                 />
                 {showSuggestions === key && getSuggestions(key).length > 0 && (
                   <div

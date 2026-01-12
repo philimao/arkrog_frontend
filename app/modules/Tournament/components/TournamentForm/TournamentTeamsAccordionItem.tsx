@@ -78,8 +78,19 @@ export default function TournamentTeamsAccordionItem({
                   />
                 </div>
                 <div>
-                  <label htmlFor={`teamId-${index}`} className={labelClassName}>
+                  <label
+                    htmlFor={`teamId-${index}`}
+                    className={labelWithTooltipClassName}
+                  >
                     队伍ID <span className="text-ak-red">*</span>
+                    <Tooltip
+                      content="队伍英文名，没有英文名可以写大写拼音"
+                      className="bg-light-mid-gray text-black"
+                    >
+                      <span className="px-1">
+                        <InformationIcon width="0.75rem" height="0.75rem" />
+                      </span>
+                    </Tooltip>
                   </label>
                   <input
                     id={`teamId-${index}`}

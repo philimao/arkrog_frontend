@@ -57,6 +57,7 @@ const StyledTeamWinLose = styled.td<{ $isWinner: boolean }>`
   box-shadow: inset -1px 0px var(--mid-gray);
   left: 0;
   color: ${(props) => (props.$isWinner ? "var(--ak-blue)" : "white")};
+  background-color: ${(props) => (props.$isWinner ? "#1c272c" : "#212121")};
 `;
 
 const StyledTeamName = styled.td<{
@@ -800,7 +801,7 @@ export function TournamentRankingTeam({
           <StyledTeamTable>
             <thead className="sticky top-0 bg-black-gray">
               <tr>
-                <td className="sticky left-0 bg-black-gray">
+                <td className="sticky left-0 bg-black-gray w-[64px] min-w-[64px]">
                   {isOneOnOne ? (
                     <SortableHeader
                       label="结果"
@@ -815,10 +816,10 @@ export function TournamentRankingTeam({
                     />
                   )}
                 </td>
-                <td className="sticky left-[64px] bg-black-gray min-w-20 sm:w-32 sm:min-w-32">
+                <td className="sticky left-[64px] bg-black-gray w-[112px] min-w-[112px]">
                   队伍
                 </td>
-                <td className="sticky left-[144px] sm:left-[192px] bg-black-gray player-name">
+                <td className="sticky left-[176px] bg-black-gray player-name">
                   选手ID
                 </td>
                 <td>
@@ -910,9 +911,9 @@ export function TournamentRankingTeam({
                   )?.name;
 
                   const className = `border-y-1
-                        ${isTopTier || isWinner ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
+                        ${isTopTier || (isOneOnOne && isWinner) ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
                         ${isLastPlayer && nextIsTopTier ? "border-b-[#0073A4CC] " : ""}
-                        ${isLastPlayer && isOdd ? "border-b-8 border-b-[#363636]" : ""}
+                        ${isOneOnOne && isLastPlayer && isOdd ? "border-b-8 border-b-[#363636]" : ""}
                         ${isFirstPlayer && prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`
                     .replace(/\s+/g, " ")
                     .replace(/\n/g, "");
@@ -925,7 +926,7 @@ export function TournamentRankingTeam({
                             sortBy[tableId] === "point" ? players.length : 1
                           }
                           className={`sticky left-0 whitespace-nowrap w-4 p-4 text-bold text-center
-                            ${isTopTier || isWinner ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
+                            ${isTopTier || (isOneOnOne && isWinner) ? "bg-[#1c272c] text-ak-blue" : "bg-[#212121]"}`}
                         >
                           {ranking.get(team?.name || "")}
                         </td>
@@ -943,7 +944,7 @@ export function TournamentRankingTeam({
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
                           <StyledTeamName
-                            $isTopTier={isTopTier || isWinner}
+                            $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                             $sortByRanking={true}
                             rowSpan={players.length}
                           >
@@ -952,7 +953,7 @@ export function TournamentRankingTeam({
                         )
                       ) : (
                         <StyledTeamName
-                          $isTopTier={isTopTier || isWinner}
+                          $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                           $sortByRanking={false}
                           className="max-w-32 truncate"
                         >
@@ -961,7 +962,7 @@ export function TournamentRankingTeam({
                       )}
 
                       <td
-                        className={`sticky left-[144px] sm:left-[192px] ${isTopTier || isWinner ? "bg-[#1c272c]" : "bg-[#212121]"} sm:min-w-32 player-name`}
+                        className={`sticky left-[176px] ${isTopTier || (isOneOnOne && isWinner) ? "bg-[#1c272c]" : "bg-[#212121]"} min-w-32 player-name`}
                       >
                         {isTeamLeader && (
                           <div className="absolute top-0 left-2 h-full flex items-center">
@@ -1041,16 +1042,16 @@ export function TournamentRankingTeam({
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
                           <StyledFinalPoint
-                            $isTopTier={isTopTier || isWinner}
+                            $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                             rowSpan={players.length}
-                            className={`sticky right-0 whitespace-nowrap text-center ${isTopTier || isWinner ? "bg-[#1c272c]" : "bg-[#212121]"}`}
+                            className={`sticky right-0 whitespace-nowrap text-center ${isTopTier || (isOneOnOne && isWinner) ? "bg-[#1c272c]" : "bg-[#212121]"}`}
                           >
                             {entry[1].point}
                           </StyledFinalPoint>
                         )
                       ) : (
                         <StyledFinalPoint
-                          $isTopTier={isTopTier || isWinner}
+                          $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                           className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
                         >
                           {teamSchedule.get(team!.name)?.point}

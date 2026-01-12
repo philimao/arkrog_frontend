@@ -123,7 +123,11 @@ export default function TournamentView({
       <div className="mb-16 relative">
         <SectionContainer
           title="比赛规则"
-          content={<Markdown>{tournamentData.rule}</Markdown>}
+          content={
+            tournamentData.rule && <div className="bg-black-gray-70 p-4">
+              <Markdown>{tournamentData.rule}</Markdown>
+            </div>
+          }
         />
         {tournamentData.detailRule && (
           <div

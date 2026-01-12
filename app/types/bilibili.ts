@@ -3,13 +3,13 @@ export interface SearchUserItem {
   mid: number;
   uname: string;
   upic: string;
-  fans?: number;
-  sign?: string;
-  room_id?: number;
-  level?: number;
-  gender?: number;
-  is_live?: boolean;
-  is_upuser?: boolean;
+  fans: number;
+  sign: string;
+  room_id: number;
+  level: number;
+  gender: number;
+  is_live: boolean;
+  is_upuser: boolean;
 }
 
 export interface SearchUserData {

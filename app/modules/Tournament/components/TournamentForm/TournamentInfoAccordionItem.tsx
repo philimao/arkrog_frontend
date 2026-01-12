@@ -15,7 +15,7 @@ import {
 } from ".";
 import UploadCenterTrigger from "~/components/COS/UploadCenterTrigger";
 import MarkdownEditorModal from "~/components/Modal/MarkdownEditorModal";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 import { URLValidation } from "~/utils/record";
 
@@ -71,6 +71,62 @@ export default function TournamentInfoAccordionItem({
     SearchUserItem | undefined
   >(undefined);
 
+  // 搜索回调
+  const handleSearch = useCallback(
+    async (
+      query: string,
+      callback: (results: SearchUserItem[]) => void,
+      setSearching: (searching: boolean) => void,
+      noCache: boolean = false,
+    ) => {
+      {
+        try {
+          setSearching(true);
+          const resp = await miscServices.searchBilibiliUsers(
+            query,
+            1,
+            20,
+            noCache,
+          );
+          const body = resp.data;
+          if (body.code !== 0) {
+            toast.error(body.message || "搜索失败");
+            callback([]);
+            return;
+          }
+          if (!body.data?.result) {
+            toast.error("搜索结果为空");
+            callback([]);
+          } else {
+            callback(body.data.result);
+          }
+        } catch (err) {
+          if ((err as any).status === 502) {
+            callback([
+              {
+                mid: 0,
+                uname: query,
+                upic: "https://static.hdslb.com/images/member/noface.gif",
+                fans: -1,
+                sign: "",
+                room_id: 22450647,
+                level: 6,
+                gender: 0,
+                is_live: false,
+                is_upuser: false,
+              },
+            ]);
+          } else {
+            callback([]);
+          }
+        } finally {
+          setSearching(false);
+        }
+      }
+    },
+    [],
+  );
+
   const handleOpenEditor = (key: string) => {
     setUploadDirectory(
       "tournament/" + formData.name.replace(/[!@#$%^&*()+\s]+/g, "_"),
@@ -99,14 +155,6 @@ export default function TournamentInfoAccordionItem({
     clearUploadParams();
     onClose();
   };
-
-  const isOrganizerInvalid =
-    touchedFields.has("organizerSearch") &&
-    (!formData.organizers || formData.organizers.length === 0);
-
-  const isRoomInvalid =
-    touchedFields.has("roomSearch") &&
-    (!formData.rooms || formData.rooms.length === 0);
 
   // 更新input内容到formData
   const handleChange = (
@@ -384,6 +432,12 @@ export default function TournamentInfoAccordionItem({
               if (!item) {
                 return;
               }
+
+              if (item.mid === 0 && item.uname === "加载更多") {
+                handleSearch(item.sign, setSearchResults, setSearching, true);
+                return;
+              }
+
               const newMid = String(item.mid);
               setSelectedUser(item);
 
@@ -407,6 +461,7 @@ export default function TournamentInfoAccordionItem({
                     mid: newMid,
                     name: item.uname,
                     avatar: item.upic,
+                    room_id: String(item.room_id),
                   },
                 ],
               }));
@@ -443,49 +498,9 @@ export default function TournamentInfoAccordionItem({
             getKey={(item) => String(item.mid)}
             placeholder="输入B站用户名"
             manualSearch
-            onSearch={async (query) => {
-              try {
-                setSearching(true);
-                const resp = await miscServices.searchBilibiliUsers(
-                  query,
-                  1,
-                  20,
-                );
-                const body = resp.data;
-                if (body.code !== 0) {
-                  toast.error(body.message || "搜索失败");
-                  setSearchResults([]);
-                  return;
-                }
-                if (!body.data?.result) {
-                  toast.error("搜索结果为空");
-                  setSearchResults([]);
-                } else {
-                  setSearchResults(body.data.result);
-                }
-              } catch (err) {
-                if ((err as any).status === 502) {
-                  setSearchResults([
-                    {
-                      mid: 0,
-                      uname: query,
-                      upic: "https://static.hdslb.com/images/member/noface.gif",
-                      fans: -1,
-                      sign: "",
-                      room_id: 22450647,
-                      level: 6,
-                      gender: 0,
-                      is_live: false,
-                      is_upuser: false,
-                    },
-                  ]);
-                } else {
-                  setSearchResults([]);
-                }
-              } finally {
-                setSearching(false);
-              }
-            }}
+            onSearch={async (query) =>
+              handleSearch(query, setSearchResults, setSearching)
+            }
             isSearching={searching}
             onInputChange={() => {}}
             onInputKeyDown={handleKeyDown}
@@ -544,6 +559,17 @@ export default function TournamentInfoAccordionItem({
               if (!item) {
                 return;
               }
+
+              if (item.mid === 0 && item.uname === "加载更多") {
+                handleSearch(
+                  item.sign,
+                  setRoomSearchResults,
+                  setRoomSearching,
+                  true,
+                );
+                return;
+              }
+
               const newMid = String(item.mid);
               setSelectedRoomUser(item);
 
@@ -617,50 +643,9 @@ export default function TournamentInfoAccordionItem({
             getKey={(item) => String(item.mid)}
             placeholder="输入B站用户名"
             manualSearch
-            onSearch={async (query) => {
-              try {
-                setRoomSearching(true);
-                const resp = await miscServices.searchBilibiliUsers(
-                  query,
-                  1,
-                  20,
-                );
-                const body = resp.data;
-                if (body.code !== 0) {
-                  toast.error(body.message || "搜索失败");
-                  setRoomSearchResults([]);
-                  return;
-                }
-                if (!body.data?.result) {
-                  toast.error("搜索结果为空");
-                  setRoomSearchResults([]);
-                } else {
-                  setRoomSearchResults(body.data.result);
-                }
-              } catch (err) {
-                console.error(err);
-                if ((err as any).status === 502) {
-                  setRoomSearchResults([
-                    {
-                      mid: 0,
-                      uname: query,
-                      upic: "https://static.hdslb.com/images/member/noface.gif",
-                      fans: -1,
-                      sign: "",
-                      room_id: 22450647,
-                      level: 6,
-                      gender: 0,
-                      is_live: false,
-                      is_upuser: false,
-                    },
-                  ]);
-                } else {
-                  setRoomSearchResults([]);
-                }
-              } finally {
-                setRoomSearching(false);
-              }
-            }}
+            onSearch={async (query) =>
+              handleSearch(query, setRoomSearchResults, setRoomSearching)
+            }
             isSearching={roomSearching}
             onInputChange={() => {}}
             onInputKeyDown={handleKeyDown}

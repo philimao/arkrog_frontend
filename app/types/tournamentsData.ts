@@ -30,6 +30,7 @@ export interface TournamentData {
   /** 组织者信息 */
   organizers: {
     mid: string;
+    room_id: string;
     name: string;
     avatar: string;
   }[];
@@ -112,8 +113,8 @@ export type TournamentPlayer = {
   name: string;
   /** 选手头像 */
   face: string;
-  /** 粉丝数 */
-  fans?: number;
+  /** 直播间id */
+  room_id: string;
   /** 队伍名称 */
   teamName?: string;
   /** 最终排名 */

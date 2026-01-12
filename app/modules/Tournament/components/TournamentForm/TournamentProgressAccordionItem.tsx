@@ -615,6 +615,7 @@ export default function TournamentProgressAccordionItem({
           mid: `newPlayer-${index}`,
           name: "点击选择选手",
           face: "",
+          room_id: "",
           games: [],
           customPlayerValues: {},
         };

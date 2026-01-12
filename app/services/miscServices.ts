@@ -3,8 +3,13 @@ import type { SearchUserResponse } from "~/types/bilibili";
 
 // 杂项服务：B 站搜索等
 export const miscServices = {
-  searchBilibiliUsers: (keyword: string, page = 1, pageSize = 20) =>
+  searchBilibiliUsers: (
+    keyword: string,
+    page = 1,
+    pageSize = 20,
+    noCache = false,
+  ) =>
     api.get<SearchUserResponse>("/misc/search-users", {
-      params: { keyword, page, pageSize },
+      params: { keyword, page, pageSize, noCache },
     }),
 };

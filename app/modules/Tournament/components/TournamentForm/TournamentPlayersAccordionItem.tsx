@@ -344,6 +344,7 @@ export default function TournamentPlayersAccordionItem({
               mid: generateID(),
               name: "",
               face: "",
+              room_id: "",
               games: [],
               customPlayerValues: {},
             };
@@ -400,6 +401,7 @@ export default function TournamentPlayersAccordionItem({
                       mid: newMid,
                       name: item.uname,
                       face: item.upic,
+                      room_id: item.room_id ? String(item.room_id) : target.room_id,
                       fans: item.fans,
                     };
                     const idx = newPlayers.indexOf(target);

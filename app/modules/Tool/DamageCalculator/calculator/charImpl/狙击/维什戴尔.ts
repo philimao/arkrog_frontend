@@ -1,124 +1,174 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../../helper";
-import { registerCalculatorImpl } from "../../impls";
 
-// 二技能的单次总伤模拟
-function cal_Wisadel_sim(
-  atkBuffIn: number,
-  atkBuffExtra: number,
-  atk: number,
-  atkSpeed: number,
-  enemyDef: number,
-  mitigation: number,
-  vulnD: number,
-  charge: number,
-): number {
-  let totalDamage = 0.0; // 输出的技能结果
-  const skillDPH = (atk * (1.35 + atkBuffIn) + atkBuffExtra) * 1.25; // 过载前dph
-  const skillDamage = Math.max(skillDPH - enemyDef, 0.05 * skillDPH); // 主攻击伤害
-  const skillExDamage = Math.max(skillDPH * 0.5 - enemyDef, 0.05 * skillDPH); // 余震伤害
-  const skillDPHOL = atk * (1.35 + atkBuffIn) + atkBuffExtra; // 过载
-  const skillDamageOL = Math.max(skillDPHOL - enemyDef, 0.05 * skillDPHOL);
-  const skillExDamageOL = Math.max(skillDPHOL * 0.5 - enemyDef, 0.05 * skillDPHOL);
-  const skillTalentDamage = Math.max(
-    (atk * (1.35 + atkBuffIn) + atkBuffExtra) * 1.85 - enemyDef,
-    (atk * (1.35 + atkBuffIn) + atkBuffExtra) * 1.85 * 0.05,
-  ); // 普攻天赋伤害
-  const skillAtkTime = Math.round(4200.0 / atkSpeed);
-  const skillHit = Math.floor(365.0 / skillAtkTime);
-  const skillHitOL = Math.floor(370.0 / skillAtkTime);
-
-  let damage = skillDamage * skillHit + skillExDamage * 2 * skillHit * (1 + vulnD) * (1 - mitigation);
-  let damageOL = skillDamageOL * skillHitOL * 4 + skillExDamageOL * 8 * skillHitOL * (1 + vulnD) * (1 - mitigation);
-
-  for (let i = 0; i < skillHit; ++i) {
-    let hit = true;
-    for (let j = 0; j < 2; ++j) {
-      const random = Math.floor(Math.random() * 100) + 1; // 1 to 100
-      if (random < 16) {
-        damage += skillTalentDamage;
-        hit = false;
-        break;
-      }
-    }
-  }
-
-  for (let i = 0; i < skillHitOL; ++i) {
-    let hit = true;
-    for (let j = 0; j < 8; ++j) {
-      const random = Math.floor(Math.random() * 100) + 1;
-      if (random < 16) {
-        damageOL += skillTalentDamage;
-        hit = false;
-        break;
-      }
-    }
-  }
-
-  totalDamage = damage + damageOL;
-
-  return totalDamage;
-}
 
 /** 维什戴尔伤害计算器 */
 export default function Wisdel(input: CalculatorInput): CalculatorOutput {
   const context = input.buffContext;
+
+  // 获取局内buff
+  /** 攻击力直接加算 */
+  const atkBuffInAdd = context.in_game_buff_add.atk.calculate();
+  /** 攻击力直接乘算 */
+  const atkBuffInMul = context.in_game_buff_mul.atk.calculate() - 1;
+  /** 攻击最终乘算 */
+  const atkBuffFinalMul = context.in_game_buff_final_mul.atk.calculate();
+  /** 攻击最终加算 */
+  const atkBuffFinalAdd = context.in_game_buff_final_add.atk.calculate();
+  /** 通用增伤总倍率 */
+  const damage_scale = context.global_buff_stack.damage_scale.calculate();
+  /** 物理增伤总倍率 */
+  const damage_scale_phy = context.global_buff_stack.damage_scale_phy.calculate();
+
+  const atkSpeedBuff =
+    context.in_game_buff_add.attack_speed.calculate() + context.relic_rune_add.attack_speed.calculate();
+
+  // 通过 calculateOutsidePanel 获取面板属性
+  const outsidePanel = CalculatorHelper.calculateOutsidePanel({
+    charInput: input.charInput,
+    context,
+  });
+
+  const atk = outsidePanel.atk; // 局外攻击力
+  const skillKey = input.charInput.skillKey; // 技能key
+  const skillLevel = input.charInput.skillLevel; // 技能等级
+  const phase = input.charInput.phaseLevel; // 精英化等级
+  const potential = input.charInput.potential; // 潜能等级
+  const uniEquipLevel = input.charInput.uniEquipLevel; // 模组等级
+  const uniEquipId = input.charInput.uniEquipId; // 模组id
+  const mitigation =
+    1 -
+    (1 - context.in_game_buff_final_mul.enemy_damage_resistance.calculate()) *
+    (1 - context.relic_rune_mul.enemy_damage_resistance.calculate()); // 敌人减伤
+
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
-  const atkBuffIn = input.charInput.charsBuffInGame.atk;
-  const atkBuffExtra = 0; // 额外加攻，demo版不需要
-  const atk = input.charInput.attribute.atk;
-  const atkSpeed = input.charInput.attribute.attackSpeed;
-  const skillKey = input.charInput.skillKey;
-  const enemyDef = input.enemyInput.attributes.def;
-  const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
-  const vulnD = 0;
-  const charge = 1;
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
+  const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
-  const commonDPH = (atk * (1 + atkBuffIn) + atkBuffExtra) * 1.25; // 1.25是3级模组的攻击倍率
-  const commonDamage = Math.max(commonDPH - enemyDef, 0.05 * commonDPH); // 主攻击伤害
-  const commonExDamage = Math.max(commonDPH * 0.5 - enemyDef, 0.05 * commonDPH); // 余震伤害
-  const talentDamage = Math.max(
-    (atk * (1 + atkBuffIn) + atkBuffExtra) * 1.85 - enemyDef,
-    (atk * (1 + atkBuffIn) + atkBuffExtra) * 1.85 * 0.05,
-  ); // 普攻天赋伤害
-  const atkTime = Math.round(6300 / atkSpeed);
-  result.attack.dps.phy =
-    ((commonDamage + 2 * commonExDamage + 0.15 * talentDamage) * (1 + vulnD) * (1 - mitigation) * 30) / atkTime;
+  // 基础攻击间隔
+  const baseAttackTime = 2.1;
+
+  // 模组特性判断
+  const equipX = uniEquipId === "uniequip_002_wisdel";
+
+  /** 天赋1：好礼 */
+  let talent1MainAtkScale = phase === 2 ? 1.15 : 1;
+  let talent1AoeAtkScale = 0;
+  if (phase == 1) {
+    talent1AoeAtkScale = 1.2;
+  }
+  else if (phase == 2) {
+    talent1AoeAtkScale = 1.5;
+  }
+  if (equipX) {
+    talent1MainAtkScale += uniEquipLevel * 0.05;
+    talent1AoeAtkScale += 0.15 + uniEquipLevel * 0.05;
+  }
+  if (potential >= 4 && phase >= 1) {
+    talent1AoeAtkScale += 0.1;
+  }
+
+  // 基础特性：投掷手 - 两次攻击（第二次为余震50%）-区分主副目标
+  const dealPhysicalDamage = (atk: number, def: number, isShockwave: boolean, isMain: boolean, isTalent: boolean) => {
+    let damage_scale = isShockwave ? 0.5 : 1;
+    damage_scale *= isMain ? talent1MainAtkScale : 1;
+    if (!isTalent) {
+      return Math.max(atk * damage_scale - def, atk * damage_scale * 0.05);
+    }
+    else {
+      damage_scale = talent1AoeAtkScale;
+      return Math.max(atk * damage_scale - def, atk * damage_scale * 0.05);
+    }
+  };
+
+  /** 局内加攻百分比 */
+  const normalAtkMul = 1 + atkBuffInMul;
+  /** 局内面板攻击力 */
+  const normalAtk = (atk + atkBuffInAdd) * normalAtkMul * atkBuffFinalMul + atkBuffFinalAdd;
+
+  /** 物理伤害（主目标） */
+  let isMain = input.charInput.charSpec.find((spec) => spec.label === "攻击主目标" && spec.key === "是") ? true : false;
+  const normalPhysicalDamage =
+    (dealPhysicalDamage(normalAtk, enemyDef, false, isMain, false) +
+      dealPhysicalDamage(normalAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) + dealPhysicalDamage(normalAtk, enemyDef, false, isMain, true) * 0.15) *
+    damage_scale *
+    damage_scale_phy; // 普通+余震+期望暴击
 
   switch (skillKey) {
     case "skchr_wisdel_1": {
-      break;
+
     }
+
     case "skchr_wisdel_2": {
-      // 二技能
-      const iterations = 10000;
-      let totalDamage = 0.0;
-      let min_damage = Infinity;
-      let max_damage = -Infinity;
-      const commonHit = Math.floor(750.0 / atkTime);
-      const chargeTime = Math.round(750.0 / charge);
+      // 二技能：饱和复仇
+      // 攻击间隔缩短，攻击力提升
+      const atkScales = [0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.25, 0.28, 0.3, 0.35];
+      const olAtkScales = [0.6, 0.6, 0.6, 0.65, 0.65, 0.65, 0.7, 0.75, 0.75, 0.8];
+      const atkScale = atkScales[skillLevel];
+      const olAtkScale = olAtkScales[skillLevel];
+      const olIntervalReduction = skillLevel >= 6 ? 0.7 : 0.5;
 
-      for (let i = 0; i < iterations; ++i) {
-        const simDamage = cal_Wisadel_sim(atkBuffIn, atkBuffExtra, atk, atkSpeed, enemyDef, mitigation, vulnD, charge);
+      // 技能期间攻击力
+      const skillAtkMul = 1 + atkScale + atkBuffInMul;
+      const skillAtk = (atk + atkBuffInAdd) * skillAtkMul * atkBuffFinalMul + atkBuffFinalAdd;
+      const skillolAtk = skillAtk * olAtkScale;
 
-        totalDamage += simDamage;
-        if (simDamage < min_damage) {
-          min_damage = simDamage;
-        }
-        if (simDamage > max_damage) {
-          max_damage = simDamage;
-        }
-      }
-      result.skill.total_damage.phy = totalDamage / iterations;
-      result.skill.dps.phy = result.skill.total_damage.phy / 25;
-      result.cycle.total_damage.phy =
-        commonDamage * commonHit * (1 + vulnD) * (1 - mitigation) + totalDamage / iterations;
-      result.cycle.dps.phy = (result.cycle.total_damage.phy * 30) / (chargeTime + 750);
+      // 技能过载前
+      const skillPhysicalDamage =
+        (dealPhysicalDamage(skillAtk, enemyDef, false, isMain, false) +
+          dealPhysicalDamage(skillAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) +
+          dealPhysicalDamage(skillAtk, enemyDef, false, isMain, true) * 0.15) *
+        damage_scale *
+        damage_scale_phy;
+      // 技能过载后
+      const skillOverloadPhysicalDamage =
+        (dealPhysicalDamage(skillolAtk, enemyDef, false, isMain, false) +
+          dealPhysicalDamage(skillolAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) +
+          dealPhysicalDamage(skillolAtk, enemyDef, false, isMain, true) * 0.15) *
+        damage_scale *
+        damage_scale_phy * 4;
+
+
+      // 攻击速度
+      const totalAttackSpeed = Math.min(100 + atkSpeedBuff, 600);
+      /** 普通攻击间隔(帧) */
+      const normalAtkFrame = Math.round((baseAttackTime * 3000.0) / totalAttackSpeed);
+      /** 普通攻击间隔(秒) */
+      const normalAttackTime = normalAtkFrame / 30.0;
+      /** 过载攻击间隔(帧) */
+      const skillOlAtkFrame = Math.round(((baseAttackTime - olIntervalReduction) * 3000.0) / (totalAttackSpeed));
+      /** 过载攻击间隔(秒) */
+      const skillOlAttackTime = skillOlAtkFrame / 30.0;
+
+      // 技能持续时间
+      const skillDuration = 12.5;
+      const skillHits = Math.ceil(skillDuration / normalAttackTime);
+      const skillOlHits = Math.ceil(skillDuration / skillOlAttackTime);
+
+      // 计算周期伤害
+      const spCosts = [35, 34, 33, 32, 31, 30, 29, 28, 27, 25];
+      const spCost = spCosts[skillLevel];
+      const normalHits = Math.ceil(spCost / normalAttackTime);
+
+      // 普通攻击
+      result.attack.dph = normalAtk;
+      result.attack.total_damage.phy = normalPhysicalDamage * normalHits * (1 - mitigation);
+      result.attack.dps.phy = result.attack.total_damage.phy / spCost;
+
+      // 技能
+      result.skill.dph = skillAtk;
+      result.skill.total_damage.phy = skillPhysicalDamage * skillHits * (1 - mitigation);
+      result.skill.total_damage.phy += skillOverloadPhysicalDamage * skillOlHits * (1 - mitigation);
+      result.skill.dps.phy = result.skill.total_damage.phy / skillDuration;
+      // 周期
+      result.cycle.total_damage.phy = result.skill.total_damage.phy + result.attack.total_damage.phy;
+      result.cycle.dps.phy = result.cycle.total_damage.phy / (spCost + skillDuration);
       break;
     }
+
     case "skchr_wisdel_3": {
-      break;
+
     }
   }
 

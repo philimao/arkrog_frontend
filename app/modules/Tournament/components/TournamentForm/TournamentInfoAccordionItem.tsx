@@ -452,6 +452,11 @@ export default function TournamentInfoAccordionItem({
                 return;
               }
 
+              let avatar = item.upic;
+              if (item.upic.startsWith("//")) {
+                avatar = "https:" + item.upic;
+              }
+
               // 添加到组织者列表
               setFormData((prev) => ({
                 ...prev,
@@ -460,7 +465,7 @@ export default function TournamentInfoAccordionItem({
                   {
                     mid: newMid,
                     name: item.uname,
-                    avatar: item.upic,
+                    avatar,
                     room_id: String(item.room_id),
                   },
                 ],
@@ -486,7 +491,7 @@ export default function TournamentInfoAccordionItem({
                   <span className="font-medium truncate">{item.uname}</span>
                   {item.fans && item.fans > -1 ? (
                     <span className="text-xs text-gray truncate">
-                      粉丝 {item.fans ?? 0}
+                      粉丝 {item.fans ?? -1}
                     </span>
                   ) : (
                     <span>请设置为此临时值</span>
@@ -592,6 +597,11 @@ export default function TournamentInfoAccordionItem({
                 return;
               }
 
+              let avatar = item.upic;
+              if (item.upic.startsWith("//")) {
+                avatar = "https:" + item.upic;
+              }
+
               // 添加到直播间列表
               setFormData((prev) => ({
                 ...prev,
@@ -601,7 +611,7 @@ export default function TournamentInfoAccordionItem({
                     mid: newMid,
                     room_id: String(item.room_id),
                     name: item.uname,
-                    avatar: item.upic,
+                    avatar,
                   },
                 ],
               }));
@@ -626,7 +636,7 @@ export default function TournamentInfoAccordionItem({
                   <span className="font-medium truncate">{item.uname}</span>
                   {item.fans && item.fans > -1 ? (
                     <span className="text-xs text-gray truncate">
-                      粉丝 {item.fans ?? 0}
+                      粉丝 {item.fans ?? -1}
                       {item.room_id && (
                         <span className="ml-2 text-ak-blue">
                           {item.is_live ? "🔴直播中" : "⚪未开播"}

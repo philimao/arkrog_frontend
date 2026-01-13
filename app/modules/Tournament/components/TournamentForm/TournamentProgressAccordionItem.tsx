@@ -1,4 +1,13 @@
-import { Select, SelectItem, Tooltip } from "@heroui/react";
+import {
+  Button,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
+  Select,
+  SelectItem,
+  Tooltip,
+  DropdownTrigger,
+} from "@heroui/react";
 import type {
   TournamentData,
   TournamentPlayer,
@@ -56,7 +65,7 @@ const sortDateCache = (a: string, b: string) => {
     0,
     0,
   );
-  return dateB - dateA;
+  return dateA - dateB;
 };
 
 const inputClassName =
@@ -185,6 +194,9 @@ export default function TournamentProgressAccordionItem({
         result[key] = Array.from(valueSet as any);
       }
     });
+
+    // 对date字段进行排序
+    result.date.sort(sortDateCache);
 
     return result;
   };
@@ -632,10 +644,10 @@ export default function TournamentProgressAccordionItem({
               {/* 已填写选手 */}
               <div className="flex flex-wrap gap-2">
                 {playersForDate[index]?.size > 0 &&
-                  Array.from(playersForDate[index]).map((player) => {
+                  Array.from(playersForDate[index]).map((player, idx) => {
                     return (
                       <div
-                        key={player.mid}
+                        key={`${idx}-${player.mid}`}
                         className={`p-2 w-[117px] relative rounded-md cursor-pointer ${editingPlayer?.mid === player.mid ? "bg-ak-blue text-black" : "bg-mid-gray text-white"}`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -889,8 +901,6 @@ export default function TournamentProgressAccordionItem({
                               <span className="text-ak-red">*</span>
                               <div className="flex gap-1 ms-auto">
                                 {getSuggestions("date")
-                                  .slice()
-                                  .reverse()
                                   .slice(0, 6)
                                   .map((dateStr) => {
                                     return (
@@ -947,6 +957,82 @@ export default function TournamentProgressAccordionItem({
                                       </span>
                                     );
                                   })}
+                                {getSuggestions("date").length > 6 && (
+                                  <Dropdown
+                                    classNames={{
+                                      content: "min-w-0 bg-[#3e3e3e]",
+                                    }}
+                                  >
+                                    <DropdownTrigger>
+                                      <span
+                                        className="px-1 cursor-pointer bg-[#00000033] hover:bg-[#00000055]"
+                                        onClick={(evt) => {
+                                          evt.preventDefault();
+                                        }}
+                                      >
+                                        ...
+                                      </span>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                      onAction={(key) => {
+                                        const newPlayers = [
+                                          ...(formData.players || []),
+                                        ];
+                                        const game = newPlayers
+                                          .find(
+                                            (p) => p.mid === editingPlayer.mid,
+                                          )!
+                                          .games.find((g) =>
+                                            isSameDay(g.date, date),
+                                          );
+                                        if (game) {
+                                          const currentDate = new Date(
+                                            game.date,
+                                          );
+                                          const [hours, minutes] = (
+                                            key as string
+                                          )
+                                            .split(":")
+                                            .map(Number);
+                                          const newDate = new Date(currentDate);
+                                          newDate.setHours(
+                                            hours,
+                                            minutes,
+                                            0,
+                                            0,
+                                          );
+                                          if (!isNaN(newDate.getTime())) {
+                                            game.date = newDate.getTime();
+                                            // Update schedule when date changes
+                                            if (editingStage?.startTime) {
+                                              game.schedule = calculateSchedule(
+                                                newDate.getTime(),
+                                                editingStage.startTime,
+                                              );
+                                            }
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              players: newPlayers,
+                                            }));
+                                          }
+                                        }
+                                      }}
+                                    >
+                                      {getSuggestions("date")
+                                        .slice(6)
+                                        .map((dateStr) => (
+                                          <DropdownItem
+                                            key={dateStr}
+                                            classNames={{
+                                              base: "data-[hover=true]:bg-[#343434]",
+                                            }}
+                                          >
+                                            {dateStr}
+                                          </DropdownItem>
+                                        ))}
+                                    </DropdownMenu>
+                                  </Dropdown>
+                                )}
                               </div>
                             </label>
                             <input

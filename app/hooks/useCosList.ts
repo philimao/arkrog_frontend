@@ -13,6 +13,8 @@ export interface UseCosListReturn {
   objects: CosObjectWithUrl[];
   /** 是否加载完成 */
   loaded: boolean;
+  /** 当前目录前缀 */
+  currentPrefix: string | undefined;
   /** 获取COS对象列表 */
   listBucket: (force?: boolean, Prefix?: string) => Promise<CosObjectWithUrl[]>;
   /** 删除COS对象 */
@@ -106,6 +108,7 @@ export const useCosList = (): UseCosListReturn => {
   return {
     objects,
     loaded,
+    currentPrefix,
     listBucket,
     deleteBucketObject,
   };

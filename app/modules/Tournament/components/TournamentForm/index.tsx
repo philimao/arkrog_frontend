@@ -227,6 +227,16 @@ export default function TournamentForm({
           }
         }
 
+        // 校验队伍成员，防止空值（如未填写名字即填写队伍）、错误值（如修改选手名字）
+        if (formData.type === "team") {
+          formData.teams!.forEach(
+            (team) =>
+              (team.members = team.members.filter((member) =>
+                formData.players.find((p) => p.name === member),
+              )),
+          );
+        }
+
         const response = await saveTournament(
           formData,
           userInfo.username,

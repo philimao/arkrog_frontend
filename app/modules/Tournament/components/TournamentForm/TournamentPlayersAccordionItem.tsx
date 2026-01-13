@@ -1,7 +1,7 @@
 import { Select, SelectItem, Tooltip } from "@heroui/react";
 import { CloseIcon, InformationIcon } from "~/components/Icons";
 import { SearchSelect } from "~/components/SearchSelect";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { TournamentData, TournamentPlayer } from "~/types/tournamentsData";
 import { generateID } from "~/utils/tools";
 import { toast } from "react-toastify";
@@ -134,6 +134,62 @@ export default function TournamentPlayersAccordionItem({
       groupBy: newGroupBy,
     }));
   };
+
+  // 搜索回调
+  const handleSearch = useCallback(
+    async (
+      query: string,
+      callback: (results: SearchUserItem[]) => void,
+      setSearching: (searching: boolean) => void,
+      noCache: boolean = false,
+    ) => {
+      {
+        try {
+          setSearching(true);
+          const resp = await miscServices.searchBilibiliUsers(
+            query,
+            1,
+            20,
+            noCache,
+          );
+          const body = resp.data;
+          if (body.code !== 0) {
+            toast.error(body.message || "搜索失败");
+            callback([]);
+            return;
+          }
+          if (!body.data?.result) {
+            toast.error("搜索结果为空");
+            callback([]);
+          } else {
+            callback(body.data.result);
+          }
+        } catch (err) {
+          if ((err as any).status === 502) {
+            callback([
+              {
+                mid: 0,
+                uname: query,
+                upic: "https://static.hdslb.com/images/member/noface.gif",
+                fans: -1,
+                sign: "",
+                room_id: 22450647,
+                level: 6,
+                gender: 0,
+                is_live: false,
+                is_upuser: false,
+              },
+            ]);
+          } else {
+            callback([]);
+          }
+        } finally {
+          setSearching(false);
+        }
+      }
+    },
+    [],
+  );
 
   return (
     <>
@@ -382,6 +438,17 @@ export default function TournamentPlayersAccordionItem({
                     }));
                     return;
                   }
+
+                  if (item.mid === 0 && item.uname === "加载更多") {
+                    handleSearch(
+                      item.sign,
+                      setSearchResults,
+                      setSearching,
+                      true,
+                    );
+                    return;
+                  }
+
                   const newMid = String(item.mid);
                   setSelectedUserMap((prev) => {
                     const next = { ...prev };
@@ -396,12 +463,18 @@ export default function TournamentPlayersAccordionItem({
                     (p) => p.mid === editingPlayer.mid,
                   );
                   if (target) {
+                    let face = item.upic;
+                    if (item.upic.startsWith("//")) {
+                      face = "https:" + item.upic;
+                    }
                     const updatedPlayer = {
                       ...target,
                       mid: newMid,
                       name: item.uname,
-                      face: item.upic,
-                      room_id: item.room_id ? String(item.room_id) : target.room_id,
+                      face: face,
+                      room_id: item.room_id
+                        ? String(item.room_id)
+                        : target.room_id,
                       fans: item.fans,
                     };
                     const idx = newPlayers.indexOf(target);
@@ -424,9 +497,9 @@ export default function TournamentPlayersAccordionItem({
                     </div>
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="font-medium truncate">{item.uname}</span>
-                      {item.fans && item.fans > -1 ? (
+                      {item.fans > -1 ? (
                         <span className="text-xs text-gray truncate">
-                          粉丝 {item.fans ?? 0}
+                          粉丝 {item.fans ?? -1}
                         </span>
                       ) : (
                         <span>请设置为此临时值</span>

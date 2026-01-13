@@ -13,6 +13,7 @@ import { useStorageStore } from "~/stores/storageStore";
 import { CloseIcon } from "../Icons";
 import ImageCropper from "./ImageCropper";
 import { closeModal } from "~/utils/dom";
+import type { UseCosListReturn } from "~/hooks/useCosList";
 
 const StyledUploadBoxContainer = styled.div`
   height: min(43rem, 80vh);
@@ -130,7 +131,11 @@ const StyledSelectPrefix = styled.td`
 
 const StyledFileControlButton = styled.button``;
 
-export default function UploadBox() {
+export default function UploadBox({
+  useCosListHook,
+}: {
+  useCosListHook: UseCosListReturn;
+}) {
   const useCosUploadHook = useCosUpload();
   const {
     files,
@@ -141,6 +146,9 @@ export default function UploadBox() {
     progress,
     taskMap,
   } = useCosUploadHook;
+
+  const { listBucket } = useCosListHook;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 是否正在拖拽进入视口
@@ -261,7 +269,6 @@ export default function UploadBox() {
       });
 
       handleCloseCropper();
-      toast.success("裁剪成功！");
     },
     [cropFile, useCosUploadHook],
   );
@@ -364,7 +371,7 @@ export default function UploadBox() {
         <div className="text-end">
           {Object.values(taskMap).length !== files.length && (
             <Button
-              onPress={() => uploadFiles()}
+              onPress={() => uploadFiles().then(() => listBucket(true, folder))}
               className="bg-ak-blue text-black rounded-none font-bold me-2"
             >
               上传文件

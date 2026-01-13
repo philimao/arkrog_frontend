@@ -43,6 +43,7 @@ export default function UploadCenter() {
         size="5xl"
         radius="none"
         backdrop="blur"
+        isDismissable={false}
         closeButton={
           <button id="close-upload-center" style={{ zIndex: 1000 }}>
             <CloseIcon width="0.7rem" height="0.7rem" />

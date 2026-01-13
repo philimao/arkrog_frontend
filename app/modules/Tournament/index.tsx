@@ -214,24 +214,22 @@ function RougeSelector({
   };
 
   return (
-    <div>
+    <div className="relative">
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
-      <div className="relative flex mb-12">
-        {!!editable && (
-          <StyledBackButtonContainer>
-            <div className="relative">
-              <StyledBackButton onClick={() => navigate("create")}>
-                新建赛事
-              </StyledBackButton>
-              <StyledBackButton
-                onClick={() => navigate("create-group")}
-                style={{ top: "6.5rem" }}
-              >
-                新建赛事集
-              </StyledBackButton>
-            </div>
-          </StyledBackButtonContainer>
-        )}
+      {!!editable && (
+        <StyledBackButtonContainer>
+          <StyledBackButton onClick={() => navigate("create")}>
+            新建赛事
+          </StyledBackButton>
+          <StyledBackButton
+            onClick={() => navigate("create-group")}
+            style={{ top: "6.5rem" }}
+          >
+            新建赛事集
+          </StyledBackButton>
+        </StyledBackButtonContainer>
+      )}
+      <div className="flex mb-12">
         {topicsData.reverse().map((topic) => (
           <div
             key={topic.id}

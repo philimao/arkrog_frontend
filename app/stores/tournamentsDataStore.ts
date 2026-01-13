@@ -6,12 +6,18 @@ import type {
 import { toast } from "react-toastify";
 import { devtools } from "zustand/middleware";
 import { tournamentServices } from "~/services/tournamentServices";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 
 type TournamentsStore = {
   /** 赛事数据 */
   tournamentsData?: TournamentData[];
   /** 赛事集数据 */
   tournamentGroups?: TournamentGroupData[];
+  /** 权限数据 */
+  permissions: {
+    name: string;
+    permissions: ("read" | "write" | "delete" | "admin")[];
+  }[];
   /** 是否已加载 */
   loaded: boolean;
 };
@@ -56,6 +62,7 @@ export const useTournamentDataStore = create<
     (set, get) => ({
       tournamentsData: undefined,
       tournamentGroups: undefined,
+      permissions: [],
       loaded: false,
 
       initTournamentData: async (forceRefresh?: boolean) => {
@@ -64,10 +71,18 @@ export const useTournamentDataStore = create<
           const response = await tournamentServices.getInitData(forceRefresh);
           const { tournaments, groups } = response.data;
 
+          // 获取用户信息来确定用户等级
+          const userInfo = useUserInfoStore.getState().userInfo;
+          const userLevel = userInfo?.level || 0;
+
+          // 根据用户等级构造权限
+          const permissions = await buildPermissions(tournaments, userLevel);
+
           set(
             {
               tournamentsData: processTournamentsData(tournaments),
               tournamentGroups: groups,
+              permissions,
               loaded: true,
             },
             undefined,
@@ -190,3 +205,71 @@ export const useTournamentDataStore = create<
     { name: "tournamentsData" },
   ),
 );
+
+// 根据用户等级和赛事数据构造权限
+const buildPermissions = async (
+  tournaments: TournamentData[],
+  userLevel: number,
+) => {
+  const permissions: {
+    name: string;
+    permissions: ("read" | "write" | "delete" | "admin")[];
+  }[] = [];
+
+  // 0,1,2 级用户：所有赛事只有 read 权限
+  if ([0, 1, 2].includes(userLevel)) {
+    for (const tournament of tournaments) {
+      permissions.push({
+        name: tournament.name,
+        permissions: ["read"],
+      });
+    }
+  }
+  // 5 级用户：所有赛事拥有 read, write, delete, admin 权限
+  else if (userLevel === 5) {
+    for (const tournament of tournaments) {
+      permissions.push({
+        name: tournament.name,
+        permissions: ["read", "write", "delete", "admin"],
+      });
+    }
+  }
+  // 3,4 级用户：从后端获取具体权限
+  else if ([3, 4].includes(userLevel)) {
+    try {
+      const response = await tournamentServices.getUserTournamentPermissions();
+      const userPermissions = response.data.resources;
+
+      // 创建权限映射，用于快速查找
+      const permissionMap = new Map<
+        string,
+        ("read" | "write" | "delete" | "admin")[]
+      >();
+      userPermissions.forEach((resource) => {
+        permissionMap.set(resource.resourceName, resource.permissions);
+      });
+
+      // 根据赛事列表构造权限
+      for (const tournament of tournaments) {
+        const tournamentPermissions = permissionMap.get(tournament.name) || [
+          "read",
+        ];
+        permissions.push({
+          name: tournament.name,
+          permissions: tournamentPermissions,
+        });
+      }
+    } catch (error) {
+      console.error("获取用户权限失败:", error);
+      // 权限获取失败时，默认给予 read 权限
+      for (const tournament of tournaments) {
+        permissions.push({
+          name: tournament.name,
+          permissions: ["read"],
+        });
+      }
+    }
+  }
+
+  return permissions;
+};

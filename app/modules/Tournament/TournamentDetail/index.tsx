@@ -52,9 +52,12 @@ export function SectionContainer({
 export default function TournamentDetail() {
   const navigate = useNavigate();
   const { tournamentId } = useParams();
-  const { tournamentsData, tournamentGroups, fetchTournamentPlayer } =
-    useTournamentDataStore();
-  const { userInfo } = useUserInfoStore();
+  const {
+    tournamentsData,
+    tournamentGroups,
+    fetchTournamentPlayer,
+    permissions,
+  } = useTournamentDataStore();
   const [editable, setEditable] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -76,33 +79,13 @@ export default function TournamentDetail() {
     );
 
   useEffect(() => {
-    const checkPermission = async () => {
-      if (!tournamentId) {
-        setEditable(false);
-        return;
-      }
-
-      // Level 3+ 用户需要查询具体权限
-      if (userInfo?.level && userInfo.level >= 3) {
-        try {
-          const response = await api.get(
-            `/permission/resource/tournament:${tournamentId}`,
-          );
-          // 检查是否有写入权限
-          const hasWritePermission =
-            response.data.permissions.includes("write");
-          setEditable(hasWritePermission);
-        } catch (error) {
-          console.error("查询权限失败:", error);
-          setEditable(false);
-        }
-      } else {
-        setEditable(false);
-      }
-    };
-
-    checkPermission();
-  }, [userInfo?.level, tournamentId]);
+    const permission = permissions.find(
+      (permission) => permission.name === tournamentData?.name,
+    );
+    if (permission) {
+      setEditable(permission.permissions.includes("write"));
+    }
+  }, [tournamentData?.name, permissions]);
 
   useEffect(() => {
     const loadPlayers = async () => {

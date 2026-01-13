@@ -23,6 +23,7 @@ export const StyledBackButtonContainer = styled.div`
     align-items: flex-end;
     gap: 0.5rem;
     margin-bottom: 1rem;
+    padding-right: 1rem;
 
     & > * {
       position: relative !important;

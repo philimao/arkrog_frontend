@@ -25,6 +25,13 @@ export interface SaveTournamentResponse {
   lockedBy?: string;
 }
 
+// 用户资源权限类型
+export interface UserResourcePermission {
+  resourceIdentifier: string;
+  resourceName: string;
+  permissions: ("read" | "write" | "delete" | "admin")[];
+}
+
 export const tournamentServices = {
   // 初始化数据 - 同时获取赛事和赛事集
   getInitData: (forceRefresh?: boolean) =>
@@ -63,5 +70,11 @@ export const tournamentServices = {
     api.post<{ success: boolean; message: string; data: TournamentGroupData }>(
       "/tournament/group/save",
       data,
+    ),
+
+  // 获取用户对赛事的权限
+  getUserTournamentPermissions: () =>
+    api.get<{ resources: UserResourcePermission[] }>(
+      "/permission/user/resources?resourceType=tournament",
     ),
 };

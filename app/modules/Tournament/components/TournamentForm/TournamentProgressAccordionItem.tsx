@@ -255,9 +255,9 @@ export default function TournamentProgressAccordionItem({
     { key: "session", value: "场地" },
     { key: "group", value: "分组" },
     { key: "note", value: "备注" },
+    { key: "playback", value: "回放" },
     { key: "level", value: "难度等级" },
     { key: "duration", value: "比赛时长" },
-    { key: "playback", value: "回放链接" },
   ];
 
   // 添加常用阶段信息标示

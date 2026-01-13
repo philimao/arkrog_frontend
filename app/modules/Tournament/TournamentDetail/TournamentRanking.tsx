@@ -76,6 +76,27 @@ const StyledFinalPoint = styled.td<{ $isTopTier: boolean }>`
     ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
 `;
 
+// Styled components for individual ranking tables
+// Helps to keep the columns sticky
+const StyledRankingColumn = styled.td<{ $isTopTier: boolean }>`
+  left: 0;
+  background-color: ${(props) => (props.$isTopTier ? "#1c272c" : "#212121")};
+`;
+
+const StyledPlayerNameColumn = styled.td<{ $isTopTier: boolean }>`
+  box-shadow: inset -1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
+  left: 64px;
+  background-color: ${(props) => (props.$isTopTier ? "#1c272c" : "#212121")};
+`;
+
+const StyledScoreColumn = styled.td<{ $isTopTier: boolean }>`
+  box-shadow: inset 1px 0px
+    ${(props) => (props.$isTopTier ? "#0073A4CC" : "var(--mid-gray)")};
+  right: 0;
+  background-color: ${(props) => (props.$isTopTier ? "#1c272c" : "#212121")};
+`;
+
 // Helper components
 const StageHeader = ({
   stageName,
@@ -304,87 +325,119 @@ const RankingTable = ({
         isFinal={isFinal}
       />
 
-      <StyledIndividualTable className="w-full border-collapse table-auto">
-        <thead className="bg-black-gray">
-          <tr>
-            <td>
-              <SortableHeader
-                label="排名"
-                sortType="point"
-                sortProps={sortProps}
-              />
-            </td>
-            <td>选手ID</td>
-            <td>
-              <SortableHeader
-                label="日程"
-                sortType="date"
-                sortProps={sortProps}
-              />
-            </td>
-            <td>分队</td>
-            {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-              <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
-            ))}
-            {Object.keys(stage.customStageKeys)
-              .filter((key) => key !== groupBy)
-              .map((key) => (
-                <td key={key}>{stage.customStageKeys[key]}</td>
+      <StyledTableWrapper>
+        <StyledIndividualTable className="w-full border-collapse table-auto">
+          <thead className="sticky top-0 bg-black-gray">
+            <tr>
+              <td className="sticky left-0 bg-black-gray w-[64px] min-w-[64px]">
+                <SortableHeader
+                  label="排名"
+                  sortType="point"
+                  sortProps={sortProps}
+                />
+              </td>
+              <td className="sticky left-[64px] bg-black-gray min-w-32">
+                选手ID
+              </td>
+              <td>
+                <SortableHeader
+                  label="日程"
+                  sortType="date"
+                  sortProps={sortProps}
+                />
+              </td>
+              <td>分队</td>
+              {Object.keys(tournamentData.customPlayerKeys).map((key) => (
+                <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
               ))}
-            <td className="hidden md:table-cell">结局</td>
-            <td>分数</td>
-          </tr>
-        </thead>
-        <tbody className="border-collapse">
-          {sortedRanking.map((entry, rankIndex) => {
-            const player = tournamentData.players?.find(
-              (player) => player.mid === entry[0],
-            );
-            const isTopTier = topTiers.indexOf(entry[0]) !== -1;
-            const nextIsTopTier =
-              rankIndex !== sortedRanking.length - 1 &&
-              topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
-            const prevIsTopTier =
-              rankIndex !== 0 &&
-              topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
+              {Object.keys(stage.customStageKeys)
+                .filter((key) => key !== groupBy)
+                .map((key) => (
+                  <td key={key}>{stage.customStageKeys[key]}</td>
+                ))}
+              <td className="hidden md:table-cell">结局</td>
+              <td className="sticky right-0 bg-black-gray min-w-20">分数</td>
+            </tr>
+          </thead>
+          <tbody className="border-collapse">
+            {sortedRanking.map((entry, rankIndex) => {
+              const player = tournamentData.players?.find(
+                (player) => player.mid === entry[0],
+              );
+              const isTopTier = topTiers.indexOf(entry[0]) !== -1;
+              const nextIsTopTier =
+                rankIndex !== sortedRanking.length - 1 &&
+                topTiers.indexOf(sortedRanking[rankIndex + 1][0]) !== -1;
+              const prevIsTopTier =
+                rankIndex !== 0 &&
+                topTiers.indexOf(sortedRanking[rankIndex - 1][0]) !== -1;
 
-            return (
-              <tr
-                key={rankIndex}
-                className={`border-y-1
-                  ${isTopTier ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
-                  ${nextIsTopTier ? "border-b-[#0073A4CC]" : ""}
-                  ${prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`}
-              >
-                <td
-                  className={`w-4 p-4 text-bold text-center ${isTopTier && "text-ak-blue"}`}
+              return (
+                <tr
+                  key={rankIndex}
+                  className={`border-y-1
+                    ${isTopTier ? "bg-[#1c272c] border-[#0073A4CC]" : "bg-black-gray-70 border-mid-gray"}
+                    ${nextIsTopTier ? "border-b-[#0073A4CC]" : ""}
+                    ${prevIsTopTier ? "border-t-[#0073A4CC]" : ""}`}
                 >
-                  {ranking.get(player?.mid || "")}
-                </td>
-                <td>{player?.name}</td>
-                <td>{entry[1].schedule}</td>
-                <td>
-                  <SquadDisplay squadName={entry[1].starterSquad} />
-                </td>
-                <>
-                  {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-                    <td key={key}>{player?.customPlayerValues[key]}</td>
-                  ))}
-                </>
-                <>
-                  {Object.keys(stage.customStageKeys)
-                    .filter((key) => key !== groupBy)
-                    .map((key) => (
-                      <td key={key}>{entry[1].customStageValues[key] || ""}</td>
+                  <StyledRankingColumn
+                    $isTopTier={isTopTier}
+                    className={`sticky w-4 p-4 text-bold text-center ${isTopTier && "text-ak-blue"}`}
+                  >
+                    {ranking.get(player?.mid || "")}
+                  </StyledRankingColumn>
+                  <StyledPlayerNameColumn
+                    $isTopTier={isTopTier}
+                    className="sticky"
+                  >
+                    {player?.name}
+                  </StyledPlayerNameColumn>
+                  <td>{entry[1].schedule}</td>
+                  <td>
+                    <SquadDisplay squadName={entry[1].starterSquad} />
+                  </td>
+                  <>
+                    {Object.keys(tournamentData.customPlayerKeys).map((key) => (
+                      <td key={key}>{player?.customPlayerValues[key]}</td>
                     ))}
-                </>
-                <td className="hidden md:table-cell">{entry[1].ending}</td>
-                <td>{entry[1].point}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </StyledIndividualTable>
+                  </>
+                  <>
+                    {Object.keys(stage.customStageKeys)
+                      .filter((key) => key !== groupBy)
+                      .map((key) => (
+                        <td key={key}>
+                          {!entry[1].customStageValues[key] ? (
+                            "-"
+                          ) : key === "playback" ? (
+                            <a
+                              href={entry[1].customStageValues[key]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <svg
+                                width="16"
+                                height="16"
+                                className="text-ak-blue"
+                              >
+                                <use href="#bilibili-svg" />
+                              </svg>
+                            </a>
+                          ) : (
+                            entry[1].customStageValues[key]
+                          )}
+                        </td>
+                      ))}
+                  </>
+                  <td className="hidden md:table-cell">{entry[1].ending}</td>
+                  <StyledScoreColumn $isTopTier={isTopTier} className="sticky">
+                    {entry[1].point}
+                  </StyledScoreColumn>
+                </tr>
+              );
+            })}
+          </tbody>
+        </StyledIndividualTable>
+      </StyledTableWrapper>
 
       {!isFinal && <StyledDivider />}
     </div>
@@ -419,102 +472,168 @@ const OneOnOneTable = ({
         isFinal={isFinal}
       />
 
-      <StyledIndividualTable className="w-full border-collapse table-auto">
-        <thead className="bg-black-gray">
-          <tr>
-            <td className="whitespace-nowrap">结果</td>
-            <td>选手ID</td>
-            <td>日程</td>
-            <td>分队</td>
-            {Object.keys(tournamentData.customPlayerKeys).map((key) => (
-              <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
-            ))}
-            {Object.keys(stage.customStageKeys).map((key) => (
-              <td key={key}>{stage.customStageKeys[key]}</td>
-            ))}
-            <td className="hidden md:table-cell">结局</td>
-            <td>分数</td>
-          </tr>
-        </thead>
-        <tbody className="border-collapse">
-          {Array.from(winnedGames)
-            .sort((a, b) => a[1].date - b[1].date)
-            .map((entry, groupIndex) => {
-              const winner = tournamentData.players?.find(
-                (player) => player.mid === entry[0],
-              );
-              const loser = tournamentData.players?.find(
-                (player) => player.mid === entry[1].rivalMid,
-              );
-              const losedGame = loser && losedGames.get(loser?.mid);
+      <StyledTableWrapper>
+        <StyledIndividualTable className="w-full border-collapse table-auto">
+          <thead className="sticky top-0 bg-black-gray">
+            <tr>
+              <td className="sticky left-0 bg-black-gray w-[64px] min-w-[64px] whitespace-nowrap">
+                结果
+              </td>
+              <td className="sticky left-[64px] bg-black-gray min-w-32">
+                选手ID
+              </td>
+              <td>日程</td>
+              <td>分队</td>
+              {Object.keys(tournamentData.customPlayerKeys).map((key) => (
+                <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
+              ))}
+              {Object.keys(stage.customStageKeys).map((key) => (
+                <td key={key}>{stage.customStageKeys[key]}</td>
+              ))}
+              <td className="hidden md:table-cell">结局</td>
+              <td className="sticky right-0 bg-black-gray min-w-20">分数</td>
+            </tr>
+          </thead>
+          <tbody className="border-collapse">
+            {Array.from(winnedGames)
+              .sort((a, b) => a[1].date - b[1].date)
+              .map((entry, groupIndex) => {
+                const winner = tournamentData.players?.find(
+                  (player) => player.mid === entry[0],
+                );
+                const loser = tournamentData.players?.find(
+                  (player) => player.mid === entry[1].rivalMid,
+                );
+                const losedGame = loser && losedGames.get(loser?.mid);
 
-              return (
-                <React.Fragment key={`group-${groupIndex}`}>
-                  <tr
-                    key={`${groupIndex}-win`}
-                    className="border-y-1 bg-[#1c272c] border-[#0073A4CC]"
-                  >
-                    <td className="w-12 text-bold text-ak-blue">
-                      {entry[1].point === undefined ? "-" : "win"}
-                    </td>
-                    <td>{winner?.name}</td>
-                    <td>{entry[1].schedule}</td>
-                    <td>
-                      <SquadDisplay squadName={entry[1].starterSquad || ""} />
-                    </td>
-                    <>
-                      {Object.keys(tournamentData.customPlayerKeys).map(
-                        (key) => (
-                          <td key={key}>{winner?.customPlayerValues[key]}</td>
-                        ),
-                      )}
-                    </>
-                    <>
-                      {Object.keys(stage.customStageKeys).map((key) => (
-                        <td key={key}>
-                          {entry[1].customStageValues[key] || ""}
-                        </td>
-                      ))}
-                    </>
-                    <td className="hidden md:table-cell">{entry[1].ending}</td>
-                    <td>{entry[1].point}</td>
-                  </tr>
-                  <tr
-                    key={`${groupIndex}-lose`}
-                    className="bg-black-gray-70 border-b-8 border-b-[#363636]"
-                  >
-                    <td className="w-12">
-                      {entry[1].point === undefined ? "-" : "lose"}
-                    </td>
-                    <td>{loser?.name}</td>
-                    <td>{losedGame?.schedule}</td>
-                    <td>
-                      <SquadDisplay squadName={losedGame?.starterSquad || ""} />
-                    </td>
-                    <>
-                      {Object.keys(tournamentData.customPlayerKeys).map(
-                        (key) => (
-                          <td key={key}>{loser?.customPlayerValues[key]}</td>
-                        ),
-                      )}
-                    </>
-                    <>
-                      {Object.keys(stage.customStageKeys).map((key) => (
-                        <td key={key}>
-                          {entry[1].customStageValues[key] || ""}
-                        </td>
-                      ))}
-                    </>
-                    <td className="hidden md:table-cell">
-                      {losedGame?.ending}
-                    </td>
-                    <td>{losedGame?.point}</td>
-                  </tr>
-                </React.Fragment>
-              );
-            })}
-        </tbody>
-      </StyledIndividualTable>
+                return (
+                  <React.Fragment key={`group-${groupIndex}`}>
+                    <tr
+                      key={`${groupIndex}-win`}
+                      className="border-y-1 bg-[#1c272c] border-[#0073A4CC]"
+                    >
+                      <StyledRankingColumn
+                        $isTopTier={true}
+                        className="sticky w-12 text-bold text-ak-blue"
+                      >
+                        {entry[1].point === undefined ? "-" : "win"}
+                      </StyledRankingColumn>
+                      <StyledPlayerNameColumn
+                        $isTopTier={true}
+                        className="sticky"
+                      >
+                        {winner?.name}
+                      </StyledPlayerNameColumn>
+                      <td>{entry[1].schedule}</td>
+                      <td>
+                        <SquadDisplay squadName={entry[1].starterSquad || ""} />
+                      </td>
+                      <>
+                        {Object.keys(tournamentData.customPlayerKeys).map(
+                          (key) => (
+                            <td key={key}>{winner?.customPlayerValues[key]}</td>
+                          ),
+                        )}
+                      </>
+                      <>
+                        {Object.keys(stage.customStageKeys).map((key) => (
+                          <td key={key}>
+                            {!entry[1].customStageValues[key] ? (
+                              "-"
+                            ) : key === "playback" ? (
+                              <a
+                                href={entry[1].customStageValues[key]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  className="text-ak-blue"
+                                >
+                                  <use href="#bilibili-svg" />
+                                </svg>
+                              </a>
+                            ) : (
+                              entry[1].customStageValues[key]
+                            )}
+                          </td>
+                        ))}
+                      </>
+                      <td className="hidden md:table-cell">
+                        {entry[1].ending}
+                      </td>
+                      <StyledScoreColumn $isTopTier={true} className="sticky">
+                        {entry[1].point}
+                      </StyledScoreColumn>
+                    </tr>
+                    <tr
+                      key={`${groupIndex}-lose`}
+                      className="bg-black-gray-70 border-b-8 border-b-[#363636]"
+                    >
+                      <StyledRankingColumn
+                        $isTopTier={false}
+                        className="sticky w-12"
+                      >
+                        {entry[1].point === undefined ? "-" : "lose"}
+                      </StyledRankingColumn>
+                      <StyledPlayerNameColumn
+                        $isTopTier={false}
+                        className="sticky"
+                      >
+                        {loser?.name}
+                      </StyledPlayerNameColumn>
+                      <td>{losedGame?.schedule}</td>
+                      <td>
+                        <SquadDisplay
+                          squadName={losedGame?.starterSquad || ""}
+                        />
+                      </td>
+                      <>
+                        {Object.keys(tournamentData.customPlayerKeys).map(
+                          (key) => (
+                            <td key={key}>{loser?.customPlayerValues[key]}</td>
+                          ),
+                        )}
+                      </>
+                      <>
+                        {Object.keys(stage.customStageKeys).map((key) => (
+                          <td key={key}>
+                            {!entry[1].customStageValues[key] ? (
+                              "-"
+                            ) : key === "playback" ? (
+                              <a
+                                href={entry[1].customStageValues[key]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  className="text-ak-blue"
+                                >
+                                  <use href="#bilibili-svg" />
+                                </svg>
+                              </a>
+                            ) : (
+                              entry[1].customStageValues[key]
+                            )}
+                          </td>
+                        ))}
+                      </>
+                      <td className="hidden md:table-cell">
+                        {losedGame?.ending}
+                      </td>
+                      <StyledScoreColumn $isTopTier={false} className="sticky">
+                        {losedGame?.point}
+                      </StyledScoreColumn>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+          </tbody>
+        </StyledIndividualTable>
+      </StyledTableWrapper>
 
       {!isFinal && <StyledDivider />}
     </div>
@@ -833,14 +952,10 @@ export function TournamentRankingTeam({
                 <td className="min-w-12">分队</td>
                 <td>开局干员</td>
                 {Object.values(tournamentData.customPlayerKeys).map((key) => (
-                  <td className="whitespace-nowrap" key={key}>
-                    {key}
-                  </td>
+                  <td key={key}>{key}</td>
                 ))}
                 {Object.values(stage.customStageKeys).map((key) => (
-                  <td className="whitespace-nowrap" key={key}>
-                    {key}
-                  </td>
+                  <td key={key}>{key}</td>
                 ))}
                 <td>结局</td>
 
@@ -936,6 +1051,7 @@ export function TournamentRankingTeam({
                         <StyledTeamWinLose
                           $isWinner={isWinner}
                           rowSpan={players.length}
+                          className="sticky"
                         >
                           {isWinner ? "win" : "lose"}
                         </StyledTeamWinLose>
@@ -947,6 +1063,7 @@ export function TournamentRankingTeam({
                             $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                             $sortByRanking={true}
                             rowSpan={players.length}
+                            className="sticky"
                           >
                             {entry[0]}
                           </StyledTeamName>
@@ -955,7 +1072,7 @@ export function TournamentRankingTeam({
                         <StyledTeamName
                           $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                           $sortByRanking={false}
-                          className="max-w-32 truncate"
+                          className="sticky max-w-32 truncate"
                         >
                           {team?.name}
                         </StyledTeamName>
@@ -972,30 +1089,24 @@ export function TournamentRankingTeam({
                         {player.name}
                       </td>
 
-                      <td className="whitespace-nowrap">
-                        {playerGame?.schedule}
-                      </td>
-                      <td className="whitespace-nowrap">
+                      <td>{playerGame?.schedule}</td>
+                      <td>
                         {isKeyMember
                           ? tournamentData.keyMemberAlias
                           : tournamentData.memberAlias}
                       </td>
-                      <td className="whitespace-nowrap">
+                      <td>
                         <SquadDisplay
                           squadName={playerGame?.starterSquad || ""}
                         />
                       </td>
-                      <td className="whitespace-nowrap">
-                        {playerGame?.starterOp}
-                      </td>
+                      <td>{playerGame?.starterOp}</td>
                       {Object.values(player.customPlayerValues).map((value) => (
-                        <td className="whitespace-nowrap" key={value}>
-                          {value}
-                        </td>
+                        <td key={value}>{value}</td>
                       ))}
                       {playerGame
                         ? Object.keys(stage.customStageKeys).map((key) => (
-                            <td key={key} className="whitespace-nowrap">
+                            <td key={key}>
                               {!playerGame.customStageValues[key] ? (
                                 "-"
                               ) : key === "playback" ? (
@@ -1019,25 +1130,17 @@ export function TournamentRankingTeam({
                           ))
                         : Array(customStageKeyLen)
                             .fill(0)
-                            .map((_, index) => (
-                              <td key={index} className="whitespace-nowrap">
-                                -
-                              </td>
-                            ))}
-                      <td className="whitespace-nowrap">
-                        {playerGame?.ending}
-                      </td>
+                            .map((_, index) => <td key={index}>-</td>)}
+                      <td>{playerGame?.ending}</td>
 
                       {stage.type === "1on1" && (
                         <>
-                          <td className="whitespace-nowrap">{rivalName}</td>
-                          <td className="whitespace-nowrap">
-                            {playerGame?.result}
-                          </td>
+                          <td>{rivalName}</td>
+                          <td>{playerGame?.result}</td>
                         </>
                       )}
 
-                      <td className="whitespace-nowrap">{playerGame?.point}</td>
+                      <td>{playerGame?.point}</td>
 
                       {sortBy[tableId] === "point" ? (
                         isFirstPlayer && (
@@ -1071,6 +1174,12 @@ export function TournamentRankingTeam({
   });
 }
 
+const StyledTournamentRanking = styled.div`
+  td:not(.sticky) {
+    white-space: nowrap;
+  }
+`;
+
 // Main wrapper component
 export default function TournamentRankingWrapper({
   tournamentData,
@@ -1093,7 +1202,7 @@ export default function TournamentRankingWrapper({
     tournamentData.type === "individual" && tournamentData.players?.length;
 
   return (
-    <div>
+    <StyledTournamentRanking>
       <SectionContainer
         title="排名情况"
         content={
@@ -1106,6 +1215,6 @@ export default function TournamentRankingWrapper({
           )
         }
       />
-    </div>
+    </StyledTournamentRanking>
   );
 }

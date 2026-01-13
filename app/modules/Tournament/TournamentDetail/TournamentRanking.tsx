@@ -231,7 +231,12 @@ const getNextStageCount = (
   if (!items) return 0;
 
   const filterFn = isTeam
-    ? (team: any) => team.stages.find((s: any) => s.name === nextStage.name)
+    ? (team: any) =>
+        team.members.some((member: any) =>
+          tournamentData.players
+            .find((p: any) => p.name === member)
+            ?.games.find((g: any) => g.stage === nextStage.name),
+        )
     : (player: any) =>
         player.games.find((g: any) => g.stage === nextStage.name);
 

@@ -12,6 +12,13 @@ export default defineConfig({
     hmr: {
       overlay: true,
     },
+    proxy: {
+      "/api": {
+        target: "https://dev.arkrog.com/api",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
   // publicDir: false,
   css: {
@@ -25,3 +32,4 @@ export default defineConfig({
   },
   plugins: [reactRouter(), tsconfigPaths()],
 });
+

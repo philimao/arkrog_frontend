@@ -1,5 +1,6 @@
 import type { CalculatorInput, CalculatorOutput } from "~/types/gameData";
 import { CalculatorHelper } from "../../helper";
+import type { CharSpecConfig } from "~/stores/damageCalculator/calcTypes";
 
 
 /** 维什戴尔伤害计算器 */
@@ -91,7 +92,7 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
   let isMain = input.charInput.charSpec.find((spec) => spec.label === "攻击主目标" && spec.key === "是") ? true : false;
   const normalPhysicalDamage =
     (dealPhysicalDamage(normalAtk, enemyDef, false, isMain, false) +
-      dealPhysicalDamage(normalAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) + dealPhysicalDamage(normalAtk, enemyDef, false, isMain, true) * 0.15) *
+      dealPhysicalDamage(normalAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) + dealPhysicalDamage(normalAtk, enemyDef, false, isMain, true) * (equipX ? 0.2775 : 0.15)) *
     damage_scale *
     damage_scale_phy; // 普通+余震+期望暴击
 
@@ -107,7 +108,7 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
       const olAtkScales = [0.6, 0.6, 0.6, 0.65, 0.65, 0.65, 0.7, 0.75, 0.75, 0.8];
       const atkScale = atkScales[skillLevel];
       const olAtkScale = olAtkScales[skillLevel];
-      const olIntervalReduction = skillLevel >= 6 ? 0.7 : 0.5;
+      const IntervalReduction = skillLevel >= 6 ? 0.7 : 0.5;
 
       // 技能期间攻击力
       const skillAtkMul = 1 + atkScale + atkBuffInMul;
@@ -118,14 +119,14 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
       const skillPhysicalDamage =
         (dealPhysicalDamage(skillAtk, enemyDef, false, isMain, false) +
           dealPhysicalDamage(skillAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) +
-          dealPhysicalDamage(skillAtk, enemyDef, false, isMain, true) * 0.15) *
+          dealPhysicalDamage(skillAtk, enemyDef, false, isMain, true) * (equipX ? 0.2775 : 0.15)) *
         damage_scale *
         damage_scale_phy;
       // 技能过载后
       const skillOverloadPhysicalDamage =
         (dealPhysicalDamage(skillolAtk, enemyDef, false, isMain, false) +
           dealPhysicalDamage(skillolAtk, enemyDef, true, isMain, false) * (equipX ? 2 : 1) +
-          dealPhysicalDamage(skillolAtk, enemyDef, false, isMain, true) * 0.15) *
+          dealPhysicalDamage(skillAtk, enemyDef, false, isMain, true) * (equipX ? 0.2775 : 0.15)) *
         damage_scale *
         damage_scale_phy * 4;
 
@@ -137,14 +138,14 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
       /** 普通攻击间隔(秒) */
       const normalAttackTime = normalAtkFrame / 30.0;
       /** 过载攻击间隔(帧) */
-      const skillOlAtkFrame = Math.round(((baseAttackTime - olIntervalReduction) * 3000.0) / (totalAttackSpeed));
+      const skillAtkFrame = Math.round(((baseAttackTime - IntervalReduction) * 3000.0) / (totalAttackSpeed));
       /** 过载攻击间隔(秒) */
-      const skillOlAttackTime = skillOlAtkFrame / 30.0;
+      const skillAttackTime = skillAtkFrame / 30.0;
 
       // 技能持续时间
       const skillDuration = 12.5;
-      const skillHits = Math.ceil(skillDuration / normalAttackTime);
-      const skillOlHits = Math.ceil(skillDuration / skillOlAttackTime);
+      const skillHits = Math.ceil(skillDuration / skillAttackTime);
+
 
       // 计算周期伤害
       const spCosts = [35, 34, 33, 32, 31, 30, 29, 28, 27, 25];
@@ -159,8 +160,8 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
       // 技能
       result.skill.dph = skillAtk;
       result.skill.total_damage.phy = skillPhysicalDamage * skillHits * (1 - mitigation);
-      result.skill.total_damage.phy += skillOverloadPhysicalDamage * skillOlHits * (1 - mitigation);
-      result.skill.dps.phy = result.skill.total_damage.phy / skillDuration;
+      result.skill.total_damage.phy += skillOverloadPhysicalDamage * skillHits * (1 - mitigation);
+      result.skill.dps.phy = result.skill.total_damage.phy / (2 * skillDuration);
       // 周期
       result.cycle.total_damage.phy = result.skill.total_damage.phy + result.attack.total_damage.phy;
       result.cycle.dps.phy = result.cycle.total_damage.phy / (spCost + skillDuration);
@@ -174,3 +175,44 @@ export default function Wisdel(input: CalculatorInput): CalculatorOutput {
 
   return result;
 }
+
+
+export const charSpecConfigs: Record<string, CharSpecConfig[]> = {
+  uniequip_002_wisdel: [
+    {
+      type: "switch",
+      label: "攻击主目标",
+      desc: "攻击主目标时攻击力提升",
+      unlockCondition: {
+        phase: 1,
+        level: 1,
+      },
+      requiredPotentialRank: 0,
+      options: [
+        {
+          key: "是",
+          value: 1,
+        },
+        {
+          key: "否",
+          value: 0,
+        },
+      ],
+      apply: (key: string, value: number, active: boolean) => {
+        return {
+          active,
+          label: "攻击主目标",
+          key: key,
+          value: value,
+          blackboard: [
+            {
+              key: "atk_scale",
+              value: value,
+              valueStr: null,
+            },
+          ],
+        };
+      },
+    },
+  ],
+};

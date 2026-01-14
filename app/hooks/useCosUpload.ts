@@ -244,6 +244,11 @@ export const useCosUpload = (): UseCosUploadReturn => {
         }),
       );
 
+      // 替换特殊字符
+      processedFiles.forEach(
+        (pf) => (pf.filename = pf.filename.replace(/[!@#$%^&*()+\s]+/g, "_")),
+      );
+
       // 更新UI显示的文件信息（文件名、扩展名、文件大小等）
       setFiles((prevFiles) =>
         prevFiles.map((f) => {

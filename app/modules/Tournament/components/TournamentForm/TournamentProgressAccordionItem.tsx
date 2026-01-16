@@ -196,7 +196,7 @@ export default function TournamentProgressAccordionItem({
     });
 
     // 对date字段进行排序
-    result.date.sort(sortDateCache);
+    result.date?.sort(sortDateCache);
 
     return result;
   };

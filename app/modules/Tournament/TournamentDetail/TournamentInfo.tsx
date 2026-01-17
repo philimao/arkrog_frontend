@@ -1,7 +1,11 @@
 /**
  * 赛程信息区域
  */
-import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentGame,
+  TournamentPlayer,
+} from "~/types/tournamentsData";
 import { SectionContainer } from ".";
 import React, { useState } from "react";
 import { StarIcon } from "~/components/Icons";
@@ -89,9 +93,11 @@ export function TournamentPlayerInfo({
   const players = tournamentData.players;
   if (!players?.length) return <div>暂无参赛选手</div>;
 
-  // Prepare data for this stage
-  const schedule = new Map<string, TournamentGame>();
-  const groupSchedule = new Map<string, string>();
+  // 直接存储完整选手信息，无赛程的选手也可显示
+  const groupSchedule = new Map<
+    Omit<TournamentPlayer & { date: number }, "games">,
+    string
+  >();
   const groups = new Set<string>();
   let groupBy: string = "";
 
@@ -101,10 +107,12 @@ export function TournamentPlayerInfo({
       // groupBy = "server"
       // player.customPlayerValues = {server: "简中服"}
       const groupValue = player.customPlayerValues[tournamentData.groupBy];
+      const date = player.games[0].date || Infinity;
+      const { games, ...partialPlayer } = { ...player, date };
       if (groupValue) {
         groupBy = tournamentData.customPlayerKeys[tournamentData.groupBy];
+        groupSchedule.set(partialPlayer, groupValue);
         groups.add(groupValue);
-        groupSchedule.set(player.mid, groupValue);
       }
       // 弃用，全局groupBy与赛事阶段groupBy隔离
       // // 在赛事阶段信息中寻找自定义的groupBy值
@@ -122,20 +130,11 @@ export function TournamentPlayerInfo({
       // }
       // 定义了groupBy，但在选手中没有值，且先前已有选手有分组，则显示为“未分组”
       if (!groupValue && groupSchedule.size > 0) {
+        groupSchedule.set(partialPlayer, "未分组");
         groups.add("未分组");
-        groupSchedule.set(player.mid, "未分组");
       }
     });
   }
-
-  players.forEach((player) => {
-    const game = player.games.find(
-      (game) => game.stage === tournamentData.stages[0].name,
-    );
-    if (game) {
-      schedule.set(player.mid, game);
-    }
-  });
 
   return (
     <table className="w-full border-collapse table-fixed">
@@ -155,11 +154,11 @@ export function TournamentPlayerInfo({
               <td className="text-center text-light-gray py-4">{group}</td>
               <td className="text-light-gray py-4 align-top">
                 <div className="flex gap-4 px-4 flex-wrap w-fit max-w-[600px] m-auto">
-                  {Array.from(schedule.entries())
-                    .sort((a, b) => a[1].date - b[1].date)
-                    .filter((entry) => groupSchedule?.get(entry[0]) === group)
+                  {Array.from(groupSchedule.entries())
+                    .filter((entry) => entry[1] === group)
+                    .sort((a, b) => a[0].date - b[0].date)
                     .map((entry, idx) => (
-                      <span key={idx}>{renderPlayer(entry[0], true)}</span>
+                      <span key={idx}>{renderPlayer(entry[0].mid, true)}</span>
                     ))}
                 </div>
               </td>
@@ -169,10 +168,14 @@ export function TournamentPlayerInfo({
           <tr className="bg-black-gray-70 divide-x divide-mid-gray">
             <td className="text-light-gray py-4 align-top">
               <div className="flex gap-4 px-4 flex-wrap w-fit max-w-[600px] m-auto">
-                {Array.from(schedule.entries())
-                  .sort((a, b) => a[1].date - b[1].date)
-                  .map((entry, idx) => (
-                    <span key={idx}>{renderPlayer(entry[0], true)}</span>
+                {players
+                  .sort(
+                    (a, b) =>
+                      (a.games[0].date || Infinity) -
+                      (b.games[0].date || Infinity),
+                  )
+                  .map((player, idx) => (
+                    <span key={idx}>{renderPlayer(player.mid, true)}</span>
                   ))}
               </div>
             </td>

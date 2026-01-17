@@ -229,7 +229,7 @@ function RougeSelector({
           </StyledBackButton>
         </StyledBackButtonContainer>
       )}
-      <div className="flex mb-12">
+      <div className="mb-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {topicsData.reverse().map((topic) => (
           <div
             key={topic.id}
@@ -244,7 +244,6 @@ function RougeSelector({
                 preventScrollReset: true,
               });
             }}
-            style={{ width: 100 / topicsData.length + "%" }}
           >
             {topic.name}
           </div>

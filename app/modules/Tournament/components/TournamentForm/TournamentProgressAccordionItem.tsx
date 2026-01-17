@@ -70,22 +70,28 @@ const sortDateCache = (a: string, b: string) => {
 
 // 常用阶段信息标示配置
 export const commonStageKeys: {
+  /** 键 */
   key: string;
+  /** 值 */
   value: string;
+  /** 提示 */
   tooltip?: string;
+  /** 缓存备选值 */
   cacheValues?: string[];
+  /** 是否不缓存该字段 */
+  noCache?: boolean;
 }[] = [
   { key: "session", value: "场地" },
   { key: "group", value: "分组" },
   { key: "note", value: "备注" },
-  { key: "playback", value: "回放" },
+  { key: "playback", value: "回放", noCache: true },
+  { key: "rank", value: "排名", tooltip: "覆盖默认排名" },
   { key: "level", value: "难度等级" },
   { key: "duration", value: "比赛时长" },
-  { key: "finalRank", value: "最终排名", tooltip: "覆盖默认排名" },
   {
     key: "promote",
     value: "是否晋级",
-    tooltip: "自定义晋级情况（例如表演赛）",
+    tooltip: "自定义本阶段晋级人数（例如表演赛）",
     cacheValues: ["否", "是"],
   },
 ];
@@ -196,6 +202,10 @@ export default function TournamentProgressAccordionItem({
         if (game.customStageValues) {
           Object.entries(game.customStageValues).forEach(([key, value]) => {
             if (value?.trim()) {
+              const noCache = commonStageKeys.find(
+                (item) => item.key === key,
+              )?.noCache;
+              if (noCache) return;
               if (!initialCache[`customStageValue-${key}`]) {
                 initialCache[`customStageValue-${key}`] =
                   new Set<string>() as any;
@@ -809,7 +819,7 @@ export default function TournamentProgressAccordionItem({
               </div>
 
               {editingPlayer &&
-                (Array.from(playersForDate[index]).find(
+                (Array.from(playersForDate[index] || []).find(
                   (p) => p.mid === editingPlayer.mid,
                 ) ||
                   (isAddingPlayers[index] &&
@@ -1706,8 +1716,10 @@ export default function TournamentProgressAccordionItem({
                                     id={`customStageValue-${key}`}
                                     type="text"
                                     value={
-                                      editingGame?.customStageValues?.[key] ||
-                                      ""
+                                      editingGame?.customStageValues?.[key] ===
+                                      undefined
+                                        ? ""
+                                        : editingGame?.customStageValues?.[key]
                                     }
                                     onChange={(e) => {
                                       if (
@@ -1790,6 +1802,10 @@ export default function TournamentProgressAccordionItem({
                                       const currentValue =
                                         editingGame?.customStageValues?.[key];
                                       if (currentValue?.trim()) {
+                                        const noCache = commonStageKeys.find(
+                                          (item) => item.key === key,
+                                        )?.noCache;
+                                        if (noCache) return;
                                         addToCache(
                                           `customStageValue-${key}`,
                                           currentValue,

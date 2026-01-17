@@ -218,6 +218,10 @@ export default function TournamentForm({
           formData.playback = await URLValidation(formData.playback);
         }
         for (let player of formData.players!) {
+          // 过滤掉不在当前赛事阶段的赛程
+          player.games = player.games.filter((g) =>
+            formData.stages.some((s) => s.name === g.stage),
+          );
           for (let game of player.games) {
             if (game.customStageValues.playback) {
               game.customStageValues.playback = await URLValidation(

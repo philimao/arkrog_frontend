@@ -10,9 +10,9 @@ export function formatDateForInput(date: Date | number): string {
   // Get year, month, and day in local timezone
   const year = d.getFullYear();
   // getMonth() is 0-indexed, so add 1 and pad with leading zero if needed
-  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, "0");
   // pad with leading zero if needed
-  const day = String(d.getDate()).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, "0");
 
   // Format as YYYY-MM-DD
   return `${year}-${month}-${day}`;
@@ -23,6 +23,7 @@ export function formatDateForInput(date: Date | number): string {
  * @param date1 First date to compare
  * @param date2 Second date to compare
  * @returns boolean indicating if the dates are the same day
+ * @todo 如果用户重新新建了非同名stage，在编辑相同日程的game时，会串到先新建的game上
  */
 export function isSameDay(date1: Date | number, date2: Date | number): boolean {
   const d1 = date1 instanceof Date ? date1 : new Date(date1);

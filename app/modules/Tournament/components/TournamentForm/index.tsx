@@ -237,6 +237,24 @@ export default function TournamentForm({
           );
         }
 
+        // 为预设缓存值的阶段信息添加默认值
+        // formData.players?.forEach((player) => {
+        //   player.games?.forEach((game) => {
+        //     Object.keys(game.customStageValues).forEach((key) => {
+        //       // 判断是否为预设缓存值的阶段信息
+        //       let commonItem;
+        //       if (
+        //         (commonItem = commonStageKeys.find((item) => item.key === key))
+        //       ) {
+        //         // 如果为预设缓存值的阶段信息，且没有设置值，则设置为默认值
+        //         if (!game.customStageValues[key] && commonItem.cacheValues) {
+        //           game.customStageValues[key] = commonItem.cacheValues[0];
+        //         }
+        //       }
+        //     });
+        //   });
+        // });
+
         const response = await saveTournament(
           formData,
           userInfo.username,

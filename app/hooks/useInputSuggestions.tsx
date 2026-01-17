@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface UseInputSuggestionsReturn {
   addToCache: (
@@ -47,6 +47,23 @@ export function useInputSuggestions(
   // 建议列表的 ref，用于处理点击外部关闭
   const suggestionListRef = useRef<HTMLDivElement>(null);
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 延迟关闭显示建议
+  const delaySetShowSuggestions = useCallback((key: string | null) => {
+    if (key) {
+      setShowSuggestions(key);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    } else {
+      timeoutRef.current = setTimeout(() => {
+        setShowSuggestions(key);
+      }, 200);
+    }
+  }, []);
+
   /**
    * 添加值到缓存
    * @param key 字段标识
@@ -88,7 +105,7 @@ export function useInputSuggestions(
     addToCache,
     getSuggestions,
     showSuggestions,
-    setShowSuggestions,
+    setShowSuggestions: delaySetShowSuggestions,
     suggestionListRef,
   };
 }

@@ -266,14 +266,9 @@ export default function TournamentPlayersAccordionItem({
               <p className={labelWithTooltipClassName}>
                 已有自定义选手信息:
                 {formData.type !== "team" && (
-                  <Tooltip
-                    content="勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面"
-                    className="bg-light-mid-gray text-black"
-                  >
-                    <span className="px-1">
-                      <InformationIcon width="0.75rem" height="0.75rem" />
-                    </span>
-                  </Tooltip>
+                  <span className="text-light-mid-gray ms-2">
+                    勾选的自定义信息将被设为参赛选手的分组依据，用于赛程信息界面
+                  </span>
                 )}
               </p>
               <div className="flex flex-wrap gap-2">

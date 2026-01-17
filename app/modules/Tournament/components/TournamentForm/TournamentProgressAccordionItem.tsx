@@ -68,6 +68,28 @@ const sortDateCache = (a: string, b: string) => {
   return dateA - dateB;
 };
 
+// 常用阶段信息标示配置
+export const commonStageKeys: {
+  key: string;
+  value: string;
+  tooltip?: string;
+  cacheValues?: string[];
+}[] = [
+  { key: "session", value: "场地" },
+  { key: "group", value: "分组" },
+  { key: "note", value: "备注" },
+  { key: "playback", value: "回放" },
+  { key: "level", value: "难度等级" },
+  { key: "duration", value: "比赛时长" },
+  { key: "finalRank", value: "最终排名", tooltip: "覆盖默认排名" },
+  {
+    key: "promote",
+    value: "是否晋级",
+    tooltip: "自定义晋级情况（例如表演赛）",
+    cacheValues: ["否", "是"],
+  },
+];
+
 const inputClassName =
   "bg-[#00000033] w-full p-2 focus:outline focus:outline-2 focus:outline-ak-blue";
 const selectClassName = {
@@ -195,6 +217,11 @@ export default function TournamentProgressAccordionItem({
       }
     });
 
+    commonStageKeys.forEach((item) => {
+      const { key, cacheValues } = item;
+      if (cacheValues) result["customStageValue-" + key] = cacheValues;
+    });
+
     // 对date字段进行排序
     result.date?.sort(sortDateCache);
 
@@ -261,16 +288,6 @@ export default function TournamentProgressAccordionItem({
     setNewCustomKey("");
     setNewCustomValue("");
   };
-
-  // 常用阶段信息标示配置
-  const commonStageKeys: { key: string; value: string }[] = [
-    { key: "session", value: "场地" },
-    { key: "group", value: "分组" },
-    { key: "note", value: "备注" },
-    { key: "playback", value: "回放" },
-    { key: "level", value: "难度等级" },
-    { key: "duration", value: "比赛时长" },
-  ];
 
   // 添加常用阶段信息标示
   const handleAddCommonStageKey = (key: string, value: string) => {
@@ -504,14 +521,9 @@ export default function TournamentProgressAccordionItem({
               <p className={labelWithTooltipClassName}>
                 已有自定义阶段信息:
                 {editingStage.type !== "1on1" && (
-                  <Tooltip
-                    content="勾选的自定义信息将作为此阶段的分组依据，用于分别计算分组排名"
-                    className="bg-light-mid-gray text-black"
-                  >
-                    <span className="px-1">
-                      <InformationIcon width="0.75rem" height="0.75rem" />
-                    </span>
-                  </Tooltip>
+                  <span className="text-light-mid-gray ms-2">
+                    勾选的自定义信息将作为此阶段的分组依据，用于分别计算分组排名
+                  </span>
                 )}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -892,12 +904,12 @@ export default function TournamentProgressAccordionItem({
                       <div>
                         <p className="mb-4">正在编辑：{editingPlayer.name}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-4">
-                          <div>
+                          <div className="relative">
                             <label
                               htmlFor="gameTime"
                               className={labelClassName + " flex"}
                             >
-                              比赛时间（可粘贴）
+                              比赛时间
                               <span className="text-ak-red">*</span>
                               <div className="flex gap-1 ms-auto">
                                 {getSuggestions("date")
@@ -1151,6 +1163,9 @@ export default function TournamentProgressAccordionItem({
                               }}
                               required
                             />
+                            <span className="text-sm absolute right-12 bottom-[0.8rem] text-light-mid-gray">
+                              （可粘贴）
+                            </span>
                           </div>
 
                           <div className="relative">
@@ -1193,7 +1208,7 @@ export default function TournamentProgressAccordionItem({
                                 if (currentValue?.trim()) {
                                   addToCache("starterSquad", currentValue);
                                 }
-                                setTimeout(() => setShowSuggestions(null), 200);
+                                setShowSuggestions(null);
                               }}
                             />
                             {showSuggestions === "starterSquad" &&
@@ -1278,7 +1293,7 @@ export default function TournamentProgressAccordionItem({
                                 if (currentValue?.trim()) {
                                   addToCache("starterOp", currentValue);
                                 }
-                                setTimeout(() => setShowSuggestions(null), 200);
+                                setShowSuggestions(null);
                               }}
                             />
                             {showSuggestions === "starterOp" &&
@@ -1331,7 +1346,11 @@ export default function TournamentProgressAccordionItem({
                               id="point"
                               type="number"
                               name="point"
-                              value={editingGame?.point || ""}
+                              value={
+                                editingGame?.point === undefined
+                                  ? ""
+                                  : editingGame.point
+                              }
                               onChange={(e) => {
                                 const newPlayers = [...formData.players!];
                                 const game = newPlayers
@@ -1677,6 +1696,11 @@ export default function TournamentProgressAccordionItem({
                                     className={labelClassName}
                                   >
                                     {value}
+                                    <span className="text-sm text-light-mid-gray ms-2">
+                                      {commonStageKeys.find(
+                                        (item) => item.key === key,
+                                      )?.tooltip || ""}
+                                    </span>
                                   </label>
                                   <input
                                     id={`customStageValue-${key}`}
@@ -1686,6 +1710,13 @@ export default function TournamentProgressAccordionItem({
                                       ""
                                     }
                                     onChange={(e) => {
+                                      if (
+                                        commonStageKeys.find(
+                                          (item) => item.key === key,
+                                        )?.cacheValues
+                                      ) {
+                                        return; // 如果已有预设缓存，只可以使用预设缓存值
+                                      }
                                       const newPlayers = [...formData.players!];
                                       const game = newPlayers
                                         .find(
@@ -1764,10 +1795,7 @@ export default function TournamentProgressAccordionItem({
                                           currentValue,
                                         );
                                       }
-                                      setTimeout(
-                                        () => setShowSuggestions(null),
-                                        200,
-                                      );
+                                      setShowSuggestions(null);
                                     }}
                                     maxLength={128}
                                   />
@@ -1872,7 +1900,7 @@ export default function TournamentProgressAccordionItem({
                               if (currentValue?.trim()) {
                                 addToCache("ending", currentValue);
                               }
-                              setTimeout(() => setShowSuggestions(null), 200);
+                              setShowSuggestions(null);
                             }}
                           />
                           {showSuggestions === "ending" &&

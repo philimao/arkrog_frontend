@@ -179,7 +179,7 @@ export function TournamentFinalResultIndividual({
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{player.name}</div>
                 <div className="text-ak-blue text-xl pt-2">
-                  {lastGame.point}
+                  {(final.type === "1on1" ? "赛事积分：" : "") + lastGame.point}
                 </div>
               </div>
               <img

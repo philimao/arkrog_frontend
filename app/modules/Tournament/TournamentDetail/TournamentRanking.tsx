@@ -520,9 +520,11 @@ const OneOnOneTable = ({
               {Object.keys(tournamentData.customPlayerKeys).map((key) => (
                 <td key={key}>{tournamentData.customPlayerKeys[key]}</td>
               ))}
-              {Object.keys(stage.customStageKeys).map((key) => (
-                <td key={key}>{stage.customStageKeys[key]}</td>
-              ))}
+              {Object.keys(stage.customStageKeys)
+                .filter((key) => !ignoreCustomKeys.includes(key))
+                .map((key) => (
+                  <td key={key}>{stage.customStageKeys[key]}</td>
+                ))}
               {showEnding && <td>结局</td>}
               <td className="sticky right-0 bg-black-gray min-w-20 z-10">
                 分数
@@ -570,11 +572,11 @@ const OneOnOneTable = ({
                       </td>
                       {showStarterOp && <td>{winnerGame.starterOp}</td>}
                       <>
-                        {Object.keys(tournamentData.customPlayerKeys).map(
-                          (key) => (
+                        {Object.keys(tournamentData.customPlayerKeys)
+                          .filter((key) => !ignoreCustomKeys.includes(key))
+                          .map((key) => (
                             <td key={key}>{winner?.customPlayerValues[key]}</td>
-                          ),
-                        )}
+                          ))}
                       </>
                       <>
                         {Object.keys(stage.customStageKeys).map((key) => (
@@ -640,29 +642,31 @@ const OneOnOneTable = ({
                           )}
                         </>
                         <>
-                          {Object.keys(stage.customStageKeys).map((key) => (
-                            <td key={key}>
-                              {!losedGame.customStageValues[key] ? (
-                                "-"
-                              ) : key === "playback" ? (
-                                <a
-                                  href={losedGame.customStageValues[key]}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <svg
-                                    width="16"
-                                    height="16"
-                                    className="text-ak-blue"
+                          {Object.keys(stage.customStageKeys)
+                            .filter((key) => !ignoreCustomKeys.includes(key))
+                            .map((key) => (
+                              <td key={key}>
+                                {!losedGame.customStageValues[key] ? (
+                                  "-"
+                                ) : key === "playback" ? (
+                                  <a
+                                    href={losedGame.customStageValues[key]}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                   >
-                                    <use href="#bilibili-svg" />
-                                  </svg>
-                                </a>
-                              ) : (
-                                losedGame.customStageValues[key]
-                              )}
-                            </td>
-                          ))}
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      className="text-ak-blue"
+                                    >
+                                      <use href="#bilibili-svg" />
+                                    </svg>
+                                  </a>
+                                ) : (
+                                  losedGame.customStageValues[key]
+                                )}
+                              </td>
+                            ))}
                         </>
                         <td>{losedGame?.ending}</td>
                         <StyledScoreColumn
@@ -988,9 +992,9 @@ export function TournamentRankingTeam({
 
           <StyledTableWrapper>
             <StyledTeamTable>
-              <thead className="sticky top-0 bg-black-gray">
+              <thead className="sticky top-0 bg-black-gray z-10">
                 <tr>
-                  <td className="sticky left-0 bg-black-gray w-[64px] min-w-[64px]">
+                  <td className="sticky z-10 left-0 bg-black-gray w-[64px] min-w-[64px]">
                     {isOneOnOne ? (
                       <SortableHeader
                         label="结果"
@@ -1005,10 +1009,10 @@ export function TournamentRankingTeam({
                       />
                     )}
                   </td>
-                  <td className="sticky left-[64px] bg-black-gray w-[112px] min-w-[112px]">
+                  <td className="sticky z-10 left-[64px] bg-black-gray w-[112px] min-w-[112px]">
                     队伍
                   </td>
-                  <td className="sticky left-[176px] bg-black-gray player-name">
+                  <td className="sticky z-10 left-[176px] bg-black-gray player-name">
                     选手ID
                   </td>
                   <td>
@@ -1037,7 +1041,7 @@ export function TournamentRankingTeam({
                   )}
 
                   <td>分数</td>
-                  <td className="min-w-20 sticky right-0 bg-black-gray">
+                  <td className="min-w-20 sticky right-0 bg-black-gray z-10">
                     队伍积分
                   </td>
                 </tr>

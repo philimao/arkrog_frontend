@@ -5,6 +5,7 @@ import { SectionContainer } from ".";
 import { SortIcon, StarIcon } from "~/components/Icons";
 import { styled } from "styled-components";
 import { StyledDivider, StyledStageTitleNum } from "../components/Shared";
+import { getFinalStage } from "./TournamentFinalResult";
 
 // Types
 type SortByType = "point" | "date";
@@ -254,8 +255,8 @@ const createRankingMap = (schedule: Map<string, any>) => {
     .sort((a, b) => (b[1].point ?? 0) - (a[1].point ?? 0))
     .sort((a, b) => {
       // 如果有自定义排名，则按照自定义排名排序
-      const rankA = a[1].customStageValues.rank ?? 999;
-      const rankB = b[1].customStageValues.rank ?? 999;
+      const rankA = a[1].customStageValues?.rank ?? 999;
+      const rankB = b[1].customStageValues?.rank ?? 999;
       return rankA - rankB;
     })
     .forEach((entry, index) => ranking.set(entry[0], index + 1));
@@ -285,8 +286,8 @@ const getSortedRanking = (
       .sort((a, b) => (b[1].point ?? 0) - (a[1].point ?? 0))
       .sort((a, b) => {
         // 如果有自定义排名，则按照自定义排名排序
-        const rankA = a[1].customStageValues.rank ?? 999;
-        const rankB = b[1].customStageValues.rank ?? 999;
+        const rankA = a[1].customStageValues?.rank ?? 999;
+        const rankB = b[1].customStageValues?.rank ?? 999;
         return rankA - rankB;
       });
     return rankingAscending ? sortedSchedule : sortedSchedule.reverse();
@@ -535,10 +536,13 @@ const OneOnOneTable = ({
                 const winner = tournamentData.players?.find(
                   (player) => player.mid === entry[0],
                 );
+                const winnerGame = (winner &&
+                  winnedGames.get(winner?.mid)) as TournamentGame;
                 const loser = tournamentData.players?.find(
-                  (player) => player.mid === entry[1].rivalMid,
+                  (player) => player.mid === String(winnerGame.rivalMid),
                 );
-                const losedGame = loser && losedGames.get(loser?.mid);
+                const losedGame = (loser &&
+                  losedGames.get(loser?.mid)) as TournamentGame;
 
                 return (
                   <React.Fragment key={`group-${groupIndex}`}>
@@ -550,7 +554,7 @@ const OneOnOneTable = ({
                         $isTopTier={true}
                         className="sticky w-12 text-bold text-ak-blue"
                       >
-                        {entry[1].point === undefined ? "-" : "win"}
+                        {winnerGame.point === undefined ? "-" : "win"}
                       </StyledRankingColumn>
                       <StyledPlayerNameColumn
                         $isTopTier={true}
@@ -558,11 +562,13 @@ const OneOnOneTable = ({
                       >
                         {winner?.name}
                       </StyledPlayerNameColumn>
-                      <td>{entry[1].schedule}</td>
+                      <td>{winnerGame.schedule}</td>
                       <td>
-                        <SquadDisplay squadName={entry[1].starterSquad || ""} />
+                        <SquadDisplay
+                          squadName={winnerGame.starterSquad || ""}
+                        />
                       </td>
-                      {showStarterOp && <td>{entry[1].starterOp}</td>}
+                      {showStarterOp && <td>{winnerGame.starterOp}</td>}
                       <>
                         {Object.keys(tournamentData.customPlayerKeys).map(
                           (key) => (
@@ -573,11 +579,11 @@ const OneOnOneTable = ({
                       <>
                         {Object.keys(stage.customStageKeys).map((key) => (
                           <td key={key}>
-                            {!entry[1].customStageValues[key] ? (
+                            {!winnerGame.customStageValues[key] ? (
                               "-"
                             ) : key === "playback" ? (
                               <a
-                                href={entry[1].customStageValues[key]}
+                                href={winnerGame.customStageValues[key]}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
@@ -590,76 +596,83 @@ const OneOnOneTable = ({
                                 </svg>
                               </a>
                             ) : (
-                              entry[1].customStageValues[key]
+                              winnerGame.customStageValues[key]
                             )}
                           </td>
                         ))}
                       </>
-                      {showEnding && <td>{entry[1].ending}</td>}
+                      {showEnding && <td>{winnerGame.ending}</td>}
                       <StyledScoreColumn $isTopTier={true} className="sticky">
-                        {entry[1].point}
+                        {winnerGame.point}
                       </StyledScoreColumn>
                     </tr>
-                    <tr
-                      key={`${groupIndex}-lose`}
-                      className="bg-black-gray-70 border-b-8 border-b-[#363636]"
-                    >
-                      <StyledRankingColumn
-                        $isTopTier={false}
-                        className="sticky w-12"
+                    {losedGame && (
+                      <tr
+                        key={`${groupIndex}-lose`}
+                        className="bg-black-gray-70 border-b-8 border-b-[#363636]"
                       >
-                        {entry[1].point === undefined ? "-" : "lose"}
-                      </StyledRankingColumn>
-                      <StyledPlayerNameColumn
-                        $isTopTier={false}
-                        className="sticky"
-                      >
-                        {loser?.name}
-                      </StyledPlayerNameColumn>
-                      <td>{losedGame?.schedule}</td>
-                      <td>
-                        <SquadDisplay
-                          squadName={losedGame?.starterSquad || ""}
-                        />
-                      </td>
-                      <td>{losedGame?.starterOp}</td>
-                      <>
-                        {Object.keys(tournamentData.customPlayerKeys).map(
-                          (key) => (
-                            <td key={key}>{loser?.customPlayerValues[key]}</td>
-                          ),
-                        )}
-                      </>
-                      <>
-                        {Object.keys(stage.customStageKeys).map((key) => (
-                          <td key={key}>
-                            {!entry[1].customStageValues[key] ? (
-                              "-"
-                            ) : key === "playback" ? (
-                              <a
-                                href={entry[1].customStageValues[key]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  className="text-ak-blue"
+                        <StyledRankingColumn
+                          $isTopTier={false}
+                          className="sticky w-12"
+                        >
+                          {losedGame.point === undefined ? "-" : "lose"}
+                        </StyledRankingColumn>
+                        <StyledPlayerNameColumn
+                          $isTopTier={false}
+                          className="sticky"
+                        >
+                          {loser?.name}
+                        </StyledPlayerNameColumn>
+                        <td>{losedGame.schedule}</td>
+                        <td>
+                          <SquadDisplay
+                            squadName={losedGame.starterSquad || ""}
+                          />
+                        </td>
+                        <td>{losedGame.starterOp}</td>
+                        <>
+                          {Object.keys(tournamentData.customPlayerKeys).map(
+                            (key) => (
+                              <td key={key}>
+                                {loser?.customPlayerValues[key]}
+                              </td>
+                            ),
+                          )}
+                        </>
+                        <>
+                          {Object.keys(stage.customStageKeys).map((key) => (
+                            <td key={key}>
+                              {!losedGame.customStageValues[key] ? (
+                                "-"
+                              ) : key === "playback" ? (
+                                <a
+                                  href={losedGame.customStageValues[key]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                 >
-                                  <use href="#bilibili-svg" />
-                                </svg>
-                              </a>
-                            ) : (
-                              entry[1].customStageValues[key]
-                            )}
-                          </td>
-                        ))}
-                      </>
-                      <td>{losedGame?.ending}</td>
-                      <StyledScoreColumn $isTopTier={false} className="sticky">
-                        {losedGame?.point}
-                      </StyledScoreColumn>
-                    </tr>
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    className="text-ak-blue"
+                                  >
+                                    <use href="#bilibili-svg" />
+                                  </svg>
+                                </a>
+                              ) : (
+                                losedGame.customStageValues[key]
+                              )}
+                            </td>
+                          ))}
+                        </>
+                        <td>{losedGame?.ending}</td>
+                        <StyledScoreColumn
+                          $isTopTier={false}
+                          className="sticky"
+                        >
+                          {losedGame?.point}
+                        </StyledScoreColumn>
+                      </tr>
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -686,7 +699,7 @@ export function TournamentRankingIndividual({
   return tournamentData.stages
     ?.sort((a, b) => a.startTime - b.startTime)
     .map((stage, index) => {
-      const isFinal = index === tournamentData.stages.length - 1;
+      const isFinal = getFinalStage(tournamentData).index === index;
 
       if (stage.type === "rank") {
         if (
@@ -793,9 +806,12 @@ export function TournamentRankingIndividual({
         const winnedGames = new Map<string, TournamentGame>();
         const losedGames = new Map<string, TournamentGame>();
 
+        const gameList: TournamentGame[] = [];
+
         players.forEach((player) => {
           const game = player.games.find((game) => game.stage === stage.name);
           if (game) {
+            gameList.push(game);
             if (game.result === "win") {
               winnedGames.set(player.mid, game);
             } else {
@@ -805,11 +821,19 @@ export function TournamentRankingIndividual({
         });
 
         const uniquePlayersCount = winnedGames.size + losedGames.size;
-        const uniquePlayersNextStageCount = getNextStageCount(
-          tournamentData,
-          index,
-          false,
-        );
+        let uniquePlayersNextStageCount;
+        // 如果有自定义晋升参数
+        if (stage.customStageKeys.promote) {
+          uniquePlayersNextStageCount = gameList
+            .map((game) => game.customStageValues?.promote)
+            .filter((promote) => promote === "是").length;
+        } else {
+          uniquePlayersNextStageCount = getNextStageCount(
+            tournamentData,
+            index,
+            false,
+          );
+        }
 
         return (
           <OneOnOneTable
@@ -898,7 +922,7 @@ export function TournamentRankingTeam({
         }
       });
 
-      const isFinal = index === tournamentData.stages.length - 1;
+      const isFinal = getFinalStage(tournamentData).index === index;
       const uniqueTeamsCount = teamSchedule.size;
       const uniqueTeamsNextStageCount = getNextStageCount(
         tournamentData,

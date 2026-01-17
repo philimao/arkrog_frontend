@@ -1,4 +1,8 @@
-import type { TournamentData, TournamentGame } from "~/types/tournamentsData";
+import type {
+  TournamentData,
+  TournamentGame,
+  TournamentStage,
+} from "~/types/tournamentsData";
 import { styled } from "styled-components";
 import { SectionContainer } from ".";
 import { StarIcon } from "~/components/Icons";
@@ -105,6 +109,31 @@ const getTopTiers = <
   return _items.sort((a, b) => a._finalRank - b._finalRank).slice(0, maxRank);
 };
 
+/**
+ * 获取决赛阶段
+ * @param tournamentData 赛事数据
+ * @returns
+ */
+export const getFinalStage = (
+  tournamentData: TournamentData,
+): { index: number; stage?: TournamentStage } => {
+  if (!tournamentData.stages?.length) return { index: -1 };
+  // 不是表演赛，且未定义晋升参数，或定义晋升参数且有玩家晋级
+  const index = tournamentData.stages.findLastIndex(
+    (stage) =>
+      (stage.name !== "表演赛" && !stage.customStageKeys.promote) ||
+      tournamentData.players.some(
+        (player) =>
+          player.games.find((game) => game.stage === stage.name)
+            ?.customStageValues?.promote === "是",
+      ),
+  );
+  return {
+    index,
+    stage: tournamentData.stages[index],
+  };
+};
+
 // Individual tournament result component
 export function TournamentFinalResultIndividual({
   tournamentData,
@@ -115,7 +144,10 @@ export function TournamentFinalResultIndividual({
     return <>暂无比赛结果</>;
   }
 
-  const final = tournamentData.stages[tournamentData.stages.length - 1];
+  const final = getFinalStage(tournamentData)?.stage;
+
+  if (!final) return <>未找到决赛阶段</>;
+
   const isFinalOneOnOne = final.type === "1on1";
   const topTiers = getTopTiers(
     tournamentData.players,
@@ -255,7 +287,9 @@ export function TournamentFinalResultTeam({
     return <>暂无比赛结果</>;
   }
 
-  const final = tournamentData.stages[tournamentData.stages.length - 1];
+  const final = getFinalStage(tournamentData)?.stage;
+
+  if (!final) return <>未找到决赛阶段</>;
 
   // 很tricky的格式转换，用于统一team和player类型
   const teams = tournamentData.teams.map((team) => {

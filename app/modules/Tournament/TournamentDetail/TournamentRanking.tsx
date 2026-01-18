@@ -579,29 +579,31 @@ const OneOnOneTable = ({
                           ))}
                       </>
                       <>
-                        {Object.keys(stage.customStageKeys).map((key) => (
-                          <td key={key}>
-                            {!winnerGame.customStageValues[key] ? (
-                              "-"
-                            ) : key === "playback" ? (
-                              <a
-                                href={winnerGame.customStageValues[key]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  className="text-ak-blue"
+                        {Object.keys(stage.customStageKeys)
+                          .filter((key) => !ignoreCustomKeys.includes(key))
+                          .map((key) => (
+                            <td key={key}>
+                              {!winnerGame.customStageValues[key] ? (
+                                "-"
+                              ) : key === "playback" ? (
+                                <a
+                                  href={winnerGame.customStageValues[key]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                 >
-                                  <use href="#bilibili-svg" />
-                                </svg>
-                              </a>
-                            ) : (
-                              winnerGame.customStageValues[key]
-                            )}
-                          </td>
-                        ))}
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    className="text-ak-blue"
+                                  >
+                                    <use href="#bilibili-svg" />
+                                  </svg>
+                                </a>
+                              ) : (
+                                winnerGame.customStageValues[key]
+                              )}
+                            </td>
+                          ))}
                       </>
                       {showEnding && <td>{winnerGame.ending}</td>}
                       <StyledScoreColumn $isTopTier={true} className="sticky">

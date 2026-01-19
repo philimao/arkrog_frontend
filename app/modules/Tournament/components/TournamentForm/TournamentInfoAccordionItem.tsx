@@ -53,8 +53,16 @@ export default function TournamentInfoAccordionItem({
     setOnUploadedItemClick,
     clearUploadParams,
   } = useStorageStore();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
+  // 打开编辑器时设置
   const [editorInitialContent, setEditorInitialContent] = useState("");
+  const [onEditorSave, setOnEditorSave] = useState<(content: string) => void>(
+    () => {},
+  );
+  // 当前编辑的form key
+  const [editingKey, setEditingKey] = useState<string>("");
+
   const [searchResults, setSearchResults] = useState<SearchUserItem[]>([]);
   const [searching, setSearching] = useState(false);
   // 记录已选的搜索结果
@@ -127,31 +135,38 @@ export default function TournamentInfoAccordionItem({
     [],
   );
 
+  /** 打开编辑器时，设置上传目录，编辑器内容，保存回调 */
   const handleOpenEditor = (key: string) => {
     setUploadDirectory(
       "tournament/" + formData.name.replace(/[!@#$%^&*()+\s]+/g, "_"),
     );
-    const initialContent =
-      (formData[key as keyof TournamentData] as string) || "";
-    setEditorInitialContent(initialContent);
-    // 设置保存回调
-    setOnEditorSave(() => (content: string) => {
-      setFormData((prev) => ({
-        ...prev,
-        [key]: content,
-      }));
-      onEditorClose();
+    setEditingKey(key);
+    setEditorInitialContent(
+      (formData[key as keyof TournamentData] as string) || "",
+    );
+    // 设置保存回调，直接关闭编辑器
+    setOnEditorSave(() => () => {
+      clearUploadParams();
+      onClose();
     });
     onOpen();
   };
 
-  // 编辑器保存内容回调，在打开编辑器时设置
-  const [onEditorSave, setOnEditorSave] = useState<(content: string) => void>(
-    () => {},
-  );
+  /** 同步编辑器内容到formData */
+  const onEditorChange = (content: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [editingKey]: content,
+    }));
+  };
 
-  // 关闭编辑器时，清除上传参数
+  /** 关闭编辑器时，恢复初始内容 */
   const onEditorClose = () => {
+    setFormData((prev) => ({
+      ...prev,
+      [editingKey]: editorInitialContent,
+    }));
+    setEditingKey("");
     clearUploadParams();
     onClose();
   };
@@ -840,6 +855,7 @@ export default function TournamentInfoAccordionItem({
         onClose={onEditorClose}
         initialContent={editorInitialContent}
         onSave={onEditorSave}
+        onChange={onEditorChange}
         title="编辑规则"
       />
     </>

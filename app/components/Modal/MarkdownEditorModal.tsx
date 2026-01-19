@@ -13,6 +13,7 @@ interface MarkdownEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialContent: string;
+  onChange?: (content: string) => void;
   onSave: (content: string) => void;
   title?: string;
 }
@@ -22,6 +23,7 @@ export default function MarkdownEditorModal({
   onClose,
   initialContent,
   onSave,
+  onChange,
   title = "编辑内容",
 }: MarkdownEditorModalProps) {
   return (
@@ -50,6 +52,7 @@ export default function MarkdownEditorModal({
                     <BlockNoteEditor
                       initialMarkdown={initialContent}
                       onSave={onSave}
+                      onChange={onChange}
                       onCancel={onClose}
                     />
                   </div>

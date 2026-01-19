@@ -19,6 +19,7 @@ import { AttachmentIcon } from "~/components/Icons";
 interface BlockNoteEditorProps {
   initialMarkdown: string;
   onSave: (markdown: string) => void;
+  onChange?: (content: string) => void;
   onCancel: () => void;
 }
 
@@ -26,6 +27,7 @@ export default function BlockNoteEditor({
   initialMarkdown,
   onSave,
   onCancel,
+  onChange,
 }: BlockNoteEditorProps) {
   const {
     uploadDirectory,
@@ -63,6 +65,12 @@ export default function BlockNoteEditor({
   const handleSave = async () => {
     const markdown = await editor.blocksToMarkdownLossy(editor.document);
     onSave(markdown);
+  };
+
+  const handleChange = async () => {
+    if (!onChange) return;
+    const markdown = await editor.blocksToMarkdownLossy(editor.document);
+    onChange(markdown);
   };
 
   const getCustomSlashMenuItems = (editor: any) => {
@@ -121,7 +129,12 @@ export default function BlockNoteEditor({
             focusEditor();
           }}
         >
-          <BlockNoteView editor={editor} theme="dark" slashMenu={false}>
+          <BlockNoteView
+            editor={editor}
+            theme="dark"
+            slashMenu={false}
+            onChange={handleChange}
+          >
             <SuggestionMenuController
               triggerCharacter={"/"}
               getItems={async (query) =>

@@ -171,8 +171,8 @@ export function TournamentPlayerInfo({
                 {players
                   .sort(
                     (a, b) =>
-                      (a.games[0].date || Infinity) -
-                      (b.games[0].date || Infinity),
+                      (a.games[0]?.date || Infinity) -
+                      (b.games[0]?.date || Infinity),
                   )
                   .map((player, idx) => (
                     <span key={idx}>{renderPlayer(player.mid, true)}</span>

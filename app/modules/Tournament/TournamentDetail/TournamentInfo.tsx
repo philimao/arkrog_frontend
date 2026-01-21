@@ -107,7 +107,7 @@ export function TournamentPlayerInfo({
       // groupBy = "server"
       // player.customPlayerValues = {server: "简中服"}
       const groupValue = player.customPlayerValues[tournamentData.groupBy];
-      const date = player.games[0].date || Infinity;
+      const date = player.games[0]?.date || Infinity;
       const { games, ...partialPlayer } = { ...player, date };
       if (groupValue) {
         groupBy = tournamentData.customPlayerKeys[tournamentData.groupBy];

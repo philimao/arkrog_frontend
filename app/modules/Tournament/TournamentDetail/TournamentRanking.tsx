@@ -914,7 +914,7 @@ export function TournamentRankingTeam({
           });
           // 如果是淘汰赛赛制，设置队伍的对手
           if (isOneOnOne && !teamRivalMap.has(team.name)) {
-            const rivalMid = stageGames[0].rivalMid;
+            const rivalMid = stageGames[0]?.rivalMid;
             const rivalName = players.find((p) => p.mid === rivalMid)?.name;
             if (rivalName) {
               const rivalTeam = teams.find((t) =>

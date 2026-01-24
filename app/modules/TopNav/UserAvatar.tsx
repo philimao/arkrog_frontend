@@ -109,7 +109,10 @@ export default function UserAvatar() {
         variant="faded"
         onAction={onAction}
       >
-        <DropdownSection showDivider title="Actions">
+        <DropdownSection
+          showDivider
+          title={"Hi " + userInfo?.username || "游客"}
+        >
           <DropdownItem
             key="home"
             startContent={<EditDocumentIcon className={iconClasses} />}
@@ -117,7 +120,7 @@ export default function UserAvatar() {
             个人主页
           </DropdownItem>
         </DropdownSection>
-        <DropdownSection title="Danger zone">
+        <DropdownSection title="账户操作">
           <DropdownItem
             key="logout"
             className="text-danger"

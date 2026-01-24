@@ -56,7 +56,7 @@ export default function RootLayout() {
     };
     const loadArray = [
       fetchUserInfo,
-      ...preload[route as keyof typeof preload],
+      ...(preload[route as keyof typeof preload] || []),
     ];
     Promise.all(loadArray.map((f) => f())).then(() => setLoading(false));
   }, [

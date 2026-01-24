@@ -73,7 +73,7 @@ export const useUserInfoStore = create<UserInfoStore>()(
       },
       fetchUserInfo: async () => {
         try {
-          const info: UserInfo | undefined = await _get("/user/id");
+          const info: UserInfo | undefined = await _post("/user/id", {});
           if (info) {
             set({ userInfo: info }, undefined, "fetchUserInfo");
           } else {

@@ -8,7 +8,7 @@ import {
 export const pages = [
   { pathname: "/", title: "集语成舟", subtitle: "首页" },
   { pathname: "/relic-free", title: "穷集一生", subtitle: "无藏收录" },
-  // { pathname: "/seed", title: "百种交集", subtitle: "种子分享" },
+  { pathname: "/seed", title: "百种交集", subtitle: "种子分享" },
   { pathname: "/blog", title: "集思广益", subtitle: "攻略博客" },
   { pathname: "/tool", title: "小集器人", subtitle: "伤害计算" },
   { pathname: "/tournament", title: "高手云集", subtitle: "赛事整理" },
@@ -48,7 +48,7 @@ export default [
     // 工具
     route("/tool", "routes/ToolLayout.tsx", [index("modules/Tool/index.tsx")]),
     // 种子
-    // route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
+    route("/seed", "routes/SeedLayout.tsx", [index("modules/Seed/index.tsx")]),
     // 个人中心
     route("/home", "routes/HomeLayout.tsx", [
       // index("modules/Home/Message/Selector.tsx"),

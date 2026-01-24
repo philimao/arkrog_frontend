@@ -14,11 +14,10 @@ import {
   type TextAreaProps,
   useDisclosure,
 } from "@heroui/react";
-import React, {
+import {
   type Dispatch,
   type FormEvent,
   type SetStateAction,
-  useEffect,
   useState,
 } from "react";
 import { openModal } from "~/utils/dom";
@@ -27,9 +26,9 @@ import { useUserInfoStore } from "~/stores/userInfoStore";
 import { SeedTypes } from "~/types/constant";
 import ModalTemplate from "~/components/Modal";
 import type { RecordType } from "~/types/recordType";
-import { _post, mergeArray } from "~/utils/tools";
-import type { SeedType } from "~/types/seedType";
+import { _post } from "~/utils/tools";
 import { URLValidation } from "~/utils/record";
+import { RogueTopic } from "~/types/gameData";
 
 const MyInput = (props: InputProps) => (
   <Input radius="none" labelPlacement="outside" {...props}></Input>
@@ -55,21 +54,33 @@ const MyButton = (props: ButtonProps) => (
   </Button>
 );
 
-const presetLabels = [
-  "主播精选",
-  "罗德之门",
-  "金酒之杯",
-  "老蒲扇",
-  "探灵伯爵",
-  "天灾年代",
-  "贵重商店",
-  "无相遇",
-  "少构想",
-  "戈读不语",
-  "奇观年代",
-  "锁路线失与得",
-  "无藏",
-];
+const currentRogue = RogueTopic.ROGUE_5;
+
+const presetLabels = {
+  [RogueTopic.ROGUE_4]: [
+    "主播精选",
+    "罗德之门",
+    "金酒之杯",
+    "老蒲扇",
+    "探灵伯爵",
+    "天灾年代",
+    "贵重商店",
+    "无相遇",
+    "少构想",
+    "戈读不语",
+    "奇观年代",
+    "锁路线失与得",
+    "无藏",
+  ],
+  [RogueTopic.ROGUE_5]: [
+    "主播精选",
+    "铿金征鼓",
+    "家常小炒",
+    "福祸相依",
+    "午商梭",
+    "令倒转",
+  ],
+};
 
 export default function SubmitSeedForm({
   setReload,
@@ -87,6 +98,8 @@ export default function SubmitSeedForm({
         Object.fromEntries(new FormData(evt.currentTarget as HTMLFormElement)),
       ),
     );
+    data.rogue = currentRogue;
+
     for (const key in data) {
       data[key] = data[key].trim();
     }
@@ -173,7 +186,7 @@ export default function SubmitSeedForm({
               required
             />
             <div className="flex flex-wrap gap-2">
-              {presetLabels.map((text) => (
+              {presetLabels[currentRogue].map((text) => (
                 <span
                   key={text}
                   className={

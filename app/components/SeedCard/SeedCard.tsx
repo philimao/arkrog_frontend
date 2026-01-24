@@ -6,7 +6,16 @@ import { type Dispatch, type SetStateAction, useState } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import type { FavoriteItem } from "~/types/userInfo";
 import { openModal } from "~/utils/dom";
-import { MaxIcon, MinIcon, BilibiliIcon, DeleteIcon, StarHollowIcon, CopyIcon, CommentIcon, ThumbUpIcon } from "../Icons";
+import {
+  MaxIcon,
+  MinIcon,
+  BilibiliIcon,
+  DeleteIcon,
+  StarHollowIcon,
+  CopyIcon,
+  CommentIcon,
+  ThumbUpIcon,
+} from "../Icons";
 
 export default function SeedCard({
   seed,
@@ -58,7 +67,7 @@ export default function SeedCard({
           </span>
         </div>
         <div className="flex gap-2">
-          {!!userInfo?.level && userInfo?.level > 2 && (
+          {!!userInfo?.level && userInfo?.level > 3 && (
             <DeleteIcon
               onClick={handleDeleteSeed}
               className="w-6 h-6 text-transparent hover:text-ak-blue"
@@ -144,18 +153,9 @@ export default function SeedCard({
               />
             </a>
           )}
-          <CommentIcon
-            className="w-6 h-6 hover:text-ak-blue"
-            role="button"
-          />
-          <ThumbUpIcon
-            className="w-6 h-6 hover:text-ak-blue"
-            role="button"
-          />
-          <ThumbUpIcon
-            className="w-6 h-6 rotate-180"
-            role="button"
-          />
+          <CommentIcon className="w-6 h-6 hover:text-ak-blue" role="button" />
+          <ThumbUpIcon className="w-6 h-6 hover:text-ak-blue" role="button" />
+          <ThumbUpIcon className="w-6 h-6 rotate-180" role="button" />
         </div>
       </div>
     </div>

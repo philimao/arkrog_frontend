@@ -4,129 +4,133 @@
 
 html,
 body {
-    background: #181818;
-    font-size: 16px;
-    color: white;
-    min-height: 100vh;
+  background: #181818;
+  font-size: 16px;
+  color: white;
+  min-height: 100vh;
 }
 
 @layer components {
-    /* 自定义滚动条样式 */
-    ::-webkit-scrollbar {
-        width: 8px; /* 滚动条宽度 */
-    }
+  /* 自定义滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 8px; /* 滚动条宽度 */
+  }
 
-    ::-webkit-scrollbar-thumb {
-        background-color: #676767; /* 滚动条颜色 */
-        border-radius: 9999px; /* 圆角效果 */
-    }
+  ::-webkit-scrollbar-thumb {
+    background-color: #676767; /* 滚动条颜色 */
+    border-radius: 9999px; /* 圆角效果 */
+  }
 
-    ::-webkit-scrollbar-track {
-        background-color: #414141; /* 滚动条轨道背景 */
-    }
+  ::-webkit-scrollbar-track {
+    background-color: #414141; /* 滚动条轨道背景 */
+  }
 }
 
 @layer base {
-    @font-face {
-        font-family: 'Novecento';
-        font-style: normal;
-        font-weight: 400;
-        src: url(/fonts/Novecento.woff2) format('woff2');
-    }
+  @font-face {
+    font-family: "Novecento";
+    font-style: normal;
+    font-weight: 400;
+    src: url(/fonts/Novecento.woff2) format("woff2");
+  }
 
-    @font-face {
-        font-family: 'NovecentoWide';
-        font-style: normal;
-        font-weight: 400;
-        src: url(/fonts/NovecentoWide.ttf) format('truetype');
-    }
+  @font-face {
+    font-family: "NovecentoWide";
+    font-style: normal;
+    font-weight: 400;
+    src: url(/fonts/NovecentoWide.ttf) format("truetype");
+  }
 
-    @font-face {
-        font-family: 'HanSans';
-        font-style: normal;
-        font-weight: 600;
-        src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format('opentype');
-    }
+  @font-face {
+    font-family: "HanSans";
+    font-style: normal;
+    font-weight: 600;
+    src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format("opentype");
+  }
 
-    @font-face {
-        font-family: 'HanSerif';
-        font-style: normal;
-        font-weight: 600;
-        src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format('opentype');
-    }
+  @font-face {
+    font-family: "HanSerif";
+    font-style: normal;
+    font-weight: 600;
+    src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format("opentype");
+  }
 }
 
 .font-novecento {
-    font-family: 'Novecento', sans-serif;
-    font-weight: 400;
+  font-family: "Novecento", sans-serif;
+  font-weight: 400;
 }
 
 .font-novecento-wide {
-    font-family: 'NovecentoWide', sans-serif;
-    font-weight: 400;
+  font-family: "NovecentoWide", sans-serif;
+  font-weight: 400;
 }
 
 .font-han-sans {
-    font-family: 'HanSans', sans-serif;
+  font-family: "HanSans", sans-serif;
 }
 
 .font-han-serif {
-    font-family: 'HanSerif', sans-serif;
+  font-family: "HanSerif", sans-serif;
 }
 
 .hide-scroll {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .hide-scroll::-webkit-scrollbar {
-    display: none;
+  display: none;
+}
+
+:focus-visible {
+  outline: none;
 }
 
 /* 响应式根节点字体大小调整 */
 
 /* 默认字体大小：移动端友好，最小 14px，最大 18px */
 html {
-    overflow-x: hidden;
-  
-    /* 最小 14px，最大 16px */
-    font-size: clamp(14px, 1vw + 0.3rem, 16px);
+  overflow-x: hidden;
+
+  /* 最小 14px，最大 16px */
+  font-size: clamp(14px, 1vw + 0.3rem, 16px);
+}
+
+@media screen and (width >= 1440px) {
+  html {
+    font-size: clamp(14px, 0.8vw + 0.3rem, 16px);
   }
-  
-  @media screen and (width >= 1440px) {
-    html {
-      font-size: clamp(14px, 0.8vw + 0.3rem, 16px);
-    }
+}
+
+@media screen and (width >= 1920px) {
+  html {
+    font-size: 16px;
   }
-  
-  @media screen and (width >= 1920px) {
-    html {
-      font-size: 16px;
-    }
-  }
+}
 
 @layer components {
-    @media (min-width: 640px) {
-        .container {
-            max-width: 786px;
-        }
+  @media (min-width: 640px) {
+    .container {
+      max-width: 786px;
     }
+  }
 
-    @media (min-width: 768px) {
-        .container {
-            max-width: 992px;
-        }
+  @media (min-width: 768px) {
+    .container {
+      max-width: 992px;
     }
-    
-    @media (min-width: 1024px) {
-        .container {
-            max-width: 1024px;
-        }
-    }
+  }
 
-    @media (min-width: 1280px) {
-        .container {
-            max-width: 1280px;
-        }
+  @media (min-width: 1024px) {
+    .container {
+      max-width: 1024px;
     }
+  }
+
+  @media (min-width: 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
 }

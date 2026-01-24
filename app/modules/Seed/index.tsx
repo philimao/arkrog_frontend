@@ -7,6 +7,9 @@ import type { SeedType } from "~/types/seedType";
 import SeedCard from "~/components/SeedCard/SeedCard";
 import { Pagination } from "@heroui/react";
 import { SeedTypes } from "~/types/constant";
+import { RogueTopic } from "~/types/gameData";
+
+const currentRogue = RogueTopic.ROGUE_5;
 
 const navs = [
   { title: "全部" },
@@ -32,16 +35,17 @@ export default function SeedIndex() {
       (_, index) => index >= start && index < end,
     );
     if (isCurrentPageLoaded && !reload) return;
-    _post<{ seeds: SeedType[]; total: number }>("/seed", { page }).then(
-      (result) => {
-        if (!result) return;
-        const { seeds: newSeeds, total } = result;
-        setMaxPage(Math.ceil(total / pageSize));
-        setSeeds((prev) => {
-          return mergeArray(prev, newSeeds);
-        });
-      },
-    );
+    _post<{ seeds: SeedType[]; total: number }>("/seed", {
+      page,
+      rogue: currentRogue,
+    }).then((result) => {
+      if (!result) return;
+      const { seeds: newSeeds, total } = result;
+      setMaxPage(Math.ceil(total / pageSize));
+      setSeeds((prev) => {
+        return mergeArray(prev, newSeeds);
+      });
+    });
     setReload(false);
   }, [page, seeds, reload]);
 
@@ -49,7 +53,7 @@ export default function SeedIndex() {
     <div>
       <div className="flex flex-wrap items-center mb-4">
         <span className="text-ak-blue me-auto">
-          本版块截止至2025年2月14日16:00
+          本版块截止至2026年3月3日16:00
         </span>
         <SubmitSeedForm setReload={setReload} />
       </div>

@@ -22,4 +22,27 @@ export interface SeedType {
   date_created: number;
   /** 修改时间 */
   date_modified?: number;
+  /** 元数据 */
+  metadata?: SeedMetadata;
+}
+
+export interface SeedMetadata {
+  likes: number;
+  dislikes: number;
+  copies: number;
+  comments: number;
+  /** 当前用户的操作状态 */
+  userAction?: "like" | "dislike" | "none";
+}
+
+export interface SeedComment {
+  _id: string;
+  seedId: string;
+  userId: string;
+  username: string;
+  userAvatar: string;
+  content: string;
+  replyTo: string | null;
+  replyToUser: string | null;
+  date_created: number;
 }

@@ -1,10 +1,8 @@
 import type { SeedType } from "~/types/seedType";
 import { SeedTypeColors, SeedTypes } from "~/types/constant";
 import { toast } from "react-toastify";
-import { _post } from "~/utils/tools";
 import { type Dispatch, type SetStateAction, useState } from "react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
-import type { FavoriteItem } from "~/types/userInfo";
 import { openModal } from "~/utils/dom";
 import {
   MaxIcon,
@@ -16,6 +14,8 @@ import {
   CommentIcon,
   ThumbUpIcon,
 } from "../Icons";
+import { seedApi } from "~/services/seed";
+import { CommentSection } from "./CommentSection";
 
 export default function SeedCard({
   seed,
@@ -26,29 +26,57 @@ export default function SeedCard({
 }) {
   const { userInfo, updateUserInfo } = useUserInfoStore();
   const [expand, setExpand] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [metadata, setMetadata] = useState(seed.metadata);
 
   async function handleDeleteSeed() {
     if (window.confirm("是否确定删除该种子？")) {
-      _post("/seed/delete", { _id: seed._id });
-      setSeeds?.((prev) => {
-        const updated = [...prev];
-        const index = updated.findIndex((s) => s._id === seed._id);
-        updated.splice(index, 1);
-        return updated;
-      });
+      try {
+        await seedApi.delete(seed._id);
+        setSeeds?.((prev) => prev.filter((s) => s._id !== seed._id));
+      } catch (error) {
+        toast.error((error as Error).message);
+      }
     }
   }
 
   async function handleStarSeed() {
     if (!seed?._id) return;
     try {
-      const favorite = await _post<FavoriteItem[]>("/user/favorite", {
-        operate: starred ? "remove" : "add",
-        item: { _id: seed._id, type: "seed" },
-      });
+      const favorite = await seedApi.toggleFavorite(
+        seed._id,
+        starred ? "remove" : "add",
+      );
       updateUserInfo({ favorite });
     } catch (error) {
       toast.warning((error as Error).message);
+    }
+  }
+
+  async function handleAction(action: "like" | "dislike") {
+    if (!userInfo?.level) {
+      return openModal("login");
+    }
+
+    try {
+      // 如果点击当前状态,则取消
+      const newAction = metadata?.userAction === action ? "none" : action;
+      const updatedMetadata = await seedApi.action(seed._id, newAction);
+      setMetadata(updatedMetadata);
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(seed.code);
+      toast.info("已拷贝至剪贴板");
+
+      // 后台计数(不等待)
+      seedApi.copy(seed._id).catch(console.error);
+    } catch (error) {
+      toast.error("复制失败");
     }
   }
 
@@ -56,7 +84,7 @@ export default function SeedCard({
     seed?._id && userInfo?.favorite?.find((item) => item._id === seed._id);
 
   return (
-    <div className="bg-semi-black px-6 pt-6 pb-4 flex flex-col">
+    <div className="bg-semi-black px-6 pt-6 pb-4 flex flex-col relative">
       <div className="flex">
         <div className="text-lg font-bold me-auto">
           <span
@@ -90,11 +118,7 @@ export default function SeedCard({
           <CopyIcon
             className="w-6 h-6 hover:text-ak-blue"
             role="button"
-            onClick={() =>
-              navigator.clipboard
-                .writeText(seed.code)
-                .then(() => toast.info("已拷贝至剪贴板"))
-            }
+            onClick={handleCopy}
           />
           <StarHollowIcon
             className="w-6 h-6 hover:text-ak-blue"
@@ -131,8 +155,7 @@ export default function SeedCard({
       <div className="flex items-center justify-between py-2">
         <div className="flex items-center">
           <img
-            className="h-8 w-8 me-2"
-            style={{ borderRadius: "50%" }}
+            className="h-8 w-8 me-2 rounded-full"
             src={seed.raiderImage}
             alt="raider"
             referrerPolicy="no-referrer"
@@ -143,7 +166,7 @@ export default function SeedCard({
         <div className="text-sm max-sm:w-16">
           {new Date(seed.date_created).toLocaleString("zh-CN")}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3 items-center">
           {seed.url && (
             <a href={seed.url} target="_blank" rel="noopener noreferrer">
               <BilibiliIcon
@@ -153,11 +176,56 @@ export default function SeedCard({
               />
             </a>
           )}
-          <CommentIcon className="w-6 h-6 hover:text-ak-blue" role="button" />
-          <ThumbUpIcon className="w-6 h-6 hover:text-ak-blue" role="button" />
-          <ThumbUpIcon className="w-6 h-6 rotate-180" role="button" />
+
+          {/* 评论 */}
+          <div className="flex items-center gap-1">
+            <CommentIcon
+              className="w-6 h-6 hover:text-ak-blue cursor-pointer"
+              role="button"
+              onClick={() => setShowComments(!showComments)}
+            />
+            <span className="text-sm">{metadata?.comments || 0}</span>
+          </div>
+
+          {/* 点赞 */}
+          <div className="flex items-center gap-1">
+            <ThumbUpIcon
+              className={`w-6 h-6 cursor-pointer ${
+                metadata?.userAction === "like"
+                  ? "text-ak-blue"
+                  : "hover:text-ak-blue"
+              }`}
+              role="button"
+              onClick={() => handleAction("like")}
+            />
+            <span className="text-sm">{metadata?.likes || 0}</span>
+          </div>
+
+          {/* 点踩 */}
+          <div className="flex items-center gap-1">
+            <ThumbUpIcon
+              className={`w-6 h-6 rotate-180 cursor-pointer ${
+                metadata?.userAction === "dislike"
+                  ? "text-red-500"
+                  : "hover:text-red-500"
+              }`}
+              role="button"
+              onClick={() => handleAction("dislike")}
+            />
+            <span className="text-sm">{metadata?.dislikes || 0}</span>
+          </div>
         </div>
       </div>
+
+      {/* 评论区 */}
+      {showComments && (
+        <CommentSection
+          seedId={seed._id}
+          onCommentCountChange={(count) =>
+            setMetadata((prev) => ({ ...prev!, comments: count }))
+          }
+        />
+      )}
     </div>
   );
 }

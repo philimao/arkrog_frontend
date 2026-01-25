@@ -25,10 +25,9 @@ import { toast } from "react-toastify";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { SeedTypes } from "~/types/constant";
 import ModalTemplate from "~/components/Modal";
-import type { RecordType } from "~/types/recordType";
-import { _post } from "~/utils/tools";
 import { URLValidation } from "~/utils/record";
 import { RogueTopic } from "~/types/gameData";
+import { seedApi } from "~/services/seed";
 
 const MyInput = (props: InputProps) => (
   <Input radius="none" labelPlacement="outside" {...props}></Input>
@@ -117,7 +116,7 @@ export default function SubmitSeedForm({
     data.labels = data.label.split(" ").filter((i: string) => i);
     delete data.label;
     try {
-      await _post<RecordType[]>("/seed/submit", data);
+      await seedApi.submit(data);
       setReload((prev) => !prev);
       onClose();
     } catch (err) {

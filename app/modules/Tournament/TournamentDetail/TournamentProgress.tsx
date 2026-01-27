@@ -481,7 +481,14 @@ export default function TournamentProgress({
 
   const isTeam = tournamentData.type === "team";
   const currentStage = tournamentData.stages[currentStageIndex];
-  const dates = generateDateArray(currentStage.startTime, currentStage.endTime);
+  
+  // 生成所有日期，然后过滤掉休赛期
+  const allDates = generateDateArray(currentStage.startTime, currentStage.endTime);
+  const dates = allDates.filter(date => {
+    if (!currentStage.offseason || currentStage.offseason.length === 0) return true;
+    const dateMs = new Date(date).setHours(0, 0, 0, 0);
+    return !currentStage.offseason.includes(dateMs);
+  });
 
   const schedule = new Map<string, TournamentGame>();
 

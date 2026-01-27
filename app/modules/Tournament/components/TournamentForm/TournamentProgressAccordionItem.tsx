@@ -26,10 +26,11 @@ import { starterSquads } from "~/utils/gamedataConst";
 import { toast } from "react-toastify";
 import { URLValidation } from "~/utils/record";
 
-// Helper function to calculate schedule (Day1, Day2, etc.) based on game date and stage startTime
-const calculateSchedule = (
+// Helper function to calculate schedule (Day1, Day2, etc.) based on game date, stage startTime and offseason
+export const calculateSchedule = (
   gameDate: number,
   stageStartTime: number,
+  offseason?: number[],
 ): string => {
   const startDate = new Date(stageStartTime);
   startDate.setHours(0, 0, 0, 0);
@@ -39,11 +40,23 @@ const calculateSchedule = (
   const diffTime = gameDateObj.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays >= 0) {
-    return `Day${diffDays + 1}`;
+  if (diffDays < 0) {
+    return "";
   }
 
-  return "";
+  // Count how many offseason days are before the game date
+  let offdaysBeforeGame = 0;
+  if (offseason && offseason.length > 0) {
+    for (const offday of offseason) {
+      const offdayDate = new Date(offday);
+      offdayDate.setHours(0, 0, 0, 0);
+      if (offdayDate.getTime() >= startDate.getTime() && offdayDate.getTime() < gameDateObj.getTime()) {
+        offdaysBeforeGame++;
+      }
+    }
+  }
+
+  return `Day${diffDays + 1 - offdaysBeforeGame}`;
 };
 
 /**
@@ -141,14 +154,22 @@ export default function TournamentProgressAccordionItem({
     return <div className="mb-4 text-ak-red">请先添加参赛选手</div>;
   }
 
-  const dates = useMemo(
-    () =>
-      generateDateArray(
-        editingStage?.startTime || 0,
-        editingStage?.endTime || 0,
-      ),
-    [editingStage?.startTime, editingStage?.endTime],
-  );
+  const dates = useMemo(() => {
+    const allDates = generateDateArray(
+      editingStage?.startTime || 0,
+      editingStage?.endTime || 0,
+    );
+    
+    // 过滤掉休赛期的日期
+    if (editingStage?.offseason && editingStage.offseason.length > 0) {
+      return allDates.filter(date => {
+        const dateMs = new Date(date).setHours(0, 0, 0, 0);
+        return !editingStage.offseason?.includes(dateMs);
+      });
+    }
+    
+    return allDates;
+  }, [editingStage?.startTime, editingStage?.endTime, editingStage?.offseason]);
   const players = formData.players?.filter((player) =>
     player.games.find((game) => game.stage === editingStage?.name),
   );
@@ -860,6 +881,7 @@ export default function TournamentProgressAccordionItem({
                                   ? calculateSchedule(
                                       gameDate,
                                       editingStage.startTime,
+                                      editingStage.offseason,
                                     )
                                   : undefined,
                                 customStageValues: {},
@@ -965,6 +987,7 @@ export default function TournamentProgressAccordionItem({
                                                   calculateSchedule(
                                                     newDate.getTime(),
                                                     editingStage.startTime,
+                                                    editingStage.offseason,
                                                   );
                                               }
                                               setFormData((prev) => ({
@@ -1030,6 +1053,7 @@ export default function TournamentProgressAccordionItem({
                                               game.schedule = calculateSchedule(
                                                 newDate.getTime(),
                                                 editingStage.startTime,
+                                                editingStage.offseason,
                                               );
                                             }
                                             setFormData((prev) => ({
@@ -1101,6 +1125,7 @@ export default function TournamentProgressAccordionItem({
                                           game.schedule = calculateSchedule(
                                             newDate.getTime(),
                                             editingStage.startTime,
+                                            editingStage.offseason,
                                           );
                                         }
                                         setFormData((prev) => ({
@@ -1152,6 +1177,7 @@ export default function TournamentProgressAccordionItem({
                                       game.schedule = calculateSchedule(
                                         newDate.getTime(),
                                         editingStage.startTime,
+                                        editingStage.offseason,
                                       );
                                     }
                                     setFormData((prev) => ({
@@ -1569,6 +1595,7 @@ export default function TournamentProgressAccordionItem({
                                               ? calculateSchedule(
                                                   gameDate,
                                                   editingStage.startTime,
+                                                  editingStage.offseason,
                                                 )
                                               : undefined,
                                             rivalMid:

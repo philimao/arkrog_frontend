@@ -1,8 +1,9 @@
 import { Select, SelectItem } from "@heroui/react";
 import { CloseIcon } from "~/components/Icons";
 import type { TournamentData, TournamentStage } from "~/types/tournamentsData";
-import { formatDateForInput } from "~/utils/date";
+import { formatDateForInput, generateDateArray } from "~/utils/date";
 import { getInputClassName, labelClassName, selectClassName } from ".";
+import { useMemo } from "react";
 
 interface TournamentStagesAccordionItemProps {
   formData: TournamentData;
@@ -82,7 +83,21 @@ export default function TournamentStagesAccordionItem({
                         const date = new Date(e.target.value);
                         if (!isNaN(date.getTime())) {
                           const newStages = [...(formData.stages || [])];
-                          newStages[index].startTime = date.getTime();
+                          const newStartTime = date.getTime();
+                          newStages[index].startTime = newStartTime;
+                          
+                          // 清理超出日期范围的休赛期
+                          if (newStages[index].offseason && newStages[index].offseason.length > 0) {
+                            const startDate = new Date(newStartTime);
+                            startDate.setHours(0, 0, 0, 0);
+                            const endDate = new Date(newStages[index].endTime);
+                            endDate.setHours(0, 0, 0, 0);
+                            
+                            newStages[index].offseason = newStages[index].offseason.filter(
+                              offday => offday >= startDate.getTime() && offday <= endDate.getTime()
+                            );
+                          }
+                          
                           setFormData((prev) => ({
                             ...prev,
                             stages: newStages,
@@ -118,7 +133,21 @@ export default function TournamentStagesAccordionItem({
                         const date = new Date(e.target.value);
                         if (!isNaN(date.getTime())) {
                           const newStages = [...(formData.stages || [])];
-                          newStages[index].endTime = date.getTime();
+                          const newEndTime = date.getTime();
+                          newStages[index].endTime = newEndTime;
+                          
+                          // 清理超出日期范围的休赛期
+                          if (newStages[index].offseason && newStages[index].offseason.length > 0) {
+                            const startDate = new Date(newStages[index].startTime);
+                            startDate.setHours(0, 0, 0, 0);
+                            const endDate = new Date(newEndTime);
+                            endDate.setHours(0, 0, 0, 0);
+                            
+                            newStages[index].offseason = newStages[index].offseason.filter(
+                              offday => offday >= startDate.getTime() && offday <= endDate.getTime()
+                            );
+                          }
+                          
                           setFormData((prev) => ({
                             ...prev,
                             stages: newStages,
@@ -165,6 +194,90 @@ export default function TournamentStagesAccordionItem({
                     <SelectItem key="1on1">1对1淘汰赛</SelectItem>
                   </Select>
                 </div>
+                {/* 休赛期 */}
+                <div className="md:col-span-2">
+                  <label className={labelClassName}>
+                    休赛期
+                    <span className="text-sm text-light-mid-gray ms-2">
+                      点击日期按钮将该日加入休赛期，日程会自动往后推移
+                    </span>
+                  </label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(() => {
+                      if (!stage.startTime || !stage.endTime) {
+                        return (
+                          <span className="text-light-mid-gray text-sm">
+                            请先设置开始时间和结束时间
+                          </span>
+                        );
+                      }
+
+                      const dates = generateDateArray(
+                        stage.startTime,
+                        stage.endTime,
+                      );
+
+                      return dates.map((date, dateIndex) => {
+                        const dateMs = new Date(date).setHours(0, 0, 0, 0);
+                        const isOffseason = stage.offseason?.includes(dateMs);
+                        const isFirstOrLastDay =
+                          dateIndex === 0 || dateIndex === dates.length - 1;
+
+                        return (
+                          <button
+                            key={dateIndex}
+                            type="button"
+                            onClick={() => {
+                              if (isFirstOrLastDay) return;
+
+                              const newStages = [...(formData.stages || [])];
+                              const currentOffseason =
+                                newStages[index].offseason || [];
+
+                              if (isOffseason) {
+                                // Remove from offseason
+                                newStages[index].offseason =
+                                  currentOffseason.filter((d) => d !== dateMs);
+                              } else {
+                                // Add to offseason - 不立即删除比赛数据，在提交时过滤
+                                newStages[index].offseason = [
+                                  ...currentOffseason,
+                                  dateMs,
+                                ].sort((a, b) => a - b);
+                              }
+
+                              setFormData((prev) => ({
+                                ...prev,
+                                stages: newStages,
+                              }));
+                            }}
+                            className={`px-3 py-1.5 text-sm transition-colors w-[5.5rem] ${
+                              isFirstOrLastDay
+                                ? "bg-[#00000033] cursor-not-allowed"
+                                : isOffseason
+                                  ? "bg-ak-red text-white"
+                                  : "bg-[#00000033] hover:bg-[#00000055]"
+                            }`}
+                            disabled={isFirstOrLastDay}
+                          >
+                            <div className="text-center">
+                              <div>
+                                {date.getMonth() + 1}月{date.getDate()}日
+                              </div>
+                              <div className="text-xs">
+                                Day
+                                {dateIndex +
+                                  1 -
+                                  (stage.offseason?.filter((d) => d < dateMs)
+                                    .length || 0)}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
               </div>
               <div>
                 <button
@@ -199,13 +312,16 @@ export default function TournamentStagesAccordionItem({
             name: `阶段${formData.stages?.length + 1 || 1}`,
             startTime: now,
             endTime: now + 86400000, // +1 day
+            offseason: [],
             type: "rank" as const,
             customStageKeys: customStageKeys,
             groupBy: "",
           };
           setFormData((prev) => ({
             ...prev,
-            stages: [...(prev.stages || []), newStage].sort((a, b) => a.startTime - b.startTime), // 按开始时间排序
+            stages: [...(prev.stages || []), newStage].sort(
+              (a, b) => a.startTime - b.startTime,
+            ), // 按开始时间排序
           }));
         }}
         className="w-full px-4 py-2 mb-2 text-ak-blue rounded-md hover:bg-mid-gray"

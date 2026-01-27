@@ -13,7 +13,7 @@ import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
 import TournamentStagesAccordionItem from "./TournamentStagesAccordionItem";
 import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
 import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
-import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
+import TournamentProgressAccordionItem, { calculateSchedule } from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 import { URLValidation } from "~/utils/record";
 import TournamentGenerateModal from "../TournamentGenerateModal";
@@ -214,6 +214,39 @@ export default function TournamentForm({
       }
 
       try {
+        // 验证并处理休赛期数据
+        for (let stage of formData.stages) {
+          if (stage.offseason && stage.offseason.length > 0) {
+            // 确保所有休赛期日期都是数字格式（0点时间戳）
+            const validOffseasons = stage.offseason.map(date => {
+              const d = new Date(date);
+              d.setHours(0, 0, 0, 0);
+              return d.getTime();
+            }).filter(date => {
+              // 验证休赛期日期在开始和结束时间之间
+              const startDate = new Date(stage.startTime);
+              startDate.setHours(0, 0, 0, 0);
+              const endDate = new Date(stage.endTime);
+              endDate.setHours(0, 0, 0, 0);
+              return date >= startDate.getTime() && date <= endDate.getTime();
+            });
+            
+            stage.offseason = validOffseasons.sort((a, b) => a - b);
+            
+            // 过滤掉休赛期日期上的所有比赛数据
+            if (validOffseasons.length > 0) {
+              formData.players?.forEach(player => {
+                player.games = player.games.filter(game => {
+                  if (game.stage !== stage.name) return true;
+                  const gameDate = new Date(game.date);
+                  gameDate.setHours(0, 0, 0, 0);
+                  return !validOffseasons.includes(gameDate.getTime());
+                });
+              });
+            }
+          }
+        }
+
         // 对于Bilibili链接，进行格式化处理
         if (formData.playback) {
           formData.playback = await URLValidation(formData.playback);
@@ -224,6 +257,16 @@ export default function TournamentForm({
             formData.stages.some((s) => s.name === g.stage),
           );
           for (let game of player.games) {
+            // 更新所有比赛的 schedule 字段以适应休赛期
+            const stage = formData.stages.find((s) => s.name === game.stage);
+            if (stage && stage.startTime) {
+              game.schedule = calculateSchedule(
+                game.date,
+                stage.startTime,
+                stage.offseason,
+              );
+            }
+            
             if (game.customStageValues.playback) {
               game.customStageValues.playback = await URLValidation(
                 game.customStageValues.playback,

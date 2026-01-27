@@ -259,6 +259,12 @@ const createRankingMap = (schedule: Map<string, any>) => {
       const rankB = b[1].customStageValues?.rank ?? 999;
       return rankA - rankB;
     })
+    .sort((a, b) => {
+      // 如果有自定义晋级情况，将晋级的排在前面
+      const promoteA = a[1].customStageValues?.promote === "是" ? 1 : 0;
+      const promoteB = b[1].customStageValues?.promote === "是" ? 1 : 0;
+      return promoteB - promoteA;
+    })
     .forEach((entry, index) => ranking.set(entry[0], index + 1));
 
   return ranking;
@@ -289,6 +295,12 @@ const getSortedRanking = (
         const rankA = a[1].customStageValues?.rank ?? 999;
         const rankB = b[1].customStageValues?.rank ?? 999;
         return rankA - rankB;
+      })
+      .sort((a, b) => {
+        // 如果有自定义晋级情况，将晋级的排在前面
+        const promoteA = a[1].customStageValues?.promote === "是" ? 1 : 0;
+        const promoteB = b[1].customStageValues?.promote === "是" ? 1 : 0;
+        return promoteB - promoteA;
       });
     return rankingAscending ? sortedSchedule : sortedSchedule.reverse();
   } else {

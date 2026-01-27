@@ -79,6 +79,8 @@ export interface TournamentStage {
   startTime: number;
   /** 结束时间 */
   endTime: number;
+  /** 休赛期 */
+  offseason?: number[];
   /** 阶段类型（积分赛/淘汰赛） */
   type: "rank" | "1on1";
   /** 绑定在具体比赛上的自定义keys，{session:"场地", strategy："美愿"}，value在TournamentGame中 */

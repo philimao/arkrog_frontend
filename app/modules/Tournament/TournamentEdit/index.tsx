@@ -45,27 +45,6 @@ export default function TournamentEdit() {
     onUnlocked,
   });
 
-  // 加载选手数据
-  useEffect(() => {
-    const loadPlayers = async () => {
-      if (
-        tournamentId &&
-        tournamentData &&
-        !tournamentData.players &&
-        editLock.lockStatus.canEdit
-      ) {
-        await fetchTournamentPlayer(tournamentId);
-      }
-    };
-    loadPlayers();
-  }, [
-    tournamentsData,
-    tournamentId,
-    fetchTournamentPlayer,
-    tournamentData,
-    editLock.lockStatus.canEdit,
-  ]);
-
   const backButton = (
     <StyledBackButtonContainer>
       <div className="relative">
@@ -73,6 +52,16 @@ export default function TournamentEdit() {
           onClick={() => navigate(`/tournament/${tournamentId}`)}
         >
           返回
+        </StyledBackButton>
+        <StyledBackButton
+          style={{ top: "6.5rem", display: "none" }}
+          onClick={() =>
+            document
+              .getElementById("tournament-generate-modal-trigger")
+              ?.click()
+          }
+        >
+          智能生成
         </StyledBackButton>
       </div>
     </StyledBackButtonContainer>

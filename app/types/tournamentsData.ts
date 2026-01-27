@@ -94,10 +94,6 @@ export interface TournamentTeam {
   id?: string;
   /** 队伍头像 */
   avatar: string;
-  /** 最终排名 */
-  finalRank?: number;
-  /** 备注 */
-  note?: string;
   /** 队伍成员 */
   members: string[];
   /** 队长 */
@@ -115,12 +111,6 @@ export type TournamentPlayer = {
   face: string;
   /** 直播间id */
   room_id: string;
-  /** 队伍名称 */
-  teamName?: string;
-  /** 最终排名 */
-  finalRank?: number;
-  /** 备注 */
-  note?: string;
   /** Tournament定义的key对应的values，{server:"简中服"} */
   customPlayerValues: Record<string, string>;
   /** 比赛场次 */
@@ -138,24 +128,14 @@ export type TournamentGame = {
   point?: number;
   /** 结局 */
   ending?: string;
-  /** 备注 */
-  note?: string;
-  /** 比赛结果（1 on 1) */
+  /** 比赛结果（仅限淘汰赛) */
   result?: "win" | "lose";
-  /** 对手mid */
+  /** 对手mid（仅限淘汰赛） */
   rivalMid?: string;
   /** 开局分队 */
   starterSquad?: string;
-  /** 对手 */
+  /** 开局干员 */
   starterOp?: string;
-  /** 等级 */
-  level?: string;
-  /** 时长 */
-  duration?: string;
-  /** 排名 */
-  rank?: number;
-  /** 回放链接 */
-  playback?: string;
   /** Stage中定义的key对应的values，{session:"大粽场"}， {strategy:"美愿"} */
   customStageValues: Record<string, string>;
 };

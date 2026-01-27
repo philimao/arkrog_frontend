@@ -6,7 +6,7 @@ import type {
   TournamentStage,
 } from "~/types/tournamentsData";
 import { useNavigate, useSearchParams } from "react-router";
-import { Accordion, AccordionItem } from "@heroui/react";
+import { Accordion, AccordionItem, useDisclosure } from "@heroui/react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
@@ -16,6 +16,7 @@ import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
 import TournamentProgressAccordionItem from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 import { URLValidation } from "~/utils/record";
+import TournamentGenerateModal from "../TournamentGenerateModal";
 
 export const getInputClassName = (
   fieldName: string,
@@ -328,6 +329,13 @@ export default function TournamentForm({
     window.scrollTo({ top: 0 });
   };
 
+  // 智能生成相关
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const onConfirm = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   // 未挂载时，不渲染表单
   if (!mounted) {
     return null;
@@ -467,6 +475,20 @@ export default function TournamentForm({
           {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
         </button>
       </div>
+
+      {/* 智能生成弹窗 */}
+      <TournamentGenerateModal
+        isOpen={isOpen}
+        onConfirm={onConfirm}
+        onClose={onClose}
+      />
+
+      <button
+        className="hidden"
+        type="button"
+        id="tournament-generate-modal-trigger"
+        onClick={onOpen}
+      />
     </form>
   );
 }

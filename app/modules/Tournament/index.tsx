@@ -82,7 +82,7 @@ function RougeSelector({
 
   const renderOngoingTournaments = () => {
     return (
-      <div className="bg-black-gray w-full mt-4 mb-12 grid grid-cols-1 md:grid-cols-3 p-4">
+      <div className="bg-black-gray w-full mb-12 grid grid-cols-1 md:grid-cols-3 p-4">
         <div className="text-4xl font-bold flex items-center justify-center col-span-3 md:col-span-1">
           进行中：
         </div>

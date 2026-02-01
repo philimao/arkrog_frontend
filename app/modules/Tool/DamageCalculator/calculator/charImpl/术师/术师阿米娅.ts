@@ -35,7 +35,7 @@ export default function CasterAmiya(input: CalculatorInput): CalculatorOutput {
     context,
   });
 
-  const atk = outsidePanel.atk; // 局外攻击力
+  const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
@@ -47,7 +47,7 @@ export default function CasterAmiya(input: CalculatorInput): CalculatorOutput {
     Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
 
   const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
-  const commonAtkTimeBase = input.charInput.attribute.baseAttackTime ?? 1.6; // 普攻基础时间
+  const commonAtkTimeBase = 1.6; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
 
@@ -73,9 +73,9 @@ export default function CasterAmiya(input: CalculatorInput): CalculatorOutput {
       // 技能期间攻击间隔不变
       const skillAtkTime = commonAtkTime;
 
-      const skillSp = input.charInput.skill.spData.spCost ?? 120; // 技能技力消耗
-      const spInitial = input.charInput.skill.spData.initSp ?? 0; // 技能初始技力
-      const skillKeepTime = input.charInput.skill.duration || 30.0; // 技能持续时间
+      const skillSp = 120; // 技能技力消耗
+      const spInitial = 0; // 技能初始技力
+      const skillKeepTime = 30.0; // 技能持续时间
 
       const uniEquipTag = `${input.charInput.uniEquipId ?? ""} ${input.charInput.uniEquipName ?? ""}`.toUpperCase();
       const hasSpecialModule = uniEquipTag.includes("DWDB-221E");
@@ -95,21 +95,18 @@ export default function CasterAmiya(input: CalculatorInput): CalculatorOutput {
 
       let skillRecoveryTime = 0;
       let commonHit = 0;
-      const spNeed = Math.max(skillSp - spInitial, 0);
-      if (spNeed > 0) {
-        if (spPerHit <= 0 && baseSpRecoveryPerSec > 0) {
-          skillRecoveryTime = spNeed / baseSpRecoveryPerSec;
-          commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
-        } else {
-          let currentSp = spInitial;
-          let time = 0;
-          while (currentSp < skillSp && time < 3600) {
-            time += commonAtkTime;
-            commonHit += 1;
-            currentSp += baseSpRecoveryPerSec * commonAtkTime + spPerHit;
-          }
-          skillRecoveryTime = time;
+      if (spPerHit <= 0 && baseSpRecoveryPerSec > 0) {
+        skillRecoveryTime = skillSp / baseSpRecoveryPerSec;
+        commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
+      } else {
+        let currentSp = 0;
+        let time = 0;
+        while (currentSp < skillSp && time < 3600) {
+          time += commonAtkTime;
+          commonHit += 1;
+          currentSp += baseSpRecoveryPerSec * commonAtkTime + spPerHit;
         }
+        skillRecoveryTime = time;
       }
 
       const skillHit = Math.ceil(skillKeepTime / skillAtkTime); // 技能攻击次数
@@ -151,5 +148,4 @@ export function applySkill(input: { charInput: CharInput }, context: BuffContext
 
 /** 阿米娅天赋应用（无面板增益，避免控制台警告） */
 export function applyTalent(_input: { charInput: CharInput }, _context: BuffContext) {}
-
 

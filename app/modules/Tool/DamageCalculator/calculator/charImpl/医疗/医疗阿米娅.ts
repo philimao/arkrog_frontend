@@ -33,7 +33,7 @@ export default function MedicAmiya(input: CalculatorInput): CalculatorOutput {
     context,
   });
 
-  const atk = outsidePanel.atk; // 局外攻击力
+  const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
@@ -45,7 +45,7 @@ export default function MedicAmiya(input: CalculatorInput): CalculatorOutput {
     Math.max(commonDPH * (1 - enemyMagRes / 100), commonDPH * 0.05) * damage_scale * damage_scale_mag;
 
   const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
-  const commonAtkTimeBase = input.charInput.attribute.baseAttackTime ?? 1.6; // 普攻基础时间
+  const commonAtkTimeBase = 1.6; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
 
@@ -68,6 +68,7 @@ export default function MedicAmiya(input: CalculatorInput): CalculatorOutput {
       }
 
       // 首击：攻击力+30%*N，攻击力200%法术伤害
+      const firstHitTime = 1.0;
       const firstHitAtkMul = 1 + atkBuffInMul + 0.3 * stackCount;
       const firstHitAtk = (atk + atkBuffInAdd) * firstHitAtkMul * atkBuffFinalMul + atkBuffFinalAdd;
       const firstHitDph = firstHitAtk * 2.0;
@@ -75,41 +76,28 @@ export default function MedicAmiya(input: CalculatorInput): CalculatorOutput {
         Math.max(firstHitDph * (1 - enemyMagRes / 100), firstHitDph * 0.05) * damage_scale * damage_scale_mag;
       const firstHitTotalDamage = firstHitDamage * (1 - mitigation);
 
-      // 技能期间：真伤，同时攻击2名敌人
+      // 技能后续：真伤普通攻击
       const skillAtkMul = 1 + atkBuffInMul + 0.3 * stackCount;
-      const skillAtk = (atk + atkBuffInAdd) * skillAtkMul * atkBuffFinalMul + atkBuffFinalAdd;
+      const skillAtk = ((atk + atkBuffInAdd) * skillAtkMul + atkBuffFinalAdd) * atkBuffFinalMul;
       const skillDph = skillAtk;
       const skillDamage = skillDph * damage_scale * damage_scale_pure;
 
-      const skillKeepTime = input.charInput.skill.duration || 32.0; // 技能持续时间
-      const skillHit = Math.ceil(skillKeepTime / commonAtkTime); // 技能攻击次数
+      const skillKeepTime = 32.0; // 技能持续时间
+      const normalKeepTime = Math.max(skillKeepTime - firstHitTime, 0);
+      const skillHit = Math.ceil(normalKeepTime / commonAtkTime); // 技能攻击次数
 
       const skillTotalDamage = skillDamage * skillHit * (1 - mitigation);
 
       // 回转与普攻期伤害
-      const skillSp = input.charInput.skill.spData.spCost ?? 20;
-      const spInitial = input.charInput.skill.spData.initSp ?? 0;
+      const skillSp = 20;
+      const spInitial = 0;
       const baseSpRecoveryPerSec = input.charInput.attribute.spRecoveryPerSec ?? 1 + spBuffAdd;
-      const baseSpPerHit = input.charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK" ? 1 : 0;
-      const spPerHit = baseSpPerHit;
 
       let skillRecoveryTime = 0;
       let commonHit = 0;
-      const spNeed = Math.max(skillSp - spInitial, 0);
-      if (spNeed > 0) {
-        if (spPerHit <= 0 && baseSpRecoveryPerSec > 0) {
-          skillRecoveryTime = spNeed / baseSpRecoveryPerSec;
-          commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
-        } else {
-          let currentSp = spInitial;
-          let time = 0;
-          while (currentSp < skillSp && time < 3600) {
-            time += commonAtkTime;
-            commonHit += 1;
-            currentSp += baseSpRecoveryPerSec * commonAtkTime + spPerHit;
-          }
-          skillRecoveryTime = time;
-        }
+      if (baseSpRecoveryPerSec > 0) {
+        skillRecoveryTime = skillSp / baseSpRecoveryPerSec;
+        commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
       }
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);
@@ -132,11 +120,7 @@ export default function MedicAmiya(input: CalculatorInput): CalculatorOutput {
   return result;
 }
 
-/** 咒愈阿米娅技能应用（无面板增益） */
-export function applySkill(_input: { charInput: CharInput }, _context: BuffContext) {}
 
-/** 咒愈阿米娅天赋应用（无面板增益） */
-export function applyTalent(_input: { charInput: CharInput }, _context: BuffContext) {}
 
 export const charSpecConfigs = {
   default: [

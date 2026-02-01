@@ -54,15 +54,16 @@ export default function GuardAmiya(input: CalculatorInput): CalculatorOutput {
     context,
   });
 
-  const atk = outsidePanel.atk; // 局外攻击力
+  const atk = input.charInput.attribute?.atk; // 局外攻击力
   const skillKey = input.charInput.skillKey; // 技能key
   const mitigation = input.enemyInput.attributes.damageResistance; // 敌人减伤
   const result: CalculatorOutput = CalculatorHelper.createCalculatorOutput();
 
+  const enemyDef = input.enemyInput.attributes.def; // 敌人防御
   const enemyMagRes = input.enemyInput.attributes.magicResistance; // 敌人法抗
 
   const atkSpeed = Math.min(100 + atkSpeedBuff, 600); // 攻击速度
-  const commonAtkTimeBase = input.charInput.attribute.baseAttackTime ?? 1.25; // 普攻基础时间
+  const commonAtkTimeBase = 1.25; // 普攻基础时间
   const commonAtkFrame = Math.round((commonAtkTimeBase * 3000.0) / atkSpeed); // 普攻间隔(帧)
   const commonAtkTime = commonAtkFrame / 30.0; // 普攻间隔(秒)
 
@@ -88,11 +89,11 @@ export default function GuardAmiya(input: CalculatorInput): CalculatorOutput {
       }
 
       const talentScale = getTalentScale(input.charInput);
-      const skillTalentBonus = talentScale; // 技能期间效果加倍，额外补一次
+      const skillTalentBonus = talentScale; // 技能期间天赋效果加倍，额外补一次
       const stackAtkBonus = 0.4 * stackCount;
 
       const skillAtkMul = 1 + atkBuffInMul + skillTalentBonus + stackAtkBonus;
-      const skillAtk = (atk + atkBuffInAdd) * skillAtkMul * atkBuffFinalMul + atkBuffFinalAdd;
+      const skillAtk = ((atk + atkBuffInAdd) * skillAtkMul + atkBuffFinalAdd) * atkBuffFinalMul;
 
       const hitScale = 2.2;
       const finalHitScale = 4.4;
@@ -101,50 +102,34 @@ export default function GuardAmiya(input: CalculatorInput): CalculatorOutput {
         Math.max(skillAtk * hitScale * (1 - enemyMagRes / 100), skillAtk * hitScale * 0.05) *
         damage_scale *
         damage_scale_mag;
-      const hitDamagePure = skillAtk * hitScale * damage_scale * damage_scale_pure;
       const finalHitDamagePure = skillAtk * finalHitScale * damage_scale * damage_scale_pure;
 
       const hitCount = 10;
       const normalHitCount = hitCount - 1;
 
-      const usePureForNormalHits = stackCount > 0;
-      const normalHitTotal = usePureForNormalHits ? hitDamagePure * normalHitCount : hitDamageMag * normalHitCount;
+      const normalHitTotal = hitDamageMag * normalHitCount;
       const finalHitTotal = finalHitDamagePure;
 
-      const skillTotalDamageMag = usePureForNormalHits ? 0 : normalHitTotal;
-      const skillTotalDamagePure = (usePureForNormalHits ? normalHitTotal : 0) + finalHitTotal;
+      const skillTotalDamageMag = normalHitTotal;
+      const skillTotalDamagePure = finalHitTotal;
 
-      const normalKeepTime = 35.0; // 技能后续普通攻击持续时间
-      const slashTime = commonAtkTime * hitCount; // 斩击耗时近似
-      const skillKeepTime = normalKeepTime + slashTime;
+      const skillKeepTime = 35.0; // 技能持续时间
+      const slashTime = 3.2;
+      const normalKeepTime = Math.max(skillKeepTime - slashTime, 0);
       const normalHit = Math.ceil(normalKeepTime / commonAtkTime);
       const normalHitDamage = skillAtk * damage_scale * damage_scale_pure;
       const normalTotalDamage = normalHitDamage * normalHit * (1 - mitigation);
 
       // 回转与普攻期伤害
-      const skillSp = input.charInput.skill.spData.spCost ?? 20;
-      const spInitial = input.charInput.skill.spData.initSp ?? 0;
+      const skillSp = 20;
+      const spInitial = 0;
       const baseSpRecoveryPerSec = input.charInput.attribute.spRecoveryPerSec ?? 1 + spBuffAdd;
-      const baseSpPerHit = input.charInput.skill.spData.spType === "INCREASE_WHEN_ATTACK" ? 1 : 0;
-      const spPerHit = baseSpPerHit;
 
       let skillRecoveryTime = 0;
       let commonHit = 0;
-      const spNeed = Math.max(skillSp - spInitial, 0);
-      if (spNeed > 0) {
-        if (spPerHit <= 0 && baseSpRecoveryPerSec > 0) {
-          skillRecoveryTime = spNeed / baseSpRecoveryPerSec;
-          commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
-        } else {
-          let currentSp = spInitial;
-          let time = 0;
-          while (currentSp < skillSp && time < 3600) {
-            time += commonAtkTime;
-            commonHit += 1;
-            currentSp += baseSpRecoveryPerSec * commonAtkTime + spPerHit;
-          }
-          skillRecoveryTime = time;
-        }
+      if (baseSpRecoveryPerSec > 0) {
+        skillRecoveryTime = skillSp / baseSpRecoveryPerSec;
+        commonHit = Math.ceil(skillRecoveryTime / commonAtkTime);
       }
 
       const commonTotalDamage = commonDamage * commonHit * (1 - mitigation);

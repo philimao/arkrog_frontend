@@ -39,6 +39,16 @@ export default function TournamentCreate() {
             <StyledBackButton onClick={() => navigate(-1)}>
               返回
             </StyledBackButton>
+            <StyledBackButton
+              style={{ top: "6.5rem" }}
+              onClick={() =>
+                document
+                  .getElementById("tournament-generate-modal-trigger")
+                  ?.click()
+              }
+            >
+              智能生成
+            </StyledBackButton>
           </div>
         </StyledBackButtonContainer>
         <h1 className="text-[1.5rem] font-bold">新建赛事</h1>

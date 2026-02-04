@@ -47,14 +47,14 @@ export default function TournamentEdit() {
 
   const backButton = (
     <StyledBackButtonContainer>
-      <div className="relative">
+      <div className="relative test">
         <StyledBackButton
           onClick={() => navigate(`/tournament/${tournamentId}`)}
         >
           返回
         </StyledBackButton>
         <StyledBackButton
-          style={{ top: "6.5rem", display: "none" }}
+          style={{ top: "6.5rem" }}
           onClick={() =>
             document
               .getElementById("tournament-generate-modal-trigger")

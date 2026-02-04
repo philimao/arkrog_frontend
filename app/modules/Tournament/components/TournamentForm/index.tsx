@@ -13,7 +13,9 @@ import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
 import TournamentStagesAccordionItem from "./TournamentStagesAccordionItem";
 import TournamentTeamsAccordionItem from "./TournamentTeamsAccordionItem";
 import TournamentPlayersAccordionItem from "./TournamentPlayersAccordionItem";
-import TournamentProgressAccordionItem, { calculateSchedule } from "./TournamentProgressAccordionItem";
+import TournamentProgressAccordionItem, {
+  calculateSchedule,
+} from "./TournamentProgressAccordionItem";
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 import { URLValidation } from "~/utils/record";
 import TournamentGenerateModal from "../TournamentGenerateModal";
@@ -218,25 +220,27 @@ export default function TournamentForm({
         for (let stage of formData.stages) {
           if (stage.offseason && stage.offseason.length > 0) {
             // 确保所有休赛期日期都是数字格式（0点时间戳）
-            const validOffseasons = stage.offseason.map(date => {
-              const d = new Date(date);
-              d.setHours(0, 0, 0, 0);
-              return d.getTime();
-            }).filter(date => {
-              // 验证休赛期日期在开始和结束时间之间
-              const startDate = new Date(stage.startTime);
-              startDate.setHours(0, 0, 0, 0);
-              const endDate = new Date(stage.endTime);
-              endDate.setHours(0, 0, 0, 0);
-              return date >= startDate.getTime() && date <= endDate.getTime();
-            });
-            
+            const validOffseasons = stage.offseason
+              .map((date) => {
+                const d = new Date(date);
+                d.setHours(0, 0, 0, 0);
+                return d.getTime();
+              })
+              .filter((date) => {
+                // 验证休赛期日期在开始和结束时间之间
+                const startDate = new Date(stage.startTime);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(stage.endTime);
+                endDate.setHours(0, 0, 0, 0);
+                return date >= startDate.getTime() && date <= endDate.getTime();
+              });
+
             stage.offseason = validOffseasons.sort((a, b) => a - b);
-            
+
             // 过滤掉休赛期日期上的所有比赛数据
             if (validOffseasons.length > 0) {
-              formData.players?.forEach(player => {
-                player.games = player.games.filter(game => {
+              formData.players?.forEach((player) => {
+                player.games = player.games.filter((game) => {
                   if (game.stage !== stage.name) return true;
                   const gameDate = new Date(game.date);
                   gameDate.setHours(0, 0, 0, 0);
@@ -266,7 +270,7 @@ export default function TournamentForm({
                 stage.offseason,
               );
             }
-            
+
             if (game.customStageValues.playback) {
               game.customStageValues.playback = await URLValidation(
                 game.customStageValues.playback,
@@ -375,9 +379,17 @@ export default function TournamentForm({
   // 智能生成相关
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const onConfirm = useCallback(() => {
-    onClose();
-  }, [onClose]);
+  const onConfirm = useCallback(
+    (tournamentData: TournamentData) => {
+      const newFormData = structuredClone(tournamentData);
+      setFormData(newFormData);
+      setEditingPlayer(newFormData.players?.[0]);
+      setEditingStage(newFormData.stages?.[0]);
+      editStartTimeRef.current = Date.now();
+      onClose();
+    },
+    [onClose],
+  );
 
   // 未挂载时，不渲染表单
   if (!mounted) {
@@ -521,6 +533,7 @@ export default function TournamentForm({
 
       {/* 智能生成弹窗 */}
       <TournamentGenerateModal
+        name={formData.name}
         isOpen={isOpen}
         onConfirm={onConfirm}
         onClose={onClose}

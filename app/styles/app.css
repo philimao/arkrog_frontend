@@ -1,11 +1,75 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @plugin './hero.ts';
 /* Note: You may need to change the path to fit your project structure */
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-ak-blue: var(--ak-blue);
+  --color-ak-deep-blue: var(--ak-deep-blue);
+  --color-light-mid-gray: var(--light-mid-gray);
+  --color-light-gray: var(--light-gray);
+  --color-mid-gray: var(--mid-gray);
+  --color-dark-gray: var(--dark-gray);
+  --color-black-gray: var(--black-gray);
+  --color-ak-purple: var(--ak-purple);
+  --color-ak-dark-purple: var(--ak-dark-purple);
+  --color-ak-red: var(--ak-red);
+  --color-ak-dark-red: var(--ak-dark-red);
+  --color-ak-pink: var(--ak-pink);
+  --color-semi-black: var(--semi-black);
+  --color-black-gray-70: var(--black-gray-70);
+
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* --container-center: true;
+  --container-padding: 0.5rem;
+  --container-padding-sm: 0.5rem;
+  --container-padding-md: 1rem;
+  --container-padding-lg: 2rem;
+  --container-padding-xl: 4rem;
+  --container-padding-2xl: 6rem; */
+
+  --container-sm: 786px;
+  --container-md: 992px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1280px;
+
+  --aspect-ratio-banner: 96/35;
+
+  --leading-12: 3rem;
+
+  --shadow-outer-sm: 0 0 5px 1px currentColor;
+  --shadow-outer-md: 0 0 8px 2px currentColor;
+  --shadow-outer-lg: 0 0 10px 2px currentColor;
+}
+
+@utility container {
+  margin-inline: auto;
+  @variant sm {
+    padding-inline: 0.5rem;
+  }
+    
+  @variant md {
+    padding-inline: 1rem;
+  }
+    
+  @variant lg {
+    padding-inline: 2rem;
+  }
+    
+  @variant xl {
+    padding-inline: 4rem;
+  }
+    
+  @variant 2xl {
+    padding-inline: 6rem;
+  }
 }
 
 html,
@@ -115,7 +179,7 @@ html {
   }
 }
 
-@layer components {
+/* @layer components {
   @media (min-width: 640px) {
     .container {
       max-width: 786px;
@@ -139,4 +203,4 @@ html {
       max-width: 1280px;
     }
   }
-}
+} */

@@ -1,12 +1,14 @@
 import { getPath, imageHost } from "~/utils/tools";
+import type { ImgHTMLAttributes } from "react";
 
 export default function OperatorAvatar({
   name,
   className = "",
+  ...props
 }: {
   name: string;
   className?: string;
-}) {
+} & ImgHTMLAttributes<HTMLImageElement>) {
   const url = encodeURI(imageHost + getPath(`头像_${name}.png`));
   return (
     <img
@@ -15,6 +17,7 @@ export default function OperatorAvatar({
       alt="avatar"
       referrerPolicy="no-referrer"
       crossOrigin="anonymous"
+      {...props}
       onError={(evt) => {
         (evt.target as HTMLImageElement).onerror = null;
         (evt.target as HTMLImageElement).src =

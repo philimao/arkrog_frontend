@@ -1,6 +1,18 @@
 import { createElement, type ReactNode } from "react";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
 
+/** 核心盟约 ID 列表 */
+export const CORE_BOND_IDS = [
+  "yanShip",
+  "sargonShip",
+  "victoriaShip",
+  "kjeragShip",
+  "lateranoShip",
+  "egirShip",
+  "siracusaShip",
+  "kazimierzShip",
+] as const;
+
 /** 盟约描述中 <@namespace.tag> 到 Tailwind 类名的映射 */
 const BOND_DESC_TAG_CLASSES: Record<string, string> = {
   "autochess.gray": "text-light-mid-gray",
@@ -14,12 +26,13 @@ const BOND_DESC_TAG_CLASSES: Record<string, string> = {
 function pushWithLineBreaks(
   str: string,
   result: ReactNode[],
-  keyPrefix: string
+  keyPrefix: string,
 ): void {
   const normalized = str.replace(/\\n/g, "\n");
   const parts = normalized.split("\n");
   parts.forEach((part, i) => {
-    if (i > 0) result.push(createElement("br", { key: `${keyPrefix}-br-${i}` }));
+    if (i > 0)
+      result.push(createElement("br", { key: `${keyPrefix}-br-${i}` }));
     if (part) result.push(part);
   });
 }
@@ -55,9 +68,11 @@ export function parseBondDesc(text: string): ReactNode[] {
     remaining = afterOpen.slice(closeIndex + 3);
 
     const className = BOND_DESC_TAG_CLASSES[tagName] ?? "text-light-mid-gray";
-    const contentWithBreaks = content.split("\n").flatMap((part, i) =>
-      i > 0 ? [createElement("br", { key: `cbr-${i}` }), part] : [part]
-    );
+    const contentWithBreaks = content
+      .split("\n")
+      .flatMap((part, i) =>
+        i > 0 ? [createElement("br", { key: `cbr-${i}` }), part] : [part],
+      );
     result.push(
       createElement(
         "span",
@@ -83,6 +98,30 @@ export function countBondStacks(operators: AutochessOperator[]) {
   return counter;
 }
 
-export function getBondActiveMethodLabel(bond: AutochessBond) {
-  return bond.activeCondition === "BOARD_AND_DECK" ? "编队生效" : "在场生效";
+export function getBondActiveMethodLabel(
+  bond: Pick<AutochessBond, "isActiveInDeck">,
+) {
+  return bond.isActiveInDeck ? "编队生效" : "在场生效";
+}
+
+export function isCoreBond(bondId: string) {
+  return (CORE_BOND_IDS as readonly string[]).includes(bondId);
+}
+
+export function splitBondsByCore(bonds: AutochessBond[]) {
+  return {
+    core: bonds.filter((bond) => isCoreBond(bond.bondId)),
+    extra: bonds.filter((bond) => !isCoreBond(bond.bondId)),
+  };
+}
+
+export function getAvailableOperatorCountByBond(
+  bondId: string,
+  operatorsByBond: Record<string, AutochessOperator[]>,
+  banOperatorIds: string[],
+) {
+  const all = operatorsByBond[bondId] || [];
+  if (!all.length) return 0;
+  const bannedSet = new Set(banOperatorIds);
+  return all.filter((operator) => !bannedSet.has(operator.chessId)).length;
 }

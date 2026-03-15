@@ -3,11 +3,16 @@ import { intToRoman } from "~/utils/tools";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
+import {
+  getAvailableOperatorCountByBond,
+  splitBondsByCore,
+} from "../utils/autochess";
 
 interface OperatorPickerProps {
   operatorsByLevel: Record<string, AutochessOperator[]>;
   operatorsByBond: Record<string, AutochessOperator[]>;
   bonds: AutochessBond[];
+  banOperatorIds: string[];
   selectedIds: string[];
   onPickToPick: (chessId: string) => void;
 }
@@ -18,12 +23,14 @@ export default function OperatorPicker({
   operatorsByLevel,
   operatorsByBond,
   bonds,
+  banOperatorIds,
   selectedIds,
   onPickToPick,
 }: OperatorPickerProps) {
-  const [mode, setMode] = useState<Mode>("按位阶");
+  const [mode, setMode] = useState<Mode>("按盟约");
   const [level, setLevel] = useState("1");
   const [bondId, setBondId] = useState(bonds[0]?.bondId || "");
+  const { core, extra } = useMemo(() => splitBondsByCore(bonds), [bonds]);
 
   const activeOperators = useMemo(() => {
     if (mode === "按位阶") return operatorsByLevel[level] || [];
@@ -33,7 +40,7 @@ export default function OperatorPicker({
   return (
     <section className="mb-8">
       <StyledTitle
-        modes={["按位阶", "按盟约"]}
+        modes={["按盟约", "按位阶"]}
         activeMode={mode}
         setActiveMode={(value) => setMode(value as Mode)}
       >
@@ -41,14 +48,17 @@ export default function OperatorPicker({
       </StyledTitle>
 
       {mode === "按位阶" ? (
-        <div className="flex gap-2 mb-4 flex-wrap">
+        <div className="grid grid-cols-6 mb-4 gap-[1px] bg-mid-gray">
           {Array.from({ length: 6 }, (_, idx) => {
             const key = String(idx + 1);
             const active = key === level;
             return (
               <button
                 key={key}
-                className={`px-3 py-1 border text-sm ${active ? "border-ak-blue text-ak-blue" : "border-mid-gray text-white"}`}
+                className={
+                  "text-center font-bold leading-[3rem] " +
+                  `${active ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+                }
                 onClick={() => setLevel(key)}
               >
                 {intToRoman(idx + 1)}
@@ -57,19 +67,53 @@ export default function OperatorPicker({
           })}
         </div>
       ) : (
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {bonds.map((bond) => {
-            const active = bond.bondId === bondId;
-            return (
-              <button
-                key={bond.bondId}
-                className={`px-3 py-1 border text-sm ${active ? "border-ak-blue text-ak-blue" : "border-mid-gray text-white"}`}
-                onClick={() => setBondId(bond.bondId)}
-              >
-                {bond.name}
-              </button>
-            );
-          })}
+        <div className="mb-4 flex flex-col gap-2">
+          <div className="text-xs text-light-gray">核心盟约</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-mid-gray">
+            {core.map((bond) => {
+              const active = bond.bondId === bondId;
+              const available = getAvailableOperatorCountByBond(
+                bond.bondId,
+                operatorsByBond,
+                banOperatorIds,
+              );
+              return (
+                <button
+                  key={bond.bondId}
+                  className={
+                    "text-center font-bold leading-[2.5rem] text-sm " +
+                    `${active ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+                  }
+                  onClick={() => setBondId(bond.bondId)}
+                >
+                  {bond.name}（{available}）
+                </button>
+              );
+            })}
+          </div>
+          <div className="text-xs text-light-gray mt-2">附加盟约</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-mid-gray">
+            {extra.map((bond) => {
+              const active = bond.bondId === bondId;
+              const available = getAvailableOperatorCountByBond(
+                bond.bondId,
+                operatorsByBond,
+                banOperatorIds,
+              );
+              return (
+                <button
+                  key={bond.bondId}
+                  className={
+                    "text-center font-bold leading-[2.5rem] text-sm " +
+                    `${active ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+                  }
+                  onClick={() => setBondId(bond.bondId)}
+                >
+                  {bond.name}（{available}）
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -88,7 +132,11 @@ export default function OperatorPicker({
               className={`flex items-center gap-2 border p-2 bg-black-gray ${selected ? "opacity-60 cursor-not-allowed" : "hover:border-ak-blue border-mid-gray"}`}
             >
               <div className="w-10 h-10 rounded-full overflow-hidden border border-mid-gray">
-                <OperatorAvatar name={operator.name} className="w-full h-full" />
+                <OperatorAvatar
+                  name={operator.name}
+                  className="w-full h-full"
+                  loading="lazy"
+                />
               </div>
               <span className="text-sm text-left">{operator.name}</span>
             </button>
@@ -98,4 +146,3 @@ export default function OperatorPicker({
     </section>
   );
 }
-

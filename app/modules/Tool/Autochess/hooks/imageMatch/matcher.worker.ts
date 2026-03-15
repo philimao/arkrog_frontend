@@ -46,7 +46,9 @@ interface ErrorMessage {
 const MAX_SCENE_WIDTH = 720;
 const SCALE_FIXED_MIN = 0.35;
 const SCALE_FIXED_MAX = 0.65;
-const SCALE_COARSE_STEP = 0.2;
+const COARSE_SCALE_MIN = 0.3;
+const COARSE_SCALE_MAX = 0.7;
+const SCALE_COARSE_STEP = 0.1;
 const SCALE_REFINE_STEP = 0.02;
 const SCALE_REFINE_RADIUS = 0.1;
 const SCALE_REFERENCE_SCENE_HEIGHT = 720;
@@ -603,6 +605,10 @@ function buildScales(start: number, end: number, step: number) {
   if (!scales.length) {
     scales.push(Number(start.toFixed(4)));
   }
+  const last = scales[scales.length - 1];
+  if (last != null && last < end - 1e-9) {
+    scales.push(Number(end.toFixed(4)));
+  }
   return scales;
 }
 
@@ -613,8 +619,8 @@ function buildScalesBySceneHeight() {
     SCALE_REFINE_STEP,
   );
   const coarseScales = buildScales(
-    SCALE_FIXED_MIN,
-    SCALE_FIXED_MAX,
+    COARSE_SCALE_MIN,
+    COARSE_SCALE_MAX,
     SCALE_COARSE_STEP,
   );
   return {
@@ -763,9 +769,8 @@ async function handleStart(data: StartMessage) {
   >();
   const dynamicScale = buildScalesBySceneHeight();
   const coarseScales = dynamicScale.coarseScales;
-  const maxRefineScaleCount = Math.floor(
-    (SCALE_REFINE_RADIUS * 2) / SCALE_REFINE_STEP,
-  ) + 1;
+  const maxRefineScaleCount =
+    Math.floor((SCALE_REFINE_RADIUS * 2) / SCALE_REFINE_STEP) + 1;
   const totalTasks =
     templates.length *
     data.algorithms.length *
@@ -994,8 +999,14 @@ async function handleStart(data: StartMessage) {
   }
 
   // Step 4-2: refine around coarse peak, only this stage uses parallel strategy.
-  const refineMin = Math.max(SCALE_FIXED_MIN, coarseBestScale - SCALE_REFINE_RADIUS);
-  const refineMax = Math.min(SCALE_FIXED_MAX, coarseBestScale + SCALE_REFINE_RADIUS);
+  const refineMin = Math.max(
+    SCALE_FIXED_MIN,
+    coarseBestScale - SCALE_REFINE_RADIUS,
+  );
+  const refineMax = Math.min(
+    SCALE_FIXED_MAX,
+    coarseBestScale + SCALE_REFINE_RADIUS,
+  );
   const refineScales = buildScales(refineMin, refineMax, SCALE_REFINE_STEP);
   let refinedBestScale = coarseBestScale;
   let refinedBestTopScore = coarseBestTopScore;

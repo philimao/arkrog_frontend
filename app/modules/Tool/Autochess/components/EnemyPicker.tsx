@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import type { AutochessEnemyGroup } from "~/types/autochess";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
@@ -6,8 +6,10 @@ import { getPath, imageHost } from "~/utils/tools";
 
 export default function EnemyPicker({
   groups,
+  matchedActiveTypes,
 }: {
   groups: AutochessEnemyGroup[];
+  matchedActiveTypes?: AutochessEnemyGroup["type"][];
 }) {
   const [mode, setMode] = useState("本场敌人");
   const [activeType, setActiveType] = useState(groups[0]?.type || "");
@@ -18,6 +20,13 @@ export default function EnemyPicker({
     () => groups.filter((group) => activeTypes.includes(group.type)),
     [activeTypes, groups],
   );
+
+  useEffect(() => {
+    if (!matchedActiveTypes || matchedActiveTypes.length === 0) return;
+    setMode("本场敌人");
+    setActiveTypes(matchedActiveTypes);
+    setActiveType(matchedActiveTypes[0]);
+  }, [matchedActiveTypes]);
 
   return (
     <section className="mb-8">
@@ -81,7 +90,7 @@ export default function EnemyPicker({
       )}
 
       {mode === "本场敌人" && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mb-4">
           {activeGroups.map((group) => {
             const typeName = group.typeName.split("·").pop() || group.typeName;
             return (
@@ -127,8 +136,7 @@ export default function EnemyPicker({
       )}
 
       <p className="text-sm text-default-500 mb-4">
-        在页面空白处粘贴截图可触发图标匹配，处理完成后会在控制台打印 ncc /
-        edge-ncc 分数。
+        在页面空白处粘贴含有本局遭遇敌方的完整截图可触发图标匹配。
       </p>
       <p className="text-xs text-default-400 mb-4">
         处理中页面会被锁定，请等待进度弹窗提示完成。

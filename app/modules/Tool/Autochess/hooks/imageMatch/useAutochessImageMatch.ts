@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { buildTemplateUrls } from "./templateList";
 import type {
+  AlgorithmTopMatches,
   MatchAlgorithm,
   MatchProgress,
   MatchResultPayload,
-  TemplateDebugItem,
+  ScaleDebugInfo,
 } from "./types";
 
 type WorkerMessage =
@@ -35,6 +36,13 @@ interface TemplateAssetPayload {
   templateUrl: string;
   templateBuffer: ArrayBuffer;
   templateMimeType: string;
+}
+
+interface BestScaleGroupDecision {
+  algorithm: MatchAlgorithm;
+  scale: number;
+  topScore: number;
+  matchedTemplateNames: string[];
 }
 
 function detectMimeTypeFromBuffer(buffer: ArrayBuffer) {
@@ -85,7 +93,9 @@ function detectMimeTypeFromBuffer(buffer: ArrayBuffer) {
   return null;
 }
 
-const DEFAULT_ALGORITHMS: MatchAlgorithm[] = ["ncc", "edge-ncc", "chamfer"];
+const DEFAULT_ALGORITHMS: MatchAlgorithm[] = ["ncc"];
+const CARTESIAN_SCORE_THRESHOLD = 0.9;
+const SCALE_TURNING_EPSILON = 1e-6;
 const INITIAL_PROGRESS: MatchProgress = {
   step: "idle",
   message: "等待粘贴图片",
@@ -142,32 +152,41 @@ async function decodeImageData(
   } catch {
     const objectUrl = URL.createObjectURL(blob);
     try {
-      const decoded = await new Promise<SceneImageDataPayload>((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext("2d", { willReadFrequently: true });
-          if (!ctx) {
-            reject(new Error("无法创建主线程 Canvas 上下文"));
-            return;
-          }
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, img.naturalWidth, img.naturalHeight);
-          resolve({
-            width: imageData.width,
-            height: imageData.height,
-            data: imageData.data,
-          });
-        };
-        img.onerror = () => {
-          reject(
-            new Error("主线程 createImageBitmap 和 HTMLImageElement 均解码失败"),
-          );
-        };
-        img.src = objectUrl;
-      });
+      const decoded = await new Promise<SceneImageDataPayload>(
+        (resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (!ctx) {
+              reject(new Error("无法创建主线程 Canvas 上下文"));
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              img.naturalWidth,
+              img.naturalHeight,
+            );
+            resolve({
+              width: imageData.width,
+              height: imageData.height,
+              data: imageData.data,
+            });
+          };
+          img.onerror = () => {
+            reject(
+              new Error(
+                "主线程 createImageBitmap 和 HTMLImageElement 均解码失败",
+              ),
+            );
+          };
+          img.src = objectUrl;
+        },
+      );
       return decoded;
     } finally {
       URL.revokeObjectURL(objectUrl);
@@ -175,67 +194,364 @@ async function decodeImageData(
   }
 }
 
+function toTemplateShortName(templateName: string) {
+  const matched = templateName.match(/^特训敌人_(.+)\.[^.]+$/);
+  return matched?.[1] ?? templateName;
+}
+
+function pickBestScaleGroupDecision(payload: MatchResultPayload) {
+  const scoreRowsByScale = (payload.scaleScores ?? []).map((item) => ({
+    algorithm: item.algorithm,
+    scale: item.scale,
+    templateName: item.templateName,
+    score: item.score,
+  }));
+  if (!scoreRowsByScale.length) return null;
+
+  const grouped = new Map<
+    string,
+    {
+      algorithm: MatchAlgorithm;
+      scale: number;
+      topScore: number;
+      matchedTemplateNames: string[];
+    }
+  >();
+  for (const row of scoreRowsByScale) {
+    const key = `${row.algorithm}@${row.scale}`;
+    const existing = grouped.get(key);
+    if (!existing) {
+      grouped.set(key, {
+        algorithm: row.algorithm,
+        scale: row.scale,
+        topScore: row.score,
+        matchedTemplateNames:
+          row.score > CARTESIAN_SCORE_THRESHOLD
+            ? [toTemplateShortName(row.templateName)]
+            : [],
+      });
+      continue;
+    }
+    existing.topScore = Math.max(existing.topScore, row.score);
+    if (row.score > CARTESIAN_SCORE_THRESHOLD) {
+      const shortName = toTemplateShortName(row.templateName);
+      if (!existing.matchedTemplateNames.includes(shortName)) {
+        existing.matchedTemplateNames.push(shortName);
+      }
+    }
+  }
+
+  const groups = Array.from(grouped.values());
+  if (!groups.length) return null;
+
+  const groupsByAlgorithm = new Map<MatchAlgorithm, typeof groups>();
+  for (const group of groups) {
+    const list = groupsByAlgorithm.get(group.algorithm) ?? [];
+    list.push(group);
+    groupsByAlgorithm.set(group.algorithm, list);
+  }
+
+  const candidates: typeof groups = [];
+  for (const [, algorithmGroups] of groupsByAlgorithm.entries()) {
+    const orderedAll = [...algorithmGroups].sort((a, b) => a.scale - b.scale);
+    const ordered =
+      orderedAll.filter((item) => item.matchedTemplateNames.length > 0).length > 0
+        ? orderedAll.filter((item) => item.matchedTemplateNames.length > 0)
+        : orderedAll;
+    let best = ordered[0];
+    let sawIncrease = false;
+    if (ordered.length > 1) {
+      for (let i = 1; i < ordered.length; i += 1) {
+        const previous = ordered[i - 1];
+        const current = ordered[i];
+        if (current.topScore > previous.topScore + SCALE_TURNING_EPSILON) {
+          sawIncrease = true;
+          best = current;
+          continue;
+        }
+        if (sawIncrease && current.topScore < previous.topScore - SCALE_TURNING_EPSILON) {
+          // Turning point reached at k, select k-1.
+          best = previous;
+          break;
+        }
+      }
+    }
+    candidates.push(best);
+  }
+
+  candidates.sort((a, b) => {
+    if (b.topScore !== a.topScore) return b.topScore - a.topScore;
+    return b.matchedTemplateNames.length - a.matchedTemplateNames.length;
+  });
+  const best = candidates[0];
+  return {
+    algorithm: best.algorithm,
+    scale: Number(best.scale.toFixed(4)),
+    topScore: Number(best.topScore.toFixed(4)),
+    matchedTemplateNames: best.matchedTemplateNames.sort(),
+  } satisfies BestScaleGroupDecision;
+}
+
 function logMatchScores(payload: MatchResultPayload) {
-  const grouped: Record<string, Record<string, number>> = {};
+  const grouped: Record<
+    string,
+    Partial<
+      Record<MatchAlgorithm, { score: number; bestScale?: number | null }>
+    >
+  > = {};
   for (const item of payload.scores) {
     if (!grouped[item.templateName]) {
       grouped[item.templateName] = {};
     }
-    grouped[item.templateName][item.algorithm] = item.score;
+    grouped[item.templateName][item.algorithm] = {
+      score: item.score,
+      bestScale: item.bestScale ?? null,
+    };
   }
-  const tableRows = Object.entries(grouped).map(([templateName, scores]) => ({
-    templateName,
-    ncc: scores["ncc"] ?? null,
-    edgeNcc: scores["edge-ncc"] ?? null,
-    chamfer: scores.chamfer ?? null,
+  const tableRows = Object.entries(grouped).map(([templateName, scores]) => {
+    return {
+      templateName: toTemplateShortName(templateName),
+      ncc: scores["ncc"]?.score ?? null,
+      nccScale: scores["ncc"]?.bestScale ?? null,
+    };
+  });
+
+  const topMatches = computeAlgorithmTopMatches(payload);
+
+  const marginByAlgorithm = topMatches.map((item) => ({
+    algorithm: item.algorithm,
+    top1: item.topMatches[0]
+      ? toTemplateShortName(item.topMatches[0].templateName)
+      : null,
+    top1Score: item.topMatches[0]?.score ?? null,
+    top2: item.topMatches[1]
+      ? toTemplateShortName(item.topMatches[1].templateName)
+      : null,
+    top2Score: item.topMatches[1]?.score ?? null,
+    top3: item.topMatches[2]
+      ? toTemplateShortName(item.topMatches[2].templateName)
+      : null,
+    top3Score: item.topMatches[2]?.score ?? null,
+    margin: item.marginTop1Top2,
   }));
 
-  const marginByAlgorithm = ["ncc", "edge-ncc", "chamfer"].map((algorithm) => {
-    const ranking = tableRows
-      .map((row) => ({
-        templateName: row.templateName,
-        score: (row as Record<string, number | string | null>)[algorithm] as
-          | number
-          | null,
-      }))
-      .filter((item): item is { templateName: string; score: number } =>
-        typeof item.score === "number",
-      )
-      .sort((a, b) => b.score - a.score);
+  const scoreRowsByScale = (payload.scaleScores ?? [])
+    .map((item) => ({
+      algorithm: item.algorithm,
+      scale: item.scale,
+      templateName: toTemplateShortName(item.templateName),
+      score: item.score,
+      x: item.x ?? null,
+      y: item.y ?? null,
+      width: item.width ?? null,
+      height: item.height ?? null,
+    }))
+    .sort((a, b) => {
+      if (a.algorithm !== b.algorithm) {
+        return a.algorithm.localeCompare(b.algorithm);
+      }
+      if (a.scale !== b.scale) {
+        return a.scale - b.scale;
+      }
+      return b.score - a.score;
+    });
 
-    const top1 = ranking[0];
-    const top2 = ranking[1];
-    return {
-      algorithm,
-      top1: top1?.templateName ?? null,
-      top1Score: top1?.score ?? null,
-      top2: top2?.templateName ?? null,
-      top2Score: top2?.score ?? null,
-      margin:
-        typeof top1?.score === "number" && typeof top2?.score === "number"
-          ? Number((top1.score - top2.score).toFixed(4))
-          : null,
-    };
+  const scoreSummaryByScale = Object.values(
+    scoreRowsByScale.reduce<
+      Record<
+        string,
+        {
+          algorithm: MatchAlgorithm;
+          scale: number;
+          count: number;
+          scoreSum: number;
+          topTemplateName: string;
+          topScore: number;
+        }
+      >
+    >((acc, row) => {
+      const key = `${row.algorithm}@${row.scale}`;
+      const existing = acc[key];
+      if (!existing) {
+        acc[key] = {
+          algorithm: row.algorithm,
+          scale: row.scale,
+          count: 1,
+          scoreSum: row.score,
+          topTemplateName: row.templateName,
+          topScore: row.score,
+        };
+      } else {
+        existing.count += 1;
+        existing.scoreSum += row.score;
+        if (row.score > existing.topScore) {
+          existing.topScore = row.score;
+          existing.topTemplateName = row.templateName;
+        }
+      }
+      return acc;
+    }, {}),
+  )
+    .map((item) => ({
+      algorithm: item.algorithm,
+      scale: item.scale,
+      count: item.count,
+      avgScore: Number((item.scoreSum / item.count).toFixed(4)),
+      topTemplate: item.topTemplateName,
+      topScore: Number(item.topScore.toFixed(4)),
+    }))
+    .sort((a, b) => {
+      if (a.algorithm !== b.algorithm) {
+        return a.algorithm.localeCompare(b.algorithm);
+      }
+      return a.scale - b.scale;
+    });
+
+  const groupedByScale = new Map<
+    number,
+    Array<{
+      algorithm: MatchAlgorithm;
+      scale: number;
+      templateName: string;
+      score: number;
+      x: number | null;
+      y: number | null;
+      width: number | null;
+      height: number | null;
+    }>
+  >();
+  for (const row of scoreRowsByScale) {
+    const list = groupedByScale.get(row.scale) ?? [];
+    list.push(row);
+    groupedByScale.set(row.scale, list);
+  }
+
+  const groupDecisionRows: Array<{
+    algorithm: MatchAlgorithm;
+    scale: number;
+    topScore: number;
+    matchedCount: number;
+    matchedNames: string;
+  }> = [];
+  for (const [scale, rows] of groupedByScale.entries()) {
+    const byAlgorithm = new Map<MatchAlgorithm, typeof rows>();
+    for (const row of rows) {
+      const list = byAlgorithm.get(row.algorithm) ?? [];
+      list.push(row);
+      byAlgorithm.set(row.algorithm, list);
+    }
+    for (const [algorithm, algorithmRows] of byAlgorithm.entries()) {
+      const topScore = Math.max(...algorithmRows.map((item) => item.score));
+      const matched = algorithmRows
+        .filter((item) => item.score > CARTESIAN_SCORE_THRESHOLD)
+        .map((item) => toTemplateShortName(item.templateName))
+        .sort();
+      groupDecisionRows.push({
+        algorithm,
+        scale,
+        topScore: Number(topScore.toFixed(4)),
+        matchedCount: matched.length,
+        matchedNames: matched.join(" + "),
+      });
+    }
+  }
+  groupDecisionRows.sort((a, b) => {
+    if (b.topScore !== a.topScore) return b.topScore - a.topScore;
+    return b.matchedCount - a.matchedCount;
   });
 
   console.group("[Autochess] Image match scores");
   console.table(tableRows);
+  if (scoreRowsByScale.length > 0) {
+    const orderedScales = Array.from(groupedByScale.keys()).sort(
+      (a, b) => a - b,
+    );
+    for (const scale of orderedScales) {
+      const scaleRows = (groupedByScale.get(scale) ?? []).sort((a, b) => {
+        if (a.algorithm !== b.algorithm) {
+          return a.algorithm.localeCompare(b.algorithm);
+        }
+        return b.score - a.score;
+      });
+      console.groupCollapsed(`[Autochess] scale=${scale}`);
+      console.table(scaleRows);
+      const groupDecisionByScale = groupDecisionRows
+        .filter((item) => item.scale === scale)
+        .sort((a, b) => b.topScore - a.topScore);
+      if (groupDecisionByScale.length > 0) {
+        console.table(groupDecisionByScale);
+      }
+      console.groupEnd();
+    }
+    console.table(scoreSummaryByScale);
+  }
   console.table(marginByAlgorithm);
+  if (payload.scaleDebug) {
+    console.log("[Autochess] NccScaleDebug", payload.scaleDebug);
+  }
   console.groupEnd();
+
+  return pickBestScaleGroupDecision(payload);
 }
+
+function computeAlgorithmTopMatches(
+  payload: MatchResultPayload,
+): AlgorithmTopMatches[] {
+  const algorithms = Array.from(
+    new Set(payload.scores.map((item) => item.algorithm)),
+  ) as MatchAlgorithm[];
+  algorithms.sort((left, right) => {
+    if (left === "ncc") return -1;
+    if (right === "ncc") return 1;
+    if (left === "jsfeat-ncc") return -1;
+    if (right === "jsfeat-ncc") return 1;
+    return left.localeCompare(right);
+  });
+  return algorithms.map((algorithm) => {
+    const ranked = payload.scores
+      .filter((item) => item.algorithm === algorithm)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((item) => ({
+        templateName: item.templateName,
+        score: item.score,
+      }));
+    const top1 = ranked[0]?.score;
+    const top2 = ranked[1]?.score;
+    return {
+      algorithm,
+      topMatches: ranked,
+      marginTop1Top2:
+        typeof top1 === "number" && typeof top2 === "number"
+          ? Number((top1 - top2).toFixed(4))
+          : null,
+    };
+  });
+}
+
 
 export function useAutochessImageMatch() {
   const isDev = import.meta.env.DEV;
   const workerRef = useRef<Worker | null>(null);
   const objectUrlRefs = useRef<string[]>([]);
+  const templateAssetCacheRef = useRef<Map<string, TemplateAssetPayload>>(
+    new Map(),
+  );
+  const taskIdRef = useRef(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [progress, setProgress] = useState<MatchProgress>(INITIAL_PROGRESS);
   const [lastResult, setLastResult] = useState<MatchResultPayload | null>(null);
-  const [pastedImagePreviewUrl, setPastedImagePreviewUrl] = useState<string | null>(
-    null,
-  );
-  const [templateDebugItems, setTemplateDebugItems] = useState<TemplateDebugItem[]>(
+  const [pastedImagePreviewUrl, setPastedImagePreviewUrl] = useState<
+    string | null
+  >(null);
+  const [algorithmTopMatches, setAlgorithmTopMatches] = useState<
+    AlgorithmTopMatches[]
+  >([]);
+  const [scaleDebug, setScaleDebug] = useState<ScaleDebugInfo | null>(null);
+  const [bestScaleGroup, setBestScaleGroup] =
+    useState<BestScaleGroupDecision | null>(null);
+  const [matchedTemplateNames, setMatchedTemplateNames] = useState<string[]>(
     [],
   );
 
@@ -253,8 +569,11 @@ export function useAutochessImageMatch() {
   const resetToIdle = useCallback(() => {
     setIsProcessing(false);
     setProgress(INITIAL_PROGRESS);
-    setTemplateDebugItems([]);
+    setAlgorithmTopMatches([]);
     setPastedImagePreviewUrl(null);
+    setScaleDebug(null);
+    setBestScaleGroup(null);
+    setMatchedTemplateNames([]);
     objectUrlRefs.current.forEach((url) => URL.revokeObjectURL(url));
     objectUrlRefs.current = [];
   }, []);
@@ -271,14 +590,19 @@ export function useAutochessImageMatch() {
         return;
       }
       if (message.type === "done") {
-        setLastResult(message.payload);
+        const basePayload = message.payload;
+        setLastResult(basePayload);
+        setScaleDebug(basePayload.scaleDebug ?? null);
+        setAlgorithmTopMatches(computeAlgorithmTopMatches(basePayload));
         setProgress({
           step: "done",
           message: "匹配完成，结果已输出到控制台",
-          current: message.payload.scores.length,
-          total: message.payload.scores.length,
+          current: basePayload.scores.length,
+          total: basePayload.scores.length,
         });
-        logMatchScores(message.payload);
+        const decision = logMatchScores(basePayload);
+        setBestScaleGroup(decision);
+        setMatchedTemplateNames(decision?.matchedTemplateNames ?? []);
         setIsProcessing(false);
         if (!isDev) {
           setIsModalOpen(false);
@@ -298,69 +622,45 @@ export function useAutochessImageMatch() {
     [isDev],
   );
 
-  const loadTemplateAssets = useCallback(
-    async (urls: string[]) => {
-      const assets: TemplateAssetPayload[] = [];
-      const debugItems: TemplateDebugItem[] = [];
-      for (let i = 0; i < urls.length; i += 1) {
-        const templateUrl = urls[i];
-        const templateName = decodeURIComponent(
-          templateUrl.split("/").pop() || templateUrl,
-        );
-        setProgress({
-          step: "downloading",
-          message: `正在下载模板 ${i + 1}/${urls.length}`,
-          current: i + 1,
-          total: urls.length,
-        });
-        try {
-          const response = await fetch(templateUrl, { cache: "no-store" });
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-          const blob = await response.blob();
-          const templateBuffer = await blob.arrayBuffer();
-          const previewUrl = URL.createObjectURL(blob);
-          objectUrlRefs.current.push(previewUrl);
-          let width = 0;
-          let height = 0;
-          try {
-            const bitmap = await createImageBitmap(blob);
-            width = bitmap.width;
-            height = bitmap.height;
-            bitmap.close();
-          } catch {
-            // keep width/height as 0 when decode probe fails
-          }
-          assets.push({
-            templateName,
-            templateUrl,
-            templateBuffer,
-            templateMimeType: blob.type || "image/png",
-          });
-          debugItems.push({
-            templateName,
-            templateUrl,
-            previewUrl,
-            status: "success",
-            width: width || undefined,
-            height: height || undefined,
-            size: blob.size,
-          });
-        } catch (error) {
-          debugItems.push({
-            templateName,
-            templateUrl,
-            status: "failed",
-            error: (error as Error).message ?? "下载失败",
-          });
-        }
+  const loadTemplateAssets = useCallback(async (urls: string[]) => {
+    const assets: TemplateAssetPayload[] = [];
+    for (let i = 0; i < urls.length; i += 1) {
+      const templateUrl = urls[i];
+      const templateName = decodeURIComponent(
+        templateUrl.split("/").pop() || templateUrl,
+      );
+      setProgress({
+        step: "downloading",
+        message: `正在下载模板 ${i + 1}/${urls.length}`,
+        current: i + 1,
+        total: urls.length,
+      });
+      const cached = templateAssetCacheRef.current.get(templateUrl);
+      if (cached) {
+        assets.push(cached);
+        continue;
       }
-      setTemplateDebugItems(debugItems);
-      return assets;
-    },
-    [],
-  );
+      try {
+        const response = await fetch(templateUrl, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const blob = await response.blob();
+        const templateBuffer = await blob.arrayBuffer();
+        const asset = {
+          templateName,
+          templateUrl,
+          templateBuffer,
+          templateMimeType: blob.type || "image/png",
+        };
+        assets.push(asset);
+        templateAssetCacheRef.current.set(templateUrl, asset);
+      } catch {
+        // skip failed template; errors are reflected by missing assets
+      }
+    }
+    return assets;
+  }, []);
 
   const startMatch = useCallback(
     async (
@@ -372,6 +672,8 @@ export function useAutochessImageMatch() {
       setIsModalOpen(true);
       setIsProcessing(true);
       setLastResult(null);
+      setScaleDebug(null);
+      setAlgorithmTopMatches([]);
       setProgress({
         step: "downloading",
         message: "准备匹配任务",
@@ -382,6 +684,7 @@ export function useAutochessImageMatch() {
       if (!templateAssets.length) {
         throw new Error("模板图片全部下载失败，请检查后端静态资源路径");
       }
+      taskIdRef.current += 1;
 
       const worker = ensureWorker();
       worker.onmessage = (event: MessageEvent<WorkerMessage>) =>
@@ -463,8 +766,11 @@ export function useAutochessImageMatch() {
     isModalOpen,
     progress,
     lastResult,
+    scaleDebug,
     pastedImagePreviewUrl,
-    templateDebugItems,
+    algorithmTopMatches,
+    bestScaleGroup,
+    matchedTemplateNames,
     closeModal: () => setIsModalOpen(false),
     resetToIdle,
   };

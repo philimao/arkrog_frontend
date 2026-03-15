@@ -38,6 +38,17 @@ export default function AutochessPage() {
     [deck.bondsWithState],
   );
 
+  const matchedEnemyTypes = useMemo(() => {
+    const matched = new Set(imageMatch.matchedTemplateNames ?? []);
+    if (!matched.size) return [];
+    return (autochess?.enemyGroups ?? [])
+      .filter((group) => {
+        const shortTypeName = group.typeName.split("·").pop() || group.typeName;
+        return matched.has(shortTypeName);
+      })
+      .map((group) => group.type);
+  }, [autochess?.enemyGroups, imageMatch.matchedTemplateNames]);
+
   const handlePick = (chessId: string) => {
     const result = deck.addToPick(chessId);
     if (!result.success && result.reason === "limit") {
@@ -52,7 +63,10 @@ export default function AutochessPage() {
       <div
         className={`min-h-screen ${imageMatch.isProcessing ? "pointer-events-none opacity-70" : ""}`}
       >
-        <EnemyPicker groups={autochess.enemyGroups} />
+        <EnemyPicker
+          groups={autochess.enemyGroups}
+          matchedActiveTypes={matchedEnemyTypes}
+        />
 
         <section className="mb-8">
           <OperatorPicker
@@ -108,6 +122,38 @@ export default function AutochessPage() {
               <p className="text-xs text-default-500">
                 进度：{imageMatch.progress.current}/{imageMatch.progress.total}
               </p>
+              {imageMatch.scaleDebug && (
+                <div className="space-y-1 rounded border border-default-200 p-2">
+                  <p className="text-xs text-default-600 font-medium">
+                    Scale策略日志
+                  </p>
+                  <p className="text-[11px] text-default-500">
+                    全局范围(高度基准): {imageMatch.scaleDebug.minScale} ~{" "}
+                    {imageMatch.scaleDebug.maxScale} | 已评估:{" "}
+                    {imageMatch.scaleDebug.scaleCount}
+                  </p>
+                  <p className="text-[11px] text-default-500">
+                    粗搜: step={imageMatch.scaleDebug.coarseStep ?? "-"} | 点数=
+                    {imageMatch.scaleDebug.coarseScaleCount ?? "-"} | 峰值=
+                    {imageMatch.scaleDebug.coarsePeakScale ?? "-"} (
+                    {imageMatch.scaleDebug.coarsePeakTopScore ?? "-"}) | 转折早停=
+                    {imageMatch.scaleDebug.coarseTurningStopped ? "是" : "否"}
+                  </p>
+                  <p className="text-[11px] text-default-500">
+                    细化: range {imageMatch.scaleDebug.refineRangeMin ?? "-"} ~{" "}
+                    {imageMatch.scaleDebug.refineRangeMax ?? "-"} | step=
+                    {imageMatch.scaleDebug.refineStep ?? "-"} | 点数=
+                    {imageMatch.scaleDebug.refineScaleCount ?? "-"} | 峰值=
+                    {imageMatch.scaleDebug.refinePeakScale ?? "-"} (
+                    {imageMatch.scaleDebug.refinePeakTopScore ?? "-"}) | 转折早停=
+                    {imageMatch.scaleDebug.refineTurningStopped ? "是" : "否"}
+                  </p>
+                  <p className="text-[11px] text-default-500">
+                    早停阈值: topScore &gt;= {" "}
+                    {imageMatch.scaleDebug.turningScoreThreshold ?? "-"}
+                  </p>
+                </div>
+              )}
               {imageMatch.pastedImagePreviewUrl && (
                 <div>
                   <p className="text-xs text-default-500 mb-1">用户截图预览</p>
@@ -118,47 +164,28 @@ export default function AutochessPage() {
                   />
                 </div>
               )}
-              {imageMatch.isDev && (
+              {imageMatch.bestScaleGroup && (
                 <div>
                   <p className="text-xs text-default-500 mb-1">
-                    DEV 模式模板加载检查（后端静态图）
+                    最高分组匹配结果（短路组合）
                   </p>
-                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                    {imageMatch.templateDebugItems.map((item) => (
-                      <div
-                        key={item.templateUrl}
-                        className="rounded border border-default-200 p-2"
+                  <p className="text-[11px] text-default-600">
+                    算法: {imageMatch.bestScaleGroup.algorithm} / scale:{" "}
+                    {imageMatch.bestScaleGroup.scale} / 组内最高分:{" "}
+                    {imageMatch.bestScaleGroup.topScore}
+                  </p>
+                  <div className="mt-1 space-y-1">
+                    {imageMatch.bestScaleGroup.matchedTemplateNames.map(
+                      (item, index) => (
+                      <p
+                        key={`matched-${item}-${index}`}
+                        className="text-[11px] text-default-600"
                       >
-                        <p className="text-[11px] text-default-600 truncate">
-                          {item.templateName}
-                        </p>
-                        <p className="text-[11px] text-default-500">
-                          {item.status === "success" ? "加载成功" : "加载失败"}
-                        </p>
-                        {item.status === "success" && item.previewUrl && (
-                          <>
-                            <img
-                              src={item.previewUrl}
-                              alt={item.templateName}
-                              className="mt-1 w-full h-16 object-contain rounded bg-default-100"
-                            />
-                            <p className="text-[11px] text-default-500 mt-1">
-                              {item.width ?? "?"}x{item.height ?? "?"} /{" "}
-                              {item.size ?? 0} bytes
-                            </p>
-                          </>
-                        )}
-                        {item.status === "failed" && (
-                          <p className="text-[11px] text-danger mt-1 truncate">
-                            {item.error}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                        {index + 1}. {item}
+                      </p>
+                    ),
+                    )}
                   </div>
-                  <p className="text-[11px] text-default-500 mt-2">
-                    DEV 下匹配完成后 Modal 不会自动关闭。
-                  </p>
                 </div>
               )}
             </div>

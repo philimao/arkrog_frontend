@@ -11,6 +11,8 @@ import type {
   UniEquipData,
   ZoneOfRogue,
 } from "~/types/gameData";
+import type { AutochessPayload } from "~/types/autochess";
+import { api } from "~/services/api";
 import { create } from "zustand";
 import { toast } from "react-toastify";
 import { devtools } from "zustand/middleware";
@@ -42,15 +44,23 @@ interface GameDataExt {
   // stageEnemies?: Record<RogueKey, Record<string, EnemyInput[]>>;
 }
 
+interface GameDataAddon {
+  /** 自走棋数据 */
+  autochess: AutochessPayload;
+}
+
 export type GameDataState = GameDataBasic &
-  GameDataExt & {
+  GameDataExt &
+  GameDataAddon & {
     basicLoaded: boolean;
     extLoaded: boolean;
+    autochessLoaded: boolean;
   };
 
 type GameDataAction = {
   fetchGameDataBasic: () => Promise<void>;
   fetchGameDataExt: () => Promise<GameDataState>;
+  fetchAutochessData: () => Promise<AutochessPayload>;
 };
 
 export const useGameDataStore = create<GameDataState & GameDataAction>()(
@@ -65,6 +75,10 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
       character_table: undefined,
       skill_table: undefined,
       uniequip_table: undefined,
+      autochess: undefined,
+      basicLoaded: false,
+      extLoaded: false,
+      autochessLoaded: false,
       // stageEnemies: undefined,
       fetchGameDataBasic: async () => {
         try {
@@ -105,6 +119,26 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
         } catch (err) {
           console.error(err);
           toast.error("加载游戏补充数据失败！");
+        }
+      },
+      fetchAutochessData: async () => {
+        try {
+          if (get().autochessLoaded) return get().autochess;
+          const { data } = await api.get<AutochessPayload>("/gamedata/autochess");
+          set(
+            (state) => ({
+              ...state,
+              autochess: data,
+              autochessLoaded: true,
+            }),
+            undefined,
+            "fetchAutochessData",
+          );
+          return data;
+        } catch (err) {
+          console.error(err);
+          toast.error("加载卫戍协议数据失败！");
+          throw err;
         }
       },
     }),

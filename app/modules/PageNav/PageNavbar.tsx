@@ -25,15 +25,19 @@ const StyledButtonSubtitle = styled.div`
 
 export default function PageNavbar() {
   const location = useLocation();
+  const currentPage = pages
+    .filter((page) =>
+      page.pathname === "/"
+        ? location.pathname === page.pathname
+        : location.pathname.startsWith(page.pathname),
+    )
+    .sort((a, b) => b.pathname.length - a.pathname.length)[0];
+
   return (
     <>
       <StyledPageNavbar className="justify-start sm:justify-center my-4 ms-2 sm:ms-0 hide-scroll border-b-1">
         {pages.map((page) => {
-          const color = (
-            page.pathname === "/"
-              ? location.pathname === page.pathname
-              : location.pathname.startsWith(page.pathname)
-          )
+          const color = (currentPage?.pathname || "") === page.pathname
             ? "text-ak-blue border-b-ak-blue border-b-2"
             : "text-white";
           return (

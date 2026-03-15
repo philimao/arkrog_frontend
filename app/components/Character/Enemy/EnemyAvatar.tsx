@@ -10,7 +10,13 @@ interface EnemyAvatarProps extends ImgHTMLAttributes<HTMLImageElement> {
   parasitized?: boolean;
 }
 
-const preset = ["木桩", "年代之刺", "饮泣之刺", "“放逐的黑棺”", "尊主的残影"].reduce(
+const preset = [
+  "木桩",
+  "年代之刺",
+  "饮泣之刺",
+  "“放逐的黑棺”",
+  "尊主的残影",
+].reduce(
   (acc, name) => {
     acc[name] = cosHost + `/images/rogue_4/${encodeURI(name)}.png`;
     return acc;
@@ -44,7 +50,8 @@ const StyledEnemyBadge = styled.div`
   right: -0.3rem;
   width: 1rem;
   height: 1rem;
-  background: url(${cosHost + "/images/rogue_4/恐卡兹标记.webp"}) no-repeat center center;
+  background: url(${cosHost + "/images/rogue_4/恐卡兹标记.webp"}) no-repeat
+    center center;
   background-size: contain;
 `;
 
@@ -58,7 +65,8 @@ export default function EnemyAvatar({
 }: EnemyAvatarProps) {
   if (!name) return null;
 
-  const url = preset[name] || encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
+  const url =
+    preset[name] || encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
   return (
     <div className="relative">
       <img

@@ -14,6 +14,7 @@ import OperatorPicker from "./components/OperatorPicker";
 import BpPool from "./components/BpPool";
 import BondList from "./components/BondList";
 import BondTable from "./components/BondTable";
+import ClassChangeQuickRef from "./components/ClassChangeQuickRef";
 import EnemyPicker from "./components/EnemyPicker";
 import BandTable from "./components/BandTable";
 import { useAutochessDeck, useAutochessImageMatch } from "./hooks";
@@ -49,10 +50,26 @@ export default function AutochessPage() {
       .map((group) => group.type);
   }, [autochess?.enemyGroups, imageMatch.matchedTemplateNames]);
 
+  type BatchModifyTarget = "pick" | "ban" | null;
+  const [batchModifyTarget, setBatchModifyTarget] =
+    useState<BatchModifyTarget>(null);
+
   const handlePick = (chessId: string) => {
     const result = deck.addToPick(chessId);
     if (!result.success && result.reason === "limit") {
       toast.warning("Pick 池最多 9 名干员");
+    }
+  };
+
+  const handleOperatorClick = (chessId: string, target: "pick" | "ban") => {
+    const inPick = deck.pickOperatorIds.includes(chessId);
+    const inBan = deck.banOperatorIds.includes(chessId);
+    if (target === "pick") {
+      if (inPick) deck.removeFromPick(chessId);
+      else handlePick(chessId);
+    } else {
+      if (inBan) deck.removeFromBan(chessId);
+      else deck.addToBan(chessId);
     }
   };
 
@@ -75,8 +92,12 @@ export default function AutochessPage() {
             bonds={autochess.bonds}
             banOperatorIds={deck.banOperatorIds}
             selectedIds={deck.selectedIds}
-            onPickToPick={handlePick}
+            batchModifyTarget={batchModifyTarget}
+            onOperatorClick={handleOperatorClick}
           />
+          <p className="text-sm text-light-gray mb-3">
+            拖动将干员加入bp池，点击批量添加后可点击加入对应池子
+          </p>
           <BpPool
             title="Pick 池"
             operators={deck.pickOperators}
@@ -84,6 +105,10 @@ export default function AutochessPage() {
             onRemoveOperator={deck.removeFromPick}
             bonds={autochess.bonds}
             limit={deck.pickLimit}
+            batchModifyActive={batchModifyTarget === "pick"}
+            onBatchModifyChange={(active) =>
+              setBatchModifyTarget(active ? "pick" : null)
+            }
           />
           <BpPool
             title="Ban 池"
@@ -91,11 +116,16 @@ export default function AutochessPage() {
             onDropOperator={deck.addToBan}
             onRemoveOperator={deck.removeFromBan}
             bonds={autochess.bonds}
+            batchModifyActive={batchModifyTarget === "ban"}
+            onBatchModifyChange={(active) =>
+              setBatchModifyTarget(active ? "ban" : null)
+            }
           />
           <BondList bonds={pickedBonds} />
         </section>
 
         <BondTable bonds={deck.bondsWithState} />
+        <ClassChangeQuickRef bonds={autochess.bonds} />
         <BandTable bands={autochess.bands} />
       </div>
       <Modal

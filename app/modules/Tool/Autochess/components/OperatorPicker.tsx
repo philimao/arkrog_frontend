@@ -14,7 +14,8 @@ interface OperatorPickerProps {
   bonds: AutochessBond[];
   banOperatorIds: string[];
   selectedIds: string[];
-  onPickToPick: (chessId: string) => void;
+  batchModifyTarget: "pick" | "ban" | null;
+  onOperatorClick: (chessId: string, target: "pick" | "ban") => void;
 }
 
 type Mode = "按位阶" | "按盟约";
@@ -25,7 +26,8 @@ export default function OperatorPicker({
   bonds,
   banOperatorIds,
   selectedIds,
-  onPickToPick,
+  batchModifyTarget,
+  onOperatorClick,
 }: OperatorPickerProps) {
   const [mode, setMode] = useState<Mode>("按盟约");
   const [level, setLevel] = useState("1");
@@ -68,8 +70,8 @@ export default function OperatorPicker({
         </div>
       ) : (
         <div className="mb-4 flex flex-col gap-2">
-          <div className="text-xs text-light-gray">核心盟约</div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-mid-gray">
+          <div className="text-sm text-light-gray">核心盟约</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-black-gray">
             {core.map((bond) => {
               const active = bond.bondId === bondId;
               const available = getAvailableOperatorCountByBond(
@@ -91,8 +93,8 @@ export default function OperatorPicker({
               );
             })}
           </div>
-          <div className="text-xs text-light-gray mt-2">附加盟约</div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-mid-gray">
+          <div className="text-sm text-light-gray mt-2">附加盟约</div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-black-gray">
             {extra.map((bond) => {
               const active = bond.bondId === bondId;
               const available = getAvailableOperatorCountByBond(
@@ -120,6 +122,8 @@ export default function OperatorPicker({
       <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3">
         {activeOperators.map((operator) => {
           const selected = selectedIds.includes(operator.chessId);
+          const canClickInBatchMode = batchModifyTarget && onOperatorClick;
+          const disabled = !batchModifyTarget && selected;
           return (
             <button
               key={operator.chessId}
@@ -127,9 +131,18 @@ export default function OperatorPicker({
               onDragStart={(evt) => {
                 evt.dataTransfer.setData("text/plain", operator.chessId);
               }}
-              onClick={() => onPickToPick(operator.chessId)}
-              disabled={selected}
-              className={`flex items-center gap-2 border p-2 bg-black-gray ${selected ? "opacity-60 cursor-not-allowed" : "hover:border-ak-blue border-mid-gray"}`}
+              onClick={() => {
+                if (canClickInBatchMode)
+                  onOperatorClick(operator.chessId, batchModifyTarget);
+              }}
+              disabled={disabled}
+              className={`flex items-center gap-2 border p-2 bg-black-gray ${
+                disabled ? "opacity-60 cursor-not-allowed" : ""
+              } ${
+                selected
+                  ? "border-ak-blue"
+                  : "border-mid-gray hover:border-ak-blue"
+              }`}
             >
               <div className="w-10 h-10 rounded-full overflow-hidden border border-mid-gray">
                 <OperatorAvatar

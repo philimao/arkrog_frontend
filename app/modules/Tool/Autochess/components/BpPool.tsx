@@ -1,6 +1,6 @@
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
-import { Tooltip } from "@heroui/react";
+import { Switch, Tooltip } from "@heroui/react";
 import { parseBondDesc } from "../utils/autochess";
 
 interface BpPoolProps {
@@ -12,6 +12,8 @@ interface BpPoolProps {
   onRemoveOperator: (chessId: string) => void;
   bonds: AutochessBond[];
   limit?: number;
+  batchModifyActive?: boolean;
+  onBatchModifyChange?: (active: boolean) => void;
 }
 
 export default function BpPool({
@@ -21,6 +23,8 @@ export default function BpPool({
   onRemoveOperator,
   bonds,
   limit,
+  batchModifyActive = false,
+  onBatchModifyChange,
 }: BpPoolProps) {
   const bondNameMap = bonds.reduce(
     (acc, bond) => {
@@ -32,17 +36,32 @@ export default function BpPool({
 
   return (
     <section className="mb-8">
-      <div className="text-lg font-bold mb-3 flex items-center gap-2">
-        <h3>{title}</h3>
-        {typeof limit === "number" && (
-          <span className="text-sm text-light-gray font-normal">
-            {operators.length}/{limit}
-          </span>
+      <div className="text-lg font-bold mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h3>{title}</h3>
+          {typeof limit === "number" && (
+            <span className="text-sm text-light-gray font-normal">
+              {operators.length}/{limit}
+            </span>
+          )}
+        </div>
+        {onBatchModifyChange && (
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-normal">批量修改</label>
+            <Switch
+              isSelected={batchModifyActive}
+              onValueChange={onBatchModifyChange}
+              size="sm"
+            />
+          </div>
         )}
       </div>
       <div
-        className="min-h-24 border border-dashed border-mid-gray p-3 bg-black-gray-70 flex flex-wrap gap-3"
-        onDragOver={(evt) => evt.preventDefault()}
+        className="min-h-20 border border-dashed border-mid-gray p-3 bg-black-gray-70 flex flex-wrap gap-3"
+        onDragOver={(evt) => {
+          evt.preventDefault();
+          evt.dataTransfer.dropEffect = "move";
+        }}
         onDrop={(evt) => {
           evt.preventDefault();
           const chessId = evt.dataTransfer.getData("text/plain");
@@ -56,7 +75,7 @@ export default function BpPool({
                 <div className="p-3 max-w-80 text-sm">
                   <div className="font-semibold mb-1">{operator.name}</div>
                   <div>位阶：{operator.chessLevel}</div>
-                  <div>升阶需求：{operator.upgradeNum}</div>
+                  <div>进阶数量：{operator.upgradeNum}</div>
                   <div className="mt-1">
                     盟约：
                     {(operator.bondIds || [])
@@ -78,7 +97,14 @@ export default function BpPool({
                 </div>
               }
             >
-              <div className="w-14 h-14 rounded-full overflow-hidden border border-mid-gray">
+              <div
+                className="w-14 h-14 rounded-full overflow-hidden border border-mid-gray cursor-grab active:cursor-grabbing"
+                draggable
+                onDragStart={(evt) => {
+                  evt.dataTransfer.setData("text/plain", operator.chessId);
+                  evt.dataTransfer.effectAllowed = "move";
+                }}
+              >
                 <OperatorAvatar
                   name={operator.name}
                   className="w-full h-full"

@@ -29,7 +29,7 @@ export default function EnemyPicker({
   }, [matchedActiveTypes]);
 
   return (
-    <section className="mb-8">
+    <section className="mb-4">
       <StyledTitle
         modes={["本场敌人", "显示全部"]}
         activeMode={mode}
@@ -134,13 +134,6 @@ export default function EnemyPicker({
           })}
         </div>
       )}
-
-      <p className="text-sm text-default-500 mb-4">
-        在页面空白处粘贴含有本局遭遇敌方的完整截图可触发图标匹配。
-      </p>
-      <p className="text-xs text-default-400 mb-4">
-        处理中页面会被锁定，请等待进度弹窗提示完成。
-      </p>
     </section>
   );
 }

@@ -199,6 +199,117 @@ function toTemplateShortName(templateName: string) {
   return matched?.[1] ?? templateName;
 }
 
+export interface EnemyRoiItem {
+  name: string;
+  roi: { x: number; y: number; w: number; h: number };
+  score: number;
+}
+
+export interface EnemyRecognitionEntry {
+  id: string;
+  annotatedUri: string;
+  matchedNames: string[];
+  rois: EnemyRoiItem[];
+}
+
+function extractEnemyRois(
+  payload: MatchResultPayload,
+  decision: BestScaleGroupDecision | null,
+  sceneWidth: number,
+  sceneHeight: number,
+  origWidth: number,
+  origHeight: number,
+): EnemyRoiItem[] {
+  if (!decision || !payload.scaleScores?.length) return [];
+  const scaleX = origWidth / sceneWidth;
+  const scaleY = origHeight / sceneHeight;
+  const items: EnemyRoiItem[] = [];
+  const seen = new Set<string>();
+  for (const entry of payload.scaleScores) {
+    if (
+      entry.algorithm !== decision.algorithm ||
+      Math.abs(entry.scale - decision.scale) > 1e-6 ||
+      entry.score <= CARTESIAN_SCORE_THRESHOLD ||
+      entry.x == null ||
+      entry.y == null ||
+      entry.width == null ||
+      entry.height == null
+    ) {
+      continue;
+    }
+    const shortName = toTemplateShortName(entry.templateName);
+    if (seen.has(shortName)) continue;
+    seen.add(shortName);
+    items.push({
+      name: shortName,
+      roi: {
+        x: Math.round(entry.x * scaleX),
+        y: Math.round(entry.y * scaleY),
+        w: Math.round(entry.width * scaleX),
+        h: Math.round(entry.height * scaleY),
+      },
+      score: entry.score,
+    });
+  }
+  return items;
+}
+
+function drawEnemyAnnotatedImage(
+  imageUrl: string,
+  rois: EnemyRoiItem[],
+  matchedNamesFallback: string[],
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("无法创建 Canvas 上下文"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      ctx.font = '12px "PingFang SC", "Microsoft YaHei", sans-serif';
+
+      if (rois.length > 0) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgb(24, 209, 255)";
+        for (const item of rois) {
+          const { roi, name, score } = item;
+          ctx.strokeRect(roi.x, roi.y, roi.w, roi.h);
+          ctx.fillStyle = "rgba(0,0,0,0.75)";
+          const line1 = name;
+          const line2 = score.toFixed(2);
+          const m1 = ctx.measureText(line1);
+          const m2 = ctx.measureText(line2);
+          const pad = 3;
+          const boxW = Math.max(m1.width, m2.width) + pad * 2;
+          const lineH = 12;
+          const boxH = lineH * 2 + pad;
+          ctx.fillRect(roi.x, roi.y - boxH, boxW, boxH);
+          ctx.fillStyle = "white";
+          ctx.fillText(line1, roi.x + pad, roi.y - boxH + lineH - 2);
+          ctx.fillText(line2, roi.x + pad, roi.y - 2);
+        }
+      } else if (matchedNamesFallback.length > 0) {
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        const text = `识别: ${matchedNamesFallback.join(", ")}`;
+        const m = ctx.measureText(text);
+        const pad = 8;
+        ctx.fillRect(0, 0, m.width + pad * 2, 24);
+        ctx.fillStyle = "white";
+        ctx.fillText(text, pad, 17);
+      }
+
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => reject(new Error("图片加载失败"));
+    img.src = imageUrl;
+  });
+}
+
 function pickBestScaleGroupDecision(payload: MatchResultPayload) {
   const scoreRowsByScale = (payload.scaleScores ?? []).map((item) => ({
     algorithm: item.algorithm,
@@ -530,10 +641,20 @@ function computeAlgorithmTopMatches(
 }
 
 
-export function useAutochessImageMatch() {
+interface UseAutochessImageMatchOptions {
+  pasteEnabled?: boolean;
+  onEnemyResult?: (entry: EnemyRecognitionEntry) => void;
+}
+
+export function useAutochessImageMatch(
+  options?: UseAutochessImageMatchOptions,
+) {
+  const pasteEnabled = options?.pasteEnabled ?? true;
+  const onEnemyResult = options?.onEnemyResult;
   const isDev = import.meta.env.DEV;
   const workerRef = useRef<Worker | null>(null);
   const objectUrlRefs = useRef<string[]>([]);
+  const pastedImageUrlRef = useRef<string | null>(null);
   const templateAssetCacheRef = useRef<Map<string, TemplateAssetPayload>>(
     new Map(),
   );
@@ -570,6 +691,7 @@ export function useAutochessImageMatch() {
     setIsProcessing(false);
     setProgress(INITIAL_PROGRESS);
     setAlgorithmTopMatches([]);
+    pastedImageUrlRef.current = null;
     setPastedImagePreviewUrl(null);
     setScaleDebug(null);
     setBestScaleGroup(null);
@@ -608,6 +730,56 @@ export function useAutochessImageMatch() {
           setIsModalOpen(false);
         }
         toast.success("图片匹配完成，请查看控制台分数");
+
+        if (
+          onEnemyResult &&
+          pastedImageUrlRef.current &&
+          decision &&
+          decision.matchedTemplateNames.length > 0
+        ) {
+          const imageUrl = pastedImageUrlRef.current;
+          const sd = basePayload.scaleDebug;
+          (async () => {
+            try {
+              const dimensions = await new Promise<{
+                width: number;
+                height: number;
+              }>((resolve, reject) => {
+                const img = new Image();
+                img.onload = () =>
+                  resolve({
+                    width: img.naturalWidth,
+                    height: img.naturalHeight,
+                  });
+                img.onerror = () => reject(new Error("图片加载失败"));
+                img.src = imageUrl;
+              });
+              const sceneW = sd?.sceneWidth ?? dimensions.width;
+              const sceneH = sd?.sceneHeight ?? dimensions.height;
+              const rois = extractEnemyRois(
+                basePayload,
+                decision,
+                sceneW,
+                sceneH,
+                dimensions.width,
+                dimensions.height,
+              );
+              const annotatedUri = await drawEnemyAnnotatedImage(
+                imageUrl,
+                rois,
+                decision.matchedTemplateNames,
+              );
+              onEnemyResult({
+                id: crypto.randomUUID(),
+                annotatedUri,
+                matchedNames: decision.matchedTemplateNames,
+                rois,
+              });
+            } catch (err) {
+              console.warn("[Autochess] 绘制敌人标注图失败", err);
+            }
+          })();
+        }
         return;
       }
       setProgress({
@@ -619,7 +791,7 @@ export function useAutochessImageMatch() {
       setIsProcessing(false);
       toast.error(message.message || "匹配失败");
     },
-    [isDev],
+    [isDev, onEnemyResult],
   );
 
   const loadTemplateAssets = useCallback(async (urls: string[]) => {
@@ -713,6 +885,7 @@ export function useAutochessImageMatch() {
 
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
+      if (!pasteEnabled) return;
       if (isProcessing) return;
       if (shouldIgnorePasteTarget(event.target)) return;
       const imageData = await extractImageBufferFromClipboard(event);
@@ -725,6 +898,7 @@ export function useAutochessImageMatch() {
       });
       const pastedPreviewUrl = URL.createObjectURL(pastedPreviewBlob);
       objectUrlRefs.current.push(pastedPreviewUrl);
+      pastedImageUrlRef.current = pastedPreviewUrl;
       setPastedImagePreviewUrl(pastedPreviewUrl);
       let sceneImageData: SceneImageDataPayload | null = null;
       try {
@@ -741,7 +915,7 @@ export function useAutochessImageMatch() {
         sceneImageData,
       );
     },
-    [isProcessing, startMatch],
+    [pasteEnabled, isProcessing, startMatch],
   );
 
   useEffect(() => {

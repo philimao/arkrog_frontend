@@ -1068,6 +1068,7 @@ async function handleStart(data: StartMessage) {
       scaleDebug: {
         baseline: "height",
         referenceSceneHeight: SCALE_REFERENCE_SCENE_HEIGHT,
+        sceneWidth: sceneGray.width,
         sceneHeight: sceneGray.height,
         minScale: dynamicScale.minScale,
         maxScale: dynamicScale.maxScale,

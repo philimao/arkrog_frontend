@@ -6,7 +6,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
@@ -17,22 +17,63 @@ import BondTable from "./components/BondTable";
 import ClassChangeQuickRef from "./components/ClassChangeQuickRef";
 import EnemyPicker from "./components/EnemyPicker";
 import BandTable from "./components/BandTable";
-import { useAutochessDeck, useAutochessImageMatch } from "./hooks";
+import ImageDock from "./components/ImageDock";
+import { useAutochessDeck, useAutochessRecognition } from "./hooks";
+import type { RecognitionEntry } from "./hooks";
+
+type BatchModifyTarget = "pick" | "ban" | null;
 
 export default function AutochessPage() {
   const { autochess, fetchAutochessData } = useGameDataStore();
   const [loading, setLoading] = useState(false);
-  const imageMatch = useAutochessImageMatch();
-
-  useEffect(() => {
-    setLoading(true);
-    fetchAutochessData().finally(() => setLoading(false));
-  }, [fetchAutochessData]);
+  const [recognitionEntries, setRecognitionEntries] = useState<
+    RecognitionEntry[]
+  >([]);
 
   const deck = useAutochessDeck(
     autochess?.operators || [],
     autochess?.bonds || [],
   );
+
+  const handleRecognitionResult = useCallback(
+    (entry: RecognitionEntry) => {
+      setRecognitionEntries((prev) => [...prev, entry]);
+      const { result } = entry;
+      if (result.roiResults) {
+        for (const roi of result.roiResults) {
+          const best = roi.best;
+          if (!best || best.score < 0.4) continue;
+          const op = autochess?.operators?.find(
+            (o) => o.charId === best.charId || o.chessId === best.charId,
+          );
+          if (op) deck.addToBan(op.chessId);
+        }
+      }
+    },
+    [autochess?.operators, deck],
+  );
+
+  const recognition = useAutochessRecognition({
+    onResult: handleRecognitionResult,
+  });
+
+  const handleRemoveRecognition = useCallback(
+    (id: string) => {
+      recognition.revokeUri(id);
+      setRecognitionEntries((prev) => prev.filter((e) => e.id !== id));
+    },
+    [recognition],
+  );
+
+  const handleClearAllRecognition = useCallback(() => {
+    recognitionEntries.forEach((e) => recognition.revokeUri(e.id));
+    setRecognitionEntries([]);
+  }, [recognitionEntries, recognition]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchAutochessData().finally(() => setLoading(false));
+  }, [fetchAutochessData]);
 
   const pickedBonds = useMemo(
     () => deck.bondsWithState.filter((bond) => bond.count > 0),
@@ -40,19 +81,27 @@ export default function AutochessPage() {
   );
 
   const matchedEnemyTypes = useMemo(() => {
-    const matched = new Set(imageMatch.matchedTemplateNames ?? []);
-    if (!matched.size) return [];
+    const enemyEntry = [...recognitionEntries]
+      .reverse()
+      .find((e) => e.result.enemyMatches && e.result.enemyMatches.length > 0);
+    if (!enemyEntry?.result.enemyMatches) return [];
+    const names = new Set(
+      enemyEntry.result.enemyMatches.map((m) => m.templateName),
+    );
     return (autochess?.enemyGroups ?? [])
-      .filter((group) => {
-        const shortTypeName = group.typeName.split("·").pop() || group.typeName;
-        return matched.has(shortTypeName);
-      })
+      .filter((group) => [...names].some((n) => group.typeName.includes(n)))
       .map((group) => group.type);
-  }, [autochess?.enemyGroups, imageMatch.matchedTemplateNames]);
+  }, [autochess?.enemyGroups, recognitionEntries]);
 
-  type BatchModifyTarget = "pick" | "ban" | null;
   const [batchModifyTarget, setBatchModifyTarget] =
     useState<BatchModifyTarget>(null);
+  const [samplePreview, setSamplePreview] = useState<
+    "enemy" | "operator" | null
+  >(null);
+
+  const sampleImageUrl =
+    samplePreview &&
+    `${import.meta.env.VITE_API_BASE_URL ?? ""}/images/autochess/${samplePreview}.png`;
 
   const handlePick = (chessId: string) => {
     const result = deck.addToPick(chessId);
@@ -78,12 +127,49 @@ export default function AutochessPage() {
   return (
     <>
       <div
-        className={`min-h-screen ${imageMatch.isProcessing ? "pointer-events-none opacity-70" : ""}`}
+        className={`min-h-screen ${recognition.isProcessing ? "pointer-events-none opacity-70" : ""}`}
       >
-        <EnemyPicker
-          groups={autochess.enemyGroups}
-          matchedActiveTypes={matchedEnemyTypes}
-        />
+        <section className="mb-8">
+          <EnemyPicker
+            groups={autochess.enemyGroups}
+            matchedActiveTypes={matchedEnemyTypes}
+          />
+          <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-default-500">
+                在页面空白处粘贴含有敌人类型或禁用干员头像的截图可触发识别，截图中不要包含模拟器UI等内容
+                <br />
+                推荐使用{" "}
+                <a
+                  className="text-ak-blue underline"
+                  href="https://pixpin.cn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  PixPin
+                </a>{" "}
+                快速截图，智能识别UI一键粘贴到页面，注意宽度要求至少720px
+              </p>
+              <p className="text-xs text-default-400">
+                处理中页面会被锁定，可点击取消终止任务。
+              </p>
+            </div>
+            <div className="flex gap-0.5">
+              <Button
+                className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
+                onPress={() => setSamplePreview("enemy")}
+              >
+                敌人示例
+              </Button>
+              <Button
+                className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
+                onPress={() => setSamplePreview("operator")}
+              >
+                干员示例
+              </Button>
+            </div>
+          </div>
+        </section>
 
         <section className="mb-8">
           <OperatorPicker
@@ -128,112 +214,111 @@ export default function AutochessPage() {
         <ClassChangeQuickRef bonds={autochess.bonds} />
         <BandTable bands={autochess.bands} />
       </div>
+
       <Modal
-        isOpen={imageMatch.isModalOpen}
+        isOpen={recognition.isModalOpen}
         onClose={() => {
-          if (imageMatch.isProcessing) return;
-          imageMatch.closeModal();
-          imageMatch.resetToIdle();
+          if (recognition.isProcessing) return;
+          recognition.closeModal();
         }}
-        isDismissable={!imageMatch.isProcessing}
-        isKeyboardDismissDisabled={imageMatch.isProcessing}
-        hideCloseButton={imageMatch.isProcessing}
+        isDismissable={!recognition.isProcessing}
+        isKeyboardDismissDisabled={recognition.isProcessing}
+        hideCloseButton={recognition.isProcessing}
       >
         <ModalContent>
-          <ModalHeader>截图匹配进度</ModalHeader>
+          <ModalHeader>截图识别进度</ModalHeader>
           <ModalBody>
             <div className="space-y-3">
               <p className="text-sm text-default-700">
-                {imageMatch.progress.message}
+                {recognition.progress.message}
               </p>
               <p className="text-xs text-default-500">
-                阶段：{imageMatch.progress.step}
+                阶段：
+                {(
+                  {
+                    upload: "已接收/上传",
+                    queue: "排队中",
+                    processing: "识别中",
+                    done: "完成",
+                    失败: "失败",
+                    idle: "已取消",
+                  } as Record<string, string>
+                )[recognition.progress.step] ?? recognition.progress.step}
               </p>
-              <p className="text-xs text-default-500">
-                进度：{imageMatch.progress.current}/{imageMatch.progress.total}
-              </p>
-              {imageMatch.scaleDebug && (
-                <div className="space-y-1 rounded border border-default-200 p-2">
-                  <p className="text-xs text-default-600 font-medium">
-                    Scale策略日志
-                  </p>
-                  <p className="text-[11px] text-default-500">
-                    全局范围(高度基准): {imageMatch.scaleDebug.minScale} ~{" "}
-                    {imageMatch.scaleDebug.maxScale} | 已评估:{" "}
-                    {imageMatch.scaleDebug.scaleCount}
-                  </p>
-                  <p className="text-[11px] text-default-500">
-                    粗搜: step={imageMatch.scaleDebug.coarseStep ?? "-"} | 点数=
-                    {imageMatch.scaleDebug.coarseScaleCount ?? "-"} | 峰值=
-                    {imageMatch.scaleDebug.coarsePeakScale ?? "-"} (
-                    {imageMatch.scaleDebug.coarsePeakTopScore ?? "-"}) | 转折早停=
-                    {imageMatch.scaleDebug.coarseTurningStopped ? "是" : "否"}
-                  </p>
-                  <p className="text-[11px] text-default-500">
-                    细化: range {imageMatch.scaleDebug.refineRangeMin ?? "-"} ~{" "}
-                    {imageMatch.scaleDebug.refineRangeMax ?? "-"} | step=
-                    {imageMatch.scaleDebug.refineStep ?? "-"} | 点数=
-                    {imageMatch.scaleDebug.refineScaleCount ?? "-"} | 峰值=
-                    {imageMatch.scaleDebug.refinePeakScale ?? "-"} (
-                    {imageMatch.scaleDebug.refinePeakTopScore ?? "-"}) | 转折早停=
-                    {imageMatch.scaleDebug.refineTurningStopped ? "是" : "否"}
-                  </p>
-                  <p className="text-[11px] text-default-500">
-                    早停阈值: topScore &gt;= {" "}
-                    {imageMatch.scaleDebug.turningScoreThreshold ?? "-"}
-                  </p>
-                </div>
-              )}
-              {imageMatch.pastedImagePreviewUrl && (
+              {recognition.pastedImagePreviewUrl && (
                 <div>
                   <p className="text-xs text-default-500 mb-1">用户截图预览</p>
                   <img
-                    src={imageMatch.pastedImagePreviewUrl}
+                    src={recognition.pastedImagePreviewUrl}
                     alt="用户截图预览"
                     className="w-full max-h-56 object-contain rounded border border-default-200"
                   />
                 </div>
               )}
-              {imageMatch.bestScaleGroup && (
-                <div>
-                  <p className="text-xs text-default-500 mb-1">
-                    最高分组匹配结果（短路组合）
+              {recognition.isDev && recognition.lastResult && (
+                <div className="rounded border border-default-200 p-2 overflow-auto max-h-48">
+                  <p className="text-xs text-default-600 font-medium mb-1">
+                    识别结果（dev）
                   </p>
-                  <p className="text-[11px] text-default-600">
-                    算法: {imageMatch.bestScaleGroup.algorithm} / scale:{" "}
-                    {imageMatch.bestScaleGroup.scale} / 组内最高分:{" "}
-                    {imageMatch.bestScaleGroup.topScore}
-                  </p>
-                  <div className="mt-1 space-y-1">
-                    {imageMatch.bestScaleGroup.matchedTemplateNames.map(
-                      (item, index) => (
-                      <p
-                        key={`matched-${item}-${index}`}
-                        className="text-[11px] text-default-600"
-                      >
-                        {index + 1}. {item}
-                      </p>
-                    ),
-                    )}
-                  </div>
+                  <pre className="text-[11px] text-default-500 whitespace-pre-wrap break-words">
+                    {JSON.stringify(recognition.lastResult, null, 2)}
+                  </pre>
                 </div>
               )}
             </div>
           </ModalBody>
           <ModalFooter>
+            {recognition.isProcessing ? (
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={recognition.cancel}
+              >
+                取消
+              </Button>
+            ) : null}
             <Button
               onPress={() => {
-                if (imageMatch.isProcessing) return;
-                imageMatch.closeModal();
-                imageMatch.resetToIdle();
+                if (recognition.isProcessing) return;
+                recognition.closeModal();
               }}
-              isDisabled={imageMatch.isProcessing}
+              isDisabled={recognition.isProcessing}
             >
               关闭
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Modal
+        size="3xl"
+        isOpen={!!samplePreview}
+        onClose={() => setSamplePreview(null)}
+      >
+        <ModalContent>
+          <ModalBody className="p-0">
+            {sampleImageUrl && (
+              <img
+                src={sampleImageUrl}
+                alt={samplePreview === "enemy" ? "敌人示例" : "干员示例"}
+                className="w-full max-h-[70vh] object-contain rounded border border-default-200"
+              />
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {recognitionEntries.length > 0 && (
+        <ImageDock
+          items={recognitionEntries.map((e) => ({
+            id: e.id,
+            thumbnailUri: e.annotatedUri,
+            fullUri: e.annotatedUri,
+          }))}
+          onRemove={handleRemoveRecognition}
+          onClearAll={handleClearAllRecognition}
+        />
+      )}
     </>
   );
 }

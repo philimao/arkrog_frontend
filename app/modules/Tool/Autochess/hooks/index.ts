@@ -1,2 +1,3 @@
 export { useAutochessDeck } from "./useAutochessDeck";
-export { useAutochessImageMatch } from "./imageMatch/useAutochessImageMatch";
+export { useAutochessRecognition } from "./useAutochessRecognition";
+export type { RecognitionEntry } from "./useAutochessRecognition";

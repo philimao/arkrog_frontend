@@ -45,14 +45,27 @@ export default function BpPool({
             </span>
           )}
         </div>
-        {onBatchModifyChange && (
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-normal">批量修改</label>
-            <Switch
-              isSelected={batchModifyActive}
-              onValueChange={onBatchModifyChange}
-              size="sm"
-            />
+        {(operators.length > 0 || onBatchModifyChange) && (
+          <div className="flex items-center gap-3">
+            {operators.length > 0 && (
+              <button
+                type="button"
+                className="text-sm text-default-500 hover:text-default-700"
+                onClick={() => operators.forEach((op) => onRemoveOperator(op.chessId))}
+              >
+                清空
+              </button>
+            )}
+            {onBatchModifyChange && (
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-normal">批量修改</label>
+                <Switch
+                  isSelected={batchModifyActive}
+                  onValueChange={onBatchModifyChange}
+                  size="sm"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

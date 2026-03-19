@@ -58,6 +58,7 @@ export interface AlgorithmTopMatches {
 export interface ScaleDebugInfo {
   baseline: "height";
   referenceSceneHeight: number;
+  sceneWidth: number;
   sceneHeight: number;
   minScale: number;
   maxScale: number;

@@ -137,7 +137,7 @@ export default function AutochessPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col gap-2">
               <p className="text-sm text-default-500">
-                在页面空白处粘贴含有敌人类型或禁用干员头像的截图可触发识别，截图中不要包含模拟器UI等内容
+                在页面空白处粘贴截图可触发识别，截图要求16:9，画面中不要包含模拟器UI等内容，可参考右侧示例图片
                 <br />
                 推荐使用{" "}
                 <a
@@ -149,9 +149,18 @@ export default function AutochessPage() {
                   PixPin
                 </a>{" "}
                 快速截图，智能识别UI一键粘贴到页面，注意宽度要求至少720px
-              </p>
-              <p className="text-xs text-default-400">
-                处理中页面会被锁定，可点击取消终止任务。
+                <br />
+                使用中遇到问题或有好的建议，请加入影语集反馈群{" "}
+                <span
+                  className="text-ak-blue underline cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText("909687635");
+                    toast.success("已复制到剪贴板");
+                  }}
+                >
+                  909687635
+                </span>{" "}
+                联系管理员
               </p>
             </div>
             <div className="flex gap-0.5">

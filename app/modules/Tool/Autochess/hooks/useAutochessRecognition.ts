@@ -439,10 +439,6 @@ export function useAutochessRecognition({
         }
         setIsProcessing(false);
       } finally {
-        if (!isDev) {
-          URL.revokeObjectURL(previewUrl);
-          setPastedImagePreviewUrl(null);
-        }
         abortControllerRef.current = null;
       }
     },

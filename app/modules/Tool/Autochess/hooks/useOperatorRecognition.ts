@@ -145,11 +145,13 @@ function drawAnnotatedImage(
 interface UseOperatorRecognitionOptions {
   enabled: boolean;
   onResult: (entry: RecognitionEntry) => void;
+  isPC?: boolean;
 }
 
 export function useOperatorRecognition({
   enabled,
   onResult,
+  isPC = false,
 }: UseOperatorRecognitionOptions) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -280,7 +282,7 @@ export function useOperatorRecognition({
         setIsProcessing(false);
       }
     },
-    [enabled, isProcessing, onResult],
+    [enabled, isProcessing, onResult, isPC],
   );
 
   useEffect(() => {

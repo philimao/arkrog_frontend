@@ -47,6 +47,7 @@ export interface AutochessRecognitionResult {
     score: number;
   }>;
   stageTiming?: { totalMs: number; [k: string]: number | undefined };
+  selectedRoiSizeForImage?: number;
 }
 
 export interface RecognitionEntry {
@@ -62,6 +63,8 @@ function shouldIgnorePasteTarget(target: EventTarget | null): boolean {
   if (tag === "input" || tag === "textarea") return true;
   return target.isContentEditable;
 }
+
+const IMAGE_MIME = /^image\/(png|jpe?g|gif|webp|bmp)$/i;
 
 async function extractImageFromClipboard(
   event: ClipboardEvent,
@@ -81,6 +84,46 @@ async function extractImageFromClipboard(
   bitmap.close();
 
   return { blob, width, height };
+}
+
+async function extractImageFromFile(
+  file: File,
+): Promise<{ blob: Blob; width: number; height: number } | null> {
+  if (!IMAGE_MIME.test(file.type)) return null;
+  const blob = new Blob([await file.arrayBuffer()], {
+    type: file.type || "image/png",
+  });
+  const bitmap = await createImageBitmap(blob);
+  const width = bitmap.width;
+  const height = bitmap.height;
+  bitmap.close();
+  return { blob, width, height };
+}
+
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error("无法创建 Canvas"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      resolve(c.toDataURL("image/png"));
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("图片解码失败"));
+    };
+    img.src = url;
+  });
 }
 
 async function resizeTo720(
@@ -178,12 +221,80 @@ function drawAnnotatedImage(
   });
 }
 
+async function fetchRecognitionResult(
+  apiBase: string,
+  dataUrl: string,
+  isPC: boolean,
+  signal?: AbortSignal,
+): Promise<{ result: AutochessRecognitionResult | null; error: string | null }> {
+  const response = await fetch(
+    `${apiBase}/misc/autochess/recognize-stream`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({ image: dataUrl, isPC }),
+      signal,
+    },
+  );
+
+  if (!response.ok || !response.body) {
+    return { result: null, error: "请求失败" };
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result: AutochessRecognitionResult | null = null;
+  let errorMessage: string | null = null;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n\n");
+    buffer = lines.pop() || "";
+
+    for (const block of lines) {
+      if (!block.trim()) continue;
+      let eventType = "message";
+      let dataStr = "";
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event:")) {
+          eventType = line.slice(6).trim();
+        } else if (line.startsWith("data:")) {
+          dataStr = line.slice(5).trim();
+        }
+      }
+      if (!dataStr) continue;
+
+      try {
+        const data = JSON.parse(dataStr);
+        if (eventType === "result") {
+          result = data as AutochessRecognitionResult;
+        } else if (eventType === "error") {
+          errorMessage = data.message || "识别失败";
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  return { result, error: errorMessage };
+}
+
 interface UseAutochessRecognitionOptions {
   onResult: (entry: RecognitionEntry) => void;
+  isPC?: boolean;
 }
 
 export function useAutochessRecognition({
   onResult,
+  isPC = false,
 }: UseAutochessRecognitionOptions) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -303,7 +414,7 @@ export function useAutochessRecognition({
               "Content-Type": "application/json",
               Accept: "text/event-stream",
             },
-            body: JSON.stringify({ image: dataUrl }),
+            body: JSON.stringify({ image: dataUrl, isPC }),
             signal: abortControllerRef.current.signal,
           },
         );
@@ -442,7 +553,7 @@ export function useAutochessRecognition({
         abortControllerRef.current = null;
       }
     },
-    [isProcessing, onResult],
+    [isProcessing, onResult, isPC],
   );
 
   const cancel = useCallback(() => {
@@ -451,6 +562,121 @@ export function useAutochessRecognition({
       abortControllerRef.current = null;
     }
   }, []);
+
+  const recognizeFromFiles = useCallback(
+    async (files: File[]) => {
+      if (isProcessing) return;
+      const imageFiles = files.filter((f) => IMAGE_MIME.test(f.type));
+      if (imageFiles.length === 0) {
+        toast.warning("未检测到图片文件");
+        return;
+      }
+
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      setIsModalOpen(true);
+      setIsProcessing(true);
+      setLastResult(null);
+      const total = imageFiles.length;
+      setProgress({
+        step: "processing",
+        message: `识别 1/${total} …`,
+        current: 0,
+        total,
+      });
+
+      const apiBase =
+        (import.meta.env.VITE_API_BASE_URL as string)?.trim() || "";
+      let successCount = 0;
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        setProgress({
+          step: "processing",
+          message: `识别 ${i + 1}/${total} …`,
+          current: i,
+          total,
+        });
+
+        let extracted: { blob: Blob; width: number; height: number } | null;
+        try {
+          extracted = await extractImageFromFile(file);
+        } catch {
+          toast.error(`"${file.name}" 解码失败`);
+          continue;
+        }
+        if (!extracted) {
+          toast.error(`"${file.name}" 非图片格式`);
+          continue;
+        }
+
+        const { blob, width, height } = extracted;
+        let dataUrl: string;
+        try {
+          if (width > TARGET_WIDTH) {
+            dataUrl = await resizeTo720(blob, width, height);
+          } else if (width < TARGET_WIDTH) {
+            toast.warning(
+              `"${file.name}" 分辨率过低（${width}px），已跳过`,
+            );
+            continue;
+          } else if (width !== TARGET_WIDTH) {
+            toast.warning(`"${file.name}" 宽度须为 ${TARGET_WIDTH}px，已跳过`);
+            continue;
+          } else {
+            dataUrl = await blobToDataUrl(blob);
+          }
+        } catch {
+          toast.error(`"${file.name}" 处理失败`);
+          continue;
+        }
+
+        const { result, error } = await fetchRecognitionResult(
+          apiBase,
+          dataUrl,
+          isPC,
+        );
+
+        if (error || !result) {
+          toast.error(`"${file.name}" ${error || "识别失败"}`);
+          continue;
+        }
+
+        setLastResult(result);
+        setProgress({
+          step: "processing",
+          message: `识别 ${i + 1}/${total} 完成`,
+          current: i + 1,
+          total,
+        });
+
+        const annotatedUri = await drawAnnotatedImage(dataUrl, result);
+        const id = crypto.randomUUID();
+        uriMapRef.current.set(id, { originalUri: dataUrl, annotatedUri });
+        onResult({ id, originalUri: dataUrl, annotatedUri, result });
+        successCount++;
+
+      }
+
+      if (successCount > 0) {
+        toast.success(`批量识别完成，共 ${successCount}/${total} 张成功`);
+      }
+
+      setProgress({
+        step: "done",
+        message: `批量识别完成，${successCount}/${total} 张成功`,
+        current: total,
+        total,
+      });
+      setIsProcessing(false);
+      if (!isDev) {
+        setTimeout(() => setIsModalOpen(false), 1500);
+      }
+    },
+    [isProcessing, onResult, isPC],
+  );
 
   useEffect(() => {
     window.addEventListener("paste", handlePaste);
@@ -499,5 +725,6 @@ export function useAutochessRecognition({
     closeModal,
     revokeUri,
     cancel,
+    recognizeFromFiles,
   };
 }

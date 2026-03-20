@@ -5,8 +5,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Switch,
 } from "@heroui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
@@ -35,6 +36,22 @@ export default function AutochessPage() {
     autochess?.bonds || [],
   );
 
+  const [isPC, setIsPC] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("autochess-isPC") === "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("autochess-isPC", String(isPC));
+    } catch {
+      // ignore
+    }
+  }, [isPC]);
+
   const handleRecognitionResult = useCallback(
     (entry: RecognitionEntry) => {
       setRecognitionEntries((prev) => [...prev, entry]);
@@ -55,7 +72,9 @@ export default function AutochessPage() {
 
   const recognition = useAutochessRecognition({
     onResult: handleRecognitionResult,
+    isPC,
   });
+  const batchInputRef = useRef<HTMLInputElement>(null);
 
   const handleRemoveRecognition = useCallback(
     (id: string) => {
@@ -150,6 +169,8 @@ export default function AutochessPage() {
                 </a>{" "}
                 快速截图，智能识别UI一键粘贴到页面，注意宽度要求至少720px
                 <br />
+                当前对PC版识别尚未完全适配（特别是敌人识别），如果无法识别请保留截图并进行反馈
+                <br />
                 使用中遇到问题或有好的建议，请加入影语集反馈群{" "}
                 <span
                   className="text-ak-blue underline cursor-pointer"
@@ -163,18 +184,46 @@ export default function AutochessPage() {
                 联系管理员
               </p>
             </div>
-            <div className="flex gap-0.5">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-default-600">模拟器</span>
+                <Switch isSelected={isPC} onValueChange={setIsPC} size="sm" />
+                <span className="text-sm text-default-600">PC 版</span>
+              </div>
+              <div className="flex gap-0.5">
+                <Button
+                  className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
+                  onPress={() => setSamplePreview("enemy")}
+                >
+                  敌人示例
+                </Button>
+                <Button
+                  className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
+                  onPress={() => setSamplePreview("operator")}
+                >
+                  干员示例
+                </Button>
+              </div>
+              <input
+                ref={batchInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files?.length) {
+                    recognition.recognizeFromFiles(Array.from(files));
+                  }
+                  e.target.value = "";
+                }}
+              />
               <Button
-                className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
-                onPress={() => setSamplePreview("enemy")}
+                className="w-full block sm:hidden rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
+                onPress={() => batchInputRef.current?.click()}
+                isDisabled={recognition.isProcessing}
               >
-                敌人示例
-              </Button>
-              <Button
-                className="rounded-none px-5 py-2.5 text-base bg-black-gray text-white hover:opacity-90 border border-mid-gray"
-                onPress={() => setSamplePreview("operator")}
-              >
-                干员示例
+                批量识别
               </Button>
             </div>
           </div>

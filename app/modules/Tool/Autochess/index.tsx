@@ -156,7 +156,9 @@ export default function AutochessPage() {
           <div className="flex justify-between items-center">
             <div className="flex flex-col gap-2">
               <p className="text-sm text-default-500">
-                在页面空白处粘贴截图可触发识别，截图要求16:9，画面中不要包含模拟器UI等内容，可参考右侧示例图片
+                在页面空白处粘贴截图可触发识别，截图要求16:9，画面中{" "}
+                <strong className="text-ak-red">不要包含模拟器UI</strong>{" "}
+                ，可参考右侧示例图片
                 <br />
                 推荐使用{" "}
                 <a
@@ -169,9 +171,11 @@ export default function AutochessPage() {
                 </a>{" "}
                 快速截图，智能识别UI一键粘贴到页面，注意宽度要求至少720px
                 <br />
-                当前对PC版识别尚未完全适配（特别是敌人识别），如果无法识别请保留截图并进行反馈
+                请根据使用的是 <strong>模拟器</strong> 还是{" "}
+                <strong>PC版</strong> ，选择对应的设备类型，使用{" "}
+                <strong>手机版</strong> 时两种选项都可以尝试
                 <br />
-                使用中遇到问题或有好的建议，请加入影语集反馈群{" "}
+                使用中遇到无法识别的问题或有好的建议，请加入影语集反馈群{" "}
                 <span
                   className="text-ak-blue underline cursor-pointer"
                   onClick={() => {
@@ -188,7 +192,7 @@ export default function AutochessPage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-default-600">模拟器</span>
                 <Switch isSelected={isPC} onValueChange={setIsPC} size="sm" />
-                <span className="text-sm text-default-600">PC 版</span>
+                <span className="text-sm text-default-600">PC版 / 手机版</span>
               </div>
               <div className="flex gap-0.5">
                 <Button

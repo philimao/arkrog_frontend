@@ -19,7 +19,7 @@ const ITEM_BOND_MAPPING: { itemName: string; bondName: string }[] = [
   { itemName: "迅捷作战粮", bondName: "迅捷" },
   { itemName: "卡西米尔竞技旗", bondName: "卡西米尔" },
   { itemName: "叙拉古正装", bondName: "叙拉古" },
-  { itemName: "奥术法阵", bondName: "奥术" },
+  { itemName: "口袋法阵", bondName: "奥术" },
 ];
 
 function findBondByName(bonds: AutochessBond[], bondName: string) {

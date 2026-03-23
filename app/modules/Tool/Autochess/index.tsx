@@ -18,6 +18,7 @@ import BondTable from "./components/BondTable";
 import ClassChangeQuickRef from "./components/ClassChangeQuickRef";
 import EnemyPicker from "./components/EnemyPicker";
 import BandTable from "./components/BandTable";
+import DecisionPhaseSection from "./components/DecisionPhaseSection";
 import ImageDock from "./components/ImageDock";
 import { useAutochessDeck, useAutochessRecognition } from "./hooks";
 import type { RecognitionEntry } from "./hooks";
@@ -274,6 +275,10 @@ export default function AutochessPage() {
 
         <BondTable bonds={deck.bondsWithState} />
         <ClassChangeQuickRef bonds={autochess.bonds} />
+        <DecisionPhaseSection
+          effectInfoDataDict={autochess.effectInfoDataDict ?? {}}
+          enemyGains={autochess.enemyGains ?? []}
+        />
         <BandTable bands={autochess.bands} />
       </div>
 

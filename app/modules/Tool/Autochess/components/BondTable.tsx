@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { AutochessBond } from "~/types/autochess";
-import { getBondActiveMethodLabel, parseBondDesc } from "../utils/autochess";
+import { getBondActiveMethodLabel, parseAutochessDesc } from "../utils/autochess";
 import { getPath, imageHost } from "~/utils/tools";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
 
@@ -64,7 +64,7 @@ export default function BondTable({ bonds }: { bonds: BondTableRow[] }) {
                     <td className="p-3">{bond.activeCount}</td>
                     <td className="p-3">{getBondActiveMethodLabel(bond)}</td>
                     <td className="p-3 text-sm whitespace-pre-line">
-                      {parseBondDesc(bond.desc)}
+                      {parseAutochessDesc(bond.desc)}
                     </td>
                   </tr>
                 ))

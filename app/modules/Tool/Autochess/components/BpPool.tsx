@@ -1,7 +1,7 @@
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
 import { Switch, Tooltip } from "@heroui/react";
-import { parseBondDesc } from "../utils/autochess";
+import { parseAutochessDesc } from "../utils/autochess";
 
 interface BpPoolProps {
   title: string;
@@ -102,7 +102,7 @@ export default function BpPool({
                           <div className="text-light-gray">
                             {garrison.eventTypeDesc}
                           </div>
-                          <div>{parseBondDesc(garrison.garrisonDesc)}</div>
+                          <div>{parseAutochessDesc(garrison.garrisonDesc)}</div>
                         </div>
                       ))}
                     </div>

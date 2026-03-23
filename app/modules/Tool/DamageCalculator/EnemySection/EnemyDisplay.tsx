@@ -2,7 +2,10 @@ import { styled } from "styled-components";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { GridContainer } from "~/modules/Tool/components/Shared";
-import { allowedBlackboardKeyMap, camelToSnake } from "~/modules/Tool/DamageCalculator/utils";
+import {
+  allowedBlackboardKeyMap,
+  camelToSnake,
+} from "~/modules/Tool/DamageCalculator/utils";
 import { useEffect, useRef, useState } from "react";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import type { EnemyInput } from "~/types/gameData";
@@ -53,7 +56,9 @@ export const StyledEnemyTag = styled.div`
   background: var(--mid-gray);
 `;
 
-export const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{ $levelType: string }>`
+export const StyledEnmeyLevelBadge = styled(StyledEnemyTag)<{
+  $levelType: string;
+}>`
   background: ${({ $levelType }) => {
     if ($levelType === "BOSS") return "var(--ak-purple)";
     if ($levelType === "ELITE") return "var(--ak-red)";
@@ -111,7 +116,10 @@ const StyledInputWrapper = styled.div`
   }
 `;
 
-export const displayAttrKeys: Record<string, { min: number; max?: number; tooltip?: React.ReactNode }> = {
+export const displayAttrKeys: Record<
+  string,
+  { min: number; max?: number; tooltip?: React.ReactNode }
+> = {
   maxHp: {
     min: 0,
   },
@@ -152,7 +160,8 @@ export const displayAttrKeys: Record<string, { min: number; max?: number; toolti
 };
 
 export default function EnemyDisplay() {
-  const { enemyData, enemyBase, setEnemyData, enemyExpression, setEnemyBase } = useDamageCalculatorStore();
+  const { enemyData, enemyBase, setEnemyData, enemyExpression, setEnemyBase } =
+    useDamageCalculatorStore();
 
   /** 输入期间缓存敌人数据，在blur时应用到store中 */
   const [enemyCache, setEnemyCache] = useState<EnemyInput | null>(null);
@@ -183,7 +192,9 @@ export default function EnemyDisplay() {
     Object.keys(displayAttrKeys).map((key) => {
       // 取两位小数，展示效果上更加友好
       const _key = key as keyof EnemyInput["attributes"];
-      copyEnemyInput.attributes[_key] = (Math.round(enemyExpression[key].calculate() * 100) / 100) as never;
+      copyEnemyInput.attributes[_key] = (Math.round(
+        enemyExpression[key].calculate() * 100,
+      ) / 100) as never;
     });
     setEnemyBase(copyEnemyInput);
   }
@@ -211,7 +222,8 @@ export default function EnemyDisplay() {
                       ...enemyData,
                       levelType: {
                         m_defined: true,
-                        m_value: enemyBase.levelType === "NORMAL" ? "ELITE" : "NORMAL",
+                        m_value:
+                          enemyBase.levelType === "NORMAL" ? "ELITE" : "NORMAL",
                       },
                     });
                   }
@@ -219,7 +231,11 @@ export default function EnemyDisplay() {
               >
                 {levelTypeMap[enemyBase.levelType]}
               </StyledEnmeyLevelBadge>
-              {enemyBase.enemyTags.length > 0 && <StyledEnemyTag>{enemyTagMap[enemyBase.enemyTags[0]]}</StyledEnemyTag>}
+              {enemyBase.enemyTags.length > 0 && (
+                <StyledEnemyTag>
+                  {enemyTagMap[enemyBase.enemyTags[0]]}
+                </StyledEnemyTag>
+              )}
             </div>
           </StyledEnemyHeader>
           <StyledEnemyAvatar name={enemyBase.name} />
@@ -237,22 +253,34 @@ export default function EnemyDisplay() {
             ))}
         </StyledPhase> */}
         {enemyBase.name !== "木桩" ? (
-          <StyledAttrFuncButton onClick={() => assignToDummy()}>复制到木桩</StyledAttrFuncButton>
+          <StyledAttrFuncButton onClick={() => assignToDummy()}>
+            复制到木桩
+          </StyledAttrFuncButton>
         ) : (
-          <StyledAttrFuncButton onClick={() => setEnemyBase(enemyRef.current as EnemyInput)}>
+          <StyledAttrFuncButton
+            onClick={() => setEnemyBase(enemyRef.current as EnemyInput)}
+          >
             恢复初始值
           </StyledAttrFuncButton>
         )}
       </StyledControl>
       <StyledGridContainer>
         {Object.keys(displayAttrKeys).map((key) => {
-          const color = key === "maxHp" ? "text-ak-blue" : key === "atk" ? "text-ak-red" : "";
+          const color =
+            key === "maxHp"
+              ? "text-ak-blue"
+              : key === "atk"
+                ? "text-ak-red"
+                : "";
           return (
             <StyledInputWrapper key={key}>
               <div className="flex justify-between">
                 <span>{allowedBlackboardKeyMap[camelToSnake(key)]}</span>
                 {displayAttrKeys[key].tooltip && (
-                  <Tooltip content={displayAttrKeys[key].tooltip} closeDelay={100}>
+                  <Tooltip
+                    content={displayAttrKeys[key].tooltip}
+                    closeDelay={100}
+                  >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                       <use href="#question_circle" />
                     </svg>
@@ -281,7 +309,8 @@ export default function EnemyDisplay() {
                   }}
                   onBlur={() => {
                     // 解析浮点数，失败则设置为0
-                    let number = parseFloat(enemyCache.attributes[key as never]) || 0;
+                    let number =
+                      parseFloat(enemyCache.attributes[key as never]) || 0;
                     const { min, max } = displayAttrKeys[key as never];
                     // 应用数据边界
                     if (min !== undefined && number < min) number = min;

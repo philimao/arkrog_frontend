@@ -1,6 +1,6 @@
 import { getPath, imageHost } from "~/utils/tools";
 import { Tooltip } from "@heroui/react";
-import { getBondActiveMethodLabel, parseBondDesc } from "../utils/autochess";
+import { getBondActiveMethodLabel, parseAutochessDesc } from "../utils/autochess";
 import type { AutochessBond } from "~/types/autochess";
 
 interface BondListItem extends Pick<
@@ -28,7 +28,7 @@ export default function BondList({ bonds }: { bonds: BondListItem[] }) {
                   激活人数：{bond.count}/{bond.activeCount}
                 </div>
                 <div>激活方式：{getBondActiveMethodLabel(bond)}</div>
-                <div className="mt-1">{parseBondDesc(bond.desc)}</div>
+                <div className="mt-1">{parseAutochessDesc(bond.desc)}</div>
               </div>
             }
           >

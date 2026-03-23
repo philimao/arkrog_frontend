@@ -67,6 +67,37 @@ export interface AutochessEnemyGroup {
   enemies: AutochessEnemy[];
 }
 
+export type AutochessEffectType = "ENEMY_GAIN" | "BUFF_GAIN" | "ENEMY";
+
+export interface AutochessEnemyGainEnemyData {
+  attributes: Record<string, number>;
+  enemyId?: string;
+  enemyName?: string;
+  levelType?: string;
+  enemyTags?: string[];
+}
+
+export interface AutochessEnemyGainEffectStub {
+  effectId: string;
+  effectType: "ENEMY_GAIN";
+  effectName: string;
+  effectDesc: string;
+}
+
+export interface AutochessEnemyGainGroup {
+  id: string;
+  enemyPrice: number;
+  effects: AutochessEnemyGainEffectStub[];
+  enemyData: AutochessEnemyGainEnemyData;
+}
+
+export interface AutochessEffectInfo {
+  effectId: string;
+  effectType: AutochessEffectType;
+  effectName: string;
+  effectDesc: string;
+}
+
 export interface AutochessPayload {
   operators: AutochessOperator[];
   operatorsByLevel: Record<string, AutochessOperator[]>;
@@ -75,4 +106,6 @@ export interface AutochessPayload {
   bands: AutochessBand[];
   enemyTypeDict: Record<AutochessEnemyTypeKey, string>;
   enemyGroups: AutochessEnemyGroup[];
+  effectInfoDataDict: Record<string, AutochessEffectInfo>;
+  enemyGains: AutochessEnemyGainGroup[];
 }

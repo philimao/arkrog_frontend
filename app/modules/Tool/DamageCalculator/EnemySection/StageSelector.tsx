@@ -9,7 +9,14 @@ import { getNavOfZone } from "./enemyUtils";
 import { parseBlackboardEntry } from "../utils";
 import { cosHost } from "~/utils/tools";
 import type { StageData } from "~/types/gameData";
-import { useEffect, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from "react";
 
 const StyledStageSelector = styled.div`
   margin-bottom: 1rem;
@@ -84,17 +91,28 @@ const StyledEnemies = styled.div`
     bottom: 0;
     width: 100%;
     height: 4rem;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(36, 36, 36, 0.8) 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(36, 36, 36, 0.8) 100%
+    );
     background-blend-mode: darken;
   }
 `;
 
 const StyledEnemy = styled.div<{ $selected: boolean }>`
-  box-shadow: ${({ $selected }) => ($selected ? "0px 0px 10px 2px #FFF" : "none")};
+  box-shadow: ${({ $selected }) =>
+    $selected ? "0px 0px 10px 2px #FFF" : "none"};
   width: 4rem;
 `;
 
-const ignoreEnemyNames = ["温迪戈大盾", "年代印痕", "昔日道标", "仅剩的创意", "受符"];
+const ignoreEnemyNames = [
+  "温迪戈大盾",
+  "年代印痕",
+  "昔日道标",
+  "仅剩的创意",
+  "受符",
+];
 const ignoreEnemyIds = [
   "enemy_1324_wdsdw", //萨卡兹悖谬裂变学徒（虚像）
 ];
@@ -114,22 +132,26 @@ export default function StageSelector() {
     setRogueLayer,
   } = useDamageCalculatorStore();
 
-  const [stageQuickSelectorVisible, setStageQuickSelectorVisible] = useState(false);
+  const [stageQuickSelectorVisible, setStageQuickSelectorVisible] =
+    useState(false);
 
-  const clickHandlerRef = useRef<(evt: MouseEvent) => void>((evt: MouseEvent) => {
-    if (!(evt.target as HTMLElement).closest(".stage-quick-selector")) {
-      // 点击外部区域关闭快速选择器
-      document.removeEventListener("click", clickHandlerRef.current);
-      setStageQuickSelectorVisible(false);
-    }
-  });
+  const clickHandlerRef = useRef<(evt: MouseEvent) => void>(
+    (evt: MouseEvent) => {
+      if (!(evt.target as HTMLElement).closest(".stage-quick-selector")) {
+        // 点击外部区域关闭快速选择器
+        document.removeEventListener("click", clickHandlerRef.current);
+        setStageQuickSelectorVisible(false);
+      }
+    },
+  );
 
   // 用于渲染区域选择器
   const zoneList = getNavOfZone(rogueInput.topic, zones);
 
   // 快速切换紧急/普通
   const switchDifficultyTarget = renderStages.find(
-    (stage) => stage.name === stageData.name && stage.isElite !== stageData.isElite,
+    (stage) =>
+      stage.name === stageData.name && stage.isElite !== stageData.isElite,
   )?.id;
 
   return (
@@ -150,7 +172,8 @@ export default function StageSelector() {
             className="font-bold justify-start"
             onPress={() =>
               setStageQuickSelectorVisible((prev) => {
-                if (!prev) document.addEventListener("click", clickHandlerRef.current);
+                if (!prev)
+                  document.addEventListener("click", clickHandlerRef.current);
                 return !prev;
               })
             }
@@ -192,7 +215,10 @@ export default function StageSelector() {
           onChange={(evt) => setRogueLayer(evt.target.value)}
         />
         {stageData.eliteDesc && (
-          <div className="flex flex-col whitespace-nowrap" style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}>
+          <div
+            className="flex flex-col whitespace-nowrap"
+            style={{ color: "rgb(236, 237, 238)", fontSize: "0.8rem" }}
+          >
             <StyledControlLabel>紧急条件</StyledControlLabel>
             <div className="relative h-12">
               <div className="absolute top-0 left-0 flex flex-col justify-center bg-dark-gray h-12 px-2">
@@ -215,25 +241,34 @@ export default function StageSelector() {
               <span>点击选择敌人</span>
               {switchDifficultyTarget && (
                 <span
-                  className={"cursor-pointer " + (stageData.isElite ? "" : "text-ak-red")}
+                  className={
+                    "cursor-pointer " + (stageData.isElite ? "" : "text-ak-red")
+                  }
                   onClick={() => setRogueStageId(switchDifficultyTarget)}
                 >
                   点击跳转至{stageData.isElite ? "普通" : "紧急"}
                 </span>
               )}
-              {rogueInput.topic === "rogue_4" && <span className="parasitic-hint">红点代表死亡后会生成恐卡兹</span>}
+              {rogueInput.topic === "rogue_4" && (
+                <span className="parasitic-hint">
+                  红点代表死亡后会生成恐卡兹
+                </span>
+              )}
             </StyledEnemiesLabel>
             <StyledEnemies>
               {levelData.enemies
                 .filter(
-                  (enemy) => !ignoreEnemyNames.includes(enemy.name.m_value!) && !ignoreEnemyIds.includes(enemy.id),
+                  (enemy) =>
+                    !ignoreEnemyNames.includes(enemy.name.m_value!) &&
+                    !ignoreEnemyIds.includes(enemy.id),
                 )
                 .map((_enemyData) => {
                   // 被恐卡兹寄生（小红点）
                   const parasitized = !!_enemyData.talentBlackboard?.find(
                     (bb) => bb.key === "parasitic" && bb.valueStr === "true",
                   );
-                  const displayName = _enemyData.displayName?.m_value || _enemyData.name.m_value;
+                  const displayName =
+                    _enemyData.displayName?.m_value || _enemyData.name.m_value;
                   return (
                     <StyledEnemy
                       key={_enemyData.id}
@@ -288,7 +323,8 @@ const StyledStageItem = styled.div<{ $active: boolean }>`
   position: relative;
   padding: 0.5rem;
   margin: 0.25rem;
-  background: ${({ $active }) => ($active ? "var(--ak-blue)" : "var(--dark-gray)")};
+  background: ${({ $active }) =>
+    $active ? "var(--ak-blue)" : "var(--dark-gray)"};
   color: ${({ $active }) => ($active ? "black" : "inherit")};
   font-size: 0.9rem;
   font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
@@ -322,7 +358,10 @@ function StageQuickSelector({
   const { setRogueStageId } = useDamageCalculatorStore();
 
   return (
-    <StyledStageQuickSelector $visible={visible} className="stage-quick-selector">
+    <StyledStageQuickSelector
+      $visible={visible}
+      className="stage-quick-selector"
+    >
       {renderStages.map((stage) => {
         return (
           <StyledStageItem

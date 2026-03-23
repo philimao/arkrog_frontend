@@ -35,6 +35,22 @@ Object.assign(
   ),
 );
 
+Object.assign(
+  preset,
+  ["弑君者"].reduce(
+    (acc, name) => {
+      acc[name] = encodeURI(imageHost + getPath(`头像_敌人_${name}(敌方).png`));
+      return acc;
+    },
+    {} as Record<string, string>,
+  ),
+);
+
+const enemyNameTransform = {
+  深池方阵步兵: "深池方阵战士",
+  鼠王: "“鼠王”",
+};
+
 const StyledEnemyName = styled.div<{ $color: string; $fontSize: string }>`
   padding: 0.1rem 0.15rem;
   font-size: ${({ $fontSize }) => $fontSize};
@@ -66,22 +82,32 @@ export default function EnemyAvatar({
   if (!name) return null;
 
   const url =
-    preset[name] || encodeURI(imageHost + getPath(`头像_敌人_${name}.png`));
+    preset[name] ||
+    encodeURI(
+      imageHost +
+        getPath(`头像_敌人_${enemyNameTransform[name as never] || name}.png`),
+    );
   return (
     <div className="relative">
-      <img
-        className={className}
-        src={url}
-        alt="avatar"
-        referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
-        onError={(evt) => {
-          (evt.target as HTMLImageElement).onerror = null;
-          (evt.target as HTMLImageElement).src =
-            "https://media.prts.wiki/thumb/f/fb/%E6%97%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E4%BD%8D%E7%AC%A6.png/75px-%E6%97%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E4%BD%8D%E7%AC%A6.png";
-        }}
-        {...props}
-      />
+      <div
+        className={`relative w-full aspect-square bg-transparent ${className}`.trim()}
+      >
+        <img
+          className="absolute inset-0 block h-full w-full object-contain"
+          src={url}
+          alt={displayName ?? name}
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
+          onError={(evt) => {
+            (evt.target as HTMLImageElement).onerror = null;
+            (evt.target as HTMLImageElement).src =
+              "https://media.prts.wiki/thumb/f/fb/%E6%97%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E4%BD%8D%E7%AC%A6.png/75px-%E6%97%A0%E5%9B%BE%E7%89%87%E5%8D%A0%E4%BD%8D%E7%AC%A6.png";
+          }}
+          {...props}
+        />
+      </div>
       {displayName && (
         <StyledEnemyName $color={"inherit"} $fontSize={fontSize}>
           {displayName}

@@ -1,5 +1,5 @@
 import type { AutochessBand } from "~/types/autochess";
-import { parseBondDesc } from "../utils/autochess";
+import { parseAutochessDesc } from "../utils/autochess";
 import { getPath, imageHost } from "~/utils/tools";
 import { StyledTitle } from "../../components/Shared";
 
@@ -44,7 +44,7 @@ export default function BandTable({ bands }: { bands: AutochessBand[] }) {
                   <td className="p-3">{band.strategy}</td>
                   <td className="p-3">{band.totalHp}</td>
                   <td className="p-3 text-sm whitespace-pre-line">
-                    {parseBondDesc(band.bandDesc)}
+                    {parseAutochessDesc(band.bandDesc)}
                   </td>
                 </tr>
               ))}

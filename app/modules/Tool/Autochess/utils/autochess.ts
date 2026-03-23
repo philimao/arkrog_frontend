@@ -38,10 +38,10 @@ function pushWithLineBreaks(
 }
 
 /**
- * 解析盟约描述中的 <@namespace.tag>content</> 标签为 React 节点。
+ * 解析卫戍协议富文本描述（盟约、机变决策等）中的 <@namespace.tag>content</> 为 React 节点。
  * 支持字面量 \\n 和实际换行符，均会渲染为换行。
  */
-export function parseBondDesc(text: string): ReactNode[] {
+export function parseAutochessDesc(text: string): ReactNode[] {
   if (!text) return [];
   const result: ReactNode[] = [];
   let remaining = text.replace(/\\n/g, "\n");

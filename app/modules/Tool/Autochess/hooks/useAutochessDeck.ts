@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
 import { countBondStacks } from "../utils/autochess";
 
@@ -84,6 +84,11 @@ export function useAutochessDeck(
     setBanOperatorIds((prev) => prev.filter((id) => id !== chessId));
   };
 
+  const resetDeck = useCallback(() => {
+    setPickOperatorIds([]);
+    setBanOperatorIds([]);
+  }, []);
+
   return {
     pickOperatorIds,
     pickOperators,
@@ -96,5 +101,6 @@ export function useAutochessDeck(
     addToBan,
     removeFromPick,
     removeFromBan,
+    resetDeck,
   };
 }

@@ -18,7 +18,7 @@ const emptyMessageByMode: Record<BondTableMode, string> = {
 };
 
 export default function BondTable({ bonds }: { bonds: BondTableRow[] }) {
-  const [mode, setMode] = useState<BondTableMode>("激活盟约");
+  const [mode, setMode] = useState<BondTableMode>("关联盟约");
   const tableRows = useMemo(() => {
     if (mode === "显示全部") return bonds;
     if (mode === "关联盟约")

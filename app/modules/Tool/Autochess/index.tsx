@@ -40,9 +40,12 @@ export default function AutochessPage() {
   const [isPC, setIsPC] = useState(() => {
     if (typeof window === "undefined") return false;
     try {
-      return localStorage.getItem("autochess-isPC") === "true";
+      const stored = localStorage.getItem("autochess-isPC");
+      if (stored === "true") return true;
+      if (stored === "false") return false;
+      return window.innerWidth >= 768;
     } catch {
-      return false;
+      return window.innerWidth >= 768;
     }
   });
   useEffect(() => {
@@ -115,6 +118,7 @@ export default function AutochessPage() {
 
   const [batchModifyTarget, setBatchModifyTarget] =
     useState<BatchModifyTarget>(null);
+  const [enemyPickerResetKey, setEnemyPickerResetKey] = useState(0);
   const [samplePreview, setSamplePreview] = useState<
     "enemy" | "operator" | null
   >(null);
@@ -139,15 +143,36 @@ export default function AutochessPage() {
     }
   };
 
+  const handleNewGame = useCallback(() => {
+    deck.resetDeck();
+    setBatchModifyTarget(null);
+    setRecognitionEntries((prev) => {
+      prev.forEach((e) => recognition.revokeUri(e.id));
+      return [];
+    });
+    setEnemyPickerResetKey((k) => k + 1);
+    toast.success("干员/敌人BP信息已重置", { autoClose: 1000 });
+  }, [deck.resetDeck, recognition]);
+
   if (loading || !autochess) return <Loading />;
 
   return (
     <>
       <div
-        className={`min-h-screen ${recognition.isProcessing ? "pointer-events-none opacity-70" : ""}`}
+        className={`relative min-h-screen ${recognition.isProcessing ? "pointer-events-none opacity-70" : ""}`}
       >
+        <div className="relative z-10 mb-4 flex flex-col items-end gap-2 md:absolute md:top-0 md:left-1/2 md:mb-0 md:block md:w-screen md:-translate-x-1/2 md:pr-0">
+          <button
+            type="button"
+            onClick={handleNewGame}
+            className="absolute right-0 -top-4 h-10 w-32 bg-black-gray text-white max-md:relative max-md:top-auto max-md:right-auto"
+          >
+            新游戏
+          </button>
+        </div>
         <section className="mb-8">
           <EnemyPicker
+            key={`enemy-picker-${enemyPickerResetKey}`}
             groups={autochess.enemyGroups}
             matchedActiveTypes={matchedEnemyTypes}
           />

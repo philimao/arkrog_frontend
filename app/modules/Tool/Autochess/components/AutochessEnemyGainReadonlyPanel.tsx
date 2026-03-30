@@ -45,6 +45,12 @@ function AttrCalcProcessTooltip({
   const n = breakdown.enhancementCount;
   const stackPow =
     n != null && n > 0 ? Number((perStack ** n).toFixed(6)) : null;
+  const waveMult =
+    kind === "maxHp"
+      ? breakdown.waveHpMultiplier
+      : breakdown.waveAtkMultiplier;
+  const useWaveMult =
+    waveMult != null && Number.isFinite(waveMult) && waveMult > 0;
 
   return (
     <div className="max-w-[17rem] space-y-1 text-left text-xs leading-snug">
@@ -60,7 +66,12 @@ function AttrCalcProcessTooltip({
           </>
         ) : null}
       </div>
-      {n === null ? (
+      {useWaveMult ? (
+        <div>
+          ③ 波次强化：
+          <span className="font-mono"> ×{formatCalcDetail(waveMult)}</span>
+        </div>
+      ) : n === null ? (
         <div>③ 波次强化：表中为「/」，未叠乘 {perStack}</div>
       ) : n === 0 ? (
         <div>③ 波次强化：n = 0，未叠乘 {perStack}</div>

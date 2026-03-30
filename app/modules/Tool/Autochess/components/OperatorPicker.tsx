@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Switch } from "@heroui/react";
 import { intToRoman } from "~/utils/tools";
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
@@ -7,6 +8,7 @@ import {
   getAvailableOperatorCountByBond,
   splitBondsByCore,
 } from "../utils/autochess";
+import AutochessOperatorDetailBlock from "./AutochessOperatorDetailBlock";
 
 interface OperatorPickerProps {
   operatorsByLevel: Record<string, AutochessOperator[]>;
@@ -32,7 +34,20 @@ export default function OperatorPicker({
   const [mode, setMode] = useState<Mode>("按盟约");
   const [level, setLevel] = useState("1");
   const [bondId, setBondId] = useState(bonds[0]?.bondId || "");
+  const [showOperatorDetails, setShowOperatorDetails] = useState(false);
   const { core, extra } = useMemo(() => splitBondsByCore(bonds), [bonds]);
+
+  const bondNameMap = useMemo(
+    () =>
+      bonds.reduce(
+        (acc, bond) => {
+          acc[bond.bondId] = bond.name;
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    [bonds],
+  );
 
   const activeOperators = useMemo(() => {
     if (mode === "按位阶") return operatorsByLevel[level] || [];
@@ -119,6 +134,15 @@ export default function OperatorPicker({
         </div>
       )}
 
+      <div className="flex justify-end items-center gap-2 mb-3">
+        <span className="text-sm text-light-gray">详细信息</span>
+        <Switch
+          isSelected={showOperatorDetails}
+          onValueChange={setShowOperatorDetails}
+          size="sm"
+        />
+      </div>
+
       <div className="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-3">
         {activeOperators.map((operator) => {
           const selected = selectedIds.includes(operator.chessId);
@@ -136,7 +160,7 @@ export default function OperatorPicker({
                   onOperatorClick(operator.chessId, batchModifyTarget);
               }}
               disabled={disabled}
-              className={`flex items-center gap-2 border p-2 bg-black-gray ${
+              className={`flex flex-col items-stretch gap-2 border p-2 bg-black-gray text-left ${
                 disabled ? "opacity-60 cursor-not-allowed" : ""
               } ${
                 selected
@@ -144,14 +168,30 @@ export default function OperatorPicker({
                   : "border-mid-gray hover:border-ak-blue"
               }`}
             >
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-mid-gray">
-                <OperatorAvatar
-                  name={operator.name}
-                  className="w-full h-full"
-                  loading="lazy"
-                />
+              <div className="relative flex items-center gap-2 min-w-0">
+                <div className="w-10 h-10 shrink-0 rounded-full overflow-hidden border border-mid-gray">
+                  <OperatorAvatar
+                    name={operator.name}
+                    className="w-full h-full"
+                    loading="lazy"
+                  />
+                  {mode === "按盟约" && (
+                    <span className="absolute top-[1px] right-[1px] z-10 text-xs leading-none font-bold text-light-gray pointer-events-none">
+                      {intToRoman(operator.chessLevel)}
+                    </span>
+                  )}
+                </div>
+                <span className="text-sm text-left truncate">
+                  {operator.name}
+                </span>
               </div>
-              <span className="text-sm text-left">{operator.name}</span>
+              {showOperatorDetails && (
+                <AutochessOperatorDetailBlock
+                  operator={operator}
+                  bondNameMap={bondNameMap}
+                  className="p-2 pb-0 max-w-none border-t border-mid-gray"
+                />
+              )}
             </button>
           );
         })}

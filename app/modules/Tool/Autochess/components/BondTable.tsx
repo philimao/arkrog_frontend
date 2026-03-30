@@ -1,24 +1,37 @@
 import { useMemo, useState } from "react";
 import type { AutochessBond } from "~/types/autochess";
-import { getBondActiveMethodLabel, parseAutochessDesc } from "../utils/autochess";
+import {
+  getBondActiveMethodLabel,
+  parseAutochessDesc,
+} from "../utils/autochess";
 import { getPath, imageHost } from "~/utils/tools";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
 
-type BondTableRow = AutochessBond & { active?: boolean };
+type BondTableRow = AutochessBond & { enabled?: boolean; active?: boolean };
+
+type BondTableMode = "激活盟约" | "关联盟约" | "显示全部";
+
+const emptyMessageByMode: Record<BondTableMode, string> = {
+  激活盟约: "暂无已激活盟约",
+  关联盟约: "暂无未激活盟约",
+  显示全部: "暂无盟约数据",
+};
 
 export default function BondTable({ bonds }: { bonds: BondTableRow[] }) {
-  const [mode, setMode] = useState("激活盟约");
+  const [mode, setMode] = useState<BondTableMode>("激活盟约");
   const tableRows = useMemo(() => {
     if (mode === "显示全部") return bonds;
+    if (mode === "关联盟约")
+      return bonds.filter((bond) => Boolean(bond.enabled));
     return bonds.filter((bond) => Boolean(bond.active));
   }, [bonds, mode]);
 
   return (
     <section className="mb-8">
       <StyledTitle
-        modes={["激活盟约", "显示全部"]}
+        modes={["激活盟约", "关联盟约", "显示全部"]}
         activeMode={mode}
-        setActiveMode={setMode}
+        setActiveMode={(value) => setMode(value as BondTableMode)}
       >
         盟约一览
       </StyledTitle>
@@ -38,7 +51,7 @@ export default function BondTable({ bonds }: { bonds: BondTableRow[] }) {
               {tableRows.length === 0 ? (
                 <tr>
                   <td className="p-3 text-light-gray" colSpan={5}>
-                    暂无已激活盟约
+                    {emptyMessageByMode[mode]}
                   </td>
                 </tr>
               ) : (

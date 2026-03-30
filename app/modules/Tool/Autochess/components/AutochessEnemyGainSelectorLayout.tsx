@@ -148,7 +148,7 @@ export default function AutochessEnemyGainSelectorLayout({ rows }: Props) {
   const [calcModeType, setCalcModeType] =
     useState<AutochessCalcModeType>("MULTI");
   const [calcDifficulty, setCalcDifficulty] =
-    useState<AutochessCalcDifficulty>("HARD");
+    useState<AutochessCalcDifficulty>("ABYSS");
   const [calcWave, setCalcWave] = useState(3);
 
   const filteredRows = useMemo(
@@ -233,6 +233,11 @@ export default function AutochessEnemyGainSelectorLayout({ rows }: Props) {
           onChange={(e) => setCalcWave(Number(e.target.value))}
         />
       </div>
+      {calcDifficulty === "ABYSS" ? (
+        <p className="-mt-2 mb-2 text-xs leading-snug text-ak-red">
+          终极模拟：从第3波起，全体敌人移速变为115%。
+        </p>
+      ) : null}
       <div className="mb-2 text-xs font-bold text-light-gray">选择赏金</div>
       {/* OperatorPicker.tsx 第 74 行盟约网格同款 */}
       <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-[1px] bg-black-gray">

@@ -1,11 +1,13 @@
 /**
- * 卫戍协议：按模式、难度、波次查「敌人强化次数」表，对 maxHp / atk 做叠乘（每强化一次 hp×1.2、atk×1.1）。
- * 表数据来自游戏内规则；ABYSS 与 HARD 共用「绝境」列；不含 TRAINING。
+ * 卫戍协议：按模式、难度、波次对 maxHp / atk 做预处理与波次叠乘。
+ * - 多数模式：查「敌人强化次数」表得 n，再生命 ×1.2^n、攻击 ×1.1^n。
+ * - 单人：终极（ABYSS）与绝境（HARD）波次共用 SINGLE_TABLE 第三列；联机终极（MULTI+ABYSS）使用独立倍率表（见 getMultiAbyssWaveHpAtkMultipliers），与联机绝境不同。
+ * 不含 TRAINING。
  */
 
 export type AutochessCalcModeType = "SINGLE" | "MULTI";
 
-/** 计算用难度；ABYSS 查表列与 HARD 相同 */
+/** 计算用难度；单人模式下 ABYSS 与 HARD 共用查表第三列；联机 ABYSS 波次不走该列 */
 export type AutochessCalcDifficulty = "FUNNY" | "NORMAL" | "HARD" | "ABYSS";
 
 export type AutochessCalcMode = {
@@ -20,8 +22,11 @@ export type AutochessCalcMode = {
 const HP_MULT_PER_STACK = 1.2;
 const ATK_MULT_PER_STACK = 1.1;
 
+/** 联机 - 终极模拟：生命额外乘子（配图） */
+const MULTI_ABYSS_HP_EXTRA = 1.08;
+
 /**
- * 行下标 0 = wave1 … 14 = wave15；列 0=标准 FUNNY，1=险境 NORMAL，2=绝境 HARD。
+ * 行下标 0 = wave1 … 14 = wave15；列 0=标准 FUNNY，1=险境 NORMAL，2=绝境 HARD（单人 ABYSS 同列）。
  * `null` 表示图中「/」，该格无强化次数定义。
  */
 const SINGLE_TABLE: (number | null)[][] = [
@@ -127,12 +132,16 @@ export type EnhancementCountParams = {
 
 /**
  * 查表得强化次数 n。表中「/」为 null；wave 非 1–15 的整数时返回 null。
+ * 联机 + 终极（MULTI+ABYSS）不适用单一 n，固定返回 null（波次倍率见 getMultiAbyssWaveHpAtkMultipliers）。
  */
 export function getEnhancementCount(
   params: EnhancementCountParams,
 ): number | null {
   const { modeType, modeDifficulty, wave } = params;
   if (!Number.isInteger(wave) || wave < 1 || wave > 15) {
+    return null;
+  }
+  if (modeType === "MULTI" && modeDifficulty === "ABYSS") {
     return null;
   }
   const row = wave - 1;
@@ -142,26 +151,74 @@ export function getEnhancementCount(
   return cell;
 }
 
+/**
+ * 联机 - 终极模拟：各波对生命/攻击的总倍率（相对预处理后的属性）。
+ * W15 与 W14 相同。wave 非法时返回 null。
+ */
+export function getMultiAbyssWaveHpAtkMultipliers(
+  wave: number,
+): { hp: number; atk: number } | null {
+  if (!Number.isInteger(wave) || wave < 1 || wave > 15) return null;
+  const w = wave === 15 ? 14 : wave;
+  const H = HP_MULT_PER_STACK;
+  const A = ATK_MULT_PER_STACK;
+  const X = MULTI_ABYSS_HP_EXTRA;
+  switch (w) {
+    case 1:
+      return { hp: H ** 1, atk: A ** 1 };
+    case 2:
+      return { hp: H ** 2, atk: A ** 2 };
+    case 3:
+      return { hp: H ** 2, atk: A ** 2 };
+    case 4:
+      return { hp: H ** 3, atk: A ** 3 };
+    case 5:
+      return { hp: H ** 4, atk: A ** 3 };
+    case 6:
+      return { hp: H ** 4 * X, atk: A ** 4 };
+    case 7:
+      return { hp: H ** 7, atk: A ** 5 };
+    case 8:
+    case 9:
+    case 10:
+      return { hp: H ** 8, atk: A ** 5 };
+    case 11:
+      return { hp: H ** 9, atk: A ** 6 };
+    case 12:
+      return { hp: H ** 10, atk: A ** 6 };
+    case 13:
+      return { hp: H ** 10 * X, atk: A ** 7 };
+    case 14:
+      return { hp: H ** 10 * X, atk: A ** 8 };
+    default:
+      return null;
+  }
+}
+
 export type WaveCalcParams = EnhancementCountParams;
 
 export type WaveCalcResult = {
   attributes: Record<string, number>;
-  /** 与 getEnhancementCount 一致；为 null 时不改 maxHp/atk */
+  /** 与 getEnhancementCount 一致；联机终极为 null；为 null 且未提供波次倍率时不改 maxHp/atk */
   enhancementCount: number | null;
+  /** 联机终极：波次对生命总倍率 */
+  waveHpMultiplier?: number | null;
+  /** 联机终极：波次对攻击总倍率 */
+  waveAtkMultiplier?: number | null;
 };
 
 function isFiniteNumber(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
 
-/** 绝境列：HARD / ABYSS */
+/** 绝境 / 终极（用于联机预处理：二者均不降低） */
 function isAbyssalDifficulty(d: AutochessCalcDifficulty): boolean {
   return d === "HARD" || d === "ABYSS";
 }
 
 /**
  * 预处理对生命/攻击的倍率。
- * - 单人：标准/险境 ×0.7；绝境/终极 ×0.8
+ * - 单人：标准/险境 ×0.7；绝境 ×0.8；终极 ×1（不降低）
  * - 联机：标准/险境 ×0.8；绝境/终极 ×1
  */
 export function getPreprocessMultiplier(
@@ -169,7 +226,9 @@ export function getPreprocessMultiplier(
   modeDifficulty: AutochessCalcDifficulty,
 ): number {
   if (modeType === "SINGLE") {
-    return isAbyssalDifficulty(modeDifficulty) ? 0.8 : 0.7;
+    if (modeDifficulty === "ABYSS") return 1;
+    if (modeDifficulty === "HARD") return 0.8;
+    return 0.7;
   }
   return isAbyssalDifficulty(modeDifficulty) ? 1 : 0.8;
 }
@@ -226,6 +285,10 @@ export type EnemyHpAtkCalcBreakdown = {
   afterPreMaxHp: number | null;
   afterPreAtk: number | null;
   enhancementCount: number | null;
+  /** 联机终极等：波次对生命总倍率；未使用时省略 */
+  waveHpMultiplier?: number | null;
+  /** 联机终极等：波次对攻击总倍率；未使用时省略 */
+  waveAtkMultiplier?: number | null;
   /** 波次叠乘后、四舍五入前 */
   afterWaveMaxHp: number | null;
   afterWaveAtk: number | null;
@@ -250,10 +313,12 @@ export function computeDisplayedEnemyAttributes(
   const pre = preprocessEnemyAttributes(modeType, modeDifficulty, {
     ...baseAttributes,
   });
-  const { attributes: afterWave, enhancementCount } = calculateWaveAttributes(
-    { modeType, modeDifficulty, wave },
-    pre,
-  );
+  const {
+    attributes: afterWave,
+    enhancementCount,
+    waveHpMultiplier,
+    waveAtkMultiplier,
+  } = calculateWaveAttributes({ modeType, modeDifficulty, wave }, pre);
   const rounded = roundAttributeNumbers(afterWave);
   const breakdown: EnemyHpAtkCalcBreakdown = {
     baseMaxHp: numOrNull(baseAttributes.maxHp),
@@ -262,6 +327,8 @@ export function computeDisplayedEnemyAttributes(
     afterPreMaxHp: numOrNull(pre.maxHp),
     afterPreAtk: numOrNull(pre.atk),
     enhancementCount,
+    waveHpMultiplier,
+    waveAtkMultiplier,
     afterWaveMaxHp: numOrNull(afterWave.maxHp),
     afterWaveAtk: numOrNull(afterWave.atk),
     displayMaxHp: numOrNull(rounded.maxHp),
@@ -270,20 +337,42 @@ export function computeDisplayedEnemyAttributes(
   return {
     attributes: rounded,
     enhancementCount,
+    waveHpMultiplier,
+    waveAtkMultiplier,
     breakdown,
   };
 }
 
 /**
- * 浅拷贝 attributes，仅对 maxHp、atk 叠乘；n 为 null 时数值不变。
+ * 浅拷贝 attributes，仅对 maxHp、atk 叠乘；n 为 null 且非联机终极有效波次时数值不变。
  */
 export function calculateWaveAttributes(
   params: WaveCalcParams,
   attributes: Record<string, number>,
 ): WaveCalcResult {
-  const n = getEnhancementCount(params);
   const out: Record<string, number> = { ...attributes };
 
+  if (params.modeType === "MULTI" && params.modeDifficulty === "ABYSS") {
+    const m = getMultiAbyssWaveHpAtkMultipliers(params.wave);
+    if (m === null) {
+      return {
+        attributes: out,
+        enhancementCount: null,
+        waveHpMultiplier: null,
+        waveAtkMultiplier: null,
+      };
+    }
+    if (isFiniteNumber(out.maxHp)) out.maxHp *= m.hp;
+    if (isFiniteNumber(out.atk)) out.atk *= m.atk;
+    return {
+      attributes: out,
+      enhancementCount: null,
+      waveHpMultiplier: m.hp,
+      waveAtkMultiplier: m.atk,
+    };
+  }
+
+  const n = getEnhancementCount(params);
   if (n === null) {
     return { attributes: out, enhancementCount: null };
   }

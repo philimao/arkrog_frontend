@@ -124,10 +124,7 @@ export default function AutochessPage() {
     `${import.meta.env.VITE_API_BASE_URL ?? ""}/images/autochess/${samplePreview}.png`;
 
   const handlePick = (chessId: string) => {
-    const result = deck.addToPick(chessId);
-    if (!result.success && result.reason === "limit") {
-      toast.warning("Pick 池最多 9 名干员");
-    }
+    deck.addToPick(chessId);
   };
 
   const handleOperatorClick = (chessId: string, target: "pick" | "ban") => {

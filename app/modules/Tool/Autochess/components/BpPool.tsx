@@ -1,7 +1,7 @@
 import OperatorAvatar from "~/components/Character/Operator/OperatorAvatar";
 import type { AutochessBond, AutochessOperator } from "~/types/autochess";
 import { Switch, Tooltip } from "@heroui/react";
-import { parseAutochessDesc } from "../utils/autochess";
+import AutochessOperatorDetailBlock from "./AutochessOperatorDetailBlock";
 
 interface BpPoolProps {
   title: string;
@@ -40,7 +40,14 @@ export default function BpPool({
         <div className="flex items-center gap-2">
           <h3>{title}</h3>
           {typeof limit === "number" && (
-            <span className="text-sm text-light-gray font-normal">
+            <span
+              className={
+                "text-sm font-normal " +
+                (operators.length > limit
+                  ? "text-ak-red"
+                  : "text-light-gray")
+              }
+            >
               {operators.length}/{limit}
             </span>
           )}
@@ -85,29 +92,10 @@ export default function BpPool({
           <div key={operator.chessId} className="relative w-14 h-14">
             <Tooltip
               content={
-                <div className="p-3 max-w-80 text-sm">
-                  <div className="font-semibold mb-1">{operator.name}</div>
-                  <div>位阶：{operator.chessLevel}</div>
-                  <div>进阶数量：{operator.upgradeNum}</div>
-                  <div className="mt-1">
-                    盟约：
-                    {(operator.bondIds || [])
-                      .map((bondId) => bondNameMap[bondId] || bondId)
-                      .join(" / ")}
-                  </div>
-                  {!!operator.garrisons?.length && (
-                    <div className="mt-2">
-                      {operator.garrisons.map((garrison) => (
-                        <div key={garrison.garrisonId} className="mb-2">
-                          <div className="text-light-gray">
-                            {garrison.eventTypeDesc}
-                          </div>
-                          <div>{parseAutochessDesc(garrison.garrisonDesc)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <AutochessOperatorDetailBlock
+                  operator={operator}
+                  bondNameMap={bondNameMap}
+                />
               }
             >
               <div

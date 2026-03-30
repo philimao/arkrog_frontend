@@ -48,6 +48,7 @@ export function useAutochessDeck(
       return {
         ...bond,
         count,
+        enabled: count > 0,
         active: count >= bond.activeCount,
       };
     });
@@ -56,19 +57,14 @@ export function useAutochessDeck(
   const addToPick = (chessId: string) => {
     setBanOperatorIds((prev) => prev.filter((id) => id !== chessId));
     let added = false;
-    let reachedLimit = false;
     setPickOperatorIds((prev) => {
       if (prev.includes(chessId)) return prev;
-      if (prev.length >= PICK_LIMIT) {
-        reachedLimit = true;
-        return prev;
-      }
       added = true;
       return [...prev, chessId];
     });
     return {
       success: added,
-      reason: reachedLimit ? "limit" : "exists",
+      reason: added ? "ok" : "exists",
     };
   };
 
@@ -102,4 +98,3 @@ export function useAutochessDeck(
     removeFromBan,
   };
 }
-

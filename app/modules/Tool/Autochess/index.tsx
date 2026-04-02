@@ -13,7 +13,6 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
 import OperatorPicker from "./components/OperatorPicker";
 import BpPool from "./components/BpPool";
-import BondList from "./components/BondList";
 import BondTable from "./components/BondTable";
 import ClassChangeQuickRef from "./components/ClassChangeQuickRef";
 import EnemyPicker from "./components/EnemyPicker";
@@ -97,11 +96,6 @@ export default function AutochessPage() {
     setLoading(true);
     fetchAutochessData().finally(() => setLoading(false));
   }, [fetchAutochessData]);
-
-  const pickedBonds = useMemo(
-    () => deck.bondsWithState.filter((bond) => bond.count > 0),
-    [deck.bondsWithState],
-  );
 
   const matchedEnemyTypes = useMemo(() => {
     const enemyEntry = [...recognitionEntries]
@@ -291,8 +285,15 @@ export default function AutochessPage() {
             onBatchModifyChange={(active) =>
               setBatchModifyTarget(active ? "ban" : null)
             }
+            manualBondBan={{
+              allOperators: autochess.operators,
+              operatorsByBond: autochess.operatorsByBond,
+              banOperatorIds: deck.banOperatorIds,
+              onApplyMatching: (chessIds) => {
+                chessIds.forEach((id) => deck.addToBan(id));
+              },
+            }}
           />
-          <BondList bonds={pickedBonds} />
         </section>
 
         <BondTable bonds={deck.bondsWithState} />

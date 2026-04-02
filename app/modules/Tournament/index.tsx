@@ -18,16 +18,20 @@ export default function TournamentsWrapper() {
   const { fetchGameDataBasic } = useGameDataStore();
   // 赛事数据
   const { tournamentsData, initTournamentData } = useTournamentDataStore();
+  const { fetchUserInfo } = useUserInfoStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetchGameDataBasic(), initTournamentData()]).then(() =>
-      setLoaded(true),
-    );
+    const run = async () => {
+      await fetchUserInfo();
+      await Promise.all([fetchGameDataBasic(), initTournamentData()]);
+      setLoaded(true);
+    };
+    void run();
     return () => {
       setLoaded(false);
     };
-  }, [fetchGameDataBasic, initTournamentData]);
+  }, [fetchUserInfo, fetchGameDataBasic, initTournamentData]);
 
   if (!loaded || !topics || !tournamentsData) {
     return <Loading />;

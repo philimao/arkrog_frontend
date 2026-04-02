@@ -54,11 +54,14 @@ export default function RootLayout() {
       tool: [fetchGameDataBasic, fetchGameDataExt],
       tournament: [fetchGameDataBasic, initTournamentData],
     };
-    const loadArray = [
-      fetchUserInfo,
-      ...(preload[route as keyof typeof preload] || []),
-    ];
-    Promise.all(loadArray.map((f) => f())).then(() => setLoading(false));
+
+    const run = async () => {
+      await fetchUserInfo();
+      const extra = preload[route as keyof typeof preload] || [];
+      await Promise.all(extra.map((f) => f()));
+    };
+
+    void run().then(() => setLoading(false));
   }, [
     fetchAppData,
     fetchGameDataBasic,

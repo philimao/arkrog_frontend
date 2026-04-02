@@ -14,6 +14,8 @@ interface User {
 
 interface PermissionUser extends User {
   permissions: string[];
+  /** 来自接口时为 user-specific；本地新增显式授权时固定为该值 */
+  grantType?: "user-specific" | "level-global";
 }
 
 interface TournamentPermissionProps {
@@ -31,10 +33,31 @@ const permissionMap = {
   admin: "管理",
 };
 
+function formatPermissionLabels(permissions: string[]) {
+  return permissions
+    .map((p) => permissionMap[p as keyof typeof permissionMap])
+    .join(", ");
+}
+
+function elevatedSourceHint(level: number) {
+  if (level === 4) {
+    return "模块管理员";
+  }
+  if (level >= 5) {
+    return "全站管理员";
+  }
+  return "资源级授权";
+}
+
 export default function TournamentPermission({
   tournamentData,
 }: TournamentPermissionProps) {
-  const [permittedUsers, setPermittedUsers] = useState<PermissionUser[]>([]);
+  const [explicitPermittedUsers, setExplicitPermittedUsers] = useState<
+    PermissionUser[]
+  >([]);
+  const [elevatedPermittedUsers, setElevatedPermittedUsers] = useState<
+    PermissionUser[]
+  >([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -53,11 +76,17 @@ export default function TournamentPermission({
         const response = await api.get(
           `/permission/resource/tournament:${tournamentData.id}/users`,
         );
-        setPermittedUsers(response.data.users || []);
+        const users: PermissionUser[] = response.data.users || [];
+        setExplicitPermittedUsers(
+          users.filter((u) => u.grantType === "user-specific"),
+        );
+        setElevatedPermittedUsers(
+          users.filter((u) => u.grantType === "level-global"),
+        );
       } catch (error: any) {
         if (error.response?.status === 404) {
-          // 资源还没有权限配置，这是正常的
-          setPermittedUsers([]);
+          setExplicitPermittedUsers([]);
+          setElevatedPermittedUsers([]);
         } else {
           console.error("加载权限用户失败:", error);
         }
@@ -139,13 +168,14 @@ export default function TournamentPermission({
         face: user.face, // 传递用户头像
       });
 
-      // 更新本地状态
+      // 更新本地状态（仅显式授权列表）
       const updatedUser: PermissionUser = {
         ...user,
         permissions: selectedPermissions,
+        grantType: "user-specific",
       };
 
-      setPermittedUsers((prev) => {
+      setExplicitPermittedUsers((prev) => {
         const existingIndex = prev.findIndex((u) => u.userId === user.userId);
         if (existingIndex >= 0) {
           const newUsers = [...prev];
@@ -163,7 +193,7 @@ export default function TournamentPermission({
       // 如果用户等级被升级，显示额外提示
       const levelUpgraded = user.level < 3;
       if (levelUpgraded) {
-        toast.success("权限保存成功，用户等级已升级为Level 3");
+        toast.success("权限保存成功，用户等级已升级为Level 3，重新登陆后生效");
       } else {
         toast.success("权限保存成功");
       }
@@ -184,7 +214,9 @@ export default function TournamentPermission({
         userId,
       });
 
-      setPermittedUsers((prev) => prev.filter((u) => u.userId !== userId));
+      setExplicitPermittedUsers((prev) =>
+        prev.filter((u) => u.userId !== userId),
+      );
       toast.success("权限已删除");
     } catch (error) {
       console.error("删除权限失败:", error);
@@ -218,16 +250,16 @@ export default function TournamentPermission({
       <StyledDivider />
 
       <div className="space-y-6 pb-4">
-        {/* 已有权限的用户列表 */}
+        {/* 本资源显式授权（可在此页增删改） */}
         <div>
-          <label className={labelClassName}>已授权用户</label>
-          {permittedUsers.length === 0 ? (
+          <label className={labelClassName}>本资源显式授权</label>
+          {explicitPermittedUsers.length === 0 ? (
             <div className="text-light-mid-gray text-sm py-4 text-center bg-black-gray">
-              暂无授权用户
+              暂无显式授权用户
             </div>
           ) : (
             <div className="space-y-2">
-              {permittedUsers.map((user) => (
+              {explicitPermittedUsers.map((user) => (
                 <div
                   key={user.userId}
                   className="flex items-center gap-3 p-3 bg-black-gray hover:bg-mid-gray transition-colors"
@@ -242,12 +274,7 @@ export default function TournamentPermission({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{user.username}</div>
                     <div className="text-sm text-light-mid-gray">
-                      权限:{" "}
-                      {user.permissions
-                        .map(
-                          (p) => permissionMap[p as keyof typeof permissionMap],
-                        )
-                        .join(", ")}
+                      权限: {formatPermissionLabels(user.permissions)}
                     </div>
                   </div>
                   <button
@@ -264,6 +291,42 @@ export default function TournamentPermission({
                   >
                     删除
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 模块 / 全站高级权限（只读） */}
+        <div>
+          <label className={labelClassName}>模块与全站高级权限</label>
+          {elevatedPermittedUsers.length === 0 ? (
+            <div className="text-light-mid-gray text-sm py-4 text-center bg-black-gray">
+              暂无此类用户
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {elevatedPermittedUsers.map((user) => (
+                <div
+                  key={user.userId}
+                  className="flex items-center gap-3 p-3 bg-black-gray"
+                >
+                  <img
+                    src={user.face}
+                    alt={user.username}
+                    className="w-10 h-10 rounded-full flex-shrink-0"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{user.username}</div>
+                    <div className="text-sm text-light-mid-gray">
+                      Level {user.level} · {elevatedSourceHint(user.level)}
+                    </div>
+                    <div className="text-sm text-light-mid-gray mt-0.5">
+                      权限: {formatPermissionLabels(user.permissions)}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

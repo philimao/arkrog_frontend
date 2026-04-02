@@ -25,6 +25,8 @@ type TournamentsStore = {
 type TournamentDataAction = {
   /** 获取初始赛事数据 */
   initTournamentData: (forceRefresh?: boolean) => Promise<void>;
+  /** 按当前用户与本地赛事列表重算权限（不重新拉取赛事数据） */
+  refreshPermissions: () => Promise<void>;
   /** 获取赛事数据 */
   fetchTournamentsData: (forceRefresh?: boolean) => Promise<void>;
   /** 获取赛事玩家数据 */
@@ -71,26 +73,27 @@ export const useTournamentDataStore = create<
           const response = await tournamentServices.getInitData(forceRefresh);
           const { tournaments, groups } = response.data;
 
-          // 获取用户信息来确定用户等级
-          const userInfo = useUserInfoStore.getState().userInfo;
-          const userLevel = userInfo?.level || 0;
-
-          // 根据用户等级构造权限
-          const permissions = await buildPermissions(tournaments, userLevel);
-
           set(
             {
               tournamentsData: processTournamentsData(tournaments),
               tournamentGroups: groups,
-              permissions,
               loaded: true,
             },
             undefined,
             "initTournamentData",
           );
+          await get().refreshPermissions();
         } catch {
           // 错误已在 api 拦截器中处理
         }
+      },
+
+      refreshPermissions: async () => {
+        const tournamentsData = get().tournamentsData;
+        if (!tournamentsData?.length) return;
+        const userLevel = useUserInfoStore.getState().userInfo?.level || 0;
+        const permissions = await buildPermissions(tournamentsData, userLevel);
+        set({ permissions }, undefined, "refreshPermissions");
       },
 
       fetchTournamentsData: async (forceRefresh?: boolean) => {
@@ -273,3 +276,16 @@ const buildPermissions = async (
 
   return permissions;
 };
+
+// 登录/登出后 userInfo 变化时按当前赛事列表重算权限，避免全量重新 init
+useUserInfoStore.subscribe((state, prevState) => {
+  const prev = prevState.userInfo;
+  const next = state.userInfo;
+  const prevSig = `${prev?.username ?? ""}:${prev?.level ?? ""}`;
+  const nextSig = `${next?.username ?? ""}:${next?.level ?? ""}`;
+  if (prevSig === nextSig) return;
+  const { tournamentsData, refreshPermissions } =
+    useTournamentDataStore.getState();
+  if (!tournamentsData?.length) return;
+  void refreshPermissions();
+});

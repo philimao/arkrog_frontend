@@ -1,5 +1,6 @@
 import { Accordion, AccordionItem } from "@heroui/react";
 import { useCallback, useState } from "react";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import type { TournamentGroupData } from "~/types/tournamentsData";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
@@ -55,6 +56,12 @@ export default function TournamentGroupForm({
     // 验证必填字段
     if (!formData.name) {
       setTouchedFields((prev) => new Set([...prev, "name"]));
+      return;
+    }
+
+    // 新建赛事集须至少包含一届赛事（season）
+    if (!edit && !formData.seasons?.length) {
+      toast.error("请至少添加一个赛季后再提交");
       return;
     }
 

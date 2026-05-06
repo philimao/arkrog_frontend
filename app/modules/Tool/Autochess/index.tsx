@@ -15,6 +15,7 @@ import OperatorPicker from "./components/OperatorPicker";
 import BpPool from "./components/BpPool";
 import BondTable from "./components/BondTable";
 import ClassChangeQuickRef from "./components/ClassChangeQuickRef";
+import KeyChess from "./components/KeyChess";
 import EnemyPicker from "./components/EnemyPicker";
 import BandTable from "./components/BandTable";
 import DecisionPhaseSection from "./components/DecisionPhaseSection";
@@ -297,6 +298,11 @@ export default function AutochessPage() {
         </section>
 
         <BondTable bonds={deck.bondsWithState} />
+        <KeyChess
+          operators={autochess.operators}
+          banOperatorIds={deck.banOperatorIds}
+          bonds={autochess.bonds}
+        />
         <ClassChangeQuickRef bonds={autochess.bonds} />
         <DecisionPhaseSection
           effectInfoDataDict={autochess.effectInfoDataDict ?? {}}

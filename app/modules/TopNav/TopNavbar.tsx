@@ -47,7 +47,16 @@ function SearchComp({ ...props }: React.ComponentPropsWithoutRef<"div">) {
             "h-full font-normal text-default-500 bg-mid-gray data-[hover=true]:bg-mid-gray group-data-[focus=true]:bg-mid-gray rounded-none",
         }}
         placeholder="搜索功能稍后上线..."
-        endContent={<SearchIcon fill="none" aria-hidden="true" focusable="false" role="presentation" width='18px' height='18px' />}
+        endContent={
+          <SearchIcon
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+            role="presentation"
+            width="18px"
+            height="18px"
+          />
+        }
         type="search"
         value={searchValue}
         onValueChange={setSearchValue}

@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { Link, useLocation } from "react-router";
 import { pages } from "~/routes";
+import { useUserInfoStore } from "~/stores/userInfoStore";
 
 const StyledPageNavbar = styled.div`
   display: flex;
@@ -25,7 +26,11 @@ const StyledButtonSubtitle = styled.div`
 
 export default function PageNavbar() {
   const location = useLocation();
-  const currentPage = pages
+  const userLevel = useUserInfoStore((s) => s.userInfo?.level ?? 0);
+  const visiblePages = pages.filter(
+    (page) => page.minLevel === undefined || userLevel >= page.minLevel,
+  );
+  const currentPage = visiblePages
     .filter((page) =>
       page.pathname === "/"
         ? location.pathname === page.pathname
@@ -36,7 +41,7 @@ export default function PageNavbar() {
   return (
     <>
       <StyledPageNavbar className="justify-start sm:justify-center my-4 ms-2 sm:ms-0 hide-scroll border-b-1">
-        {pages.map((page) => {
+        {visiblePages.map((page) => {
           const color = (currentPage?.pathname || "") === page.pathname
             ? "text-ak-blue border-b-ak-blue border-b-2"
             : "text-white";

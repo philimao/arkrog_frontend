@@ -1,4 +1,12 @@
 /**
+ * 本地化日期+时间字符串（zh-CN，24h）。空/0/NaN 返回 em-dash。
+ */
+export function formatDateTime(ts: number | null | undefined): string {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleString("zh-CN", { hour12: false });
+}
+
+/**
  * Formats a date in YYYY-MM-DD format for use with HTML date inputs,
  * preserving the local timezone (unlike toISOString which uses UTC)
  * @param date Date object or timestamp to format

@@ -13,6 +13,7 @@ export const pages = [
   { pathname: "/tool/autochess", title: "卫戍协议", subtitle: "何忆卫" },
   { pathname: "/tool", title: "小集器人", subtitle: "伤害计算" },
   { pathname: "/tournament", title: "高手云集", subtitle: "赛事整理" },
+  { pathname: "/admin", title: "后台管理", subtitle: "管理后台", minLevel: 4 },
 ];
 
 export const homePages = [
@@ -20,6 +21,11 @@ export const homePages = [
   { pathname: "/favorite", title: "我的收藏" },
   // { pathname: "/my-record", title: "个人记录" },
   { pathname: "/link-bilibili", title: "账户链接" },
+];
+
+export const adminPages = [
+  { pathname: "/tournament-audit", title: "赛事审计" },
+  { pathname: "/pending-tournaments", title: "待审核赛事" },
 ];
 
 export default [
@@ -60,9 +66,27 @@ export default [
       route("favorite", "modules/Home/Favorite/index.tsx"),
       route("link-bilibili", "modules/Home/Link/index.tsx"),
     ]),
+    // 后台管理
+    route("/admin", "routes/AdminLayout.tsx", [
+      index("modules/Admin/index.tsx"),
+      route("tournament-audit", "modules/Admin/TournamentAudit/index.tsx"),
+      route(
+        "pending-tournaments",
+        "modules/Admin/PendingTournaments/index.tsx",
+      ),
+      route(
+        "pending-tournaments/:pendingId",
+        "modules/Admin/PendingTournaments/PendingDetail.tsx",
+      ),
+    ]),
     // 赞助
     route("/sponsor", "modules/Standalone/Sponsorship.tsx"),
     // 404
     route("*", "modules/Standalone/NotFoundPage.tsx"),
   ]),
+  // 公开预览（不进 RootLayout，避免顶部导航误导审核员）
+  route(
+    "/preview/tournament/:token",
+    "routes/PreviewTournamentLayout.tsx",
+  ),
 ] satisfies RouteConfig;

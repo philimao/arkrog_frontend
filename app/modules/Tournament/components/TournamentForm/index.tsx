@@ -63,6 +63,11 @@ export default function TournamentForm({
   const { userInfo } = useUserInfoStore();
   const { saveTournament } = useTournamentDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitButtonLabel = isSubmitting
+    ? "提交中..."
+    : edit
+      ? "提交修改（待审核）"
+      : "新建（待审核）";
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [formData, setFormData] = useState<TournamentData>(
     {} as TournamentData,
@@ -414,7 +419,7 @@ export default function TournamentForm({
             className="px-4 py-2 rounded-md text-black bg-ak-blue"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
+            {submitButtonLabel}
           </button>
         </div>
       </div>
@@ -527,7 +532,11 @@ export default function TournamentForm({
           className="px-4 py-2 rounded-md text-black bg-ak-blue"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "保存中..." : edit ? "保存" : "新建"}
+          {isSubmitting
+              ? "提交中..."
+              : edit
+                ? "提交修改（待审核）"
+                : "新建（待审核）"}
         </button>
       </div>
 

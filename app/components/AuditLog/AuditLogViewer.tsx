@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { _get } from "~/utils/tools";
+import DiffView, { type AuditChange } from "./DiffView";
+import DeltaView from "./DeltaView";
 
 interface AuditLogEntry {
   id: string;
@@ -9,14 +11,11 @@ interface AuditLogEntry {
   operatorUsername: string;
   timestamp: number;
   dateString: string;
-  changes: Array<{
-    type: "added" | "removed" | "modified" | "created" | "deleted";
-    path: string;
-    oldValue?: any;
-    newValue?: any;
-    value?: any;
-  }>;
-  metadata: Record<string, any>;
+  /** 旧格式：自研字段级 diff */
+  changes?: AuditChange[];
+  /** 新格式：jsondiffpatch delta，按 objectHash 配对的细粒度数组 diff */
+  delta?: unknown;
+  metadata: Record<string, unknown>;
 }
 
 interface AuditLogViewerProps {
@@ -25,7 +24,11 @@ interface AuditLogViewerProps {
   limit?: number;
 }
 
-export default function AuditLogViewer({ resourceType, resourceId, limit = 20 }: AuditLogViewerProps) {
+export default function AuditLogViewer({
+  resourceType,
+  resourceId,
+  limit = 20,
+}: AuditLogViewerProps) {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,54 +53,47 @@ export default function AuditLogViewer({ resourceType, resourceId, limit = 20 }:
     fetchLogs();
   }, [resourceType, resourceId, limit]);
 
-  const formatChange = (change: AuditLogEntry["changes"][0]) => {
-    switch (change.type) {
-      case "added":
-        return `➕ 新增 ${change.path}: ${JSON.stringify(change.value)}`;
-      case "removed":
-        return `➖ 删除 ${change.path}: ${JSON.stringify(change.oldValue)}`;
-      case "modified":
-        return `📝 修改 ${change.path}: ${JSON.stringify(change.oldValue)} → ${JSON.stringify(change.newValue)}`;
-      case "created":
-        return `🆕 创建资源`;
-      case "deleted":
-        return `🗑️ 删除资源`;
-      default:
-        return JSON.stringify(change);
-    }
-  };
-
   if (loading) {
     return <div className="text-center p-4">加载审计日志中...</div>;
   }
 
   return (
     <div className="audit-log-viewer">
-      <h3 className="text-lg font-bold mb-4">操作历史</h3>
+      <h3 className="text-lg font-bold mb-4 text-white">操作历史</h3>
       {logs.length === 0 ? (
-        <p className="text-gray-500">暂无操作记录</p>
+        <p className="text-white/50">暂无操作记录</p>
       ) : (
         <div className="space-y-4">
           {logs.map((log) => (
-            <div key={log.id} className="border rounded-lg p-4 bg-gray-50">
+            <div
+              key={log.id}
+              className="rounded-lg p-4 bg-black/40 border border-white/10"
+            >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="font-medium text-blue-600">{log.operatorUsername}</span>
-                  <span className="ml-2 text-sm text-gray-600">{log.action}</span>
+                  <span className="font-medium text-ak-blue">
+                    {log.operatorUsername}
+                  </span>
+                  <span className="ml-2 text-sm text-white/70">
+                    {log.action}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500">{log.dateString}</span>
+                <span className="text-xs text-white/50">{log.dateString}</span>
               </div>
 
-              {log.changes.length > 0 && (
+              {(log.delta != null ||
+                (log.changes && log.changes.length > 0)) && (
                 <div className="mt-2">
                   <details className="cursor-pointer">
-                    <summary className="text-sm font-medium text-gray-700">变更详情 ({log.changes.length} 项)</summary>
-                    <div className="mt-2 space-y-1">
-                      {log.changes.map((change, index) => (
-                        <div key={index} className="text-xs font-mono bg-white p-2 rounded border">
-                          {formatChange(change)}
-                        </div>
-                      ))}
+                    <summary className="text-sm font-medium text-white/80">
+                      变更详情
+                    </summary>
+                    <div className="mt-2">
+                      {log.delta != null ? (
+                        <DeltaView delta={log.delta} />
+                      ) : (
+                        <DiffView changes={log.changes ?? []} />
+                      )}
                     </div>
                   </details>
                 </div>

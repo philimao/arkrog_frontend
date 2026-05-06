@@ -23,6 +23,26 @@ export interface SaveTournamentResponse {
   needSync?: boolean;
   latestData?: TournamentData;
   lockedBy?: string;
+  requiresReview?: boolean;
+  pendingId?: string;
+  isPendingUpdate?: boolean;
+}
+
+export interface PendingMeta {
+  pendingId: string;
+  status: "pending" | "rejected";
+  submitterUsername: string;
+  submittedAt: number;
+  previewToken: string;
+  reviewerUsername: string | null;
+  reviewedAt: number | null;
+  reviewNote: string | null;
+}
+
+export interface EditViewResponse {
+  success: boolean;
+  tournament: TournamentData;
+  pendingMeta: PendingMeta | null;
 }
 
 // 用户资源权限类型
@@ -60,6 +80,10 @@ export const tournamentServices = {
       "/tournament/group/list",
       forceRefresh ? noCacheConfig : undefined,
     ),
+
+  // 编辑视图：返回 effective 数据 + pendingMeta
+  getEditView: (tournamentId: string) =>
+    api.get<EditViewResponse>(`/tournament/edit-view/${tournamentId}`),
 
   // 保存赛事
   saveTournament: (params: SaveTournamentParams) =>

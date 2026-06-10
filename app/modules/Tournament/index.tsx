@@ -99,13 +99,19 @@ function RougeSelector({
               onClick={() => navigate(tournament.id)}
             >
               <div className="w-full max-w-40">
-                <img
-                  src={tournament.avatar}
-                  className="aspect-square"
-                  alt="avatar"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                />
+                {tournament.avatar ? (
+                  <img
+                    src={tournament.avatar}
+                    className="aspect-square"
+                    alt="avatar"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                  />
+                ) : (
+                  <div className="bg-black-gray text-light-mid-gray text-2xl flex items-center justify-center aspect-square text-center p-4">
+                    {tournament.name}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col pl-4 gap-1">
                 <div className="text-3xl font-bold">{tournament.name}</div>
@@ -194,13 +200,19 @@ function RougeSelector({
                       navigate(tournament.id);
                     }}
                   >
-                    <img
-                      src={tournament.avatar}
-                      className="w-full rounded-xl aspect-square"
-                      alt="avatar"
-                      referrerPolicy="no-referrer"
-                      crossOrigin="anonymous"
-                    />
+                    {tournament.avatar ? (
+                      <img
+                        src={tournament.avatar}
+                        className="w-full rounded-xl aspect-square"
+                        alt="avatar"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                      />
+                    ) : (
+                      <div className="w-full rounded-xl aspect-square bg-black-gray text-light-mid-gray text-2xl flex items-center justify-center text-center p-4">
+                        {tournament.name}
+                      </div>
+                    )}
                     {ongoingTournaments.includes(tournament) && (
                       <div className="absolute bg-ak-dark-red top-6 -right-2 px-2 rounded-sm">
                         进行中

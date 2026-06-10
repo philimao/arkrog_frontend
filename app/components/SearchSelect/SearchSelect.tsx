@@ -227,7 +227,7 @@ export default function SearchSelect<T>({
                 {searchLoading ? (
                   <span className="block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <SearchIcon width="1rem" height="1rem" />
+                  <SearchIcon fill="none" aria-hidden="true" focusable="false" width="1rem" height="1rem" />
                 )}
               </button>
             )}

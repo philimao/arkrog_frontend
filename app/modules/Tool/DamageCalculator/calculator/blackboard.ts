@@ -109,6 +109,31 @@ registerRelicBlackboard("modify_sp_recover[normal]", {
   },
 });
 
+/**
+ * 职业限定的自然回复技力（与 modify_sp_recover[normal] 同口径，仅多一道职业筛选）
+ * 现有数据案例：断杖-凝神(术师, modify_sp_recover[caster])、医者-自医(医疗, modify_sp_recover[medic])
+ */
+const makeSpRecoverByProfession = (profession: string): RelicBlackboard => ({
+  isActive(input) {
+    // 仅对自然回复(随时间)技能生效，与 modify_sp_recover[normal] 一致
+    if (input.charInput?.skill.spData.spType !== "INCREASE_WITH_TIME") return false;
+    // 无干员数据时不强制筛选（与其它职业类黑板默认放行一致）
+    if (input.charData && input.charData.profession.toLowerCase() !== profession) return false;
+    return true;
+  },
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const sp_recovery_per_sec = getByKeySafe(buff.blackboard, "sp_recovery_per_sec");
+    context.in_game_buff_add.sp_recovery_per_sec.addChild(
+      new NumericLiteralNode(sp_recovery_per_sec.value, relic.name),
+    );
+  },
+});
+/** 断杖-凝神（术师技力恢复+0.4/秒） */
+registerRelicBlackboard("modify_sp_recover[caster]", makeSpRecoverByProfession("caster"));
+/** 医者-自医（医疗技力恢复+0.3/秒） */
+registerRelicBlackboard("modify_sp_recover[medic]", makeSpRecoverByProfession("medic"));
+
 /** 国王的新抢 */
 registerRelicBlackboard("rogue_2_attack_speed_up[life_point]", {
   isActive: () => true, // 默认生效

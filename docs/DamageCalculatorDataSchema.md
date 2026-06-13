@@ -1,3 +1,5 @@
+> ⚠️ **本文档已过时**（描述的 WASM calculate 接口从未在生产接入）。现行契约见 [06-data-schema.md](../app/modules/Tool/DamageCalculator/docs/06-data-schema.md)。本文件将在过渡期后删除，请勿依据本文实现任何功能。
+
 # 伤害计算器WASM数据约定
 
 ## 伤害计算接口定义

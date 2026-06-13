@@ -1,3 +1,5 @@
+> ℹ️ 本文已并入 [07-debugging.md](../app/modules/Tool/DamageCalculator/docs/07-debugging.md)（含截图文字版与症状排查表）。本文保留原始截图，过渡期后删除。
+
 # VSCode运行调试
 
 1. 使用vscode打开arkrog项目

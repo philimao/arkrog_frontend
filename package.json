@@ -8,7 +8,8 @@
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "docs:gen": "node scripts/docs-gen.mjs"
   },
   "dependencies": {
     "@blocknote/core": "^0.42.3",

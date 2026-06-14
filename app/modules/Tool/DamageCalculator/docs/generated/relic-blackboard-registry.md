@@ -17,43 +17,44 @@ sources:
 | 2 | `enemy_damage_scale[mag]` | 敌人法术易伤 | calculator/blackboard.ts |
 | 3 | `enemy_damage_scale[pure]` | 敌人真实易伤 | calculator/blackboard.ts |
 | 4 | `enemy_damage_scale[ep]` | 敌人元素损伤 | calculator/blackboard.ts |
-| 5 | `enemy_damage_resistance[inf]` | 敌人减伤 | calculator/blackboard.ts |
-| 6 | `modify_sp[attack_or_damage]` | 攻击或受击回复技能回复技力 | calculator/blackboard.ts |
-| 7 | `modify_sp_recover[normal]` | 自然回复技力 | calculator/blackboard.ts |
-| 8 | `modify_sp_recover[caster]` | 断杖-凝神（术师技力恢复+0.4/秒） | calculator/blackboard.ts |
-| 9 | `modify_sp_recover[medic]` | 医者-自医（医疗技力恢复+0.3/秒） | calculator/blackboard.ts |
-| 10 | `rogue_2_attack_speed_up[life_point]` | 国王的新抢 | calculator/blackboard.ts |
-| 11 | `rogue_2_atk_up[life_point][king_suit]` | 诸王的冠冕 | calculator/blackboard.ts |
-| 12 | `rogue_2_block_cnt[life_point]` | 国王的延伸 | calculator/blackboard.ts |
-| 13 | `damage_scale[caster]` | 术师增伤，苦难巫咒 | calculator/blackboard.ts |
-| 14 | `rogue_3_relic_book_7` | 断杖-波纹 | calculator/blackboard.ts |
-| 15 | `modify_fragment_carry_char_attribute[atk]` | 未叙魔王残片 | calculator/blackboard.ts |
-| 16 | `rogue_2_hp_ratio_to_attr_add[atk]` | 生命越高，攻击越高 （古乔治营养原浆） | calculator/blackboard.ts |
-| 17 | `rogue_3_rangedATKUp` | 岩角号 | calculator/blackboard.ts |
-| 18 | `AtkUp[NoAllyInRange]` | 锈刃-遗世独立 | calculator/blackboard.ts |
-| 19 | `rogue_4_damage_scale[tag]` | 文学的开端 | calculator/blackboard.ts |
-| 20 | `damage_scale[filter_tag]` | 见厉 | calculator/blackboard.ts |
-| 21 | `rogue_4_special_hand[time]` | 久居之手 | calculator/blackboard.ts |
-| 22 | `rogue_2_atk_up_on_output_damage[stack]` | 轰鸣之手 | calculator/blackboard.ts |
-| 23 | `rogue_4_caster_hand[pair]` | 波纹之手 | calculator/blackboard.ts |
-| 24 | `rogue_2_atk_up_in_range` | 支柱-援护 | calculator/blackboard.ts |
-| 25 | `rogue_3_increaseMaxHPWhenHavingShield` | 湖中神盾 | calculator/blackboard.ts |
-| 26 | `rogue_4_finalDefense[end_tile]` | 城墙之子 | calculator/blackboard.ts |
-| 27 | `rogue_3_relic_book_4` | 折戟-裂岩 | calculator/blackboard.ts |
-| 28 | `AtkUp[BlockJustOne]` | 荣耀绶带 | calculator/blackboard.ts |
-| 29 | `AttackSpeedUp[NoCharInRange]` | 丝契之谜 | calculator/blackboard.ts |
-| 30 | `rogue_4_attack_speed_up[life_point]` | 丝契之谜 | calculator/blackboard.ts |
-| 31 | `defdown[support]` | 支柱-枯法 | calculator/blackboard.ts |
-| 32 | `attr_up_on_trigger[def&mag_resist]` | — | calculator/blackboard.ts |
-| 33 | `rune_mul_enemy_max_hp` | — | calculator/blackboard.ts |
-| 34 | `rogue_5_character_in_candle_holder_common_buff[stack]` | 编队中每有一名【伺烛客】属性增加 (岁花,飞驮客运) | calculator/blackboard.ts |
-| 35 | `rogue_5_character_in_candle_holder_common_buff` | 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) | calculator/blackboard.ts |
-| 36 | `rogue_5_character_in_candle_holder_buff[respawn_time]` | 契心聆铃 - 再部署时间减少 | calculator/blackboard.ts |
-| 37 | `rogue_5_character_sp_zone_attri_up` | 画人间 - 岁兽残识 | calculator/blackboard.ts |
-| 38 | `env_001_storm` | 厉-无皎之昧 - 投出时，战斗中刮起随机方向的沙尘暴，位于沙尘暴中的我方单位攻击力降低60％。所有我方单位攻击速度 | calculator/blackboard.ts |
-| 39 | `attri_up_filter_level_cost` | 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 | calculator/blackboard.ts |
+| 5 | `enemy_take_element_damage_up` | “阿猛”——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） | calculator/blackboard.ts |
+| 6 | `enemy_damage_resistance[inf]` | 敌人减伤 | calculator/blackboard.ts |
+| 7 | `modify_sp[attack_or_damage]` | 攻击或受击回复技能回复技力 | calculator/blackboard.ts |
+| 8 | `modify_sp_recover[normal]` | 自然回复技力 | calculator/blackboard.ts |
+| 9 | `modify_sp_recover[caster]` | 断杖-凝神（术师技力恢复+0.4/秒） | calculator/blackboard.ts |
+| 10 | `modify_sp_recover[medic]` | 医者-自医（医疗技力恢复+0.3/秒） | calculator/blackboard.ts |
+| 11 | `rogue_2_attack_speed_up[life_point]` | 国王的新抢 | calculator/blackboard.ts |
+| 12 | `rogue_2_atk_up[life_point][king_suit]` | 诸王的冠冕 | calculator/blackboard.ts |
+| 13 | `rogue_2_block_cnt[life_point]` | 国王的延伸 | calculator/blackboard.ts |
+| 14 | `damage_scale[caster]` | 术师增伤，苦难巫咒 | calculator/blackboard.ts |
+| 15 | `rogue_3_relic_book_7` | 断杖-波纹 | calculator/blackboard.ts |
+| 16 | `modify_fragment_carry_char_attribute[atk]` | 未叙魔王残片 | calculator/blackboard.ts |
+| 17 | `rogue_2_hp_ratio_to_attr_add[atk]` | 生命越高，攻击越高 （古乔治营养原浆） | calculator/blackboard.ts |
+| 18 | `rogue_3_rangedATKUp` | 岩角号 | calculator/blackboard.ts |
+| 19 | `AtkUp[NoAllyInRange]` | 锈刃-遗世独立 | calculator/blackboard.ts |
+| 20 | `rogue_4_damage_scale[tag]` | 文学的开端 | calculator/blackboard.ts |
+| 21 | `damage_scale[filter_tag]` | 见厉 | calculator/blackboard.ts |
+| 22 | `rogue_4_special_hand[time]` | 久居之手 | calculator/blackboard.ts |
+| 23 | `rogue_2_atk_up_on_output_damage[stack]` | 轰鸣之手 | calculator/blackboard.ts |
+| 24 | `rogue_4_caster_hand[pair]` | 波纹之手 | calculator/blackboard.ts |
+| 25 | `rogue_2_atk_up_in_range` | 支柱-援护 | calculator/blackboard.ts |
+| 26 | `rogue_3_increaseMaxHPWhenHavingShield` | 湖中神盾 | calculator/blackboard.ts |
+| 27 | `rogue_4_finalDefense[end_tile]` | 城墙之子 | calculator/blackboard.ts |
+| 28 | `rogue_3_relic_book_4` | 折戟-裂岩 | calculator/blackboard.ts |
+| 29 | `AtkUp[BlockJustOne]` | 荣耀绶带 | calculator/blackboard.ts |
+| 30 | `AttackSpeedUp[NoCharInRange]` | 丝契之谜 | calculator/blackboard.ts |
+| 31 | `rogue_4_attack_speed_up[life_point]` | 丝契之谜 | calculator/blackboard.ts |
+| 32 | `defdown[support]` | 支柱-枯法 | calculator/blackboard.ts |
+| 33 | `attr_up_on_trigger[def&mag_resist]` | — | calculator/blackboard.ts |
+| 34 | `rune_mul_enemy_max_hp` | — | calculator/blackboard.ts |
+| 35 | `rogue_5_character_in_candle_holder_common_buff[stack]` | 编队中每有一名【伺烛客】属性增加 (岁花,飞驮客运) | calculator/blackboard.ts |
+| 36 | `rogue_5_character_in_candle_holder_common_buff` | 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) | calculator/blackboard.ts |
+| 37 | `rogue_5_character_in_candle_holder_buff[respawn_time]` | 契心聆铃 - 再部署时间减少 | calculator/blackboard.ts |
+| 38 | `rogue_5_character_sp_zone_attri_up` | 画人间 - 岁兽残识 | calculator/blackboard.ts |
+| 39 | `env_001_storm` | 厉-无皎之昧 - 投出时，战斗中刮起随机方向的沙尘暴，位于沙尘暴中的我方单位攻击力降低60％。所有我方单位攻击速度 | calculator/blackboard.ts |
+| 40 | `attri_up_filter_level_cost` | 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 | calculator/blackboard.ts |
 
-**已注册总数：39**
+**已注册总数：40**
 
 ## 已注释停用的注册（不生效，仅备查）
 

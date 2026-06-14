@@ -16,5 +16,7 @@ Dockerfile
 scripts/*
 !scripts/docs-gen.mjs
 wasm/*
+# 藏品覆盖分析的机器/数据版本相关产物（由 relic-coverage.report.test.ts 生成）
+test/DamageCalculator/reports/coverage-*.json
 .history
 yarn.lock

@@ -65,6 +65,18 @@ registerRelicBlackboard("enemy_damage_scale[ep]", {
   },
 });
 
+/** “阿猛”——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） */
+registerRelicBlackboard("enemy_take_element_damage_up", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    context.in_game_buff_final_mul.enemy_damage_scale_ep.addChild(
+      new NumericLiteralNode(damage_scale.value, relic.name),
+    );
+  },
+});
+
 /** 敌人减伤 */
 registerRelicBlackboard("enemy_damage_resistance[inf]", {
   isActive: () => true,

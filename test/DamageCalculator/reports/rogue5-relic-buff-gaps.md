@@ -19,14 +19,16 @@
 
 ## rogue_5 缺口分诊（35 项）
 
-### A. 已在本次适配（2 项）
+### A. 已适配（3 项）
 
 | 藏品 | bbKey | 处置 |
 |---|---|---|
-| 断杖-凝神（术师技力恢复+0.4/s） | `modify_sp_recover[caster]` | 已注册独立黑板，写 `in_game_buff_add.sp_recovery_per_sec` |
+| 断杖-凝神（术师技力恢复+0.4/s） | `modify_sp_recover[caster]` | 独立黑板，写 `in_game_buff_add.sp_recovery_per_sec`（与 `modify_sp_recover[normal]` 同口径，多职业筛选） |
 | 医者-自医（医疗技力恢复+0.3/s） | `modify_sp_recover[medic]` | 同上 |
+| "阿猛"（敌人受元素伤害+100%） | `enemy_take_element_damage_up` | 独立黑板，写 `in_game_buff_final_mul.enemy_damage_scale_ep`（与 `enemy_damage_scale[ep]` 同口径）；**已用真实计算器验证**产出 ep 乘区 ×2 |
 
-二者与既有 `modify_sp_recover[normal]` 同口径，仅多一道职业筛选，风险低。
+> 「契合度」权威复核：用真实 `applyAnyRelics` 跑全部 5 主题（见 `relic-coverage.report.test.ts`，`RELIC_COVERAGE=1` opt-in）。
+> 结论——**排除技力类与运行时条件/触发类后，全主题里"无条件可被当前乘区模型表达却未算出"的藏品/通宝仅 3 个**：`戈渎不语`、`传芳雕版`（均已在 `disallowedRelicNames` 黑名单，动态条件无法静态建模）与 `"阿猛"`（已于本次适配）。即：通用黑板已覆盖全部无条件属性类藏品，新数据中**没有**遗漏的、契合计算器的常规增益。
 
 ### B. 技力流——可建模但需作者确认口径（约 11 项）
 

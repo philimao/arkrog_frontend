@@ -162,27 +162,13 @@ export default memo(function Rogue5Selector() {
                       </div>
                       {copperWrapper.hasLayer && (
                         <LayerInput
+                          initial={copperWrapper.layer}
                           updateLayer={(layer: number) => {
-                            setRogue5CopperSpecItems((items) => {
-                              const index = items.findIndex((item) => item.id === copperWrapper.id);
-                              if (index > -1) items[index].layer = layer;
-                              return items;
-                            });
-                            // 如何与topicSpecItems同步？ TODO
-                            // setCoppersWrapper(() => {
-                            //   const updated = [...coppersWrapper];
-                            //   const index = updated.findIndex((copper) => copper.id === copperWrapper.id);
-                            //   if (index > -1) updated[index].layer = layer;
-                            //   return updated;
-                            // });
-                            // setTopicSpecItems((nodes) => {
-                            //   let index;
-                            //   if ((index = nodes.findIndex((node) => node.id === copperWrapper.id)) === -1)
-                            //     return nodes;
-                            //   const updated = [...nodes];
-                            //   updated[index].layer = layer;
-                            //   return updated;
-                            // });
+                            // 返回新数组（新对象引用），确保 CalcCenter 的 topicSpecItems(useMemo) 重算；
+                            // 层数经 topicSpecItems → analyzeTopicSpec → applyRelic 读取 item.layer 生效。
+                            setRogue5CopperSpecItems((items) =>
+                              items.map((item) => (item.id === copperWrapper.id ? { ...item, layer } : item)),
+                            );
                           }}
                         />
                       )}
@@ -221,8 +207,8 @@ const StyledLayerWrapper = styled.div`
   }
 `;
 
-function LayerInput({ updateLayer }: { updateLayer: (layer: number) => void }) {
-  const [layer, setLayer] = useState("1");
+function LayerInput({ initial = 1, updateLayer }: { initial?: number; updateLayer: (layer: number) => void }) {
+  const [layer, setLayer] = useState(String(initial));
   return (
     <StyledLayerWrapper>
       <span>共计投出</span>

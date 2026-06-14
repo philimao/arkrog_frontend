@@ -47,10 +47,16 @@
 | 问题 | 实例 | 处置 |
 |---|---|---|
 | **平值加攻击被当百分比倍率** | 左秉烛"攻击力+200"曾算成 `relic_rune_mul.atk=100`（≈+10000%） | ✅ **已修**：通用黑板 atk 分支增加 `is_add` → `relic_rune_add.atk`（与 def 同口径），现为 +200 平值 |
-| **叠层通宝按 1 层算**，非满层最佳情况 | 武人之争 +20%（满层应 +60%）、贵有衡、溯外道/正道、左秉烛 等 ~8 个 | ⏳ 待定：通宝 layer 恒为 1（`getRogue5Coppers`/`wrapRelicData`），best-case 需读 `copper_unlock_layer.max` 作层数，或做用户可填的通宝层数（Rogue5Selector 有 TODO）——涉及 store/UI，需作者定方向 |
-| **局内效果落入局外乘区** | "投出时全体+X%"类进 `relic_rune_mul`（局外），因通宝都不在 `inGameRelicNames` | ⏳ 待定：二阶影响（与其它 buff 的乘法顺序），需作者确认通宝是否应走局内 |
+| **叠层通宝按 1 层算**，非用户可调 | 武人之争 +20%（每投出再 +20%）、贵有衡、溯外道/正道、左秉烛 等 ~8 个 | ✅ **已修**：补全用户可填通宝层数（"共计投出"输入，仿藏品 layer）。`LayerInput` 从 `copperWrapper.layer` 初始化，更新走新数组引用 → `topicSpecItems`(useMemo) 重算 → `analyzeTopicSpec` 读 `item.layer`。回归测试 `copper-layer.test.ts` 验证层数线性放大（1→1.2、3→1.6、5→2.0） |
+| **局内效果落入局外乘区** | "投出时全体+X%"类进 `relic_rune_mul`（局外），因通宝都不在 `inGameRelicNames` | ⏳ 待定（见下"局内/局外"），二阶影响，需作者定通宝默认 |
 
 > 录武官（敌人每次受伤法抗-2，最多50层）在覆盖扫描中既不在 fits 也不在 noFit（疑去重/异常），属边角，单列待查。
+
+### 局内/局外能否从解包数据规律推导？
+
+**部分能**：现有规则 `buff.key` 含 `buff`/`ability` 即判局内，已覆盖 `global_buff_normal`/`char_ability_new` 等（这部分已数据驱动）。
+**残留不能**：`char_attribute_mul`/`char_attribute_add`/`layer_char_attribute_*` 这几个键**局内局外都在用**（空羽兽局内 vs 静音小队/异铁小圆盾局外，同为 `char_attribute_mul`），无法靠键名区分——`inGameRelicNames` 名单正为此类例外而存在（见 [ADR-0005](../../../app/modules/Tool/DamageCalculator/docs/adr/0005-manual-ingame-relic-name-lists.md)）。
+**对通宝**：`global_buff_normal` 类已走局内；`char_attribute_*` 类（武人之争/重铠/火机等"投出时全体+X%"）目前走局外，多为战斗内持续增益、理应局内，但同键在藏品上常是局外面板，故不宜全局改键规则。可选方案：给通宝单独设"默认局内"（通宝战斗增益绝大多数是局内持续 buff），或对这批通宝补一份类 `inGameRelicNames` 的通宝名单。**需作者定。**
 
 ## D. 不计入：干员减伤 / 范围治疗（非 DPS）
 

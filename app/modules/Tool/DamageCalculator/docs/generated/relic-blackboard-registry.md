@@ -17,48 +17,49 @@ sources:
 | 2 | `enemy_damage_scale[mag]` | 敌人法术易伤 | calculator/blackboard.ts |
 | 3 | `enemy_damage_scale[pure]` | 敌人真实易伤 | calculator/blackboard.ts |
 | 4 | `enemy_damage_scale[ep]` | 敌人元素损伤 | calculator/blackboard.ts |
-| 5 | `enemy_take_element_damage_up` | “阿猛”——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） | calculator/blackboard.ts |
-| 6 | `enemy_damage_resistance[inf]` | 敌人减伤 | calculator/blackboard.ts |
-| 7 | `modify_sp[attack_or_damage]` | 攻击或受击回复技能回复技力 | calculator/blackboard.ts |
-| 8 | `modify_sp_recover[normal]` | 自然回复技力 | calculator/blackboard.ts |
-| 9 | `modify_sp_recover[caster]` | 断杖-凝神（术师技力恢复+0.4/秒） | calculator/blackboard.ts |
-| 10 | `modify_sp_recover[medic]` | 医者-自医（医疗技力恢复+0.3/秒） | calculator/blackboard.ts |
-| 11 | `rogue_2_attack_speed_up[life_point]` | 国王的新抢 | calculator/blackboard.ts |
-| 12 | `rogue_2_atk_up[life_point][king_suit]` | 诸王的冠冕 | calculator/blackboard.ts |
-| 13 | `rogue_2_block_cnt[life_point]` | 国王的延伸 | calculator/blackboard.ts |
-| 14 | `damage_scale[caster]` | 术师增伤，苦难巫咒 | calculator/blackboard.ts |
-| 15 | `rogue_3_relic_book_7` | 断杖-波纹 | calculator/blackboard.ts |
-| 16 | `modify_fragment_carry_char_attribute[atk]` | 未叙魔王残片 | calculator/blackboard.ts |
-| 17 | `rogue_2_hp_ratio_to_attr_add[atk]` | 生命越高，攻击越高 （古乔治营养原浆） | calculator/blackboard.ts |
-| 18 | `rogue_3_rangedATKUp` | 岩角号 | calculator/blackboard.ts |
-| 19 | `AtkUp[NoAllyInRange]` | 锈刃-遗世独立 | calculator/blackboard.ts |
-| 20 | `rogue_4_damage_scale[tag]` | 文学的开端 | calculator/blackboard.ts |
-| 21 | `damage_scale[filter_tag]` | 见厉 | calculator/blackboard.ts |
-| 22 | `rogue_5_next_atk_up[evade_or_block]` | 赏善郎——我方单位触发闪避或抵挡后，下次攻击造成的伤害+100%（最佳情况：视为常驻） | calculator/blackboard.ts |
-| 23 | `enemy_weak[levitateAndMassLoss]` | 万星园之辉——敌人进入/解除浮空、失重时 10 秒内受到的伤害+30%（最佳情况：视为常驻；2000 点法伤属额外伤害，待模拟引擎版本再做） | calculator/blackboard.ts |
-| 24 | `damage_scale_magic_physical[when_block]` | 枣面——对被自身阻挡的敌人造成的伤害+50%（最佳情况：视为常驻；50% 减伤属生存，非 DPS 不计） | calculator/blackboard.ts |
-| 25 | `rogue_5_enemy_damage_scale_by_distance` | — | calculator/blackboard.ts |
-| 26 | `rogue_4_special_hand[time]` | 久居之手 | calculator/blackboard.ts |
-| 27 | `rogue_2_atk_up_on_output_damage[stack]` | 轰鸣之手 / 碎靶之手（同键不同子职业；按满层最佳情况计算 atk×max_stack_cnt） | calculator/blackboard.ts |
-| 28 | `rogue_4_caster_hand[pair]` | 波纹之手 | calculator/blackboard.ts |
-| 29 | `rogue_2_atk_up_in_range` | 支柱-援护 | calculator/blackboard.ts |
-| 30 | `rogue_3_increaseMaxHPWhenHavingShield` | 湖中神盾 | calculator/blackboard.ts |
-| 31 | `rogue_4_finalDefense[end_tile]` | 城墙之子 | calculator/blackboard.ts |
-| 32 | `rogue_3_relic_book_4` | 折戟-裂岩 | calculator/blackboard.ts |
-| 33 | `AtkUp[BlockJustOne]` | 荣耀绶带 | calculator/blackboard.ts |
-| 34 | `AttackSpeedUp[NoCharInRange]` | 丝契之谜 | calculator/blackboard.ts |
-| 35 | `rogue_4_attack_speed_up[life_point]` | 丝契之谜 | calculator/blackboard.ts |
-| 36 | `defdown[support]` | 支柱-枯法 | calculator/blackboard.ts |
-| 37 | `attr_up_on_trigger[def&mag_resist]` | — | calculator/blackboard.ts |
-| 38 | `rune_mul_enemy_max_hp` | — | calculator/blackboard.ts |
-| 39 | `rogue_5_character_in_candle_holder_common_buff[stack]` | 编队中每有一名【伺烛客】属性增加 (岁花,飞驮客运) | calculator/blackboard.ts |
-| 40 | `rogue_5_character_in_candle_holder_common_buff` | 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) | calculator/blackboard.ts |
-| 41 | `rogue_5_character_in_candle_holder_buff[respawn_time]` | 契心聆铃 - 再部署时间减少 | calculator/blackboard.ts |
-| 42 | `rogue_5_character_sp_zone_attri_up` | 画人间 - 岁兽残识 | calculator/blackboard.ts |
-| 43 | `env_001_storm` | 厉-无皎之昧 - 投出时，战斗中刮起随机方向的沙尘暴，位于沙尘暴中的我方单位攻击力降低60％。所有我方单位攻击速度 | calculator/blackboard.ts |
-| 44 | `attri_up_filter_level_cost` | 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 | calculator/blackboard.ts |
+| 5 | `enemy_take_element_damage_up` | "阿猛"——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） | calculator/blackboard.ts |
+| 6 | `rogue_5_enemy_minus_magic_resistance[take_damage]` | — | calculator/blackboard.ts |
+| 7 | `enemy_damage_resistance[inf]` | 敌人减伤 | calculator/blackboard.ts |
+| 8 | `modify_sp[attack_or_damage]` | 攻击或受击回复技能回复技力 | calculator/blackboard.ts |
+| 9 | `modify_sp_recover[normal]` | 自然回复技力 | calculator/blackboard.ts |
+| 10 | `modify_sp_recover[caster]` | 断杖-凝神（术师技力恢复+0.4/秒） | calculator/blackboard.ts |
+| 11 | `modify_sp_recover[medic]` | 医者-自医（医疗技力恢复+0.3/秒） | calculator/blackboard.ts |
+| 12 | `rogue_2_attack_speed_up[life_point]` | 国王的新抢 | calculator/blackboard.ts |
+| 13 | `rogue_2_atk_up[life_point][king_suit]` | 诸王的冠冕 | calculator/blackboard.ts |
+| 14 | `rogue_2_block_cnt[life_point]` | 国王的延伸 | calculator/blackboard.ts |
+| 15 | `damage_scale[caster]` | 术师增伤，苦难巫咒 | calculator/blackboard.ts |
+| 16 | `rogue_3_relic_book_7` | 断杖-波纹 | calculator/blackboard.ts |
+| 17 | `modify_fragment_carry_char_attribute[atk]` | 未叙魔王残片 | calculator/blackboard.ts |
+| 18 | `rogue_2_hp_ratio_to_attr_add[atk]` | 生命越高，攻击越高 （古乔治营养原浆） | calculator/blackboard.ts |
+| 19 | `rogue_3_rangedATKUp` | 岩角号 | calculator/blackboard.ts |
+| 20 | `AtkUp[NoAllyInRange]` | 锈刃-遗世独立 | calculator/blackboard.ts |
+| 21 | `rogue_4_damage_scale[tag]` | 文学的开端 | calculator/blackboard.ts |
+| 22 | `damage_scale[filter_tag]` | 见厉 | calculator/blackboard.ts |
+| 23 | `rogue_5_next_atk_up[evade_or_block]` | 赏善郎——我方单位触发闪避或抵挡后，下次攻击造成的伤害+100%（最佳情况：视为常驻） | calculator/blackboard.ts |
+| 24 | `enemy_weak[levitateAndMassLoss]` | 万星园之辉——敌人进入/解除浮空、失重时 10 秒内受到的伤害+30%（最佳情况：视为常驻；2000 点法伤属额外伤害，待模拟引擎版本再做） | calculator/blackboard.ts |
+| 25 | `damage_scale_magic_physical[when_block]` | 枣面——对被自身阻挡的敌人造成的伤害+50%（最佳情况：视为常驻；50% 减伤属生存，非 DPS 不计） | calculator/blackboard.ts |
+| 26 | `rogue_5_enemy_damage_scale_by_distance` | — | calculator/blackboard.ts |
+| 27 | `rogue_4_special_hand[time]` | 久居之手 | calculator/blackboard.ts |
+| 28 | `rogue_2_atk_up_on_output_damage[stack]` | 轰鸣之手 / 碎靶之手（同键不同子职业；按满层最佳情况计算 atk×max_stack_cnt） | calculator/blackboard.ts |
+| 29 | `rogue_4_caster_hand[pair]` | 波纹之手 | calculator/blackboard.ts |
+| 30 | `rogue_2_atk_up_in_range` | 支柱-援护 | calculator/blackboard.ts |
+| 31 | `rogue_3_increaseMaxHPWhenHavingShield` | 湖中神盾 | calculator/blackboard.ts |
+| 32 | `rogue_4_finalDefense[end_tile]` | 城墙之子 | calculator/blackboard.ts |
+| 33 | `rogue_3_relic_book_4` | 折戟-裂岩 | calculator/blackboard.ts |
+| 34 | `AtkUp[BlockJustOne]` | 荣耀绶带 | calculator/blackboard.ts |
+| 35 | `AttackSpeedUp[NoCharInRange]` | 丝契之谜 | calculator/blackboard.ts |
+| 36 | `rogue_4_attack_speed_up[life_point]` | 丝契之谜 | calculator/blackboard.ts |
+| 37 | `defdown[support]` | 支柱-枯法 | calculator/blackboard.ts |
+| 38 | `attr_up_on_trigger[def&mag_resist]` | — | calculator/blackboard.ts |
+| 39 | `rune_mul_enemy_max_hp` | — | calculator/blackboard.ts |
+| 40 | `rogue_5_character_in_candle_holder_common_buff[stack]` | 编队中每有一名【伺烛客】属性增加 (岁花,飞驮客运) | calculator/blackboard.ts |
+| 41 | `rogue_5_character_in_candle_holder_common_buff` | 【伺烛客】属性增加 (岁衡,难闻的止血剂,未知仪器) | calculator/blackboard.ts |
+| 42 | `rogue_5_character_in_candle_holder_buff[respawn_time]` | 契心聆铃 - 再部署时间减少 | calculator/blackboard.ts |
+| 43 | `rogue_5_character_sp_zone_attri_up` | 画人间 - 岁兽残识 | calculator/blackboard.ts |
+| 44 | `env_001_storm` | 厉-无皎之昧 - 投出时，战斗中刮起随机方向的沙尘暴，位于沙尘暴中的我方单位攻击力降低60％。所有我方单位攻击速度 | calculator/blackboard.ts |
+| 45 | `attri_up_filter_level_cost` | 奔兽战车 - 部署费用上限+30，部署费用达到99以及以上时，所有干员局内生命+50%，阻挡数+1 | calculator/blackboard.ts |
 
-**已注册总数：44**
+**已注册总数：45**
 
 ## 已注释停用的注册（不生效，仅备查）
 

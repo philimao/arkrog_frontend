@@ -48,15 +48,17 @@
 |---|---|---|
 | **平值加攻击被当百分比倍率** | 左秉烛"攻击力+200"曾算成 `relic_rune_mul.atk=100`（≈+10000%） | ✅ **已修**：通用黑板 atk 分支增加 `is_add` → `relic_rune_add.atk`（与 def 同口径），现为 +200 平值 |
 | **叠层通宝按 1 层算**，非用户可调 | 武人之争 +20%（每投出再 +20%）、贵有衡、溯外道/正道、左秉烛 等 ~8 个 | ✅ **已修**：补全用户可填通宝层数（"共计投出"输入，仿藏品 layer）。`LayerInput` 从 `copperWrapper.layer` 初始化，更新走新数组引用 → `topicSpecItems`(useMemo) 重算 → `analyzeTopicSpec` 读 `item.layer`。回归测试 `copper-layer.test.ts` 验证层数线性放大（1→1.2、3→1.6、5→2.0） |
-| **局内效果落入局外乘区** | "投出时全体+X%"类进 `relic_rune_mul`（局外），因通宝都不在 `inGameRelicNames` | ⏳ 待定（见下"局内/局外"），二阶影响，需作者定通宝默认 |
+| **敌方法抗降低落到我方** | 录武官"敌人每次受伤法抗-2(最多50层)" 无 enemy 标记，曾算成我方 `relic_rune_add.magic_resistance=-2` | ✅ **已修**：独立注册 `rogue_5_enemy_minus_magic_resistance[take_damage]`，按满层最佳写敌人乘区 `in_game_buff_add.enemy_magic_resistance=-100` |
 
-> 录武官（敌人每次受伤法抗-2，最多50层）在覆盖扫描中既不在 fits 也不在 noFit（疑去重/异常），属边角，单列待查。
+### 局内/局外：结论——无需建"通宝局内名单"
 
-### 局内/局外能否从解包数据规律推导？
+经与作者复核：那批"投出时全体我方+X%"通宝（武人之争/重铠/火机等）**确实都是局外全局面板增益**，并非战斗内行为（描述里的"部署费用"/"再部署时间"是属性名，不是部署动作）。而真正战斗内生效的通宝（化境地块、战斗触发类）**已由现有 `buff.key` 含 `buff`/`ability` 规则归入局内**。所以通宝的局内/局外**当前已正确**，不需要新建名单。
 
-**部分能**：现有规则 `buff.key` 含 `buff`/`ability` 即判局内，已覆盖 `global_buff_normal`/`char_ability_new` 等（这部分已数据驱动）。
-**残留不能**：`char_attribute_mul`/`char_attribute_add`/`layer_char_attribute_*` 这几个键**局内局外都在用**（空羽兽局内 vs 静音小队/异铁小圆盾局外，同为 `char_attribute_mul`），无法靠键名区分——`inGameRelicNames` 名单正为此类例外而存在（见 [ADR-0005](../../../app/modules/Tool/DamageCalculator/docs/adr/0005-manual-ingame-relic-name-lists.md)）。
-**对通宝**：`global_buff_normal` 类已走局内；`char_attribute_*` 类（武人之争/重铠/火机等"投出时全体+X%"）目前走局外，多为战斗内持续增益、理应局内，但同键在藏品上常是局外面板，故不宜全局改键规则。可选方案：给通宝单独设"默认局内"（通宝战斗增益绝大多数是局内持续 buff），或对这批通宝补一份类 `inGameRelicNames` 的通宝名单。**需作者定。**
+> 键名能否推导局内/局外：部分能——`buff.key` 含 `buff`/`ability` 已数据驱动判局内（`global_buff_normal`/`char_ability_new`）；残留 `char_attribute_mul/add` 类局内外同键不可区分（空羽兽局内 vs 静音小队局外），`inGameRelicNames` 名单正为此例外存在（[ADR-0005](../../../app/modules/Tool/DamageCalculator/docs/adr/0005-manual-ingame-relic-name-lists.md)）。
+
+### selector.char 类（安硕鼷/雕词錾刀/十戒）—— 非我方 misroute，实际正确
+
+这 3 个的 `char_attribute_*` 带 `selector.char` 指向敌方陷阱（雕伥/年代之刺/尊主残影）。它们因 valueStr 以 `trap_` 开头走**敌人通用黑板**，且 `commonEnemyRelicBlackboard.isActive` 已按 `selector.char` 对比目标敌人 id 过滤——**真实计算中只在目标确为该陷阱时才生效，并未误加我方**。覆盖工具（`applyAnyRelics` 跳过 isActive）会显示它们落在敌人乘区，是工具特性而非 bug，勿据此误判。
 
 ## D. 不计入：干员减伤 / 范围治疗（非 DPS）
 

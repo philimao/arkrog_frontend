@@ -65,7 +65,7 @@ registerRelicBlackboard("enemy_damage_scale[ep]", {
   },
 });
 
-/** “阿猛”——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） */
+/** "阿猛"——所有敌方单位受到的元素伤害+100%（与 enemy_damage_scale[ep] 同构，写入原值倍率） */
 registerRelicBlackboard("enemy_take_element_damage_up", {
   isActive: () => true,
   apply(input): void {
@@ -74,6 +74,19 @@ registerRelicBlackboard("enemy_take_element_damage_up", {
     context.in_game_buff_final_mul.enemy_damage_scale_ep.addChild(
       new NumericLiteralNode(damage_scale.value, relic.name),
     );
+  },
+});
+
+/** 录武官（通宝）——敌人每次受伤法抗-2（最多 50 层）。这是敌方法抗降低，但 buff 无 enemy 标记，
+ *  会落到我方通用黑板，故独立注册写入敌人乘区；按满层最佳情况计 magic_resistance × max_stack_cnt。 */
+registerRelicBlackboard("rogue_5_enemy_minus_magic_resistance[take_damage]", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const magic_resistance = getByKeySafe(buff.blackboard, "magic_resistance");
+    const maxStack = getByKey(buff.blackboard, "max_stack_cnt");
+    const value = magic_resistance.value * (maxStack?.value ?? 1);
+    context.in_game_buff_add.enemy_magic_resistance.addChild(new NumericLiteralNode(value, relic.name));
   },
 });
 

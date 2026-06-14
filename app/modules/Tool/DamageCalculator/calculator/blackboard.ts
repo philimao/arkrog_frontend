@@ -955,6 +955,10 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
 
     // 是否加算
     const is_add = buff.key.includes("_attribute_add");
+    // 是否平值加（而非百分比）：char_attribute_add 明示，或自定义键（global_buff_normal/char_ability_new_at_root
+    // 等）携带的大数值——atk/def/max_hp 的百分比量级 ≤ ~2，平值量级 ≥ 100，用 |v|≥10 兜底区分。
+    // 否则平值（如电弧的掌机 atk/def=100）会被当百分比写进乘算区 ≈ ×100 (+10000%)。
+    const isFlat = (v: number) => is_add || Math.abs(v) >= 10;
 
     // /** 如果buff不含层数效果，忽视用户填写的层数 */
     // const layer = relicHasLayer(relic) ? relic.layer : 1;
@@ -976,13 +980,15 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       }
       is_invalid = false;
     }
-    /** 攻击力 */
+    /** 攻击力（平值加写加算区，百分比写乘算区；局内/局外各自分流） */
     if (atk) {
       if (inGame) {
-        context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
-      } else if (is_add) {
-        // 平值加攻击（char_attribute_add）：写局外加算区，避免被当成百分比倍率
-        // （如通宝"左秉烛"攻击力+200，旧实现误算成 ×100 ≈ +10000%）。与下方 def 的 is_add 分支同口径。
+        if (isFlat(atk.value)) {
+          context.in_game_buff_add.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+        } else {
+          context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+        }
+      } else if (isFlat(atk.value)) {
         context.relic_rune_add.atk.addChild(new NumericLiteralNode(atk.value * layer, relic.name, { relic, buff }));
       } else {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * layer, relic.name, { relic, buff }));
@@ -1001,10 +1007,14 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     // }
     if (def) {
       if (inGame) {
-        context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+        if (isFlat(def.value)) {
+          context.in_game_buff_add.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+        } else {
+          context.in_game_buff_mul.def.addChild(new NumericLiteralNode(def.value * relic.layer, relic.name));
+        }
       } else {
         const node = new NumericLiteralNode(def.value * layer, relic.name, { relic, buff });
-        if (is_add) {
+        if (isFlat(def.value)) {
           context.relic_rune_add.def.addChild(node);
         } else {
           context.relic_rune_mul.def.addChild(node);

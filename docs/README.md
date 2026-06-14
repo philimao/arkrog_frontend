@@ -65,6 +65,7 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | [.../docs/adr/0004-chinese-filename-registry-keys.md](../app/modules/Tool/DamageCalculator/docs/adr/0004-chinese-filename-registry-keys.md) | ADR：中文文件名即注册键 | 已验证 |
 | [.../docs/adr/0005-manual-ingame-relic-name-lists.md](../app/modules/Tool/DamageCalculator/docs/adr/0005-manual-ingame-relic-name-lists.md) | ADR：手工局内藏品名单 | 已验证 |
 | [.../docs/adr/0006-exact-golden-values-and-frozen-prng.md](../app/modules/Tool/DamageCalculator/docs/adr/0006-exact-golden-values-and-frozen-prng.md) | ADR：精确金值基线与冻结 PRNG | 已验证 |
+| [.../docs/adr/0007-relic-adaptation-scope-and-best-case.md](../app/modules/Tool/DamageCalculator/docs/adr/0007-relic-adaptation-scope-and-best-case.md) | ADR：藏品适配范围与"最佳情况"建模口径 | 已验证 |
 | [.../docs/generated/relic-blackboard-registry.md](../app/modules/Tool/DamageCalculator/docs/generated/relic-blackboard-registry.md) | 已适配独立黑板清单 | 生成物 |
 | [.../docs/generated/allowed-keys.md](../app/modules/Tool/DamageCalculator/docs/generated/allowed-keys.md) | 白名单/黑名单/局内名单/层数同步组 | 生成物 |
 | [.../docs/generated/char-impl-coverage.md](../app/modules/Tool/DamageCalculator/docs/generated/char-impl-coverage.md) | 干员×技能实现覆盖矩阵 | 生成物 |

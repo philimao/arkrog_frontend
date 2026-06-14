@@ -1,85 +1,51 @@
-# rogue_5（界园）藏品/通宝 计算覆盖缺口扫描（初版）
+# 藏品/通宝 计算覆盖缺口与适配分诊
 
-> 生成方式：**静态启发式扫描**（非真实计算器输出），数据源 = 本地 `ArknightsGameData` 解包仓库 `roguelike_topic_table.json`（Data:26-05-27 起的 rogue_5 内容，2026-06-14 拉取至 c286dac）。
-> 方法：复刻 `applyAnyRelics` 的三级分发（独立黑板 / 通用敌人黑板 / 通用干员黑板），筛出「携带战斗相关 blackboard key 但未被任何路径消化」的藏品/通宝。
+> 数据源：本地 `ArknightsGameData`（`VersionControl:74.2.0`，Change:115904，2026-06-10；rogue_5 内容 Data:26-05-27），2026-06-14 拉取至 c286dac。
+> 方法：用**真实 `applyAnyRelics`** 跑全 5 主题（`test/DamageCalculator/relic-coverage.report.test.ts`，`RELIC_COVERAGE=1` opt-in，必须 `--pool=threads`），按 `tooltip===relic.name` 收集每个藏品/通宝在各乘区的实际 buff 量，判定「契合（算出非零值）/未算出」。
 >
-> ⚠️ 这是**启发式近似**，不是 `analyzeRelics` 的真实运行结果，也未计算实际 buff 量。真实数值需待测试基建重建后由 [10-relic-buff-verification](../../../app/modules/Tool/DamageCalculator/docs/10-relic-buff-verification.md) 的自动化流程产出。本报告用于**人工分诊**：判断每个缺口是「该适配」还是「本就超出 DPS 模型范围」。
+> 适配范围与建模口径见 [ADR-0007](../../../app/modules/Tool/DamageCalculator/docs/adr/0007-relic-adaptation-scope-and-best-case.md)。
 
-## 各主题缺口数（按名去重）
+## 总览：未算出且带战斗增益的藏品/通宝 = 63（按名去重，全主题）
 
-| 主题 | 战斗相关但未消化的藏品/通宝数 |
-|---|---|
-| rogue_1 | 18 |
-| rogue_2 | 18 |
-| rogue_3 | 20 |
-| rogue_4 | 18 |
-| rogue_5 | 35 |
-
-> 注：通宝（id 含 `copper`）共 108 项（按名 ~101），其中绝大多数是**经济/移动/行为类**效果（源石锭、护盾、票券、刷新、收藏品、敌人移速/重量），计算器本就不该计入，「未消化」是正确行为，不在本表。
-
-## rogue_5 缺口分诊（35 项）
-
-### A. 已适配（3 项）
-
-| 藏品 | bbKey | 处置 |
+| 类别 | 数量 | 处置 |
 |---|---|---|
-| 断杖-凝神（术师技力恢复+0.4/s） | `modify_sp_recover[caster]` | 独立黑板，写 `in_game_buff_add.sp_recovery_per_sec`（与 `modify_sp_recover[normal]` 同口径，多职业筛选） |
-| 医者-自医（医疗技力恢复+0.3/s） | `modify_sp_recover[medic]` | 同上 |
-| "阿猛"（敌人受元素伤害+100%） | `enemy_take_element_damage_up` | 独立黑板，写 `in_game_buff_final_mul.enemy_damage_scale_ep`（与 `enemy_damage_scale[ep]` 同口径）；**已用真实计算器验证**产出 ep 乘区 ×2 |
+| 已在 `disallowedRelicNames` 黑名单（临时/动态/限次效果，作者主动排除） | 28 | 维持 |
+| 额外伤害类（`atk_scale`/`extra_aoe`/落雷/每秒法伤…） | 17 | **暂缓**至模拟引擎版本（[ADR-0007](../../../app/modules/Tool/DamageCalculator/docs/adr/0007-relic-adaptation-scope-and-best-case.md) §3） |
+| 干员减伤/范围治疗（非 DPS） | 11 | 不计入 DPS |
+| 条件型增伤/易伤（可适配） | 5 | **本次适配**（最佳情况口径） |
+| 属性增益（碎靶之手 ×2，扫描假阴性） | 2 | 实为已生效，本次修复溯源 bug |
 
-> 「契合度」权威复核：用真实 `applyAnyRelics` 跑全部 5 主题（见 `relic-coverage.report.test.ts`，`RELIC_COVERAGE=1` opt-in）。
-> 结论——**排除技力类与运行时条件/触发类后，全主题里"无条件可被当前乘区模型表达却未算出"的藏品/通宝仅 3 个**：`戈渎不语`、`传芳雕版`（均已在 `disallowedRelicNames` 黑名单，动态条件无法静态建模）与 `"阿猛"`（已于本次适配）。即：通用黑板已覆盖全部无条件属性类藏品，新数据中**没有**遗漏的、契合计算器的常规增益。
+> 修正记录：早先一版结论曾称"仅 1 个常规增益缺口"，**错误**——当时把条件/触发型一律剔除了，而现有代码（锈刃-遗世独立、文学、见厉、轰鸣之手等）的既定模式恰恰会为条件型注册独立黑板。已按 [ADR-0007](../../../app/modules/Tool/DamageCalculator/docs/adr/0007-relic-adaptation-scope-and-best-case.md) §1 的"最佳情况"口径补齐。
 
-### B. 技力流——可建模但需作者确认口径（约 11 项）
+## A. 本次已适配（真实计算器验证通过）
 
-这些影响技能循环，理论上可折入 cycle DPS，但「初始技力 / 攻击回技 / 受击回技 / 命中回技」各自的建模口径不同，需作者判断是否纳入及如何换算。
-
-| 藏品 | bbKey | 效果 |
-|---|---|---|
-| 钝爪-爆发 | `modify_sp[pioneer]` | 先锋初始技力+10、攻击力+10%（攻击力部分另需处理） |
-| 折戟-浴血 | `modify_sp[warrior]` | 近卫攻击后+2 技力 |
-| 铁卫-无锋 | `modify_sp[tank]` | 重装受击+2 技力、技力消耗-20% |
-| "绽放" | `modify_sp[take_damage]` / `[take_ep_damage]` | 受伤/受元素损伤回技力 |
-| 高卢银行支票 / 摩根队长佳酿 / 生命之水 / 皇家利口酒 | `modify_sp[born]` | 初始技力+N |
-| 断杖-汲取 / 波纹之手 | `hit_to_add_sp` | 术师/特定子职业 命中回技力 |
-| 厉-神农守（通宝） | `hit_to_add_sp` | 造成伤害+2 技力、技力恢复-1/s |
-| 修习雷针 | `rogue_2_sp_recovery_up[stack]` | 用技能后技力回复+0.4/s（叠 5 层） |
-| 零嘴背篓 | `rogue_5_sp_recover_any_char_skill_start_finish` | 开局技力回复+100%（手动放技能后失效） |
-
-> `modify_sp[*]` 多个 valueStr 已在 `utils.ts` 的 `allowedBlackboardKeyMap` 登记（仅作中文翻译），但通用黑板的 apply 不消化 `sp`/`sp_recovery_per_sec` 键，故未计入计算。
-
-### C. 触发型额外伤害——需 bespoke 建模，暂不适配（约 8 项）
-
-额外伤害源，难以折入 auto/skill/cycle 三档，需专门建模：
-
-| 藏品 | bbKey | 效果 |
-|---|---|---|
-| 玩具弹弓 | `rogue_5_extra_aoe_damage[skill_start]` | 放技能时 AOE 法伤=攻击力 30% |
-| 烟花之手 | `rogue_4_extra_aoe_damage[hand]` | 25% 概率额外子弹，攻击力 200% 群伤 |
-| 烧火棍 | `extra_magic_damage[filter_tag]` | 对【化物】额外攻击力 50% 法伤 |
-| 老者面 | `PeriodicDamageViaAtkToBlockees[Magic]` | 每秒对阻挡目标攻击力 150% 法伤 |
-| 铁卫-推进 | `rogue_3_unmovableAndDmgAura` | 每 2 秒束缚+攻击力 100% 真伤 |
-| "小百灶" | `rogue_5_character_cost_damage` | 部署时按费用比例真伤 |
-| 厉-诛邪雷法（通宝） | `rogue_5_copper_S_6[god_damage]` | 化境落雷多段伤害 |
-
-### D. 条件增伤/减伤、敌人易伤——可部分映射敌人乘区，需确认触发条件（约 9 项）
-
-| 藏品 | bbKey | 效果 | 备注 |
+| 藏品 | bbKey | 写入乘区 | 验证值 |
 |---|---|---|---|
-| "阿猛" | `enemy_take_element_damage_up` | 敌受元素伤害+100% | 或可映射 `enemy_damage_scale_ep` |
-| 万星园之辉 | `enemy_weak[levitateAndMassLoss]` | 浮空/失重时受伤+30% | 条件触发 |
-| 赏善郎 | `rogue_5_next_atk_up[evade_or_block]` | 闪避/抵挡后下次攻击+100% | 条件触发 |
-| 镜中境 | `enemy_first_damage_down` | 敌首次伤害-90% | 减伤、敌方视角 |
-| 枣面 / 墙眼 | `damage_*[when_block]` / `..._in_attack_range` | 阻挡/范围内增减伤 | 条件触发 |
-| Blaze的电锯 | `rogue_5_enemy_damage_scale_by_distance` | 按距离最高+100%易伤 | 距离相关 |
-| 万星园之辉等 | 见明细 | — | — |
+| "阿猛"（敌受元素伤害+100%） | `enemy_take_element_damage_up` | `in_game_buff_final_mul.enemy_damage_scale_ep` | ×2 |
+| 赏善郎（闪避/抵挡后下次攻击+100%） | `rogue_5_next_atk_up[evade_or_block]` | `global_buff_stack.damage_scale_phy/mag` | ×2 |
+| 万星园之辉（浮空/失重时受伤+30%） | `enemy_weak[levitateAndMassLoss]` | 同上 | ×1.3 |
+| 枣面（对被阻挡敌人+50%） | `damage_scale_magic_physical[when_block]` | 同上 | ×1.5 |
+| Blaze的电锯（最近+100%，距离未建模取最佳） | `rogue_5_enemy_damage_scale_by_distance` | 同上 | ×2 |
+| 断杖-凝神 / 医者-自医（技力恢复） | `modify_sp_recover[caster]` / `[medic]` | `in_game_buff_add.sp_recovery_per_sec` | +0.4 / +0.3 |
 
-### E. 其它（生存/位移/再部署等，非 DPS，建议拉黑或忽略）
+**修复**：`rogue_2_atk_up_on_output_damage[stack]`（轰鸣之手/碎靶之手）原 `apply` 硬编码 `1.5` 与 tooltip `"轰鸣之手"`——数值碰巧对（0.15×10）但碎靶之手溯源丢失、且对未来不同参数会算错。改为数据驱动 `atk × max_stack_cnt` + `relic.name` tooltip；两者现各得 +150% 且溯源正确。
 
-荆棘环、"萤灯映牍"、雪与土的织带、遥乡之引、飞锦战旌、忘生珍珑 等——技力/治疗/位移联动，多数对静态 DPS 无直接贡献。
+> 万星园之辉、枣面均为多 buff 藏品：本次只接其增伤/易伤 buff；其 2000 点法伤（额外伤害）与 50% 减伤（生存）按 ADR-0007 不计。
 
-## 建议
+## B. 暂缓：额外伤害类（17，等模拟引擎）
 
-1. **B 类技力流**是最有价值的下一批适配目标，但需作者明确每种 `modify_sp[*]` 的建模口径（初始技力是否影响首动、攻击/受击回技如何换算 sp/sec），再批量注册独立黑板。
-2. **C/D 类**需 bespoke 建模与逐个验证，优先级取决于实战常用度。
-3. 全部适配都应在 [测试基建重建](../../../app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md) 后，由 [自动验证流程](../../../app/modules/Tool/DamageCalculator/docs/10-relic-buff-verification.md) 输出真实 buff 量并人工签核——本报告的启发式分诊正是该自动化的输入雏形。
+玩具弹弓、烟花之手、烧火棍、老者面、铁卫-推进、"小百灶"、厉-诛邪雷法（通宝）等——藏品自身的独立伤害源，计算器当前无归并机制，见 [ADR-0007](../../../app/modules/Tool/DamageCalculator/docs/adr/0007-relic-adaptation-scope-and-best-case.md) §3 与 [ADR-0002](../../../app/modules/Tool/DamageCalculator/docs/adr/0002-expectation-formula-vs-frame-simulation.md)。
+
+## C. 暂缓：技力流（按用户当前指示不做）
+
+钝爪-爆发、折戟-浴血、铁卫-无锋、"绽放"、`modify_sp[born]` 系列、`hit_to_add_sp` 系列、修习雷针、零嘴背篓等。多为 `modify_sp[*]`/`sp_recovery_per_sec` 键，通用黑板不消化。批量适配前需定每种的建模口径（初始技力是否影响首动、攻击/受击/命中回技如何换算 sp/sec）。
+
+## D. 不计入：干员减伤 / 范围治疗（非 DPS）
+
+镜中境、墙眼、"萤灯映牍"、荆棘环、雪与土的织带、遥乡之引、飞锦战旌、忘生珍珑 等。
+
+## 复核口径
+
+- 「契合」= 真实 `applyAnyRelics` 对该藏品产出非零乘区值（按 `tooltip===relic.name` 归集）。
+- 扫描已知假阴性：藏品被某条 `tooltip` 硬编码的独立黑板覆盖时会漏认（碎靶之手即此例，已随本次修复消除）。
+- 全部适配的运行时数值已由覆盖工具逐个核对，与藏品描述一致。

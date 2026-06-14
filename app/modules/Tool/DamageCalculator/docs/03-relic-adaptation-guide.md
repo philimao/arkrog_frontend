@@ -51,6 +51,12 @@ flowchart TD
 3. 如果效果有特殊条件或特殊数值语义（例如"编队中每有一名伺烛客则…"、"存在某藏品时才生效"、"按层数指数叠加"）通用黑板表达不了 → **注册独立黑板**（第 4 节）。
 4. 如果效果当前无法计算或价值过低 → **拉黑**（`disallowedRelicNames`）。
 
+> **建模口径与暂缓范围（[ADR-0007](adr/0007-relic-adaptation-scope-and-best-case.md)）**：
+> - **条件型增伤/易伤**（闪避后、敌人浮空时、对被阻挡目标等）按"**最佳情况恒生效**"建模——把 `damage_scale` 倍率原样写入 `global_buff_stack.damage_scale_phy/mag`（与文学/见厉同口径）。计算器是"理论上限"语义。
+> - **限制触发次数 / 极短时间窗口型**（技能后 1 秒内 +X% 等）：**暂缓**（最佳情况会高估稳态、缺触发频率模型）。
+> - **额外伤害类**（藏品自身造成的独立伤害，`atk_scale`/`extra_aoe_damage` 等）：**暂缓**至计算器演进为模拟引擎驱动版本。
+> - 多 buff 藏品只接其中可建模的 buff（按 key 分别注册），其余 buff 自然落入 `invalidRelics`。
+
 ## 3. 通用黑板机制详解
 
 `applyRelic` 对每个 buff 的三级分发（顺序固定，`calculator/helper.ts`）：

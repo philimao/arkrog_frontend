@@ -30,7 +30,7 @@ sources:
 - [known-issues.md](known-issues.md) —— 已确认笔误与缺陷登记簿（自动化对账前提）。排查异常数值时先查这里。
 - [version-sensitive-hardcode.md](version-sensitive-hardcode.md) —— 十余处版本敏感硬编码逐项清单 + 触发更新的上游变更类型。上游平衡性调整后核对这里。
 - [new-topic-checklist.md](new-topic-checklist.md) —— 新增肉鸽主题的散点改动清单。
-- [adr/](adr/) —— 架构决策记录（ADR）。`template.md` 是模板，`0001`~`0006` 是已发生决策的补记，各注明「推翻条件」。理解「为什么是现在这样」时看这里。
+- [adr/](adr/) —— 架构决策记录（ADR）。`template.md` 是模板，`0001`~`0006` 是已发生决策的补记，`0007` 是藏品适配范围与"最佳情况"建模口径，各注明「推翻条件」。理解「为什么是现在这样」时看这里。
 
 ## generated/ —— 脚本生成物，勿手改
 

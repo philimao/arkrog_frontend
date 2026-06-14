@@ -319,6 +319,55 @@ registerRelicBlackboard("damage_scale[filter_tag]", {
   },
 });
 
+// ── 条件型增伤/易伤（按"最佳情况恒生效"建模，与 rogue_4_damage_scale[tag]/见厉 同口径：
+//    damage_scale 值为倍率，原样写入 global_buff_stack.damage_scale_phy/mag 真乘区）──
+
+/** 赏善郎——我方单位触发闪避或抵挡后，下次攻击造成的伤害+100%（最佳情况：视为常驻） */
+registerRelicBlackboard("rogue_5_next_atk_up[evade_or_block]", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+    context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+  },
+});
+
+/** 万星园之辉——敌人进入/解除浮空、失重时 10 秒内受到的伤害+30%（最佳情况：视为常驻；2000 点法伤属额外伤害，待模拟引擎版本再做） */
+registerRelicBlackboard("enemy_weak[levitateAndMassLoss]", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+    context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+  },
+});
+
+/** 枣面——对被自身阻挡的敌人造成的伤害+50%（最佳情况：视为常驻；50% 减伤属生存，非 DPS 不计） */
+registerRelicBlackboard("damage_scale_magic_physical[when_block]", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+    context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(damage_scale.value, relic.name));
+  },
+});
+
+/** Blaze的电锯——敌人离伤害来源越近受到的伤害越高（最高+100%）。
+ *  距离未建模，按最佳情况（最近，+100%）计；此处 damage_scale=1 为增量形式，故倍率=1+value。 */
+registerRelicBlackboard("rogue_5_enemy_damage_scale_by_distance", {
+  isActive: () => true,
+  apply(input): void {
+    const { context, buff, relic } = input;
+    const damage_scale = getByKeySafe(buff.blackboard, "damage_scale");
+    const mul = 1 + damage_scale.value;
+    context.global_buff_stack.damage_scale_phy.addChild(new NumericLiteralNode(mul, relic.name));
+    context.global_buff_stack.damage_scale_mag.addChild(new NumericLiteralNode(mul, relic.name));
+  },
+});
+
 /** 久居之手 */
 registerRelicBlackboard("rogue_4_special_hand[time]", {
   isActive(input) {
@@ -338,7 +387,7 @@ registerRelicBlackboard("rogue_4_special_hand[time]", {
   },
 });
 
-/** 轰鸣之手 */
+/** 轰鸣之手 / 碎靶之手（同键不同子职业；按满层最佳情况计算 atk×max_stack_cnt） */
 registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", {
   isActive(input) {
     const { buff } = input;
@@ -351,8 +400,13 @@ registerRelicBlackboard("rogue_2_atk_up_on_output_damage[stack]", {
     return true;
   },
   apply(input): void {
-    const { context } = input;
-    context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(1.5, "轰鸣之手"));
+    const { context, buff, relic } = input;
+    // 原实现硬编码 1.5 与 tooltip"轰鸣之手"：数值对但碎靶之手溯源丢失、且对未来不同参数藏品会算错。
+    // 改为数据驱动：满层加成 = 每层 atk × max_stack_cnt，tooltip 用 relic.name。
+    const atk = getByKeySafe(buff.blackboard, "atk");
+    const maxStack = getByKey(buff.blackboard, "max_stack_cnt");
+    const value = atk.value * (maxStack?.value ?? 1);
+    context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(value, relic.name));
   },
 });
 

@@ -967,6 +967,10 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
     if (atk) {
       if (inGame) {
         context.in_game_buff_mul.atk.addChild(new NumericLiteralNode(atk.value * relic.layer, relic.name));
+      } else if (is_add) {
+        // 平值加攻击（char_attribute_add）：写局外加算区，避免被当成百分比倍率
+        // （如通宝"左秉烛"攻击力+200，旧实现误算成 ×100 ≈ +10000%）。与下方 def 的 is_add 分支同口径。
+        context.relic_rune_add.atk.addChild(new NumericLiteralNode(atk.value * layer, relic.name, { relic, buff }));
       } else {
         context.relic_rune_mul.atk.addChild(new NumericLiteralNode(atk.value * layer, relic.name, { relic, buff }));
       }

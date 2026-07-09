@@ -217,21 +217,16 @@ export default function RecordCard({
   const isLargeScreen = window.matchMedia("(min-width: 1024px)").matches;
   const isSmallScreen = window.matchMedia("(max-width: 640px)").matches;
   // 是否单行展示，要求队伍长度小于一定值
-  const [singleRow, setSingleRow] = useState(
-    isLargeScreen || isSmallScreen ? record.team.length <= 4 : record.team.length <= 5,
-  );
+  const [singleRow, setSingleRow] = useState(isLargeScreen && record.team.length <= 4);
   // 双行展示时，需要补全的干员数量
-  const [doubleRowPatchNum, setDoubleRowPatchNum] = useState(isLargeScreen || isSmallScreen ? 5 : 7);
+  const doubleRowPatchNum = 5;
 
   useEffect(() => {
     const handler = () => {
-      // 如果大屏幕或小屏幕，卡片长度不足
-      if (window.matchMedia("(min-width: 1024px)").matches || window.matchMedia("(max-width: 640px)").matches) {
+      if (window.matchMedia("(min-width: 1024px)").matches) {
         setSingleRow(record.team.length <= 4);
-        setDoubleRowPatchNum(5);
       } else {
-        setSingleRow(record.team.length <= 5);
-        setDoubleRowPatchNum(7);
+        setSingleRow(false);
       }
     };
     window.addEventListener("resize", handler);
@@ -311,7 +306,7 @@ export default function RecordCard({
           ) : (
             <>
               <StyledTeamContainer className="team-info" $singleRow={singleRow} $isSmallScreen={isSmallScreen}>
-                {Array(Math.max((record.team.length + 1) / 2, doubleRowPatchNum))
+                {Array(Math.max(Math.ceil((record.team.length + 1) / 2), doubleRowPatchNum))
                   .fill(0)
                   .map((_, i) => {
                     const memberData = record.team[bustOrderMapping(i)];
@@ -326,7 +321,7 @@ export default function RecordCard({
                   })}
               </StyledTeamContainer>
               <StyledTeamContainer className="team-info" $singleRow={singleRow} $isSmallScreen={isSmallScreen}>
-                {Array(Math.max((record.team.length + 1) / 2, doubleRowPatchNum))
+                {Array(Math.max(Math.ceil((record.team.length + 1) / 2), doubleRowPatchNum))
                   .fill(0)
                   .map((_, i) => {
                     const memberData = record.team[bustOrderMapping(i + 7)];

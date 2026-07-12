@@ -354,7 +354,7 @@ export default function RecordCard({
                   openModal("report-modal");
                 }}
               />
-              {userInfo?.level !== undefined && userInfo?.level > 2 && (
+              {userInfo?.level !== undefined && userInfo?.level >= 4 && (
                 <DeleteIcon className="hover:text-yellow-300" role="button" onClick={handleDeleteRecord} />
               )}
             </div>
@@ -409,7 +409,7 @@ export default function RecordCard({
               openModal("report-modal");
             }}
           />
-          {userInfo?.level !== undefined && userInfo?.level > 2 && (
+          {userInfo?.level !== undefined && userInfo?.level >= 4 && (
             <DeleteIcon className="hover:text-yellow-300 w-4 h-4" role="button" onClick={handleDeleteRecord} />
           )}
         </div>

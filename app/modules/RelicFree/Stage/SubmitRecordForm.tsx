@@ -133,59 +133,63 @@ export default function SubmitRecordForm({
       }
     }
 
-    // 链接验证
-    const validatedURL = await URLValidation(data.url as string);
-    if (validatedURL) {
-      data.url = validatedURL;
-    } else {
-      return;
-    }
+    try {
+      // 链接验证
+      const validatedURL = await URLValidation(data.url as string);
+      if (validatedURL) {
+        data.url = validatedURL;
+      } else {
+        return;
+      }
 
-    // 重复人员验证
-    const duplicates = findDuplicates(memberDataArray.map((m) => m.name));
-    if (duplicates.length) {
-      return toast.warning(`队伍组成中 ${duplicates[0]} 填写重复！`);
-    }
+      // 重复人员验证
+      const duplicates = findDuplicates(memberDataArray.map((m) => m.name));
+      if (duplicates.length) {
+        return toast.warning(`队伍组成中 ${duplicates[0]} 填写重复！`);
+      }
 
-    // 干员信息验证
-    const misMatch = team.split(teamSplitterRe).find((memberStr, i) => {
-      const memberData = memberDataArray[i];
-      if (!memberData) return true;
-      const { name, skillStr } = memberData;
-      return memberStr.toUpperCase() !== (name + skillStr).toUpperCase();
-    });
-    if (misMatch) {
-      return toast.warning(`队伍组成中 ${misMatch} 无法解析！请检查拼写是否有误`);
-    }
+      // 干员信息验证
+      const misMatch = team.split(teamSplitterRe).find((memberStr, i) => {
+        const memberData = memberDataArray[i];
+        if (!memberData) return true;
+        const { name, skillStr } = memberData;
+        return memberStr.toUpperCase() !== (name + skillStr).toUpperCase();
+      });
+      if (misMatch) {
+        return toast.warning(`队伍组成中 ${misMatch} 无法解析！请检查拼写是否有误`);
+      }
 
-    // 技能验证
-    const skillErrorMember = memberDataArray.find((memberData) => memberData.skillId === "error");
-    if (skillErrorMember) {
-      return toast.warning(`队伍组成中 ${skillErrorMember.name} 的技能填写有误！`);
-    }
+      // 技能验证
+      const skillErrorMember = memberDataArray.find((memberData) => memberData.skillId === "error");
+      if (skillErrorMember) {
+        return toast.warning(`队伍组成中 ${skillErrorMember.name} 的技能填写有误！`);
+      }
 
-    // 技能非空验证
-    const skillEmptyMember = memberDataArray.find(
-      (memberData) => !memberData.skillId && !memberData.name.match(/-\d$/),
-    );
-    if (skillEmptyMember) {
-      return toast.warning(`队伍组成中 ${skillEmptyMember.name} 的技能未填写！`);
-    }
+      // 技能非空验证
+      const skillEmptyMember = memberDataArray.find(
+        (memberData) => !memberData.skillId && !memberData.name.match(/-\d$/),
+      );
+      if (skillEmptyMember) {
+        return toast.warning(`队伍组成中 ${skillEmptyMember.name} 的技能未填写！`);
+      }
 
-    data.team = memberDataArray.map((memberData) => {
-      delete memberData.charData;
-      return memberData;
-    });
-    data.stageId = stageId;
-    console.log(data);
-    const records: RecordType[] | undefined = await _post<RecordType[]>("/record/submit", data);
-    if (records) {
-      setRecords(records);
-      onClose();
+      data.team = memberDataArray.map((memberData) => {
+        delete memberData.charData;
+        return memberData;
+      });
+      data.stageId = stageId;
+      const records: RecordType[] | undefined = await _post<RecordType[]>("/record/submit", data);
+      if (records) {
+        setRecords(records);
+        onClose();
+      }
+      setTimeout(() => {
+        fetchStagePreview(true);
+      }, 2000);
+    } catch (err) {
+      // 失败保持弹窗与已填内容，供用户修正后重试
+      toast.error((err as Error).message);
     }
-    setTimeout(() => {
-      fetchStagePreview(true);
-    }, 2000);
   }
 
   if (!userInfo?.level || userInfo?.level < 3) return null;

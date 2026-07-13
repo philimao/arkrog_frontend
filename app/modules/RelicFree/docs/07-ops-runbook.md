@@ -37,6 +37,7 @@ sources:
 |---|---|---|---|---|
 | stage-preview 全量重算 | `POST /admin/calculate-stage-preview`（`routers/admin.js` → `stagePreviewFullUpdate`） | Level ≥ 4 | 重算全部关卡最少人数 + 面包屑，写 Redis `appdata:stagePreview` + Mongo `Data.stage-preview`，整体替换 | 响应含 `N stages processed`；再 curl `/relic-free/stage-preview` 抽查（§6） |
 | stage-preview 单关增量重算 | 无独立端点；由 `POST /record/submit` / `POST /record/delete` 顺带触发（fire-and-forget） | 提交 Level ≥ 3，删除 Level ≥ 4（`routers/record.js`） | 仅该 `stageId` 条目 | 2 秒后前端自动强刷；或 curl `/relic-free/stage-preview` 看该关字段 |
+| 首页"最新"缓存失效 | 无独立端点；`POST /record/submit` / `POST /record/delete` 成功后非阻塞 `del("latestRecordIds")`（`routers/record.js`，2026-07-13；此前该键为永久缓存，只能手动刷或重启） | 同上行 | 仅 `appdata:latestRecordIds` 键；下次请求懒加载重建 | curl `/app/bundle` 看 `latestRecordIds`（注意 §6 的 1 小时 HTTP 强缓存） |
 | 删除一条记录 | RecordCard 卡片删除图标（`app/components/RecordCard/RecordCard.tsx` 的 `RecordCard`，图标仅 Level ≥ 4 显示）→ `POST /record/delete` | 前端软守卫 + 后端 Level ≥ 4 硬校验 | 硬删 Records 文档 + 自动增量重算该关 preview（副作用矩阵见 [02](./02-record-lifecycle-and-schema.md)） | 页面记录消失；2 秒后最少人数徽标更新 |
 | Redis 单键刷新 | `POST /redis-admin/refresh`（body 带 `key`/`type` → `dataCacheManager.refreshCache`） | Level ≥ 5 | 删该键后按 type 重载 | `GET /redis-admin/key/:key` 看新值 |
 | Redis 全量预热 | `POST /redis-admin/refresh`（body 不带 `key` → `warmUpCache`） | Level ≥ 5 | 重载全部 gamedata/appdata/dumpdata 键（从 Mongo/文件回灌，**不重算**） | `GET /redis-admin/keys?pattern=appdata:*` |
@@ -46,7 +47,7 @@ sources:
 | 离线全量数据管线 | `yarn update-data` / `yarn update-data:prod --yes`（`util-scripts/updateGameData.ts` 七步，含 stage-enemies + stage-preview） | 服务器 shell；生产库必须 `--yes` | 全部游戏数据 + 两份无藏派生数据 + 缓存预热 | 七步日志全 `done`；正文见[顶层数据管线](../../../../docs/data-pipeline.md)第 3 节 |
 | 重启后端（兜底） | `pm2 restart <进程>`；启动时 `app.ts` 清空全部非 `sess:` Redis 键并 `warmUpCache` | 服务器 shell | 隐式全量**缓存**重建（§5） | 启动日志 `Cache warm-up completed` |
 
-> `GET /redis-admin/status` 当前返回的 `stats` 字段全为空：路由从 `dataCacheManager.getStats()` 结果的顶层取 `gameDataKeys` 等字段，而 `getStats` 实际返回 `{ redis, memory, total }` 三层结构，字段名对不上。验证缓存请改用 `/redis-admin/keys` 或 `/redis-admin/info`。
+> `GET /redis-admin/status` 现整体透传 `dataCacheManager.getStats()` 的 `{ redis, memory, total }` 三层嵌套结构（2026-07-13 修复：此前路由按旧扁平字段名取值恒 undefined，Redis 侧计数又因 KEYS 模式不带物理前缀恒为 0，返回的 `stats` 是空对象；现 `getStats` 内部手动拼物理前缀统计，详见 `arkrog_backend/docs/DataCache.md`）。矩阵与本条标注"2026-07-13"的行为——**以下修复均未部署**：线上仍运行旧版后端，线上 `/status` 仍返回空 `stats`，验证线上缓存请改用 `/redis-admin/keys` 或 `/redis-admin/info`。
 
 ### curl 示例
 

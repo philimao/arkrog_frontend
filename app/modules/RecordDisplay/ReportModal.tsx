@@ -37,14 +37,11 @@ export default function ReportModal({ id }: { id: string }) {
     if (!activeRecord) {
       return toast.warning("未正确加载卡片信息");
     }
-    // console.log({
-    //   recordId: activeRecord?._id,
-    //   message: feedback,
-    // });
     try {
       await _post("/user/feedback", {
-        stageId: activeRecord?.stageId,
         message: feedback,
+        stageId: activeRecord?.stageId,
+        recordId: activeRecord?._id,
       });
       setFeedback("");
       toast.warning(
@@ -56,14 +53,10 @@ export default function ReportModal({ id }: { id: string }) {
     }
   }
 
-  function onOpenChange(isOpen: boolean) {
-    console.log(isOpen);
-  }
-
   return (
     <ModalTemplate
       triggerId={id}
-      modalControl={{ isOpen, onOpen, onClose, onOpenChange }}
+      modalControl={{ isOpen, onOpen, onClose }}
       size="3xl"
     >
       <ModalHeader className="text-2xl pb-0">这个记录有问题</ModalHeader>

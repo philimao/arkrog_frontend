@@ -24,6 +24,7 @@ export default function IndexRelicFree() {
   const [latest, setLatest] = useState<RecordType[]>([]);
 
   const records = type === "推荐" ? recommend : latest;
+  const setRecords = type === "推荐" ? setRecommend : setLatest;
 
   useEffect(() => {
     load(recommendRecordIds, setRecommend);
@@ -58,7 +59,7 @@ export default function IndexRelicFree() {
       </div>
       <div>
         {records.map((record) => (
-          <RecordCard record={record} isStagePage={false} key={record._id} />
+          <RecordCard record={record} setRecords={setRecords} isStagePage={false} key={record._id} />
         ))}
       </div>
     </div>

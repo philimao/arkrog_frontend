@@ -27,6 +27,7 @@ sources:
 | `/relic-free/stage-preview` | GET | `StagePreview` | app/stores/relicFreeStore.ts | 无藏数据 store（relicFreeStore，全局） |
 | `/seed/ids` | POST | `SeedType[]` | app/modules/Home/Favorite/index.tsx | 个人中心·收藏页（Home/Favorite，跨模块消费方） |
 | `/user/favorite` | POST | `FavoriteItem[]` | app/components/RecordCard/RecordCard.tsx | 记录卡片组件（RecordCard，被关卡页/首页/收藏页复用） |
+| `/user/favorite` | POST | `FavoriteItem[]` | app/components/RecordCard/RecordCard.tsx | 记录卡片组件（RecordCard，被关卡页/首页/收藏页复用） |
 | `/user/feedback` | POST | （未指定泛型） | app/modules/RecordDisplay/ReportModal.tsx | 记录展示/举报弹窗（RecordDisplay，被关卡页/首页/收藏页复用） |
 
-**共 11 处调用、10 个去重端点。**
+**共 12 处调用、10 个去重端点。**

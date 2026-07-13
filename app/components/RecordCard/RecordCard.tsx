@@ -170,13 +170,25 @@ export default function RecordCard({
   async function handleDeleteRecord() {
     if (!record) return;
     if (!window.confirm("是否确定删除")) return;
-    await _post("/record/delete", { _id: record._id });
-    setRecords?.((prev) => {
-      const updated = [...prev];
-      const index = updated.findIndex((r) => r._id === record._id);
-      updated.splice(index, 1);
-      return updated;
-    });
+    try {
+      await _post("/record/delete", { _id: record._id });
+    } catch (error) {
+      toast.error((error as Error).message);
+      return;
+    }
+    setRecords?.((prev) => prev.filter((r) => r._id !== record._id));
+    // 后端删除记录不清理 Users.favorite，这里同步移除自己的收藏；$pull 对已不存在的项幂等
+    if (starred) {
+      try {
+        const favorite = await _post<FavoriteItem[]>("/user/favorite", {
+          operate: "remove",
+          item: { _id: record._id, type: "record" },
+        });
+        updateUserInfo({ favorite });
+      } catch (error) {
+        toast.warning((error as Error).message);
+      }
+    }
     setTimeout(() => {
       fetchStagePreview(true);
     }, 2000);
@@ -204,25 +216,17 @@ export default function RecordCard({
     if (stageData) setStageData(stageData);
   }, [isStagePage]);
 
-  if (!record) {
-    return <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-[#181818CC]"></div>;
-  }
-
-  // 从后端返回的可用立绘中进行选择，默认维什戴尔
-  const availableBg = findDuplicates([...record.team.map((memberData) => memberData.charId), ...(charImages || [])]);
-  const charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.random())] : "char_1035_wisdel";
-  const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
-
   // 使用单行干员展示
   const isLargeScreen = window.matchMedia("(min-width: 1024px)").matches;
   const isSmallScreen = window.matchMedia("(max-width: 640px)").matches;
   // 是否单行展示，要求队伍长度小于一定值
-  const [singleRow, setSingleRow] = useState(isLargeScreen && record.team.length <= 4);
+  const [singleRow, setSingleRow] = useState(isLargeScreen && (record?.team.length ?? 0) <= 4);
   // 双行展示时，需要补全的干员数量
   const doubleRowPatchNum = 5;
 
   useEffect(() => {
     const handler = () => {
+      if (!record) return;
       if (window.matchMedia("(min-width: 1024px)").matches) {
         setSingleRow(record.team.length <= 4);
       } else {
@@ -232,6 +236,15 @@ export default function RecordCard({
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
   }, []);
+
+  if (!record) {
+    return <div className="w-full h-72 mb-4 p-8 last-of-type:mb-0 bg-[#181818CC]"></div>;
+  }
+
+  // 从后端返回的可用立绘中进行选择，默认维什戴尔
+  const availableBg = findDuplicates([...record.team.map((memberData) => memberData.charId), ...(charImages || [])]);
+  const charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.random())] : "char_1035_wisdel";
+  const bgChar = `${import.meta.env.VITE_API_BASE_URL}/images/char/${charId}.png`;
 
   return (
     <div className="mb-4">

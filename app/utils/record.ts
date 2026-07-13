@@ -2,7 +2,7 @@ import { toast } from "react-toastify";
 import type { CharBasicData, CharId, SkillId } from "~/types/gameData";
 import type { TeamMemberData } from "~/types/recordType";
 
-async function URLValidation(url: string): Promise<string> {
+async function URLValidation(url: string): Promise<string | null> {
   if (url === "#") return url;
   let newURL = url.trim().split(" ")[0];
   newURL = newURL.replace("http:", "https:");
@@ -12,7 +12,13 @@ async function URLValidation(url: string): Promise<string> {
   if (newURL.includes("b23.tv")) {
     const shortLink = newURL.match(/https:\/\/b23.tv\/.*/)?.[0];
     const resRaw = await fetch("/api/parse-redirect?url=" + shortLink);
-    newURL = await resRaw.text();
+    // 错误响应体（404 JSON/HTML 页）不是 URL，不能进入后续归一化
+    const redirectURL = resRaw.ok ? (await resRaw.text()).trim() : "";
+    if (!redirectURL.startsWith("http")) {
+      toast.warning("短链解析暂不可用，请粘贴完整B站链接");
+      return null;
+    }
+    newURL = redirectURL;
   }
 
   newURL = newURL.split("#")[0];

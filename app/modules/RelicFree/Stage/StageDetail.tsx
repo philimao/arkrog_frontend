@@ -127,8 +127,8 @@ export default function StageDetail({
     );
   };
 
-  // 上一关
-  const stageIds = Object.keys(stagePreview!);
+  // 上一关（stagePreview 拉取失败时为空，导航按钮自然隐藏）
+  const stageIds = Object.keys(stagePreview ?? {});
   const prevStageIdx = stageIds.indexOf(stageData.id) - 1;
   const nextStageIdx = stageIds.indexOf(stageData.id) + 1;
 

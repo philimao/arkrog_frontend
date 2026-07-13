@@ -30,10 +30,12 @@ sources:
 先说三个事关全局的事实：
 
 - `RecordCard` 虽然放在 `app/components/`，但它**反向依赖无藏模块的 store**（删除后强刷 `relicFreeStore.fetchStagePreview`），不是通用组件，不要当通用组件复用到无藏域之外。
-- `setRecords` 是可选 prop：**首页 `IndexRelicFree` 不传它，删除请求成功后卡片不会消失**——这是现行契约，不是 bug 单独一处。
-- `!record` 灰色占位分支在现有全部调用链**不可达**，且其后跟着条件调用的 Hook——激活该分支前必须先修 Hook 违规，否则运行时崩溃（见 [第 7 节](#7-record-占位分支与条件-hook-违规)）。
+- `setRecords` 是可选 prop，未传时删除成功后卡片留在原地；**三个消费入口现均传入**（首页 `IndexRelicFree` 于 2026-07-13 补传，此前首页删除后卡片不消失）。
+- `!record` 灰色占位分支在现有全部调用链**不可达**；曾跟在其后的条件 Hook 已于 2026-07-13 全部提到早退之前，激活占位分支不再有崩溃风险（见 [第 7 节](#7-record-占位分支与条件-hook-违规)）。
 
 > 路径约定：`app/...` 相对于前端仓库根；`arkrog_backend/...` 指后端仓库。引用代码一律"路径 + 导出符号"。
+>
+> ⚠️ 本篇标注"2026-07-13"的各处修复——**以下修复均未部署**：线上仍运行旧版前端，线上行为以旧代码为准（登记与部署状态见 [known-issues.md](known-issues.md)）。
 
 ## 1. 组件分工与三个消费入口
 
@@ -47,8 +49,8 @@ sources:
 | 入口 | 路径 | 经由 | `isStagePage` | `setRecords` | 行为差异 |
 |---|---|---|---|---|---|
 | 关卡页 | `app/modules/RelicFree/Stage/index.tsx` 的 `StagePage` | `RecordDisplay` | `true` | 传 | 组头徽标渲染；卡片上方**不**渲染关卡名标题行；删除后卡片局部消失 |
-| 收藏页 | `app/modules/Home/Favorite/index.tsx` 的 `FavoritePage` | `RecordDisplay cols={2}` | 未传（`undefined`） | 传 | 无组头；卡片尝试反查关卡名标题行；删除后卡片消失（该页另有一组已确认缺陷，见 [known-issues.md](known-issues.md)） |
-| 首页 | `app/modules/IndexPage/IndexRelicFree/index.tsx` 的 `IndexRelicFree` | 直接渲染 `RecordCard` | `false` | **不传** | 卡片尝试反查关卡名标题行；**删除请求成功但卡片留在原地**，直到整页刷新 |
+| 收藏页 | `app/modules/Home/Favorite/index.tsx` 的 `FavoritePage` | `RecordDisplay cols={2}` | 未传（`undefined`） | 传（包装 setter，把删除换算回槽位数组） | 无组头；卡片尝试反查关卡名标题行；删除后卡片消失（该页分页/合并/无限请求缺陷组已于 2026-07-13 修复，见 [known-issues.md](known-issues.md)） |
+| 首页 | `app/modules/IndexPage/IndexRelicFree/index.tsx` 的 `IndexRelicFree` | 直接渲染 `RecordCard` | `false` | 传（2026-07-13 补，按当前标签页取 `setRecommend`/`setLatest`） | 卡片尝试反查关卡名标题行；删除后卡片即时消失（只剔除当前标签页列表——同一记录若同时在"推荐"与"最新"，另一标签页的卡片残留至刷新） |
 
 ## 2. props 语义
 
@@ -57,10 +59,10 @@ sources:
 | prop | 类型 | 语义 |
 |---|---|---|
 | `isStagePage?` | `boolean` | `true`：跳过 `stageData` 反查（关卡页自己有标题）；falsy（含 `undefined`）：`useEffect` 从 `gameDataStore.stages` 按 `record.stageId` 反查关卡名，成功才渲染卡片上方"`{n}人-{类型}-{关卡名}`"标题行 |
-| `record?` | `RecordType` | 现有调用链恒有值；`undefined` 走灰色占位分支（不可达 + Hook 违规，第 7 节） |
-| `setRecords?` | `Dispatch<SetStateAction<RecordType[]>>` | 删除成功后 `setRecords?.(...)` 从本地列表 `splice` 剔除；未传时静默跳过。注意 `findIndex` 未命中时返回 `-1`，`splice(-1, 1)` 会**误删列表末尾元素**——已登记于 [known-issues.md](known-issues.md) |
+| `record?` | `RecordType` | 现有调用链恒有值；`undefined` 走灰色占位分支（仍不可达；Hook 违规已修，第 7 节） |
+| `setRecords?` | `Dispatch<SetStateAction<RecordType[]>>` | 删除成功后 `setRecords?.((prev) => prev.filter(...))` 从本地列表剔除，记录不在列表时天然 no-op（2026-07-13 起；此前 `findIndex`+`splice` 在未命中时 `splice(-1, 1)` 会**误删列表末尾元素**）；未传时静默跳过 |
 
-`RecordDisplay` 的 `setRecords` 是必传 prop（类型上无 `?`），因此"删除不刷 UI"只发生在绕过 `RecordDisplay` 直用 `RecordCard` 的首页入口。
+`RecordDisplay` 的 `setRecords` 是必传 prop（类型上无 `?`）；绕过 `RecordDisplay` 直用 `RecordCard` 的首页入口也已补传（2026-07-13），三个入口删除后本地列表均即时剔除。
 
 ### 2.1 标题行静默不渲染
 
@@ -93,7 +95,7 @@ setTimeout(() => { fetchStagePreview(true); }, 2000);
 |---|---|---|---|
 | 收藏（星标） | `!userInfo?.level` 时 `openModal("login")`——未登录**与 level 0（VISITOR）等价对待** | `handleStarRecord` 按当前是否已收藏发 `add`/`remove`，成功后 `updateUserInfo({ favorite })` 就地更新星标 | `POST /user/favorite` |
 | 举报 | 同上 | `recordStore.setActiveRecord(record)` → `openModal("report-modal")`；`ReportModal` 从 `recordStore.activeRecord` 取卡片信息 | `POST /user/feedback` |
-| 删除 | `userInfo?.level !== undefined && userInfo?.level >= 4`（**ADMIN 及以上才渲染删除图标**，桌面/移动两处同判） | `window.confirm` → 删除 → `setRecords?.` 剔除 → 2 秒后强刷预览。**无 try/catch**：请求失败时既无 toast 也无回滚，仅 console 报未捕获 rejection（[known-issues.md](known-issues.md)） | `POST /record/delete` |
+| 删除 | `userInfo?.level !== undefined && userInfo?.level >= 4`（**ADMIN 及以上才渲染删除图标**，桌面/移动两处同判） | `window.confirm` → 删除（2026-07-13 补 try/catch，失败 `toast.error` 后中止、不动本地列表）→ `setRecords?.` 剔除 → 自己收藏过该记录时调 `/user/favorite` remove 自清（失败仅 `toast.warning`）→ 2 秒后强刷预览 | `POST /record/delete` |
 
 **openModal 的 DOM-id 全局契约**（`app/utils/dom.ts` 的 `openModal`）：`openModal(id)` 等价于 `document.getElementById(id)?.click()`，点击的是 `app/components/Modal/index.tsx` 的 `ModalTemplate` 渲染的隐藏触发按钮。两个 id 的注册点：
 
@@ -102,7 +104,7 @@ setTimeout(() => { fetchStagePreview(true); }, 2000);
 
 id 拼写与挂载位置是隐式约定：改任何一端（id 字符串、GlobalModals 挂载）都会让按钮点击**静默无效**（`?.click()` 吞掉未命中）。另注意 `recordStore.clearActiveRecord` 全仓零调用——举报弹窗关闭后 `activeRecord` 残留，再次打开前若未 `setActiveRecord` 会显示上一张卡。
 
-举报链路的定性：**写入即黑洞**——`ReportModal` 发送的 `stageId` 被后端 `POST /user/feedback` 的 insertOne 字段清单丢弃、`Feedback` 集合全仓库无读取方、成功 toast 承诺的"个人中心回执"对应静态 stub。完整登记见 [known-issues.md](known-issues.md)。
+举报链路的定性：**写入即黑洞**——`Feedback` 集合全仓库无读取方、成功 toast 承诺的"个人中心回执"对应静态 stub。写入侧已修（2026-07-13）：`ReportModal` 按 `{ message, stageId, recordId }` 契约提交、后端 insertOne 落库定位字段（此前 `stageId` 被字段清单丢弃且不提交 recordId）；读取端环节未修。完整登记见 [known-issues.md](known-issues.md)。
 
 ## 5. 主题化静态资源清单与背景立绘非确定性
 
@@ -146,7 +148,7 @@ charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.r
 
 ## 7. `!record` 占位分支与条件 Hook 违规
 
-`RecordCard` 组件体中段有：
+`RecordCard` 组件体中段（全部 Hook 之后）有：
 
 ```
 if (!record) {
@@ -157,4 +159,4 @@ if (!record) {
 两个事实：
 
 1. **现有调用链不可达**：三个入口都在 `records.map` 中渲染卡片，`record` 恒有值。这个灰色占位块看上去是为"骨架屏/加载占位"预留的，但从未被启用。
-2. **延迟引爆的 Hook 违规**：该 early return **之后**还有 `useState(singleRow)`、`useState(doubleRowPatchNum)`、`useEffect`（resize 监听）三次 Hook 调用。一旦未来某个调用点真的传入 `undefined` 再变为有值（占位 → 数据到达），同一组件实例两次 render 的 Hook 数量不一致，React 直接抛 "Rendered more hooks than during the previous render" 崩溃。**要启用占位分支，必须先把全部 Hook 提到 early return 之前（或拆出占位组件）**。已登记于 [known-issues.md](known-issues.md)。
+2. **Hook 违规已修（2026-07-13）**：该 early return 曾位于 `useState(singleRow)`、`useState(doubleRowPatchNum)`、`useEffect`（resize 监听）三次 Hook 调用**之前**，占位/有值两条渲染路径 Hook 数量不同——一旦调用点让同一实例在 `undefined` 与有值间切换（占位 → 数据到达），React 直接抛 "Rendered more hooks than during the previous render"。现三次 Hook 已全部提到早退之前（初始值以 `record?.team.length ?? 0` 兜底，resize handler 对 `!record` 直接 return），启用占位分支不再需要前置改造。修复状态见 [known-issues.md](known-issues.md)。

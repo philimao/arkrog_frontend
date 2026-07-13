@@ -31,7 +31,7 @@ sources:
 
 > ⚠️ **两条阅读前提**
 >
-> 1. **本篇按本地 HEAD 现行代码成文**。后端 `routers/record.js` 的服务端守卫与字段白名单、`stagePreviewSingleUpdate` 的缓存修复均在本地 HEAD；线上服务器截至 2026-07-13 仍运行旧提交 3b04de7（不含上述修复），线上实际行为差异统一登记在 [known-issues.md](known-issues.md)。
+> 1. **本篇按本地 HEAD 现行代码成文**。后端 `routers/record.js` 的服务端守卫与字段白名单、`stagePreviewSingleUpdate` 的缓存修复均在本地 HEAD；正文其余标注"2026-07-13 修复/补"的行为（举报契约落库、删除级联清理收藏、`latestRecordIds` 失效、提交/删除 try/catch 等）同属本地 HEAD——**以下修复均未部署**：线上服务器截至 2026-07-13 仍运行旧提交 3b04de7，线上实际行为差异统一登记在 [known-issues.md](known-issues.md)。
 > 2. stage-preview 写路径曾在 fc2f75f（2025-11-14）~790afd6（2026-07-13）区间断裂；本地 HEAD 已修复，线上待部署且 Mongo 数据待回填，回填流程见 [07-ops-runbook.md](07-ops-runbook.md)。
 
 ## 1. 生命周期总览
@@ -39,12 +39,12 @@ sources:
 ```
 提交（POST /record/submit，Level 3+）
   └─ setRaiderInfo 解析外链 → 落库即发布（无审核、无去重、无审计）
-       └─ 非阻塞触发 stagePreviewSingleUpdate（最少人数重算）
+       └─ 非阻塞触发 stagePreviewSingleUpdate（最少人数重算）＋ 失效 latestRecordIds 缓存
 展示（POST /record 关卡页 / POST /record/ids 首页与收藏页）
 收藏（POST /user/favorite，写 Users.favorite）
 举报（POST /user/feedback，写入即黑洞，见第 8 节）
 删除（POST /record/delete，Level 4+，硬删除）
-  └─ 再次触发 stagePreviewSingleUpdate；其余关联数据一概不清理（见第 6 节矩阵）
+  └─ 级联清理全体 Users.favorite ＋ 再次触发 stagePreviewSingleUpdate ＋ 失效 latestRecordIds（完整矩阵见第 6 节）
 ```
 
 关键定性：**提交即发布**。`routers/record.js` 的 `/submit` 处理器解析成功后直接 `insertOne`，没有待审队列、没有内容审核、没有重复提交检测（同一 URL 可反复落库）、没有审计日志。这是有意为之的轻流程（补记为模块 ADR 0001），代价由删除权限（Level 4+）与举报入口兜底——而举报链路目前是黑洞（第 8 节）。
@@ -123,7 +123,7 @@ sources:
 3. 白名单拷贝 + 写入 session 派生字段与时间戳。
 4. `await setRaiderInfo(record)`；`record.data.code !== 0` → 以解析器的中文 message 抛 400。
 5. `insertOne` → 重新查询该关卡全部记录并作为响应返回（前端 `setRecords` 直接整表替换）。
-6. **非阻塞**触发 `stagePreviewSingleUpdate(stageId)`，`.catch(console.error)` 吞错——重算失败不影响提交成功。
+6. **非阻塞**触发 `stagePreviewSingleUpdate(stageId)`，`.catch(console.error)` 吞错——重算失败不影响提交成功；同款非阻塞地 `dataCacheManager.del("latestRecordIds")` 失效首页"最新"缓存（2026-07-13，下次请求懒加载重建）。
 
 ### 4.1 setRaiderInfo 的解析分派
 
@@ -154,7 +154,7 @@ sources:
 
 `parseYoutubeURL`：URL 含 `"undefined"` 或无 `?v=` 参数 → 404 `"Invalid URL"`；视频/频道查不到 → 400 `"Failed to parse video info"` / `"Failed to parse channel info"`。**线上两份 .env 均未配置 `YoutubeToken`**，googleapis 返回错误 JSON 后 `listData.items[0]` 取值抛 TypeError，落入异常分支 → 400 堆栈原文——即**线上目前无法提交 YouTube 记录**（[known-issues.md](known-issues.md)）。
 
-> ⚠️ 这些中文提示的送达链路是断的：`BusinessError` 以 JSON `{success:false,message}` 返回，`app/utils/tools.ts` 的 `_post` 对非 2xx 抛 `Error(响应原文)`，而 `SubmitRecordForm.handleSubmit` 与 `RecordCard.handleDeleteRecord` 都**没有 try/catch**——错误变成 unhandled rejection，用户看不到任何提示、Modal 不关闭。对照组：`ReportModal`、`handleStarRecord` 有 try/catch 并 toast。登记见 [known-issues.md](known-issues.md)。
+> ⚠️ 这些中文提示的送达链路：`BusinessError` 以 JSON `{success:false,message}` 返回，`app/utils/tools.ts` 的 `_post` 对非 2xx 抛 `Error(响应原文)`；`SubmitRecordForm.handleSubmit` 与 `RecordCard.handleDeleteRecord` 已补 try/catch（2026-07-13），失败以 `toast.error` 呈现原文、弹窗与已填内容保留。线上旧前端（待部署）仍无 try/catch——错误变成 unhandled rejection，用户看不到任何提示、Modal 不关闭。登记见 [known-issues.md](known-issues.md)。
 
 ## 5. 读取端点契约
 
@@ -175,29 +175,29 @@ sources:
 
 ## 6. 删除链路与副作用矩阵
 
-`POST /record/delete`：`{_id}` 缺失 → 404；处理器内二次守卫 `session.level >= 4`；`findOne` 确认存在（否则 404 `"未找到记录"`）后 `deleteOne` **硬删除**，再非阻塞触发 `stagePreviewSingleUpdate(record.stageId)`。
+`POST /record/delete`：`{_id}` 缺失 → 404；处理器内二次守卫 `session.level >= 4`；`findOne` 确认存在（否则 404 `"未找到记录"`）后 `deleteOne` **硬删除**，随后对**全体用户** `Users.favorite` 级联 `$pull` 该记录条目并同步当前请求 session（2026-07-13），再非阻塞触发 `stagePreviewSingleUpdate(record.stageId)` 与 `latestRecordIds` 失效。
 
-前端入口是 `app/components/RecordCard/RecordCard.tsx` 的 `handleDeleteRecord`：`window.confirm` → `_post` → `setRecords?.(...)` 本地剔除 → `setTimeout(2000)` 后 `fetchStagePreview(true)`（第 10 节）。
+前端入口是 `app/components/RecordCard/RecordCard.tsx` 的 `handleDeleteRecord`：`window.confirm` → `_post`（失败 `toast.error` 后中止，见第 4.2 节警示）→ `setRecords?.(...)` 本地 `filter` 剔除 → 删除者自己收藏过该记录时调 `/user/favorite` remove 自清（失败仅 `toast.warning`，不阻断）→ `setTimeout(2000)` 后 `fetchStagePreview(true)`（第 10 节）。
 
 | 关联数据 | 删除时是否清理 | 位置与后果 |
 |---|---|---|
 | `Records` 文档 | ✓ 硬删除，无软删/回收站 | `routers/record.js` `/delete` |
 | stagePreview 最少人数徽标 | ✓ 触发单关重算（fire-and-forget） | `utils/appData/stagePreview.js` 的 `stagePreviewSingleUpdate`；fc2f75f~790afd6 区间 100% TypeError 被吞，本地 HEAD 已修复，**线上待部署**（[07-ops-runbook.md](07-ops-runbook.md)） |
-| `Users.favorite` 中指向该记录的条目 | ✗ 永久残留 | 悬挂收藏，完整链路见第 7 节 |
-| 各在线 session 的 `favorite` 副本 | ✗ | session 仅在登录与 `/user/favorite` 操作时刷新 |
-| appdata `latestRecordIds` 缓存 | ✗ 不失效 | `utils/dataCache.js` 的 `getOrLoadAppData` 为**永久缓存**，删除"最新记录"后首页仍请求已删 id（`/record/ids` 静默少返回→该卡片消失），直至后端重启或手动清缓存 |
-| 前端本地记录列表 | 视 `setRecords` 是否传入 | 首页 `IndexRelicFree` 不传 `setRecords` → 删除后 UI 不刷新；另有 `findIndex` 未命中时 `splice(-1, 1)` 误删末元素的隐患（[known-issues.md](known-issues.md)） |
+| `Users.favorite` 中指向该记录的条目 | ✓ 级联清理（本地 HEAD，2026-07-13；线上待部署） | `/delete` 对**全体用户** `$pull` 该条目（favorite 元素 `_id` 按字符串匹配）；此前永久残留形成悬挂收藏（历史链路与存量见第 7 节） |
+| 各在线 session 的 `favorite` 副本 | 部分：仅当前请求 session 同步（本地 HEAD） | 其他在线 session 仍待登录与 `/user/favorite` 操作时刷新 |
+| appdata `latestRecordIds` 缓存 | ✓ 删除后失效（本地 HEAD，2026-07-13；线上待部署） | `/delete` 非阻塞 `dataCacheManager.del("latestRecordIds")`，下次请求懒加载重建；此前为**永久缓存**不失效，删除"最新记录"后首页仍请求已删 id 直至后端重启 |
+| 前端本地记录列表 | ✓ 三个入口均即时剔除（首页 `IndexRelicFree` 于 2026-07-13 补传 `setRecords`，此前删除后 UI 不刷新） | 本地剔除已改为 `filter`（2026-07-13，此前 `findIndex` 未命中时 `splice(-1, 1)` 会误删末元素）；首页只剔除当前标签页列表，同一记录在"推荐"/"最新"另一标签页的卡片残留至刷新（[known-issues.md](known-issues.md)、[04-record-card-and-display.md](04-record-card-and-display.md)） |
 
 ## 7. 悬挂收藏完整链路
 
 1. **写入**：`RecordCard.handleStarRecord` → `POST /user/favorite`（add）→ `Users.favorite` 追加 `{_id, type: "record"}`。
-2. **记录被删**：`/record/delete` 不触碰 `Users.favorite` → 条目悬挂。
+2. **记录被删**：`/record/delete` 曾不触碰 `Users.favorite` → 条目悬挂。本地 HEAD（2026-07-13）已在删除时对全体用户级联 `$pull`（第 6 节矩阵），本链路对**线上部署前的删除**与**存量悬挂条目**仍然成立。
 3. **读取**：收藏页 `Home/Favorite` 从 `userInfo.favorite` 提取 recordIds → `POST /record/ids` → 悬挂 id 被三重静默之一（缺失不报错）吞掉，返回数比请求数少。
-4. **无清理出口**：
-   - 服务端没有任何悬挂清理任务或删除时的级联 `$pull`；
+4. **存量无清理出口**：
+   - 服务端没有针对存量悬挂条目的清理任务（删除时级联 `$pull` 只覆盖此后的删除）；
    - 前端取消收藏的唯一入口是已渲染卡片上的星标（`handleStarRecord` 的 remove 分支），而悬挂记录**永远不会渲染成卡片**——用户无法取消收藏一条已删除的记录；
-   - `/user/favorite` 的 remove 分支本身是无条件 `$pull`（第 8 节），技术上可清理悬挂条目，但没有 UI 调用它。
-5. **叠加缺陷放大**：收藏页 `mergeArray`（`app/utils/tools.ts`）是从索引 0 起的按位覆盖，少返回导致页内错位；分页控件因 `title === "record"` 与实际标题 `"记录收藏"` 的字符串比较永不渲染（只能看前 60 条）；若前 60 个收藏全部悬挂，`records` 恒为空触发 effect 无限重复 POST。这些缺陷的登记与处置见 [known-issues.md](known-issues.md)。
+   - `/user/favorite` 的 remove 分支本身是无条件 `$pull`（第 8 节），技术上可清理悬挂条目，但除删除者删除时的自清（第 6 节）外没有 UI 调用它。
+5. **叠加缺陷放大（本地 HEAD 已修，线上待部署）**：收藏页曾有三连缺陷——`mergeArray` 从索引 0 起按位覆盖导致页内错位、分页控件因 `title === "record"` 与实际标题 `"记录收藏"` 比较永不渲染（只能看前 60 条）、预载批次全部悬挂时 effect 无限重复 POST；现收藏页已改为按请求 id 槽位合并（悬挂 id 留空缺卡）+"已请求页"集合去重，分页按 navs 稳定 key 渲染。登记与修复状态见 [known-issues.md](known-issues.md)。
 
 ## 8. /user/favorite 与 /user/feedback 契约
 
@@ -205,14 +205,14 @@ sources:
 
 ### 8.1 POST /user/favorite
 
-- 请求：`{ operate: "add" | "remove", item: { _id, type: "record" | "seed" } }`；参数非法 → 400 `"非法的参数"`。
+- 请求：`{ operate: "add" | "remove", item: { _id, type: "record" | "seed" } }`；参数非法 → 400 `"非法的参数"`（含 add 分支的非法 ObjectId 字符串——2026-07-13 起处理器包 `asyncHandler` 并把 BSONError 转 400，不再无响应挂起）。
 - **add**：先在 `Records`/`Seeds` 中确认目标存在（不存在 → 404），再 `$addToSet`（天然去重）。
-- **remove**：**无条件 `$pull`**，不校验存在性——这是清理悬挂条目在服务端唯一可行的写路径，但前端无入口（第 7 节）。
+- **remove**：**无条件 `$pull`**，不校验存在性——这是清理悬挂条目在服务端唯一可行的写路径，但除删除者删除时的自清外前端无入口（第 7 节）。
 - 响应：重新查询后的完整 `favorite` 数组，同时刷新 `req.session.favorite`；前端 `handleStarRecord` 以响应整体覆盖 `userInfo.favorite`。
 
 ### 8.2 POST /user/feedback（举报黑洞）
 
-`ReportModal`（`app/modules/RecordDisplay/ReportModal.tsx`）提交 `{ stageId, message }`，但该端点的 `insertOne` 字段清单只取 `userId`/`username`/`email`/`message`/`date_created`——**`stageId` 被静默丢弃**，举报无法定位到具体记录（message 里用户自己写了才有线索）；`Feedback` 集合全仓库零读取方；成功 toast 承诺的"反馈回执请在个人中心中查看"对应 `modules/Home/Message` 静态 stub。定性为**写入即黑洞**，四重断裂详情见 [known-issues.md](known-issues.md)。（同端点还被 `ContactUsModal` 用作联系表单，那个调用只发 `{message, email}`，与后端字段吻合。）
+`ReportModal`（`app/modules/RecordDisplay/ReportModal.tsx`）按契约提交 `{ message, stageId, recordId }`（recordId 为被举报记录 `_id` 字符串），端点 `insertOne` 落库 `userId`/`username`/`email`/`message`/`stageId`/`recordId`/`date_created`（本地 HEAD，2026-07-13；此前 `stageId` 被静默丢弃且不提交 recordId，举报无法定位到具体记录）。黑洞的其余环节未修：`Feedback` 集合全仓库零读取方；成功 toast 承诺的"反馈回执请在个人中心中查看"对应 `modules/Home/Message` 静态 stub。登记详情见 [known-issues.md](known-issues.md)。（同端点还被 `ContactUsModal` 用作联系表单，那个调用只发 `{message, email}`，与后端字段吻合。）
 
 ## 9. 权限对照表
 
@@ -242,4 +242,4 @@ setTimeout(() => fetchStagePreview(true), 2000)
 
 1. **2000ms 是经验值**，没有任何响应驱动的完成确认；重算慢于 2 秒时刷回旧数据（决策补记与推翻条件见模块 ADR 0006，修复断裂后再裁决是否改为响应驱动）。
 2. 重算失败时该契约**静默落空**——fc2f75f~790afd6 断裂期间即如此，线上在部署修复并按 [07-ops-runbook.md](07-ops-runbook.md) 回填前仍然如此。
-3. `_post` 抛错时（无 try/catch）根本执行不到 `setTimeout`，本地列表与预览都不会刷新。
+3. `_post` 抛错时执行不到 `setTimeout`（2026-07-13 起由 try/catch 捕获并 toast；线上旧前端是 unhandled rejection），本地列表与预览都不会刷新。

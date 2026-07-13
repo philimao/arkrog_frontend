@@ -258,7 +258,8 @@ export default function TournamentForm({
 
         // 对于Bilibili链接，进行格式化处理
         if (formData.playback) {
-          formData.playback = await URLValidation(formData.playback);
+          const validatedPlayback = await URLValidation(formData.playback);
+          if (validatedPlayback) formData.playback = validatedPlayback;
         }
         for (let player of formData.players!) {
           // 过滤掉不在当前赛事阶段的赛程
@@ -277,9 +278,12 @@ export default function TournamentForm({
             }
 
             if (game.customStageValues.playback) {
-              game.customStageValues.playback = await URLValidation(
+              const validatedPlayback = await URLValidation(
                 game.customStageValues.playback,
               );
+              if (validatedPlayback) {
+                game.customStageValues.playback = validatedPlayback;
+              }
             }
           }
         }

@@ -1,11 +1,20 @@
 ---
-last-verified: 2026-06-11
+last-verified: 2026-07-13
 sources:
   - app/modules/Tool/DamageCalculator/utils.ts
   - app/modules/Tool/DamageCalculator/calculator/buff-context.ts
   - app/modules/Tool/DamageCalculator/calculator/impls.ts
   - app/types/gameData.ts
+  - app/types/recordType.ts
+  - app/types/constant.ts
   - app/stores/gameDataStore.ts
+  - app/stores/relicFreeStore.ts
+  - app/stores/appDataStore.ts
+  - app/utils/stageSelector.ts
+  - app/routes.ts
+  - ../arkrog_backend/routers/record.js
+  - ../arkrog_backend/utils/appData/shared.js
+  - ../arkrog_backend/utils/appData/stageEnemies.js
 ---
 
 # 术语表（Glossary）
@@ -35,7 +44,26 @@ sources:
 | 模组 | uniEquip | `uniequip_table` | 干员模组，提供属性与天赋强化 | `app/stores/gameDataStore.ts` |
 | 解包数据 | ArknightsGameData | `DATA_PATH` 指向的仓库 | 上游开源解包仓库，全部游戏数据的源头 | [data-pipeline.md](data-pipeline.md) |
 
-## 二、项目域名词
+## 二、无藏收录域名词
+
+无藏收录模块的正文文档见 [app/modules/RelicFree/docs/](../app/modules/RelicFree/docs/README.md)，本表只对齐名词。
+
+| 中文名 | 代码标识 | 上游字段 / id 形态 | 一句话定义 | 权威源码 |
+|---|---|---|---|---|
+| 无藏 | relic-free / RelicFree | 路由 `/relic-free`（关卡页 `/relic-free/:stageId`） | 不携带藏品通关的挑战玩法；站内收录其通关记录的板块（导航标题「穷集一生」，副标题「无藏收录」） | `app/routes.ts`、[模块 01](../app/modules/RelicFree/docs/01-architecture-and-data-flow.md) |
+| 记录 | `RecordType` / Mongo `Records` 集合 | — | 一条无藏通关记录（视频链接 + 队伍 + 作战类型 + 难度），提交即发布、删除为硬删除 | `app/types/recordType.ts` `RecordType`、[模块 02](../app/modules/RelicFree/docs/02-record-lifecycle-and-schema.md) |
+| 攻略者 | raider（`raider`/`raiderImage`/`raiderLink`） | B站/YouTube 视频作者 | 记录视频的作者，由后端解析视频链接派生，**与提交人是两个角色** | `arkrog_backend/utils/record.js` `setRaiderInfo` |
+| 提交人 | submitter（`submitter`/`submitterId`） | session 的 username/userId | 提交该记录的站内用户（Level ≥ 3，语义见 `arkrog_backend/docs/Permission.md`），服务端从 session 写入、客户端不可指定 | `arkrog_backend/routers/record.js` |
+| 关卡预览 | `StagePreview` / `StagePreviewData` | Mongo `Data.stage-preview` | 记录派生的每关预览表；`normalNum`/`eliteNum`/`boatNum` = 该作战类型在**最高已有记录难度**下的最少人数（非全难度最小值），另含面包屑 | `app/types/gameData.ts` `StagePreviewData`、[模块 06 第 4 节](../app/modules/RelicFree/docs/06-data-pipeline.md) |
+| 敌人预览 | stageEnemies | Mongo `Data.stage-enemies` | 每关敌人名称列表（`Record<stageId, string[]>`），头像由展示端按名称拼外链 | `arkrog_backend/utils/appData/stageEnemies.js` `stageEnemiesUpdate` |
+| 作战类型 | `StageTypes`（normal/elite/boat） | 记录字段 `type` | 普通 / 紧急 / 带船三种作战类型，预览徽标与最少人数按此分桶 | `app/types/constant.ts` `StageTypes` |
+| 难度 | `StageLevels`（`N0`/`N15`/`N18`） | 记录字段 `level` | 收录的三档难度；各主题上限见 `topicMaxLevels`（ro3/ro5 至 N15） | `app/types/constant.ts` `StageLevels`/`topicMaxLevels` |
+| 异格 | — | Boss 关 id 的 `_[a-z]` 尾缀（如 `ro4_b_5_d`） | 同一 Boss 的变体形态：前后端数量表均"异格记为同一个"，筛选器按 `stage.name` 去重只显示一个，后端面包屑据尾缀加「异格」前缀 | `app/utils/stageSelector.ts` `navOfZone`、[模块 03](../app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) |
+| 层名 | `navOfZone` 各组 `name` | — | 无藏关卡导航的分组名：险路恶敌（大 Boss 关，编号大于 `numOfMinorBoss`）、第 N 层、是非境 / 今昔境（`sv` 关按 `dlc1` 尾缀分流）等 | `app/utils/stageSelector.ts` `navOfZone`，规则表见[生成物](../app/modules/RelicFree/docs/generated/stage-filter-rules.md) |
+| 收录原则 | inclusionPrinciple | Mongo `Data` 集合 `inclusion-principle` 文档 | 站方收录标准的 Markdown 正文，经 `GET /app/bundle` 下发、全局弹窗展示；**正文在数据库里，仓库文档覆盖不到**，本表只登记其存在与下发链 | `app/stores/appDataStore.ts`、`app/components/Modal/InclusionPrincipleModal.tsx` |
+| 悬挂收藏 | — | `Users.favorite` 残留条目 | 收藏指向已被硬删除记录的条目：删除记录不清理收藏，永久残留且无 UI 清理入口 | [模块 02 第 7 节](../app/modules/RelicFree/docs/02-record-lifecycle-and-schema.md)、[known-issues](../app/modules/RelicFree/docs/known-issues.md) |
+
+## 三、项目域名词
 
 | 名词 | 含义 | 源码 |
 |---|---|---|
@@ -47,7 +75,7 @@ sources:
 | TopicSpec / EnemySpec | 主题特殊机制 / 敌人特殊词条的 UI 配置 | [模块 05](../app/modules/Tool/DamageCalculator/docs/05-topic-spec-and-enemy-spec.md) |
 | 伪黑板 | TopicSpec/EnemySpec 配置里直接写 BuffContext 槽位路径（如 `in_game_buff_final_mul.enemy_max_hp`）的手写"黑板"，与上游解包黑板不是同一套语义 | [模块 05](../app/modules/Tool/DamageCalculator/docs/05-topic-spec-and-enemy-spec.md) |
 
-## 三、计算域名词（伤害计算器）
+## 四、计算域名词（伤害计算器）
 
 | 名词 | 含义 | 深入 |
 |---|---|---|
@@ -62,7 +90,7 @@ sources:
 | union / max | 概率并集 `1-∏(1-x)`（闪避、局内敌减伤）/ 取最大（局外敌减伤"蛋"类） | `calculator/ast/index.ts` |
 | 期望公式 vs 帧模拟 | 生产路径是 charImpl 的期望公式；帧模拟是未启用的预留方向 | [模块 08](../app/modules/Tool/DamageCalculator/docs/08-simulate-and-legacy.md) |
 
-## 四、消歧：「黑板」的两个含义 ⚠️
+## 五、消歧：「黑板」的两个含义 ⚠️
 
 "黑板"在本系统里指两个**完全不同**的东西，源码注释与文档里常混用，务必区分：
 
@@ -71,7 +99,7 @@ sources:
 
 > 一句话同时出现二者：**"独立黑板（RelicBlackboard）的注册键，取自该 buff 的 blackboard（BlackboardData）中那个 `key === 'key'` 的词条的 `valueStr`。"**
 
-## 五、buff.key 前缀语义速查
+## 六、buff.key 前缀语义速查
 
 `RelicBuff.key` 的前缀决定它怎样被分发；blackboard 词条里也有几个特殊 key。判定逻辑见 `utils.ts` 与 `calculator/blackboard.ts`。
 

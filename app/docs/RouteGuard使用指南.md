@@ -1,5 +1,7 @@
 # 路由守卫使用指南
 
+> ⚠️ **本文已过时（2026-07-13 核实）**：本指南描述的 RouteGuard / routePermissions 机制（`app/components/RouteGuard.tsx`、`app/components/GlobalRouteGuard.tsx`、`app/hooks/useRouteGuard.ts`、`app/config/routePermissions.ts`）**从未在生产路由中启用，属死代码**——`routePermissions.ts` 的任何配置都不产生实际效果，勿据本文理解或修改站点权限。现行权限机制（真实守卫清单、level 0–6 语义）见 [docs/auth-and-permissions.md](../../docs/auth-and-permissions.md)。本文过渡期后删除。
+
 这个路由守卫系统提供了类似Vue Router `beforeEach` 的功能，让你可以在用户访问路由前进行权限检查。
 
 ## 功能特性

@@ -1,0 +1,362 @@
+/**
+ * damage-calculator.mjs — 伤害计算器清单文档生成器
+ *
+ * 从源码提取三份清单，写入 app/modules/Tool/DamageCalculator/docs/generated/：
+ *   1. relic-blackboard-registry.md — 已注册独立黑板 key 清单
+ *   2. allowed-keys.md              — utils.ts 各名单（白名单/黑名单/局内名单/层数联动组）
+ *   3. char-impl-coverage.md        — 干员 × 职业目录 × 已实现技能 case 覆盖矩阵 + black-list 禁用技能
+ *
+ * 运行：yarn docs:gen（全量）或 yarn docs:gen:damage-calculator（仅本模块）。
+ * 提取规则见 scripts/docs-gen/lib.mjs 头注释。
+ */
+
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
+import {
+  ROOT,
+  cmp,
+  docCommentAbove,
+  docHeader,
+  extractBalancedBlock,
+  mdTable,
+  parseArrayEntries,
+  parseObjectEntries,
+  read,
+  walkFiles,
+  writeDoc,
+} from "./lib.mjs";
+
+// ---------------------------------------------------------------------------
+// 路径
+// ---------------------------------------------------------------------------
+
+const MODULE_DIR = "app/modules/Tool/DamageCalculator";
+const OUT_DIR = path.join(ROOT, MODULE_DIR, "docs", "generated");
+
+const SRC = {
+  blackboard: `${MODULE_DIR}/calculator/blackboard.ts`,
+  utils: `${MODULE_DIR}/utils.ts`,
+  charImplDir: `${MODULE_DIR}/calculator/charImpl`,
+  calcIndex: `${MODULE_DIR}/calculator/index.ts`,
+  blackList: `${MODULE_DIR}/black-list.ts`,
+};
+
+// ---------------------------------------------------------------------------
+// ① relic-blackboard-registry.md
+// ---------------------------------------------------------------------------
+
+function genRelicBlackboardRegistry() {
+  const src = read(SRC.blackboard);
+  const lines = src.split("\n");
+  const active = [];
+  const commented = [];
+  lines.forEach((line, idx) => {
+    const t = line.trim();
+    let m;
+    if ((m = t.match(/^registerRelicBlackboard\(\s*"([^"]+)"/))) {
+      active.push({ key: m[1], doc: docCommentAbove(lines, idx) });
+    } else if ((m = t.match(/^\/\/\s*registerRelicBlackboard\(\s*"([^"]+)"/))) {
+      commented.push({ key: m[1], doc: docCommentAbove(lines, idx) });
+    }
+  });
+  if (active.length === 0) throw new Error(`提取失败：${SRC.blackboard} 中未找到任何 registerRelicBlackboard 调用`);
+
+  const dup = active.map((e) => e.key).filter((k, i, arr) => arr.indexOf(k) !== i);
+  if (dup.length) console.warn(`[docs-gen] 警告：独立黑板 key 重复注册：${[...new Set(dup)].join(", ")}`);
+
+  const parts = [docHeader([SRC.blackboard])];
+  parts.push("# 独立黑板注册清单");
+  parts.push("");
+  parts.push(
+    `本清单由 \`scripts/docs-gen.mjs\` 从 \`calculator/blackboard.ts\` 顶层的 \`registerRelicBlackboard("…", { isActive, apply })\` 字面量调用提取，按源码出现顺序排列；行首被 \`//\` 注释掉的调用不计入。注册 key 对应 buff 黑板中 \`key === "key"\` 词条的 \`valueStr\`，决策树与接入模板见 [03-relic-adaptation-guide.md](../03-relic-adaptation-guide.md)。`,
+  );
+  parts.push("");
+  parts.push(
+    "> ⚠️ 未注册的 key 会静默返回空实现（no-op，告警代码被注释），不会报错。新藏品若需要独立黑板而未注册，表现为“看似生效实际无效果”。",
+  );
+  parts.push("");
+  parts.push(
+    mdTable(
+      ["#", "黑板 key", "源码注释", "注册处"],
+      active.map((e, i) => [i + 1, `\`${e.key}\``, e.doc, "calculator/blackboard.ts"]),
+    ),
+  );
+  parts.push("");
+  parts.push(`**已注册总数：${active.length}**`);
+  if (commented.length) {
+    parts.push("");
+    parts.push("## 已注释停用的注册（不生效，仅备查）");
+    parts.push("");
+    parts.push(
+      mdTable(
+        ["黑板 key", "源码注释"],
+        commented.map((e) => [`\`${e.key}\``, e.doc]),
+      ),
+    );
+  }
+  return { file: writeDoc(OUT_DIR, "relic-blackboard-registry.md", parts.join("\n")), count: active.length, commented: commented.length };
+}
+
+// ---------------------------------------------------------------------------
+// ② allowed-keys.md
+// ---------------------------------------------------------------------------
+
+/** 各名单"用途一句话"。新增名单时在此补一行，否则产物中用途为空并触发警告。 */
+const LIST_PURPOSES = {
+  allowedBlackboardKeyMap:
+    "通用黑板 key 白名单兼 UI 中文翻译表：isBlackboardActiveForChar 据此判定 buff 是否含可识别词条，getActiveBlackboard 据此筛选生效词条，parseBlackboardEntry 取中文值做界面展示",
+  allowedBlackboardValueStrs:
+    "源码注释为“buff.key 以 global 开头的，注册的 valueStr”；当前仓库内没有代码消费方（疑似预留/遗留，仅登记备查）",
+  blackboardValueStrsForEnemy:
+    "名义挂在 char/layer_char 前缀 buff 上、实际作用于敌人的 valueStr；isBuffForChar 用它把这类 buff 从干员侧排除",
+  layerValueStrs:
+    "带层数效果的 valueStr；relicHasLayer（app/stores/damageCalculator/calcUtils/relicUtils.ts）据此（连同 layer_char / char_squad 前缀与 key 含 stack）判定藏品是否提供层数输入",
+  inGameRelicNames:
+    "局内生效藏品名单（按藏品中文名匹配）；commonCharRelicBlackboard.apply（calculator/blackboard.ts）把名单内藏品的属性增益计入局内乘区 in_game_buff_mul 而非局外 relic_rune_mul",
+  disallowedRelicNames: "藏品黑名单（价值低或难以计入）；isRelicInBlacklist 按藏品中文名整体禁用",
+  disallowedValueStrs: "valueStr 黑名单；isBuffInBlacklist 按单条 buff 禁用",
+};
+const LAYER_SYNC_PURPOSE =
+  "层数联动组：relicSlice（app/stores/damageCalculator/slices/relicSlice.ts）更新某一藏品层数时，把同组藏品的层数同步为同一值";
+
+function genAllowedKeys() {
+  const src = read(SRC.utils);
+  const lines = src.split("\n");
+
+  // 对象字面量名单
+  const keyMap = parseObjectEntries(
+    extractBalancedBlock(src, /export const allowedBlackboardKeyMap[^=]*=/, "{", "}", "allowedBlackboardKeyMap"),
+  );
+  if (keyMap.length === 0) throw new Error("提取失败：allowedBlackboardKeyMap 为空");
+
+  // 字符串数组名单（按任务范围固定列出）
+  const arrayNames = [
+    "allowedBlackboardValueStrs",
+    "blackboardValueStrsForEnemy",
+    "layerValueStrs",
+    "inGameRelicNames",
+    "disallowedRelicNames",
+    "disallowedValueStrs",
+  ];
+  const arrays = {};
+  for (const name of arrayNames) {
+    arrays[name] = parseArrayEntries(
+      extractBalancedBlock(src, new RegExp(`export const ${name}[^=]*=`), "[", "]", name),
+    );
+  }
+
+  // *_layer_sync 动态发现（新增联动组无需改脚本）
+  const layerSyncNames = [];
+  lines.forEach((line, idx) => {
+    const m = line.match(/^export const (\w+_layer_sync)\b/);
+    if (m) layerSyncNames.push({ name: m[1], doc: docCommentAbove(lines, idx) });
+  });
+  if (layerSyncNames.length === 0) throw new Error("提取失败：未找到任何 *_layer_sync 数组");
+  const layerSync = layerSyncNames.map(({ name, doc }) => ({
+    name,
+    doc,
+    ...parseArrayEntries(extractBalancedBlock(src, new RegExp(`export const ${name}[^=]*=`), "[", "]", name)),
+  }));
+
+  const purposeOf = (name) => {
+    const p = name.endsWith("_layer_sync") ? LAYER_SYNC_PURPOSE : LIST_PURPOSES[name];
+    if (!p) console.warn(`[docs-gen] 警告：名单 ${name} 未在 LIST_PURPOSES 中登记用途，请在 scripts/docs-gen/damage-calculator.mjs 中补充`);
+    return p || "（脚本未登记用途，请在 scripts/docs-gen/damage-calculator.mjs 的 LIST_PURPOSES 中补充）";
+  };
+
+  const parts = [docHeader([SRC.utils])];
+  parts.push("# utils.ts 名单清单");
+  parts.push("");
+  parts.push(
+    "本清单由 `scripts/docs-gen.mjs` 从 `utils.ts` 的各名单字面量提取，条目按源码出现顺序排列；行首被 `//` 注释掉的条目不计入（数量在各表后注明）。名单的判定语义、数值正负双语义与维护规则见 [03-relic-adaptation-guide.md](../03-relic-adaptation-guide.md)。",
+  );
+  parts.push("");
+  parts.push("> ⚠️ 这些名单是手工维护的隐式约定：藏品/通宝改名、新增系列时若漏改名单，匹配会静默失效，没有任何报错。");
+  parts.push("");
+
+  // 总览
+  parts.push("## 总览");
+  parts.push("");
+  const overviewRows = [["allowedBlackboardKeyMap", purposeOf("allowedBlackboardKeyMap"), keyMap.length]];
+  for (const name of arrayNames) overviewRows.push([name, purposeOf(name), arrays[name].entries.length]);
+  for (const ls of layerSync) overviewRows.push([ls.name, `${LAYER_SYNC_PURPOSE}（${ls.doc || ls.name}）`, ls.entries.length]);
+  parts.push(mdTable(["名单", "用途", "条目数"], overviewRows));
+  parts.push("");
+
+  // allowedBlackboardKeyMap
+  parts.push("## allowedBlackboardKeyMap");
+  parts.push("");
+  parts.push(purposeOf("allowedBlackboardKeyMap") + "。");
+  parts.push("");
+  parts.push(mdTable(["key", "中文翻译", "源码行内注释"], keyMap.map((e) => [`\`${e.key}\``, e.value, e.comment])));
+  parts.push("");
+  parts.push(`共 ${keyMap.length} 项。`);
+  parts.push("");
+
+  // 各字符串数组
+  for (const name of arrayNames) {
+    const { entries, commentedOut } = arrays[name];
+    parts.push(`## ${name}`);
+    parts.push("");
+    parts.push(purposeOf(name) + "。");
+    parts.push("");
+    parts.push(
+      mdTable(
+        ["条目", "类型", "源码行内注释"],
+        entries.map((e) => [`\`${e.value}\``, e.dynamic ? "动态（按干员职业拼接）" : "字符串", e.comment]),
+      ),
+    );
+    parts.push("");
+    parts.push(`共 ${entries.length} 项。` + (commentedOut ? `另有 ${commentedOut} 条被注释停用的条目未计入。` : ""));
+    parts.push("");
+  }
+
+  // 层数联动组
+  parts.push("## 层数联动组（*_layer_sync）");
+  parts.push("");
+  parts.push(LAYER_SYNC_PURPOSE + "。各组成员为藏品 ID。");
+  parts.push("");
+  parts.push(
+    mdTable(
+      ["数组名", "系列（源码注释）", "成员藏品 ID"],
+      layerSync.map((ls) => [`\`${ls.name}\``, ls.doc, ls.entries.map((e) => `\`${e.value}\``).join("，")]),
+    ),
+  );
+  parts.push("");
+  parts.push(`共 ${layerSync.length} 组。`);
+
+  return {
+    file: writeDoc(OUT_DIR, "allowed-keys.md", parts.join("\n")),
+    keyMapCount: keyMap.length,
+    arrayCounts: Object.fromEntries(arrayNames.map((n) => [n, arrays[n].entries.length])),
+    layerSyncGroups: layerSync.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ③ char-impl-coverage.md
+// ---------------------------------------------------------------------------
+
+/** 统计单个实现文件中非注释行上的 case "skchr_…" 分支 */
+function collectSkillCases(absFile) {
+  const cases = [];
+  for (const line of readFileSync(absFile, "utf8").split("\n")) {
+    const t = line.trim();
+    if (t.startsWith("//")) continue;
+    for (const m of t.matchAll(/case\s*"(skchr_[^"]+)"/g)) cases.push(m[1]);
+  }
+  return cases;
+}
+
+function parseBlackList(src) {
+  const code = src
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("//"))
+    .join("\n");
+  const ops = [];
+  for (const m of code.matchAll(/(?:"([^"]+)"|([^\s:{},"']+))\s*:\s*\{\s*disabled_skills\s*:\s*\[([^\]]*)\]/g)) {
+    ops.push({ name: m[1] ?? m[2], skills: [...m[3].matchAll(/"([^"]+)"/g)].map((s) => s[1]) });
+  }
+  return ops;
+}
+
+function genCharImplCoverage() {
+  const dirAbs = path.join(ROOT, SRC.charImplDir);
+  const profDirs = [];
+  const rootFiles = [];
+  for (const ent of readdirSync(dirAbs, { withFileTypes: true }).sort((a, b) => cmp(a.name, b.name))) {
+    if (ent.isDirectory()) profDirs.push(ent.name);
+    else if (ent.name.endsWith(".ts")) rootFiles.push(ent.name);
+  }
+  if (profDirs.length === 0) throw new Error(`提取失败：${SRC.charImplDir} 下没有职业子目录`);
+
+  const blackList = parseBlackList(read(SRC.blackList));
+  const blackListByName = new Map(blackList.map((op) => [op.name, op.skills]));
+
+  const rows = [];
+  let charCount = 0;
+  let caseTotal = 0;
+  const implCharNames = new Set();
+  for (const prof of profDirs) {
+    for (const rel of walkFiles(path.join(dirAbs, prof), [".ts"])) {
+      const charName = path.basename(rel, ".ts");
+      const cases = collectSkillCases(path.join(dirAbs, prof, rel));
+      const disabled = (blackListByName.get(charName) || []).filter((s) => cases.includes(s));
+      implCharNames.add(charName);
+      charCount++;
+      caseTotal += cases.length;
+      rows.push([
+        prof,
+        charName,
+        cases.length,
+        cases.map((c) => `\`${c}\``).join("，"),
+        disabled.map((c) => `\`${c}\``).join("，"),
+      ]);
+    }
+  }
+
+  const orphanRows = rootFiles.map((f) => [f, collectSkillCases(path.join(dirAbs, f)).length]);
+  const blackListOnly = blackList.filter((op) => !implCharNames.has(op.name));
+
+  const parts = [docHeader([`${SRC.charImplDir}/`, SRC.calcIndex, SRC.blackList])];
+  parts.push("# 干员实现覆盖矩阵");
+  parts.push("");
+  parts.push(
+    "本清单由 `scripts/docs-gen.mjs` 从 `calculator/charImpl/` 目录结构、各实现文件中非注释行的 `case \"skchr_…\"` 分支，以及 `black-list.ts` 的 `disabled_skills` 提取。注册机制：`calculator/index.ts` 用 `import.meta.glob(\"./charImpl/*/**.ts\")` 自动注册全部子目录实现，**注册键 = 文件名（去 .ts 的干员中文名）**，文件模板与命名铁律见 [04-char-impl-cookbook.md](../04-char-impl-cookbook.md)。",
+  );
+  parts.push("");
+  parts.push("## 覆盖矩阵");
+  parts.push("");
+  parts.push(mdTable(["职业目录", "干员（文件名 = 注册键）", "技能 case 数", "技能 case", "其中被 black-list 禁用"], rows));
+  parts.push("");
+  parts.push(`**干员实现总数：${charCount}；技能 case 总数：${caseTotal}。**`);
+  parts.push("");
+  if (orphanRows.length) {
+    parts.push("## charImpl 根目录游离文件（不会被加载）");
+    parts.push("");
+    parts.push(
+      "> ⚠️ `import.meta.glob(\"./charImpl/*/**.ts\")` 只匹配子目录中的文件，charImpl 根目录下的 .ts 永远不会被自动注册（其内部即使自行调用 registerCalculatorImpl 也因模块未被导入而不执行）。",
+    );
+    parts.push("");
+    parts.push(mdTable(["文件", "技能 case 数"], orphanRows));
+    parts.push("");
+  }
+  parts.push("## black-list.ts 禁用技能（disabled_skills）");
+  parts.push("");
+  parts.push(
+    "UI 层 `OperatorSection/OperatorDisplay.tsx` 按干员中文名读取 `DamageCalculatorSettings.operator[name].disabled_skills`，把对应技能选项置灰；行首被 `//` 注释掉的条目不计入。",
+  );
+  parts.push("");
+  parts.push(
+    mdTable(
+      ["干员", "禁用技能", "有无对应实现文件"],
+      blackList.map((op) => [op.name, op.skills.map((s) => `\`${s}\``).join("，"), implCharNames.has(op.name) ? "有" : "无（仅 UI 禁用）"]),
+    ),
+  );
+  parts.push("");
+  parts.push(`共 ${blackList.length} 名干员、${blackList.reduce((n, op) => n + op.skills.length, 0)} 个禁用技能。`);
+  if (blackListOnly.length) {
+    parts.push("");
+    parts.push(`> 注：${blackListOnly.map((op) => op.name).join("、")} 在 black-list 中但没有 charImpl 实现文件。`);
+  }
+
+  return { file: writeDoc(OUT_DIR, "char-impl-coverage.md", parts.join("\n")), charCount, caseTotal, blackListOps: blackList.length };
+}
+
+// ---------------------------------------------------------------------------
+// 模块入口
+// ---------------------------------------------------------------------------
+
+export function runDamageCalculator() {
+  const r1 = genRelicBlackboardRegistry();
+  const r2 = genAllowedKeys();
+  const r3 = genCharImplCoverage();
+  console.log("[docs-gen] 生成完成：");
+  console.log(`  ${path.relative(ROOT, r1.file)}  （已注册独立黑板 ${r1.count} 个，注释停用 ${r1.commented} 个）`);
+  console.log(
+    `  ${path.relative(ROOT, r2.file)}  （keyMap ${r2.keyMapCount} 项；数组名单 ${Object.entries(r2.arrayCounts)
+      .map(([k, v]) => `${k}=${v}`)
+      .join("，")}；层数联动 ${r2.layerSyncGroups} 组）`,
+  );
+  console.log(`  ${path.relative(ROOT, r3.file)}  （干员实现 ${r3.charCount} 份，技能 case ${r3.caseTotal} 个，black-list 干员 ${r3.blackListOps} 名）`);
+}

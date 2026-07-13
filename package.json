@@ -9,7 +9,9 @@
     "typecheck": "react-router typegen && tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "docs:gen": "node scripts/docs-gen.mjs"
+    "docs:gen": "node scripts/docs-gen.mjs",
+    "docs:gen:damage-calculator": "node scripts/docs-gen.mjs damage-calculator",
+    "docs:gen:relic-free": "node scripts/docs-gen.mjs relic-free"
   },
   "dependencies": {
     "@blocknote/core": "^0.42.3",

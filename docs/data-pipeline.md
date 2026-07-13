@@ -1,16 +1,22 @@
 ---
-last-verified: 2026-06-11
+last-verified: 2026-07-13
 sources:
   - app/stores/gameDataStore.ts
+  - app/stores/relicFreeStore.ts
+  - app/stores/appDataStore.ts
   - app/utils/tools.ts
   - app/modules/Tool/index.tsx
   - app/stores/damageCalculator/calcUtils/gameDataUtils.ts
   - app/stores/damageCalculator/slices/calculatorSlice.ts
   - ../arkrog_backend/util-scripts/updateGameData.ts
   - ../arkrog_backend/routers/gamedata.ts
+  - ../arkrog_backend/routers/relic-free.js
+  - ../arkrog_backend/routers/appData.js
   - ../arkrog_backend/middleware/optimization.js
   - ../arkrog_backend/utils/gamedata/buildGameData.js
   - ../arkrog_backend/utils/gamedata/buildCharacterRawBundle.js
+  - ../arkrog_backend/utils/appData/stagePreview.js
+  - ../arkrog_backend/utils/appData/stageEnemies.js
   - ../arkrog_backend/utils/dataCache.js
 ---
 
@@ -19,6 +25,15 @@ sources:
 本文描述从 ArknightsGameData 解包仓库到前端各消费模块的完整数据链路，以及"上游更新后如何把新数据安全推到前端"的操作步骤。链路跨两个仓库：后端段在 `arkrog_backend`（与本仓库同级目录），前端段在本仓库。游戏名词以[术语表](glossary.md)为准。
 
 > ⚠️ 安全约定：本文及任何文档只允许出现环境变量**名**（`DATA_PATH`、`MONGO_URI`、`ACTIVE_CHARS` 等），严禁把 `.env` 的实际值写入文档或提交记录。
+
+> 🚨 **链路断裂与修复（2026-07-13 勘误）**：本文所述管线中"记录 → stage-preview 重算"与"stage-enemies 重建"两段的写路径曾整体断裂。**断裂存在于后端 `fc2f75f`（2025-11-14）~ `790afd6`（2026-07-13）区间；本地 HEAD 已修复；线上仍运行 `3b04de7`（不含修复），待部署 + 待回填。** 四处断裂一句话摘要：
+>
+> 1. `fc2f75f` 删除 `dataCacheManager` 公有 `get`/`set` 后调用点未迁移——stage-preview 增量重算（提交/删除记录触发）100% TypeError 且被 `.catch(console.error)` 吞掉，admin 全量重算必 500；
+> 2. `stageEnemies.js` 仍从已迁移的旧位置 import `processLevelData`——`updateGameData.ts` 整体无法启动（本文第 3 节脚本在该区间不可用）；
+> 3. `processLevelData` 已改为 async 而调用点未 await；
+> 4. `loadAppDataFromSource` 把 `camelToKebab` 函数当映射表做下标访问，结果恒为 undefined。
+>
+> `790afd6` 修复以上四处（`DataCacheManager` 补公有 `set`、`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时重建面包屑、`stageEnemies.js` 改从 `#utils/gamedata/level.js` 导入并补 await、修正 `camelToKebab` 下标误用）。部署修复后需回填断裂期间未更新的数据：L4 管理员 `POST /admin/calculate-stage-preview` 回填 `Data.stage-preview`，跑 `util-scripts/updateGameData.ts` 重建 `Data.stage-enemies`——完整部署与回填顺序见[无藏运维手册](../app/modules/RelicFree/docs/07-ops-runbook.md)，缺陷登记见[无藏 known-issues](../app/modules/RelicFree/docs/known-issues.md)。
 
 ## 1. 端到端链路图
 
@@ -78,7 +93,7 @@ flowchart LR
 
 注意 `character-raw-bundle`（计算器用的 `character_table`/`skill_table`/`uniequip_table`）**不入 Mongo**：它由 `arkrog_backend/utils/gamedata/buildCharacterRawBundle.js` 的 `buildCharacterRawBundle` 在缓存未命中时即时构建，结果只存 Redis（键 `gamedata:characterRawBundle`），并按 `ACTIVE_CHARS` 白名单裁剪（第 4 节）。
 
-另外两类产物由脚本的第 5、6 步写入 `Data` 集合：`stage-enemies`（关卡敌人预览）与 `stage-preview`（关卡预览，依赖用户记录，可 `--skip-preview` 跳过），服务于无藏记录关卡等展示场景。
+另外两类产物由脚本的第 5、6 步写入 `Data` 集合：`stage-enemies`（关卡敌人预览）与 `stage-preview`（关卡预览，依赖用户记录，可 `--skip-preview` 跳过），服务于无藏收录等展示场景——生产/存储/下发的正文在无藏模块内，本文只做路由（见第 2.5 节）。
 
 ### 2.2 Redis：dataCacheManager 三类前缀
 
@@ -94,7 +109,7 @@ flowchart LR
 
 ### 2.3 HTTP 端点与缓存头
 
-`arkrog_backend/routers/gamedata.ts` 注册的端点，缓存头由 `arkrog_backend/middleware/optimization.js` 的 `strongCacheMiddleware` 统一下发：
+`arkrog_backend/routers/gamedata.ts`、`routers/relic-free.js` 与 `routers/appData.js` 注册的前端数据端点，缓存头由 `arkrog_backend/middleware/optimization.js` 的 `strongCacheMiddleware` 统一下发（`/relic-free/stage-preview` 刻意不挂该中间件，见表内说明）：
 
 | 端点 | 返回内容 | Cache-Control |
 |---|---|---|
@@ -103,6 +118,9 @@ flowchart LR
 | `GET /gamedata/level/:levelId` | 单关详细数据（敌人面板） | `public, max-age=31536000`（**一年**强缓存） |
 | `GET /gamedata/character-raw` | 同 bundle-ext 的干员三表 | `no-cache`（每次条件验证） |
 | `GET /gamedata/autochess` | 自走棋数据 | `no-cache`（开发期临时设置） |
+| `GET /relic-free/bundle` | `character_basic` + `stageEnemies`（无藏，`stagePreview` 不在其中） | `public, max-age=86400`（24 小时强缓存） |
+| `GET /relic-free/stage-preview` | `stagePreview`（用户记录派生的关卡预览） | **无缓存头**（不经 `strongCacheMiddleware`，浏览器每次回源）——与 bundle 的不对称是设计而非疏漏，理由见第 2.5 节链接的模块正文 |
+| `GET /app/bundle` | `inclusionPrinciple`/`recommendRecordIds`/`latestRecordIds`/`charImages` 等站内数据 | `public, max-age=3600`（1 小时强缓存） |
 
 `strongCacheMiddleware` 还会包装 `res.send`，给响应体算 SHA-256 哈希前 8 位作为 ETag 并处理 `If-None-Match` 304。`level/:levelId` 路由内虽显式写入 `ETag = levelId`，但常规请求下会被该包装用内容哈希覆盖；仅当请求头带 `Cache-Control: no-cache`（中间件整体跳过）时 `levelId` 才会作为 ETag 发出。无论哪种 ETag，在一年强缓存内浏览器根本不发起再验证，ETag 实际不起作用——后果见第 5 节。
 
@@ -117,6 +135,10 @@ flowchart LR
   `basicLoaded`/`extLoaded` 是**会话内防重复请求标志**：已加载则直接返回，不存在任何"重新拉取"机制。
 - 计算器入口：`app/modules/Tool/index.tsx` 在挂载时 `Promise.all` 两个 fetch，再把结果灌入 calculatorSlice 的 `initStore`（store 架构详见模块文档 [01-architecture](../app/modules/Tool/DamageCalculator/docs/01-architecture.md)）。
 - 关卡懒加载：`app/stores/damageCalculator/calcUtils/gameDataUtils.ts` 的 `loadLevelData` 按需请求 `/gamedata/level/{levelId}`，请求前把 levelId 转小写并把 `/` 替换为 `&&`（后端路由再还原），返回时合并同名同面板敌人；结果缓存在计算器 store 的 `levels` 字段（仅内存，刷新即失）。
+
+### 2.5 无藏收录专有链路（正文在模块内）
+
+`stage-preview`（用户记录派生的关卡预览，整条管线里**唯一混入用户数据的产物**）与 `stage-enemies`（关卡敌人名称表）两份 `Data` 集合产物，以及 `/relic-free/*`、`/app/bundle` 端点族的下发口径、bundle 强缓存 vs stage-preview 无缓存的不对称设计、stage-preview 增量/全量双生产路径与外部素材依赖，正文统一在[无藏模块 06-data-pipeline](../app/modules/RelicFree/docs/06-data-pipeline.md)；重算/回填/危险端点等运维操作见[无藏模块 07-ops-runbook](../app/modules/RelicFree/docs/07-ops-runbook.md)。本文只保留上表的缓存行为登记与文首的断裂勘误警示块，不展开。
 
 ## 3. 后端操作步骤：一键更新脚本
 
@@ -217,7 +239,7 @@ npx tsx util-scripts/updateGameData.ts --skip-preview  # 跳过 stage-preview �
 |---|---|---|---|
 | 新增藏品/通宝 | `yarn update-data`（relics/items 自动入库） | 决定走通用黑板或注册独立黑板；维护各手工名单；未注册前自动置灰 | [03-relic-adaptation-guide](../app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) |
 | 新增干员 | `ACTIVE_CHARS` 加名 + `yarn update-data` | 新建 charImpl 实现并注册 | [04-char-impl-cookbook](../app/modules/Tool/DamageCalculator/docs/04-char-impl-cookbook.md)，后端段见本文第 4 节 |
-| 新增肉鸽主题 | `yarn update-data` 自动入库 topics；`buildGameData` 内 `names_en` 等硬编码数组需手工补一项 | 10+ 文件散点改动 | [new-topic-checklist](../app/modules/Tool/DamageCalculator/docs/new-topic-checklist.md) |
+| 新增肉鸽主题 | `yarn update-data` 自动入库 topics；`buildGameData` 内 `names_en` 等硬编码数组需手工补一项 | 计算器侧与无藏侧各有 10+ 文件散点改动 | 计算器侧 [new-topic-checklist](../app/modules/Tool/DamageCalculator/docs/new-topic-checklist.md)；无藏侧 [new-topic-checklist](../app/modules/RelicFree/docs/new-topic-checklist.md) |
 | 岁时/天象、年代、灵感数值调整 | 无（这些数值不走数据管线） | 手改前端硬编码（WRATH_CONFIG、disasters/fragments 等） | [05-topic-spec-and-enemy-spec](../app/modules/Tool/DamageCalculator/docs/05-topic-spec-and-enemy-spec.md) |
 | 关卡增删、关卡命名模式变化、敌人数值调整 | `yarn update-data` | 核对关卡相关硬编码（无效关卡过滤、带船关、合并特例等） | [version-sensitive-hardcode](../app/modules/Tool/DamageCalculator/docs/version-sensitive-hardcode.md) |
 

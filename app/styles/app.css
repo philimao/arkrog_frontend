@@ -40,7 +40,8 @@
   --container-xl: 1280px;
   --container-2xl: 1280px;
 
-  --aspect-ratio-banner: 96/35;
+  /* Tailwind v4 的 aspect 命名空间是 --aspect-*（--aspect-ratio-* 不会生成 aspect-banner 类） */
+  --aspect-banner: 96 / 35;
 
   --leading-12: 3rem;
 

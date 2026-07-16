@@ -12,7 +12,8 @@ interface STSAuth {
 
 const cos = new COS({
   getAuthorization: async function (options, callback) {
-    _get<STSAuth>("/storage/sts")
+    // 时间戳防 CDN 缓存：临时密钥被缓存会导致签名过期（Request has expired）
+    _get<STSAuth>(`/storage/sts?t=${Date.now()}`)
       .then((data) => {
         if (!data) return;
         callback({

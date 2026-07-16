@@ -61,8 +61,9 @@ export const useStorageStore = create<StorageStore & StorageAction>()(
         const { Region, Bucket, Host } = get();
         if (Region && Bucket && Host) return { Region, Bucket, Host };
         try {
-          const { Region, Bucket, Host } =
-            await _get<StorageStore>("/storage/bucket");
+          const { Region, Bucket, Host } = await _get<StorageStore>(
+            `/storage/bucket?t=${Date.now()}`,
+          );
           set(
             (state) => ({
               ...state,

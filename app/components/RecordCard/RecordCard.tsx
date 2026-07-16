@@ -301,7 +301,7 @@ export default function RecordCard({
               </div>
             </a>
           </div>
-          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px] hidden sm:block text-shadow-lg bg-black/15 p-[2px]">
+          <div className="font-light whitespace-pre-wrap text-[8px] sm:text-[12px] lg:text-[16px] hidden sm:flex w-fit text-shadow-lg bg-black/30 p-[2px]">
             {record.note}
           </div>
         </StyledLeftInfo>

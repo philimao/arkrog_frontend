@@ -103,7 +103,7 @@ export function CommentSection({
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           />
           <button
-            className="px-4 py-2 bg-ak-blue hover:bg-opacity-80"
+            className="px-4 py-2 bg-ak-blue hover:bg-ak-blue/80"
             onClick={handleSubmit}
           >
             提交

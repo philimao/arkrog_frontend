@@ -16,7 +16,7 @@ export default function IndexLayout() {
 
   if (!appDataLoaded) return <Loading />;
   return (
-    <div className="container max-w-xl md:px-10 lg:px-16 xl:px-20 mx-auto">
+    <div className="container md:px-10 lg:px-16 xl:px-20 mx-auto">
       <Banner />
       <MyToolbox />
       <IndexRelicFree />

@@ -381,7 +381,7 @@ export default function TournamentPermission({
               type="button"
               onClick={handleSearch}
               disabled={isSearching || !!selectedUser || !!editingUser}
-              className="px-6 py-2 bg-ak-blue text-black font-medium hover:bg-opacity-80 disabled:bg-mid-gray disabled:text-light-mid-gray disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              className="px-6 py-2 bg-ak-blue text-black font-medium hover:bg-ak-blue/80 disabled:bg-mid-gray disabled:text-light-mid-gray disabled:cursor-not-allowed transition-colors flex-shrink-0"
             >
               {isSearching ? "搜索中..." : "搜索"}
             </button>
@@ -460,7 +460,7 @@ export default function TournamentPermission({
               type="button"
               onClick={handleAddOrUpdatePermission}
               disabled={isSaving || selectedPermissions.length === 0}
-              className="w-full px-4 py-2 bg-ak-blue text-black font-medium hover:bg-opacity-80 disabled:bg-mid-gray disabled:text-light-mid-gray disabled:cursor-not-allowed transition-colors"
+              className="w-full px-4 py-2 bg-ak-blue text-black font-medium hover:bg-ak-blue/80 disabled:bg-mid-gray disabled:text-light-mid-gray disabled:cursor-not-allowed transition-colors"
             >
               {isSaving ? "保存中..." : editingUser ? "更新权限" : "添加权限"}
             </button>

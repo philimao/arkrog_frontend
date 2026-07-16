@@ -34,11 +34,6 @@
   --container-padding-xl: 4rem;
   --container-padding-2xl: 6rem; */
 
-  --container-sm: 786px;
-  --container-md: 992px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1280px;
 
   /* Tailwind v4 的 aspect 命名空间是 --aspect-*（--aspect-ratio-* 不会生成 aspect-banner 类） */
   --aspect-banner: 96 / 35;
@@ -50,25 +45,34 @@
   --shadow-outer-lg: 0 0 10px 2px currentColor;
 }
 
+/* 复刻 v3 container（center + padding + 断点 max-width）。
+   注意：@utility 内嵌 @variant 会导致整个 container 工具类被静默丢弃，必须用 @media */
 @utility container {
+  width: 100%;
   margin-inline: auto;
-  @variant sm {
-    padding-inline: 0.5rem;
+  padding-inline: 0.5rem;
+
+  @media (width >= 640px) {
+    max-width: 640px;
   }
-    
-  @variant md {
+
+  @media (width >= 768px) {
+    max-width: 768px;
     padding-inline: 1rem;
   }
-    
-  @variant lg {
+
+  @media (width >= 1024px) {
+    max-width: 1024px;
     padding-inline: 2rem;
   }
-    
-  @variant xl {
+
+  @media (width >= 1280px) {
+    max-width: 1280px;
     padding-inline: 4rem;
   }
-    
-  @variant 2xl {
+
+  @media (width >= 1536px) {
+    max-width: 1536px;
     padding-inline: 6rem;
   }
 }

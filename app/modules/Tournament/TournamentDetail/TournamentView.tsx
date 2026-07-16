@@ -4,6 +4,7 @@ import { useGameDataStore } from "~/stores/gameDataStore";
 import Loading from "~/components/Loading";
 import type { RogueKey } from "~/types/gameData";
 import Markdown from "~/components/Markdown";
+import CollapsibleContent from "~/components/CollapsibleContent";
 import TournamentInfo from "./TournamentInfo";
 import TournamentRanking from "./TournamentRanking";
 import TournamentFinalResult from "./TournamentFinalResult";
@@ -125,9 +126,11 @@ export default function TournamentView({
           title="比赛规则"
           content={
             tournamentData.rule && (
-              <div className="bg-black-gray-70 p-4">
-                <Markdown>{tournamentData.rule}</Markdown>
-              </div>
+              <CollapsibleContent maxHeightVh={30}>
+                <div className="bg-black-gray-70 p-4">
+                  <Markdown>{tournamentData.rule}</Markdown>
+                </div>
+              </CollapsibleContent>
             )
           }
         />

@@ -606,7 +606,7 @@ function FileEntry({
           ))}
         </Select>
       </StyledSelectPrefix>
-      <td className="h-100 text-center">
+      <td className="text-center">
         <Badge
           color="danger"
           content="过大"

@@ -28,6 +28,11 @@ const triggerConfigs: Record<RogueTopic, { text: string; background: string }> =
     text: "通宝&岁时",
     background: "/images%2Frogue_5%2F%E9%80%9A%E5%AE%9D%E5%B2%81%E6%97%B6.png",
   },
+  // TODO(rogue_6): 黑流树海主题特殊效果(WEATHER 天象 / SCRAP)待建（计算器阶段）；空文案=暂不显示入口
+  [RogueTopic.ROGUE_6]: {
+    text: "",
+    background: "",
+  },
 };
 
 const StyledTopicSpecContainer = styled.div`

@@ -11,6 +11,7 @@ export const numOfMinorBoss = {
   ro3: 3,
   ro4: 3,
   ro5: 3,
+  ro6: 0, // 黑流树海 b_1~6 全部计入险路恶敌（含第3层 b_1~3）
 };
 
 // 定义每层的名称，以及筛选器
@@ -76,6 +77,14 @@ export const navOfZone = [
       const args = stage.id.split("_");
       if (args[1] !== "sv") return false;
       return args.slice(-1)[0] === "dlc1";
+    },
+  },
+  {
+    id: "zone_portal",
+    name: "未萌生的摇篮",
+    filter: (stage: StageData) => {
+      const args = stage.id.split("_");
+      return args[1] === "c"; // 黑流树海 GRID_ZONE 传送门关卡
     },
   },
   {

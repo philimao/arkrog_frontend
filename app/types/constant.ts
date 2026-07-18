@@ -35,4 +35,5 @@ export const topicMaxLevels = {
   [RogueTopic.ROGUE_3]: "N15",
   [RogueTopic.ROGUE_4]: "N18",
   [RogueTopic.ROGUE_5]: "N15",
+  [RogueTopic.ROGUE_6]: "N15",
 };

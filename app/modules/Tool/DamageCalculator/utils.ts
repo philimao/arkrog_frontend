@@ -496,6 +496,9 @@ export const ALL_TOPIC_TECHTREE_BUFF: Record<
     { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
     { label: "1.2", buff: { def: 1.2, atk: 1.2, max_hp: 1.24 } },
   ],
+  [RogueTopic.ROGUE_6]: [
+    { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+  ],
 };
 
 export const professions = [

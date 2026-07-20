@@ -2,7 +2,7 @@ import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buf
 import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
 
 /** @deprecated 使用RogueTopic枚举替代 */
-export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5";
+export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6";
 
 /** 肉鸽主题枚举 */
 export const enum RogueTopic {
@@ -16,6 +16,8 @@ export const enum RogueTopic {
   ROGUE_4 = "rogue_4",
   /** 界园肉鸽 */
   ROGUE_5 = "rogue_5",
+  /** 黑流肉鸽 */
+  ROGUE_6 = "rogue_6",
 }
 
 // 肉鸽主题数据

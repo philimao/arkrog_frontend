@@ -38,7 +38,7 @@ export default function TopicSelector() {
         <ToolSelect<{ id: string; name: string }>
           disallowEmptySelection={true}
           label="肉鸽主题"
-          array={Object.values(topics!).slice(3, 5)}
+          array={Object.values(topics!).slice(3, 6)}
           getKey={(item) => item.id}
           getValue={(item) => item.name}
           selectedKeys={[rogueKey]}

@@ -1,0 +1,4 @@
+allowBuilds:
+  '@heroui/shared-utils': true
+  cos-js-sdk-v5: true
+  esbuild: true

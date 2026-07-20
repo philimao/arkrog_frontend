@@ -1,14 +1,15 @@
-import type {
-  CharData,
-  EnemyData,
-  EnemyInput,
-  LevelData,
-  RelicDataExt,
-  RelicWrapper,
-  RogueKey,
-  StageData,
-  StageOfRogue,
-  ZoneOfRogue,
+import {
+  RogueTopic,
+  type CharData,
+  type EnemyData,
+  type EnemyInput,
+  type LevelData,
+  type RelicDataExt,
+  type RelicWrapper,
+  type RogueKey,
+  type StageData,
+  type StageOfRogue,
+  type ZoneOfRogue,
 } from "~/types/gameData";
 import type { CharInput, RogueInput, SlicedCalcRelicState } from "./calcTypes";
 import type {
@@ -65,48 +66,65 @@ export const dummy: EnemyInput = {
 
 export const initialCalcGameDataState: SlicedCalcGameDataState = {
   rogueInput: {
-    topic: "rogue_5",
-    rogue_1: {
+    topic: RogueTopic.ROGUE_6,
+    [RogueTopic.ROGUE_1]: {
       zone: "zone_1",
       layer: "layer_1",
       difficulty: 0,
       tech: "1",
       relics: [] as string[],
+      stage: "",
+      enemyName: "",
     },
-    rogue_2: {
+    [RogueTopic.ROGUE_2]: {
       zone: "zone_1",
       layer: "layer_1",
       difficulty: 0,
       tech: "1",
       relics: [] as string[],
+      stage: "",
+      enemyName: "",
     },
-    rogue_3: {
+    [RogueTopic.ROGUE_3]: {
       zone: "zone_1",
       layer: "layer_1",
       difficulty: 0,
       tech: "1",
       relics: [] as string[],
+      stage: "",
+      enemyName: "",
     },
-    rogue_4: {
+    [RogueTopic.ROGUE_4]: {
       zone: "zone_5",
       layer: "layer_5",
       difficulty: 18,
-      thoughtLoad: "NORMAL",
       tech: "1.3",
       relics: [] as string[],
-      wraths: [] as string[],
-      coppers: [] as string[],
+      stage: "",
+      enemyName: "",
+      thoughtLoad: "NORMAL",
     },
-    rogue_5: {
+    [RogueTopic.ROGUE_5]: {
       zone: "zone_5",
       layer: "layer_5",
       difficulty: 15,
       tech: "1.2",
       relics: [] as string[],
-      wraths: [] as string[],
-      coppers: [] as string[],
+      stage: "",
+      enemyName: "",
+      wraths: [],
+      coppers: [],
     },
-  } as RogueInput,
+    [RogueTopic.ROGUE_6]: {
+      zone: "zone_1",
+      layer: "layer_1",
+      difficulty: 0,
+      tech: "1",
+      relics: [] as string[],
+      stage: "",
+      enemyName: "",
+    },
+  },
   rogue4_disaster_spec_items: [],
   rogue4_inspiration_spec_items: [],
   rogue5_wrath_spec_items: [],

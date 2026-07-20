@@ -48,13 +48,31 @@ export type DCalculatorActions = SlicedCalcGameDataActions &
   SlicedCalcUIActions &
   SlicedCalcRelicActions;
 
+export type RougeTopicInput = {
+  /** 区域 */
+  zone: string;
+  /** 层数选择 */
+  layer: string;
+  /** 科技树 */
+  tech: string;
+  /** 肉鸽难度 */
+  difficulty: number;
+  /** 关卡id，但似乎从没更新过 */
+  stage: string;
+  /** 敌人名称 */
+  enemyName: string;
+  /** 藏品id列表 */
+  relics: string[];
+}
+
 /** 肉鸽输入数据 */
 export type RogueInput = {
   /** 肉鸽主题 */
   topic: RogueTopic;
-} & Record<
-  RogueKey,
-  {
+  [RogueTopic.ROGUE_1]: RougeTopicInput,
+  [RogueTopic.ROGUE_2]: RougeTopicInput,
+  [RogueTopic.ROGUE_3]: RougeTopicInput,
+  [RogueTopic.ROGUE_4]: {
     /** 区域 */
     zone: string;
     /** 层数选择 */
@@ -75,12 +93,44 @@ export type RogueInput = {
     inspiration?: string;
     /** 年代 */
     disaster?: string;
+  },
+  [RogueTopic.ROGUE_5]: {
+    /** 区域 */
+    zone: string;
+    /** 层数选择 */
+    layer: string;
+    /** 科技树 */
+    tech: string;
+    /** 肉鸽难度 */
+    difficulty: number;
+    /** 关卡id，但似乎从没更新过 */
+    stage: string;
+    /** 敌人名称 */
+    enemyName: string;
+    /** 藏品id列表 */
+    relics: string[];
     /** 岁时 */
     wraths: string[];
     /** 通宝 */
     coppers: string[];
-  }
->;
+  },
+  [RogueTopic.ROGUE_6]: {
+    /** 区域 */
+    zone: string;
+    /** 层数选择 */
+    layer: string;
+    /** 科技树 */
+    tech: string;
+    /** 肉鸽难度 */
+    difficulty: number;
+    /** 关卡id，但似乎从没更新过 */
+    stage: string;
+    /** 敌人名称 */
+    enemyName: string;
+    /** 藏品id列表 */
+    relics: string[];
+  },
+}
 
 export interface SlicedCalcGameDataState {
   /** 肉鸽难度 */

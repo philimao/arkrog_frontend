@@ -3,12 +3,12 @@
  */
 import type {
   TournamentData,
-  TournamentGame,
   TournamentPlayer,
+  TournamentTeam,
 } from "~/types/tournamentsData";
 import { SectionContainer } from ".";
 import React, { useState } from "react";
-import { StarIcon } from "~/components/Icons";
+import { StarIcon, TeamIcon } from "~/components/Icons";
 import TournamentProgress from "./TournamentProgress";
 
 // Common types
@@ -46,11 +46,13 @@ const NavButtons = ({
 // Team components
 const TeamAvatar = ({ avatarUrl }: { avatarUrl: string }) => (
   <div className="flex items-center justify-center">
-    <img
-      src={avatarUrl}
-      alt="team avatar"
-      className="h-16 aspect-square object-contain"
-    />
+    {avatarUrl ? (
+      <img
+        src={avatarUrl}
+        alt="team avatar"
+        className="h-16 aspect-square object-contain"
+      />
+    ) : <TeamIcon className="w-16 h-16 p-2" />}
   </div>
 );
 

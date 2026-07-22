@@ -1475,8 +1475,8 @@ export default function TournamentProgressAccordionItem({
                                             : 0) || 0),
                                       0,
                                     );
-
-                                  return teamPoints || "0";
+                                    
+                                  return Number((teamPoints).toFixed(3)) || "0";
                                 })()}
                                 className={`${inputClassName} text-ak-blue cursor-not-allowed`}
                                 readOnly

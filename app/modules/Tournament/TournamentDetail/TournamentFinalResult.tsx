@@ -330,7 +330,7 @@ export function TournamentFinalResultTeam({
               <div className="flex flex-col">
                 <div className="text-white text-3xl">{team.name}</div>
                 <div className="text-ak-blue text-xl pt-2">
-                  {(final.type === "1on1" ? "队伍积分：" : "") + lastGame.point}
+                  {(final.type === "1on1" ? "队伍积分：" : "") + Number((lastGame.point).toFixed(3))}
                 </div>
               </div>
             </div>

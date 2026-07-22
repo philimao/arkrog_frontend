@@ -1239,7 +1239,7 @@ export function TournamentRankingTeam({
                               rowSpan={players.length}
                               className={`sticky right-0 whitespace-nowrap text-center ${isTopTier || (isOneOnOne && isWinner) ? "bg-[#1c272c]" : "bg-[#212121]"}`}
                             >
-                              {entry[1].point}
+                              {Number(entry[1].point.toFixed(3))}
                             </StyledFinalPoint>
                           )
                         ) : (
@@ -1247,7 +1247,7 @@ export function TournamentRankingTeam({
                             $isTopTier={isTopTier || (isOneOnOne && isWinner)}
                             className="sticky right-0 bg-[#212121] whitespace-nowrap text-center"
                           >
-                            {teamSchedule.get(team!.name)?.point}
+                            {teamSchedule.get(team!.name)?.point ? Number(teamSchedule.get(team!.name)?.point.toFixed(3)) : 0}
                           </StyledFinalPoint>
                         )}
                       </tr>

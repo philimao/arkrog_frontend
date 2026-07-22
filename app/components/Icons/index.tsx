@@ -22,3 +22,4 @@ export * from "./LinkIcon";
 export * from "./InformationIcon";
 export * from "./AttachmentIcon";
 export * from "./AddIcon";
+export * from "./TeamIcon";

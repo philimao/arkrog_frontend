@@ -28,7 +28,7 @@ sources:
 本手册列出新主题（下文以 `rogue_6` 为例）接入伤害计算器的全部前端散点改动，按实施顺序排列。每项标注漏改后的症状——**绝大多数漏改不产生任何报错**，只表现为"功能缺失"或"数值算错"。
 
 > ⚠️ **类型系统在这条链路上基本不兜底。**
-> 全代码库只有两处会因为给 `RogueTopic` 枚举加成员而产生编译错误：`utils.ts` 的 `ALL_TOPIC_TECHTREE_BUFF` 和 `TopicSpecTrigger.tsx` 的 `triggerConfigs`（两者都是不带 `as` 断言的 `Record<RogueTopic, ...>` 字面量，TS 要求枚举键完备）。其余所有 `Record<RogueKey, ...>` 状态都用 `as` 断言伪造了完备性——`calcConstants.ts` 的 `rogueInput` 整体 `as RogueInput`、`stages`/`relicDataMap`/`relicWrapperMap` 等都是 `{} as Record<...>`，`gameDataSlice.ts` 内还有多处 `as never`。**编译通过 ≠ 改全了**，必须逐条核对本清单。
+> 全代码库只有两处会因为给 `RogueTopic` 枚举加成员而产生编译错误：`utils.ts` 的 `ALL_TOPIC_TECHTREE_BUFF` 和 `TopicSpecTrigger.tsx` 的 `triggerConfigs`（两者都是不带 `as` 断言的 `Record<RogueTopic, ...>` 字面量，TS 要求枚举键完备）。其余多处 `Record<RogueKey, ...>` 状态用 `as` 断言伪造了完备性——`calcConstants.ts` 的 `rogueInput` 整体 `as RogueInput`、`stages`/`relics`/`relicUiStateMap` 等都是 `{} as Record<...>`，`gameDataSlice.ts` 内还有多处 `as never`。**编译通过 ≠ 改全了**，必须逐条核对本清单。
 
 > ⚠️ **改了 `CalculatorLocalState` 结构却忘记 bump localStorage 版本号，旧状态会以新结构被读出。**
 > `VersionLocalStoarge.ts` 的 `VersionLocalStorage` 只在版本号不一致时清空存储（见 `init` 方法）；版本号不动而结构变了，老用户浏览器里的旧 JSON 会原样反序列化成新接口的形状——缺失字段是 `undefined`、改了语义的字段带着旧值——全程无报错。详见第 4 步。
@@ -37,7 +37,7 @@ sources:
 
 前端的主题数据全部来自后端 API：`/gamedata/bundle` 提供 `topics`/`zones`/`stages`，`/gamedata/bundle-ext` 提供 `relics`/`items`。新主题上线前先完成后端数据重建（见 [数据管线 Runbook](../../../../../docs/data-pipeline.md)）。
 
-数据到位后，`app/stores/damageCalculator/slices/calculatorSlice.ts` 的 `initStore` 会按 `Object.keys(topics)` 自动遍历所有主题构建 `relicDataMap`/`relicWrapperMap`，并用 `applyAnyRelics` 试算后把未注册黑板的藏品标记 `disabled`——这一段**不需要**为新主题改代码。新主题上线初期藏品全部置灰是预期行为，逐个适配见[藏品接入手册](./03-relic-adaptation-guide.md)。
+数据到位后，`gameDataStore.fetchRelicTopic` 会在用户选择主题时请求对应 `rogue_N.json`；`calculatorSlice.loadRelicTopic` 随后构建该主题的 `relics: Record<string, WrappedRelicItem>` 与独立 `relicUiStateMap`，并用 `applyAnyRelics` 派生 `disabled`。已加载主题保留在内存缓存中，切回时不重复请求。新主题上线初期藏品全部置灰是预期行为，逐个适配见[藏品接入手册](./03-relic-adaptation-guide.md)。
 
 ## 改动总览（按实施顺序）
 
@@ -61,7 +61,7 @@ sources:
 
 ## 1. 类型层：`RogueKey` 与 `RogueTopic`
 
-`app/types/gameData.ts` 中 `RogueKey` 是字符串联合类型（已标 `@deprecated`，让用 `RogueTopic`），`RogueTopic` 是 `const enum`。**两者在代码库中仍然混用**：`RogueInput`、`stages`、`relicDataMap`/`relicWrapperMap`、`gameDataStore` 的 `topics` 等 Record 键用的是 `RogueKey`；`setRogueKey` 参数、`triggerConfigs`、localStorage 的 `rougeTopic` 键用的是 `RogueTopic`。两边都要加。
+`app/types/gameData.ts` 中 `RogueKey` 是字符串联合类型（已标 `@deprecated`，让用 `RogueTopic`），`RogueTopic` 是 `const enum`。**两者在代码库中仍然混用**：`RogueInput`、`stages`、`relics`/`relicUiStateMap`、`gameDataStore` 的 `topics` 等 Record 键用的是 `RogueKey`；`setRogueKey` 参数、`triggerConfigs`、localStorage 的 `rougeTopic` 键用的是 `RogueTopic`。两边都要加。
 
 建议先做这一步：加完 `RogueTopic` 成员后，编译器会在 `ALL_TOPIC_TECHTREE_BUFF`（第 6 步）和 `triggerConfigs`（第 10 步）两处报错，可当作天然的进度锚点——但**仅此两处**，其余靠本清单。
 

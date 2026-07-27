@@ -1,7 +1,7 @@
 import type { SlicedCalcRelicActions, SlicedCalcRelicState } from "../calcTypes";
 import { initialRelicState } from "../calcConstants";
 import type { SliceCreator } from "../calcTypes";
-import type { RelicWrapper } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 
 import {
   assertions_layer_sync,
@@ -20,7 +20,8 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        state.relicWrapperMap[rogueKey][id][key as keyof RelicWrapper] = value as never;
+        // 用户态只允许修改包装字段，原封的 relic/charBuffs 不可写入。
+        state.relics[rogueKey][id][key as keyof Pick<WrappedRelicItem, "layer" | "enable">] = value as never;
       },
       false,
       "updateRelic",
@@ -29,11 +30,11 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        const relicWrappers = state.relicWrapperMap[rogueKey];
-        Object.values(relicWrappers)
-          .filter((relicWrapper) => ids.includes(relicWrapper.id))
-          .forEach((relicWrapper) => {
-            relicWrapper[key as keyof RelicWrapper] = value as never;
+        const relics = state.relics[rogueKey];
+        Object.values(relics)
+          .filter((relic) => ids.includes(relic.id))
+          .forEach((relic) => {
+            relic[key as keyof Pick<WrappedRelicItem, "layer" | "enable">] = value as never;
           });
       },
       false,
@@ -44,12 +45,12 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     set(
       (state) => {
         const rogueKey = state.rogueInput.topic;
-        const relicWrappers = state.relicWrapperMap[rogueKey];
+        const relics = state.relics[rogueKey];
         function updateRelics(ids: string[], key: string, value: number) {
-          Object.values(relicWrappers)
-            .filter((relicWrapper) => ids.includes(relicWrapper.id))
-            .forEach((relicWrapper) => {
-              relicWrapper[key as keyof RelicWrapper] = value as never;
+          Object.values(relics)
+            .filter((relic) => ids.includes(relic.id))
+            .forEach((relic) => {
+              relic[key as keyof Pick<WrappedRelicItem, "layer">] = value as never;
             });
         }
         if (gin_layer_sync.includes(id)) {
@@ -69,7 +70,7 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
         } else if (sizhuke_layer_sync.includes(id)) {
           updateRelics(sizhuke_layer_sync, "layer", layerNumber);
         } else {
-          state.relicWrapperMap[rogueKey][id].layer = layerNumber;
+          state.relics[rogueKey][id].layer = layerNumber;
         }
       },
       undefined,

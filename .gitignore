@@ -5,6 +5,8 @@ node_modules
 # build
 .react-router
 build
+# 由 monorepo 的 relics:export 脚本从 GameData 生成。
+public/data/wrapped-relics
 
 # env
 .env.development

@@ -63,7 +63,7 @@ sources:
 |---|---|---|
 | `charInput` | `calcTypes.ts` 的 `CharInput` | 按**现行**完整结构，含 `name`/`frameIndex`/`charSpec`/`attributeModifier`/`potential`/`skill`/`uniEquip` 等；不要存 `attribute` 终值（重建时算出） |
 | `charData` | `gameData.ts` 的 `CharData` | 干员解包原始数据切片 |
-| `relics` | `(RelicDataExt & RelicWrapper)[]` | 原始藏品数据 + 包装字段（`layer`/`userActive` 等），`buffs` 必须是 `{ key, blackboard }` 原始词条 |
+| `relics` | `WrappedRelicItem[]` | `relic/charBuffs` 保持 GameData 原封对象，用户态只有外层 `layer/enable`；直接 buff 位于 `relic.buffs` |
 | `rogueInput` | `calcTypes.ts` 的 `RogueInput` | 主题/难度/层数/科技树等 |
 | `enemyBase` | `gameData.ts` 的 `EnemyInput` | 嵌套 `attributes` 的敌人基础面板（加成前） |
 | `enemyData` | `gameData.ts` 的 `EnemyData` | 敌人解包原始数据 |

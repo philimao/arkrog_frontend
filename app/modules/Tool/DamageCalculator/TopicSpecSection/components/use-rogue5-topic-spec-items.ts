@@ -1,7 +1,7 @@
 import type { ITopicSpecConfig, ITopicSpecItem } from "../TopicSpecSelector";
-import type { BlackboardData, RelicDataExt, RelicWrapper } from "~/types/gameData";
+import type { BlackboardData, WrappedRelicItem } from "~/types/gameData";
 import { getPath, imageHost } from "~/utils/tools";
-import { wrapRelicData } from "~/stores/damageCalculator/calcUtils/relicUtils";
+import { relicHasLayer } from "~/stores/damageCalculator/calcUtils/relicUtils";
 import { applyAnyRelics } from "../../calculator/debug/print-relics-info";
 import type { ExpressionGroupNode } from "../../calculator/ast";
 
@@ -312,18 +312,18 @@ export function getRogue5Wraths(difficulty: number): ITopicSpecItem[] {
     });
 }
 
-/** 获取通宝 */
-export function getRogue5Coppers(coppers: RelicDataExt[]): Array<RelicWrapper & RelicDataExt> {
-  const result = coppers.map((copper) => wrapRelicData(copper));
-  const copperList = result.map((copperWrapper) => ({
-    ...copperWrapper,
-    ...coppers.find((copper) => copper.id === copperWrapper.id)!,
-  }));
+/** 计算通宝的展示派生状态，通宝本体仍保持 WrappedRelicItem。 */
+export function getRogue5CopperUiStates(
+  coppers: WrappedRelicItem[],
+): Record<string, { disabled: boolean; hasLayer: boolean }> {
+  const result = Object.fromEntries(
+    coppers.map((copper) => [copper.id, { disabled: false, hasLayer: relicHasLayer(copper) }]),
+  );
   /**
    * 应用所有通宝buff，标注无效的通宝
    * 注意，部分通宝会有多个互相冲突的buff同时生效，因此不能用于展示该通宝的具体效果
    */
-  const context = applyAnyRelics(copperList);
+  const context = applyAnyRelics(coppers);
   const validCopperList: string[] = [];
   Object.values(context).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
     if (Array.isArray(value)) return;
@@ -331,10 +331,10 @@ export function getRogue5Coppers(coppers: RelicDataExt[]): Array<RelicWrapper & 
       node.children.forEach((child) => validCopperList.push(child.tooltip)),
     );
   });
-  copperList.forEach((copper) => {
+  coppers.forEach((copper) => {
     if (!validCopperList.includes(copper.name)) {
-      copper.disabled = true;
+      result[copper.id].disabled = true;
     }
   });
-  return copperList;
+  return result;
 }

@@ -41,7 +41,7 @@ function calculator(input: CalculatorInput): CalculatorOutput
 
 `calculator/calculator.ts` 还导出一个 `calculator_beta`（按 `charData.appellation + "_beta"` 查找实现），**全仓库无任何调用点**，属于模拟器遗留方向，见 [08-simulate-and-legacy.md](./08-simulate-and-legacy.md)。
 
-类型的物理位置需要注意：`CalculatorInput`/`CalculatorOutput`/`DamageData`/`DamageByType`/`RelicDataExt`/`RelicWrapper`/`EnemyInput` 定义在 `app/types/gameData.ts`；`CharInput`/`RogueInput`/`CharSpecConfig` 定义在 `app/stores/damageCalculator/calcTypes.ts`；`BuffContext` 定义在 `calculator/buff-context.ts`。`app/types/gameData.ts` 反向 import 了后两处——类型层并不自洽，单独抽取契约类型时必须连同 store 与模块内的类型一起搬。
+类型的物理位置需要注意：`CalculatorInput`/`CalculatorOutput`/`DamageData`/`DamageByType`/`RelicUiState`/`EnemyInput` 定义或转出于 `app/types/gameData.ts`，共享 `WrappedRelicItem` 契约来自 `@arkrog/arknights-knowledge-graph/formula`；`CharInput`/`RogueInput`/`CharSpecConfig` 定义在 `app/stores/damageCalculator/calcTypes.ts`；`BuffContext` 定义在 `calculator/buff-context.ts`。`app/types/gameData.ts` 反向 import 了后两处——类型层仍不是完全独立，单独抽取计算契约时必须连同 store 与模块内类型一起处理。
 
 ## 2. CalculatorInput 全字段
 
@@ -54,7 +54,7 @@ function calculator(input: CalculatorInput): CalculatorOutput
 | `charData` | `CharData` | 干员解包原始数据；其 `name` 同时是分发键 | store 的 `charData`（calcTypes.ts 的 `SlicedCalcCharState`） |
 | `enemyInput` | `EnemyInput` | 敌人**最终面板**（已应用加成；属性嵌套在 `attributes` 内） | CalcCenter 内 `useMemo` 调 `CalculatorHelper.calculateEnemyAttr({ enemyBase, context: globalAnalysisResult })`，不入 store |
 | `enemyData` | `EnemyData` | 敌人解包原始数据（字段为 `DefinedData<T>` 包装） | store 的 `enemyData`（`SlicedCalcEnemyState`） |
-| `relics` | `(RelicDataExt & RelicWrapper)[]` | 当前选中且用户激活的藏品（解包数据与用户态包装的合并对象） | CalcCenter 的 `selectedRelics` `useMemo`：`rogueInput[topic].relics` 的 id 列表 × `relicWrapperMap`（过滤 `userActive`）× `relicDataMap` 合并 |
+| `relics` | `WrappedRelicItem[]` | 当前选中且用户启用的包装藏品 | CalcCenter 的 `selectedRelics` `useMemo`：`rogueInput[topic].relics` 的 id 列表 × 当前主题 `relics`，并过滤 `enable=false` |
 | `rogueInput` | `RogueInput` | 肉鸽主题与局内环境输入（难度/层数/科技树/通宝等） | store 的 `rogueInput`（`SlicedCalcGameDataState`） |
 
 表外几点说明：
@@ -66,12 +66,17 @@ function calculator(input: CalculatorInput): CalculatorOutput
 
 ### 2.1 relics 元素结构
 
-`relics` 数组的每个元素是两类对象的合并（均见 `app/types/gameData.ts`）：
+`relics` 数组的每个元素都是共享 `WrappedRelicItem`：
 
-| 类型 | 内容 | 计算相关字段 |
+| 字段 | 内容 | 约束 |
 |---|---|---|
-| `RelicDataExt`（= `ItemData & RelicData`） | 藏品解包原始数据 | `id`、`name`（中文名，黑名单/局内名单按它匹配）、`buffs: RelicBuff[]` |
-| `RelicWrapper` | 用户态包装 | `userActive`（CalcCenter 已按它过滤）、`hasLayer`/`layer`（层数）、`disabled`（标记尚未实现效果） |
+| `id` / `name` | 稳定 ID 与中文名 | 黑名单和 tooltip 按名称匹配 |
+| `pinyin` | backend 同规则生成的拼音 | `tiny-pinyin`、下划线分隔、统一小写 |
+| `relic` | `items[itemId]` 与 `relics[itemId]` 的合并对象 | `usage` 保证为字符串，原值为 `null` 时导出为 `""`；其余物品字段与 `buffs` 保持原值 |
+| `charBuffs` | GameData 原封关联角色 buff 数组 | 保留一对多关系，禁止改写 |
+| `layer` / `enable` | 用户态包装字段 | `layer` 默认 0；`enable=false` 完全不参与计算 |
+
+效果描述通过 `WrappedRelicItem.relic.usage` 读取，搜索拼音直接使用 `WrappedRelicItem.pinyin`。`disabled/hasLayer/isFavorite/initials` 存在独立 `relicUiStateMap`，类型为 `RelicUiState`。
 
 `RelicBuff` 为 `{ key: string; blackboard: BlackboardData[] }`，`BlackboardData` 为 `{ key: string; value: number; valueStr: string | null }`。独立黑板的注册键取 `blackboard` 中 `key === "key"` 词条的 `valueStr`（`calculator/impls.ts` 的 `getRelicBlackboard`；**该词条缺失时默认键为 `"char"`，未注册键静默返回 no-op**）。藏品 buff 的完整分发规则见 [03-relic-adaptation-guide.md](./03-relic-adaptation-guide.md)。
 
@@ -194,7 +199,7 @@ function calculator(input: CalculatorInput): CalculatorOutput
 | `rogueInput` | 不存在 | 必填 |
 | `skillData`/`uniEquipData` | 顶层独立入参 | 并入 `charInput.skill` / `charInput.uniEquip` |
 | `enemyInput` | `EnemyAttribute`（扁平面板） | `EnemyInput`（面板嵌套在 `attributes` 字段内） |
-| `relics` 元素 | `RelicWrapper[]` | `(RelicDataExt & RelicWrapper)[]`（含解包 `buffs`） |
+| `relics` 元素 | `RelicWrapper[]` | `WrappedRelicItem[]`（原始 buff 位于 `relic.buffs`） |
 | 输出普攻键 | `auto` | `attack` |
 | `DamageData` 面板字段 | `atk` | `dph`（口径见 4.2） |
 | `DamageByType` 字段 | 可选（`phy?` 等） | 全部必填 `number` |

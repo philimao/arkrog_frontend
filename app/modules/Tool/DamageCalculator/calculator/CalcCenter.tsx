@@ -36,19 +36,14 @@ export default function CalcCenter() {
     setActiveCharName,
   } = useDamageCalculatorStore();
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
-  const relicWrappers = useDamageCalculatorStore((state) => state.relicWrapperMap[state.rogueInput.topic]);
-  const relicData = useDamageCalculatorStore((state) => state.relicDataMap[state.rogueInput.topic]);
+  const relics = useDamageCalculatorStore((state) => state.relics[state.rogueInput.topic]);
 
   /** 选择的藏品 */
   const selectedRelics = useMemo(() => {
     return selectedIds
-      .map((id) => relicWrappers[id])
-      .filter((r) => r?.userActive)
-      .map((relicWrapper) => ({
-        ...relicData[relicWrapper.id],
-        ...relicWrapper,
-      }));
-  }, [relicData, relicWrappers, selectedIds]);
+      .map((id) => relics[id])
+      .filter((relic) => relic?.enable)
+  }, [relics, selectedIds]);
 
   /** 主题加成列表 */
   const topicSpecItems = useMemo(() => {

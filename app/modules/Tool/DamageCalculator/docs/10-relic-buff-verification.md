@@ -37,15 +37,15 @@ sources:
 报告脚本不需要起页面。从原始数据到 buff 上下文的整条链路都是普通函数：
 
 ```
-relics + items（bundle-ext 原始数据，gameDataStore 的 relics/items 字段同构）
-  → getRelicsData(relics, items, rogueKey)        // relicUtils.ts：ItemData+RelicData 合并为 RelicDataExt
-  → getRelicWrappers(relicsData) / wrapRelicData   // relicUtils.ts：补 layer/userActive 等包装字段
+按主题导出的 WrappedRelicItem
+  → getRelicsData(relics)                          // relicUtils.ts：仅克隆包装外层，保留 relic/charBuffs
+  → getRelicUiStates(relicsData)                   // relicUtils.ts：由 pinyin/buffs 派生 UI 状态
   → CalculatorHelper.analyzeRelics(...)            // helper.ts：真实生效判定 + 写入乘区
     或 applyAnyRelics(...)                          // debug/print-relics-info.ts：跳过生效判定，全量应用
   → BuffContext                                    // buff-context.ts：遍历产报告
 ```
 
-`app/stores/damageCalculator/calcUtils/relicUtils.ts` 的 `getRelicsData` / `getRelicWrappers` 与 `calculator/debug/print-relics-info.ts` 的 `applyAnyRelics`、`calculator/helper.ts` 的 `CalculatorHelper.analyzeRelics` 都不读 store、不碰 React——线上 `calculatorSlice`（`app/stores/damageCalculator/slices/calculatorSlice.ts`）也是这样组合它们来预计算各主题的藏品禁用状态的。**这条链可以在 vitest 用例里直接调用**。
+`app/stores/damageCalculator/calcUtils/relicUtils.ts` 的 `getRelicsData` / `getRelicUiStates` 与 `calculator/debug/print-relics-info.ts` 的 `applyAnyRelics`、`calculator/helper.ts` 的 `CalculatorHelper.analyzeRelics` 都不读 store、不碰 React——线上 `calculatorSlice`（`app/stores/damageCalculator/slices/calculatorSlice.ts`）也是这样组合它们来预计算各主题的藏品禁用状态的。**这条链可以在 vitest 用例里直接调用**。
 
 两个硬约束：
 
@@ -93,7 +93,7 @@ function collectRelicEffects(context: BuffContext): RelicEffectEntry[];
 
 ### 4.1 识别新增
 
-对新旧两份数据各跑 `getRelicsData(relics, items, rogueKey)`，取键集差集：`新增 = keys(new) − keys(old)`。通宝与藏品同表同构，按现行约定以 `id.includes("copper")` 区分并在报告里标记 `isCopper`（这一识别约定的细节与坑由 [05-topic-spec-and-enemy-spec.md](05-topic-spec-and-enemy-spec.md) 负责）。同时建议输出"变更"清单（id 相同但 `buffs` 深比较不等）——上游对存量藏品的数值调整同样需要签核。
+对新旧两份按主题包装 JSON 各跑 `getRelicsData(relics)`，取键集差集：`新增 = keys(new) − keys(old)`。通宝与藏品同表同构，按现行约定以 `id.includes("copper")` 区分并在报告里标记 `isCopper`（这一识别约定的细节与坑由 [05-topic-spec-and-enemy-spec.md](05-topic-spec-and-enemy-spec.md) 负责）。同时建议输出"变更"清单（id 相同但 `relic.buffs` 深比较不等）——上游对存量藏品的数值调整同样需要签核。
 
 ### 4.2 必须覆盖的静默失败模式
 

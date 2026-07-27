@@ -20,11 +20,11 @@ sources:
 
 ## 0. 一句话心智模型
 
-每个藏品（`RelicDataExt`）携带若干 **buff**（`RelicBuff`），每个 buff 携带一个 **blackboard 词条数组**（`{key, value, valueStr}[]`，这是上游解包数据）。计算时 `CalculatorHelper.applyRelic`（`calculator/helper.ts`）**逐 buff** 决定把它交给谁处理，处理者把数值写进 `BuffContext` 的某个**乘区**。你的接入工作，本质就是：**让某个 buff 的数值，写进正确的乘区**。
+每个藏品统一使用 `WrappedRelicItem`，其 `relic.buffs` 携带若干原始 **buff**（`RelicBuff`），每个 buff 携带一个 **blackboard 词条数组**（`{key, value, valueStr}[]`）。计算时 `CalculatorHelper.applyRelic`（`calculator/helper.ts`）**逐 buff** 决定把它交给谁处理，处理者把数值写进 `BuffContext` 的某个**乘区**。你的接入工作，本质就是：**让某个 buff 的数值，写进正确的乘区**。
 
 ## 1. 新藏品如何到达前端（无需前端改动）
 
-上游 `ArknightsGameData` 更新 → 后端 `update-data` 重建 → `/gamedata/bundle-ext` → 前端 `gameDataStore` 的 `relics` / `items`。前端 `getRelicsData`（`app/stores/damageCalculator/calcUtils/relicUtils.ts`）把 `ItemData` 与 `RelicData` 合并成 `RelicDataExt`，藏品即出现在选择器里——**数据层不需要改任何前端代码**。完整链路与缓存陷阱见 [data-pipeline.md](../../../../../docs/data-pipeline.md)。
+上游 `ArknightsGameData` 更新 → monorepo `pnpm relics:export` → `public/data/wrapped-relics/rogue_N.json`。导出器把 `items[itemId]` 与 `relics[itemId]` 合并进 `WrappedRelicItem.relic`（仅将 `usage: null` 归一为 `""`），`charBuffs` 保持外层一对多数组，并按 backend 的 `tiny-pinyin.convertToPinyin(name, "_").toLowerCase()` 规则生成外层 `pinyin`；前端只在用户进入对应主题时加载并缓存该 JSON。藏品即出现在选择器里——**数据层不需要为单件藏品改前端代码**。
 
 需要前端改动的只有一件事：**这个藏品的 buff 效果能不能被算对**。下面是判定与接入。
 
@@ -199,7 +199,7 @@ registerRelicBlackboard("<上面抄准的 valueStr>", {
 通宝是 rogue_5（界园）特有项，但在代码里**没有独立类型**，与藏品同表同构：
 
 - **识别**：`Rogue5Selector.tsx` 用 `id.includes("copper")` 从 relics 表里捞出通宝。
-- **生效路径**：通宝不进 `CalculatorInput.relics`，而是经主题特殊项（topicSpec）强转成 `RelicDataExt & RelicWrapper` 走 `analyzeTopicSpec` → 同一套 `applyRelic` 管道（详见 [05-topic-spec-and-enemy-spec.md](05-topic-spec-and-enemy-spec.md)）。
+- **生效路径**：通宝不进 `CalculatorInput.relics`，而是派生为主题特殊项（topicSpec），再由 `analyzeTopicSpec` 显式包装成 `WrappedRelicItem` → 同一套 `applyRelic` 管道（详见 [05-topic-spec-and-enemy-spec.md](05-topic-spec-and-enemy-spec.md)）。
 - **置灰判定**：`getRogue5Coppers`（`use-rogue5-topic-spec-items.ts`）对每个通宝跑 `applyAnyRelics`，收集产生了数值的 tooltip（按 `relic.name`）；名字没出现在结果里的通宝 `disabled = true`（UI 置灰，表示"计算器还没适配"）。
 - **适配方式**：与藏品完全一致——能走通用黑板就走，不能就在 `blackboard.ts` 注册独立黑板。现有通宝独立黑板案例：`rogue_5_character_sp_zone_attri_up`（画人间）、`env_001_storm`（厉-无皎之昧）、`attri_up_filter_level_cost`（奔兽战车）。
 

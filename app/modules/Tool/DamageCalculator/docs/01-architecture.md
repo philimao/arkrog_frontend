@@ -93,7 +93,7 @@ store 的 6 个 slice 分工（组合于 `app/stores/damageCalculatorStore.ts` �
 | charSlice | `charSlice.ts` | 干员列表、`charInput`（养成状态）、`charSpecConfigs` 装配；`setActiveCharName` 会从 localStorage 恢复养成 |
 | enemySlice | `enemySlice.ts` | `enemyData` → `enemyBase` 解析、敌人特殊词条 `enemySpec` 装配（含年代印痕强制规则） |
 | relicSlice | `relicSlice.ts` | 藏品选中/层数；`setRelicLayer` 按 `utils.ts` 的 `*_layer_sync` 数组做系列层数联动 |
-| calculatorSlice | `calculatorSlice.ts` | `initStore` 一次性预处理（含藏品 disabled 标记）、两份 BuffContext 与 `calcOutput` 的存取、`resetStore` |
+| calculatorSlice | `calculatorSlice.ts` | `initStore` 只初始化当前主题；`loadRelicTopic` 按需加载并缓存主题藏品、计算 disabled；另负责两份 BuffContext 与 `calcOutput` |
 | uiSlice | `uiSlice.ts` | 藏品弹层与主题加成弹层的互斥开关 |
 
 ## 2. 五段 analyze 管线
@@ -165,7 +165,7 @@ CalcCenter 内部的全部反应单元（按源码顺序）：
 
 | 单元 | 触发依赖（节选） | 产出 |
 |---|---|---|
-| useMemo `selectedRelics` | `rogueInput[topic].relics`、`relicWrapperMap`、`relicDataMap` | 选中且 `userActive` 的藏品（数据+wrapper 合并） |
+| useMemo `selectedRelics` | `rogueInput[topic].relics`、当前主题 `relics` | 选中且 `enable` 的 `WrappedRelicItem`；主题映射由 `loadRelicTopic` 在切换前准备 |
 | useMemo `topicSpecItems` | `rogueInput`、四组 `rogue4_*/rogue5_*_spec_items` | 当前主题生效的年代/灵感/天象/通宝列表 |
 | useEffect ① | charInput / charData / enemyData / enemySpec / levelData / rogueInput / selectedRelics / stageData / topicSpecItems | `setGlobalAnalysisResult` |
 | useEffect ② | 同上但不含 levelData | `setRelicAnalysisResult` |

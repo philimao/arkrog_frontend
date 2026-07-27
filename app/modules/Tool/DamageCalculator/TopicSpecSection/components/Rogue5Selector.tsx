@@ -15,12 +15,12 @@ import type { ExpressionGroupNode } from "../../calculator/ast";
 import { styled } from "styled-components";
 import { allowedBlackboardKeyMap } from "../../utils";
 import { LazyImage } from "~/components/LazyImage";
-import { getRogue5Coppers, getRogue5Wraths, WRATH_LEVELS } from "./use-rogue5-topic-spec-items";
+import { getRogue5CopperUiStates, getRogue5Wraths, WRATH_LEVELS } from "./use-rogue5-topic-spec-items";
 import { useShallow } from "zustand/react/shallow";
 
 export default memo(function Rogue5Selector() {
   console.count("Rogue5Selector");
-  const { items, relics } = useGameDataStore(useShallow((state) => ({ items: state.items, relics: state.relics })));
+  const relics = useGameDataStore(useShallow((state) => state.relics));
   const {
     rogueInput,
     rogue5_wrath_spec_items,
@@ -47,29 +47,29 @@ export default memo(function Rogue5Selector() {
   }, [rogueInput.rogue_5.difficulty, setRogue5WrathSpecItems]);
   /** 通宝 */
   useEffect(() => {
-    const coppers = Object.values(relics.rogue_5)
-      .filter((relic) => relic.id.includes("copper"))
-      .map((relic) => ({
-        ...items.rogue_5[relic.id],
-        ...relic,
-      }));
-    const copperList = getRogue5Coppers(coppers);
+    // 通宝从主题包装藏品派生为主题特殊项，原始 relic/charBuffs 始终不展开。
+    const coppers = Object.values(relics.rogue_5 ?? {}).filter((relic) => relic.id.includes("copper"));
+    const copperUiStates = getRogue5CopperUiStates(coppers);
 
-    const specItems = copperList.map((copperWrapper) => {
+    const specItems = coppers.map((copper) => {
       const url =
-        assetsHost + `roguelike_topic_itempic/${copperWrapper.id.replace("_buff", "").replace(/_[abcd]$/, "")}.png`;
+        assetsHost + `roguelike_topic_itempic/${copper.id.replace("_buff", "").replace(/_[abcd]$/, "")}.png`;
       return {
-        ...copperWrapper,
-        description: copperWrapper.usage,
+        id: copper.id,
+        name: copper.name,
+        description: copper.relic.usage ?? "",
         url,
         userActive: true,
         invert: 0,
-        buffs: copperWrapper.buffs,
+        buffs: copper.relic.buffs,
+        layer: copper.layer,
+        disabled: copperUiStates[copper.id].disabled,
+        hasLayer: copperUiStates[copper.id].hasLayer,
         rows: 2,
       };
     });
     setRogue5CopperSpecItems(() => specItems);
-  }, [items.rogue_5, relics.rogue_5, setRogue5CopperSpecItems]);
+  }, [relics.rogue_5, setRogue5CopperSpecItems]);
 
   const anyRelicContext = useRef<BuffContext>({} as BuffContext);
 
@@ -150,7 +150,7 @@ export default memo(function Rogue5Selector() {
                         <StyledGridItemTitle>
                           <span>{copperWrapper.name}</span>
                         </StyledGridItemTitle>
-                        <div className="text-tiny">{copperWrapper.usage}</div>
+                        <div className="text-tiny">{copperWrapper.description}</div>
                         {buffStrs.length > 0 && (
                           <div
                             className="text-tiny mt-2 pt-2 whitespace-pre-wrap"

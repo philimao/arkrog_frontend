@@ -11,13 +11,20 @@ import { ResultDisplay } from "~/modules/Tool/DamageCalculator/OperatorSection/R
 import EnemySelector from "~/modules/Tool/DamageCalculator/EnemySection/EnemySelector";
 import TopicSpecSelector from "./DamageCalculator/TopicSpecSection/TopicSpecSelector";
 import CalcCenter from "./DamageCalculator/calculator/CalcCenter";
+import { calculatorStorage } from "~/stores/damageCalculator/localStorage";
 
 export default function ToolIndexWrapper() {
   const { fetchGameDataBasic, fetchGameDataExt } = useGameDataStore();
-  const { initStore, resetStore } = useDamageCalculatorStore();
+  const { initStore, resetStore, setRogueInput } = useDamageCalculatorStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // 初始化数据前恢复上次主题，避免先下载默认主题再下载用户实际选择的主题。
+    const savedTopic = calculatorStorage.read()?.topic;
+    if (savedTopic) {
+      const currentInput = useDamageCalculatorStore.getState().rogueInput;
+      setRogueInput({ ...currentInput, topic: savedTopic });
+    }
     Promise.all([fetchGameDataBasic(), fetchGameDataExt()])
       .then(([, gameDataStore]) => initStore(gameDataStore))
       .then(() => setLoaded(true));
@@ -25,7 +32,7 @@ export default function ToolIndexWrapper() {
       setLoaded(false);
       resetStore();
     };
-  }, [fetchGameDataBasic, fetchGameDataExt, initStore, resetStore]);
+  }, [fetchGameDataBasic, fetchGameDataExt, initStore, resetStore, setRogueInput]);
 
   if (!loaded) return <Loading />;
 

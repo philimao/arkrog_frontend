@@ -6,8 +6,7 @@ import type {
   CharData,
   StageData,
   EnemyData,
-  RelicDataExt,
-  RelicWrapper,
+  WrappedRelicItem,
 } from "~/types/gameData";
 import type { BuffContext } from "./buff-context";
 import { CalculatorHelper } from "./helper";
@@ -34,26 +33,26 @@ export interface CharImpl {
 /** 敌人藏品黑板应用输入 */
 export type EnemyRelicBlackboardInput = {
   buff: RelicBuff;
-  relic: RelicDataExt;
+  relic: WrappedRelicItem;
   enemyData: EnemyData;
   stageData?: StageData;
 };
 /** 藏品黑板是否生效 */
 export type RelicBlackboardIsActiveInput = {
   buff: RelicBuff;
-  relic: RelicDataExt & RelicWrapper;
+  relic: WrappedRelicItem;
   charInput?: CharInput;
   charData?: CharData;
   enemyData?: EnemyData;
   stageData?: StageData;
-  relics: (RelicDataExt & RelicWrapper)[];
+  relics: WrappedRelicItem[];
 };
 /** 藏品黑板应用输入 */
 export type RelicBlackboardApplyInput = {
   buff: RelicBuff;
-  relic: RelicDataExt & RelicWrapper;
+  relic: WrappedRelicItem;
   context: BuffContext;
-  relics: (RelicDataExt & RelicWrapper)[];
+  relics: WrappedRelicItem[];
 };
 /** 藏品黑板实现 */
 export type RelicBlackboard = {

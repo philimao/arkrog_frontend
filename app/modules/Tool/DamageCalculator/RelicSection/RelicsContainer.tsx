@@ -6,7 +6,7 @@ import { assetsHost } from "~/utils/tools";
 import { StyledModeOption, StyledModeSelector, StyledTitle } from "~/modules/Tool/components/Shared";
 import ToolInput from "~/modules/Tool/components/ToolInput";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
-import type { RelicWrapper } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 import { CalculatorHelper } from "../calculator";
 import { useShallow } from "zustand/react/shallow";
 
@@ -23,14 +23,15 @@ const StyledRelicsInner = styled.div`
 `;
 
 export default function RelicsContainer({
-  relicsWrappers,
+  relics,
   showIds,
 }: {
-  relicsWrappers: Record<string, RelicWrapper>;
+  relics: Record<string, WrappedRelicItem>;
   showIds: string[];
 }) {
   const [showAll, setShowAll] = useState(true);
   const [mode, setMode] = useState("列表模式");
+  const relicUiStates = useDamageCalculatorStore((state) => state.relicUiStateMap[state.rogueInput.topic]);
 
   return (
     <StyledRelicsContainer>
@@ -45,16 +46,17 @@ export default function RelicsContainer({
         </StyledModeSelector>
       </StyledTitle>
       <StyledRelicsInner>
-        {Object.values(relicsWrappers)
-          .filter((relicWrapper) => showIds.includes(relicWrapper.id) && (showAll || !relicWrapper.disabled))
+        {Object.values(relics)
+          .filter((relic) => showIds.includes(relic.id) && (showAll || !relicUiStates[relic.id].disabled))
           .sort((a, b) => {
-            const aDisabled = a.disabled;
-            const bDisabled = b.disabled;
+            // unsupported 藏品在“显示全部”时排到最后。
+            const aDisabled = relicUiStates[a.id].disabled;
+            const bDisabled = relicUiStates[b.id].disabled;
             if (aDisabled === bDisabled) return 0;
             return aDisabled ? 1 : -1;
           })
-          .map((relicWrapper) => (
-            <RelicBlock key={relicWrapper.id} relicWrapper={relicWrapper} />
+          .map((relic) => (
+            <RelicBlock key={relic.id} relic={relic} />
           ))}
       </StyledRelicsInner>
     </StyledRelicsContainer>
@@ -120,24 +122,23 @@ const StyledLayerWrapper = styled.div`
 /** 在藏品下方显示对当前干员、关卡、敌人的生效情况，此时不要打开藏品生效过程的debugRelic */
 const debugRelic = false;
 
-function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
+function RelicBlock({ relic }: { relic: WrappedRelicItem }) {
   const { charData, charInput, enemyData, stageData, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
-  const relicMap = useDamageCalculatorStore((state) => state.relicDataMap[state.rogueInput.topic]);
+  const topic = useDamageCalculatorStore((state) => state.rogueInput.topic);
+  const relicUiState = useDamageCalculatorStore((state) => state.relicUiStateMap[topic][relic.id]);
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
-  const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
+  const [layer, setLayer] = useState<string>(relic.layer.toString());
 
   function updateRelicLayer(evt: FormEvent) {
     evt.preventDefault();
-    setLayer(setRelicLayer(relicWrapper.id, layer));
+    setLayer(setRelicLayer(relic.id, layer));
   }
 
-  const selected = selectedIds.includes(relicWrapper.id);
+  const selected = selectedIds.includes(relic.id);
 
   const buffStrs = useMemo(() => {
     if (!debugRelic) return [];
     const context = CalculatorHelper.createAdditionContext();
-    const relicData = relicMap[relicWrapper.id];
-    const relic = { ...relicData, ...relicWrapper };
     CalculatorHelper.applyRelic(
       {
         relic,
@@ -150,19 +151,19 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
       context,
     );
     return CalculatorHelper.printRelic(relic.name, context);
-  }, [charData, charInput, enemyData, relicMap, relicWrapper, stageData]);
+  }, [charData, charInput, enemyData, relic, stageData]);
 
   return (
     <StyledRelicBlock
       $selected={selected}
-      $disabled={relicWrapper.disabled}
-      key={relicWrapper.id}
-      onClick={() => !relicWrapper.disabled && toggleRelicSelection(relicWrapper.id)}
+      $disabled={relicUiState.disabled}
+      key={relic.id}
+      onClick={() => !relicUiState.disabled && toggleRelicSelection(relic.id)}
     >
       <StyledImageWrapper>
-        <LazyImage src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`} />
+        <LazyImage src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relic.id)}.png`} />
       </StyledImageWrapper>
-      {relicWrapper.hasLayer && (
+      {relicUiState.hasLayer && (
         <StyledLayerWrapper>
           <span>层数</span>
           <ToolInput
@@ -178,8 +179,8 @@ function RelicBlock({ relicWrapper }: { relicWrapper: RelicWrapper }) {
         </StyledLayerWrapper>
       )}
       <div>
-        <div className="font-bold mb-1">{relicWrapper.name}</div>
-        <div className="text-xs font-light">{relicWrapper.usage}</div>
+        <div className="font-bold mb-1">{relic.name}</div>
+        <div className="text-xs font-light">{relic.relic.usage}</div>
         {buffStrs.length > 0 && (
           <div className="text-tiny mt-2 pt-2 whitespace-pre-wrap" style={{ borderTop: "1px solid var(--ak-blue)" }}>
             {buffStrs.join("\n")}

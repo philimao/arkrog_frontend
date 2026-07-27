@@ -1,18 +1,51 @@
 import { BuffContext, CalculatorHelper } from "~/modules/Tool/DamageCalculator/calculator";
 import type { SliceCreator, SlicedCalculatorActions, SlicedCalculatorState } from "../calcTypes";
 import { initialCalculatorState } from "../calcConstants";
-import { getRelicWrappers } from "../calcUtils/relicUtils";
-import { getRelicsData } from "../calcUtils/relicUtils";
+import { getRelicsData, getRelicUiStates } from "../calcUtils/relicUtils";
 import { getStageList, handleUpdateStageId } from "../calcUtils/gameDataUtils";
-import type { RelicDataExt, RelicWrapper, RogueKey } from "~/types/gameData";
+import type { RelicUiState, RogueKey, WrappedRelicItem } from "~/types/gameData";
 import { applyAnyRelics } from "~/modules/Tool/DamageCalculator/calculator/debug/print-relics-info";
 import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
+import { useGameDataStore } from "~/stores/gameDataStore";
+
+/** 对单个已加载主题克隆包装藏品，并单独构建展示派生状态。 */
+function prepareRelicTopic(
+  topicId: RogueKey,
+  sourceRelics: Parameters<typeof getRelicsData>[0],
+): {
+  relics: Record<string, WrappedRelicItem>;
+  relicUiStates: Record<string, RelicUiState>;
+  anyRelicContext: BuffContext;
+} {
+  const relics = getRelicsData(sourceRelics);
+  const relicUiStates = getRelicUiStates(relics);
+  const relicList = Object.values(relics);
+  const anyRelicContext = applyAnyRelics(relicList);
+  const validRelicList = [
+    // 这些藏品不写普通 buff，但在其他计算逻辑中有独立处理。
+    "烟花之手",
+    "国王的铠甲",
+  ];
+  Object.values(anyRelicContext).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
+    if (Array.isArray(value)) return;
+    Object.values(value).forEach((node: ExpressionGroupNode) =>
+      node.children.forEach((child) => validRelicList.push(child.tooltip)),
+    );
+  });
+  Object.values(relics).forEach((relic) => {
+    if (!validRelicList.includes(relic.name)) relicUiStates[relic.id].disabled = true;
+  });
+  if (import.meta.env.DEV && ["rogue_4", "rogue_5", "rogue_6"].includes(topicId)) {
+    CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
+  }
+  return { relics, relicUiStates, anyRelicContext };
+}
 
 export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedCalculatorActions> = (set, get) => ({
   ...initialCalculatorState,
   initStore: async (gameDataStore) => {
     console.log("initStore", gameDataStore);
-    const { character_table, skill_table, uniequip_table, topics, zones, stages } = gameDataStore;
+    const { character_table, skill_table, uniequip_table, zones, stages } = gameDataStore;
     const { rogueInput } = get();
     // const allowCharNames = Object.keys(
     //   import.meta.glob("/app/modules/Tool/DamageCalculator/calculator/charImpl/**/*.ts"),
@@ -22,44 +55,8 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
     const charList = Object.values(character_table).filter((charData) => {
       return !["TOKEN", "TRAP"].includes(charData.profession) && allowCharNames.includes(charData.name);
     });
-    /** 初始化藏品数据 */
-    const relicDataMap: Record<RogueKey, Record<string, RelicDataExt>> = {} as never;
-    /** 初始化藏品状态 */
-    const relicWrapperMap: Record<RogueKey, Record<string, RelicWrapper>> = {} as never;
-    /** 应用所有藏品加成上下文 */
-    const anyRelicContextMap: Record<string, BuffContext> = {} as never;
-    /** 遍历肉鸽主题 */
-    for (const topicId of Object.keys(topics)) {
-      const relicsData = getRelicsData(gameDataStore.relics, gameDataStore.items, topicId as RogueKey);
-      const relicWrappers = getRelicWrappers(relicsData);
-      const relicList = Object.entries(relicWrappers).map(([id, relicWrapper]) => ({
-        ...relicsData[id],
-        ...relicWrapper,
-      }));
-      const anyRelicContext = applyAnyRelics(relicList);
-      const validRelicList = [
-        /** 这里默认一些特殊生效藏品, 不会添加buff但逻辑特殊处理 */
-        "烟花之手",
-        "国王的铠甲",
-      ];
-      Object.values(anyRelicContext).forEach((value: string[] | Record<string, ExpressionGroupNode>) => {
-        if (Array.isArray(value)) return;
-        Object.values(value).forEach((node: ExpressionGroupNode) =>
-          node.children.forEach((child) => validRelicList.push(child.tooltip)),
-        );
-      });
-      Object.values(relicWrappers).forEach((relicWrapper) => {
-        if (!validRelicList.includes(relicWrapper.name)) {
-          relicWrapper.disabled = true;
-        }
-      });
-      anyRelicContextMap[topicId as RogueKey] = anyRelicContext;
-      relicDataMap[topicId as RogueKey] = relicsData;
-      relicWrapperMap[topicId as RogueKey] = relicWrappers;
-      if (import.meta.env.DEV && ["rogue_4", "rogue_5"].includes(topicId)) {
-        CalculatorHelper.printAdditionContext(anyRelicContext, relicList);
-      }
-    }
+    // 首次进入只请求当前主题；其他主题在 setRogueKey 时按需加载。
+    await get().loadRelicTopic(rogueInput.topic);
     /** 渲染关卡列表 */
     const renderStages = getStageList(zones, stages, rogueInput);
     /** 初始化关卡 */
@@ -75,10 +72,6 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       (state) => {
         // 初始化干员列表
         state.charList = charList;
-        // 初始化藏品列表
-        state.relicDataMap = relicDataMap;
-        // 初始化藏品映射
-        state.relicWrapperMap = relicWrapperMap;
         // 初始化解包数据
         state.skill_table = skill_table; // 重复储存，方便后续使用，考虑是否需要优化
         state.uniequip_table = uniequip_table;
@@ -97,6 +90,23 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
       },
       undefined,
       "initStore",
+    );
+  },
+  loadRelicTopic: async (topicId) => {
+    const current = get();
+    if (current.relics[topicId] && current.relicUiStateMap[topicId]) return;
+
+    const gameDataStore = useGameDataStore.getState();
+    const sourceRelics = await gameDataStore.fetchRelicTopic(topicId);
+    const prepared = prepareRelicTopic(topicId, sourceRelics);
+    set(
+      (state) => {
+        state.relics[topicId] = prepared.relics;
+        state.relicUiStateMap[topicId] = prepared.relicUiStates;
+        state.anyRelicContextMap[topicId] = prepared.anyRelicContext;
+      },
+      undefined,
+      `loadRelicTopic:${topicId}`,
     );
   },
   resetStore: () => {

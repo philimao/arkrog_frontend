@@ -1,4 +1,4 @@
-import type { CalculatorInput, RelicDataExt, RelicWrapper } from "~/types/gameData";
+import type { CalculatorInput, WrappedRelicItem } from "~/types/gameData";
 import { CalculatorHelper } from "../helper";
 import { getRelicBlackboard, isRelicBlackboard } from "../impls";
 import { commonCharRelicBlackboard, commonEnemyRelicBlackboard } from "../blackboard";
@@ -15,14 +15,16 @@ export function printRelicsInfo(input: CalculatorInput) {
 /**
  * 不执行藏品生效条件去生效所有藏品buff
  */
-export function applyAnyRelics(relics: (RelicDataExt & RelicWrapper)[]) {
+export function applyAnyRelics(relics: WrappedRelicItem[]) {
   const context = CalculatorHelper.createAdditionContext();
   for (const relic of relics) {
+    // 即使跳过 isActive 条件，也必须遵守用户的藏品总开关。
+    if (!relic.enable) continue;
     if (isRelicInBlacklist(relic.name)) {
       context.invalidRelics.push(relic);
       continue;
     }
-    for (const buff of relic.buffs) {
+    for (const buff of relic.relic.buffs) {
       // 该buff有专用的黑板实现
       if (isRelicBlackboard(buff)) {
         const relicBlackboard = getRelicBlackboard(buff);

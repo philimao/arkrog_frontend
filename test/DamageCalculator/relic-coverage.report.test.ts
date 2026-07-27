@@ -13,6 +13,7 @@ import path from "node:path";
 import { test, expect } from "vitest";
 import { applyAnyRelics } from "~/modules/Tool/DamageCalculator/calculator/debug/print-relics-info";
 import type { ExpressionGroupNode } from "~/modules/Tool/DamageCalculator/calculator/ast";
+import type { WrappedRelicItem, WrappedRelicTopicArtifact } from "~/types/gameData";
 
 const DATA_PATH = process.env.DATA_PATH || "D:/repo/ArknightsGameData";
 const TABLE = path.join(DATA_PATH, "zh_CN/gamedata/excel/roguelike_topic_table.json");
@@ -21,8 +22,8 @@ const RUN = process.env.RELIC_COVERAGE === "1" && fs.existsSync(TABLE);
 // 技力相关键（用户要求本轮排除）
 const SP_KEYS = new Set(["sp", "sp_recovery_per_sec"]);
 const SP_VALUESTR = /modify_sp|hit_to_add_sp|sp_recover|chargeSP|sp_recovery_up/i;
-function isSpOnly(relic: any): boolean {
-  const buffs = relic.buffs || [];
+function isSpOnly(relic: WrappedRelicItem): boolean {
+  const buffs = relic.relic.buffs || [];
   let sawSp = false;
   for (const b of buffs) {
     for (const x of b.blackboard || []) {
@@ -71,32 +72,30 @@ test.skipIf(!RUN)("relic & copper coverage scan", () => {
   const summary: any[] = [];
 
   for (const tp of Object.keys(table.details)) {
-    const relics = table.details[tp].relics || {};
-    const items = table.details[tp].items || {};
-    const list: any[] = [];
-    for (const [id, it] of Object.entries<any>(items)) {
-      if (it.type === "RELIC" && relics[id]) list.push({ ...it, ...relics[id], _kind: "relic", layer: 1 });
-    }
-    for (const r of Object.values<any>(relics)) {
-      if (r.id.includes("copper")) list.push({ ...(items[r.id] || {}), ...r, _kind: "copper", layer: 1 });
-    }
+    // 直接消费生产导出产物，确保 usage/pinyin 与应用实际加载的数据完全一致。
+    const artifactPath = path.resolve(`public/data/wrapped-relics/${tp}.json`);
+    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8")) as WrappedRelicTopicArtifact;
+    const list: Array<{ relic: WrappedRelicItem; kind: "relic" | "copper" }> = artifact.items.map((item) => ({
+      relic: { ...item, layer: 1, enable: true },
+      kind: item.id.includes("copper") ? "copper" : "relic",
+    }));
 
     const fits: any[] = [];
     const noFit: any[] = [];
     const seen = new Set<string>();
-    for (const r of list) {
+    for (const { relic: r, kind } of list) {
       if (seen.has(r.name)) continue;
       seen.add(r.name);
       let contribs: Array<{ zone: string; key: string; value: number }> = [];
       try {
-        const ctx = applyAnyRelics([r] as any);
+        const ctx = applyAnyRelics([r]);
         contribs = contributionsOf(ctx, r.name);
       } catch {
         /* 个别藏品 apply 抛错（缺字段），按不契合处理 */
       }
       const rec = {
-        id: r.id, name: r.name, kind: r._kind,
-        usage: (r.usage || "").replace(/\\n/g, " ").slice(0, 80),
+        id: r.id, name: r.name, kind,
+        usage: (r.relic.usage || "").replace(/\\n/g, " ").slice(0, 80),
         contributions: contribs,
         spOnly: isSpOnly(r),
       };

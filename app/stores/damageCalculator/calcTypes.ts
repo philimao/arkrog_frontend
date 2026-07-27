@@ -11,8 +11,7 @@ import type {
   EnemyData,
   EnemyInput,
   LevelData,
-  RelicDataExt,
-  RelicWrapper,
+  RelicUiState,
   RogueKey,
   SkillData,
   SkillLevelData,
@@ -22,6 +21,7 @@ import type {
   UniEquipPhaseData,
   BlackboardData,
   RogueTopic,
+  WrappedRelicItem,
   ZoneOfRogue,
 } from "~/types/gameData";
 import type { GameDataState } from "../gameDataStore";
@@ -355,16 +355,18 @@ export interface SlicedCalcEnemyActions {
 }
 
 export interface SlicedCalcRelicState {
-  /** 肉鸽藏品列表 */
-  relicDataMap: Record<RogueKey, Record<string, RelicDataExt>>;
-  /** 预处理后的藏品列表 */
-  relicWrapperMap: Record<RogueKey, Record<string, RelicWrapper>>;
+  /** 按主题保存的包装藏品，计算与交互统一使用该类型。 */
+  relics: Record<RogueKey, Record<string, WrappedRelicItem>>;
+  /** 不属于游戏原始数据的藏品展示派生状态。 */
+  relicUiStateMap: Record<RogueKey, Record<string, RelicUiState>>;
 }
 
 export interface SlicedCalcRelicActions {
   setRelicLayer: (id: string, layer: string) => string;
-  updateRelic: (id: string, key: string, value: number | string | boolean) => void;
-  updateRelics: (ids: string[], key: string, value: number | string | boolean) => void;
+  /** 修改包装层用户字段，禁止写入 relic/charBuffs。 */
+  updateRelic: (id: string, key: "layer" | "enable", value: number | boolean) => void;
+  /** 批量修改包装层用户字段，禁止写入 relic/charBuffs。 */
+  updateRelics: (ids: string[], key: "layer" | "enable", value: number | boolean) => void;
   setSelectedIds: (ids: string[]) => void;
   toggleRelicSelection: (id: string) => void;
   selectRelic: (id: string) => void;
@@ -383,7 +385,9 @@ export interface SlicedCalculatorState {
 }
 
 export interface SlicedCalculatorActions {
-  initStore: (gameDataStore: GameDataState) => void;
+  initStore: (gameDataStore: GameDataState) => Promise<void>;
+  /** 懒加载并初始化指定主题的包装藏品，已加载主题直接复用缓存。 */
+  loadRelicTopic: (topicId: RogueKey) => Promise<void>;
   setGlobalAnalysisResult: (context: BuffContext) => void;
   setRelicAnalysisResult: (relicAnalysisResult: BuffContext) => void;
   setCalcOutput: (output: CalculatorOutput) => void;
@@ -391,7 +395,7 @@ export interface SlicedCalculatorActions {
   updateGlobalAnalysisResult: (input: {
     charInput: CharInput;
     charData: CharData;
-    relics: (RelicDataExt & RelicWrapper)[];
+    relics: WrappedRelicItem[];
   }) => BuffContext;
   resetStore: () => void;
 }

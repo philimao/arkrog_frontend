@@ -1,39 +1,36 @@
-import type { RogueKey, RelicData, ItemData, RelicDataExt, RelicWrapper } from "~/types/gameData";
+import type { RelicUiState, WrappedRelicItem } from "~/types/gameData";
 import { layerValueStrs } from "~/modules/Tool/DamageCalculator/utils";
 
-/** 获取藏品列表 */
-
+/** 克隆包装外层，允许用户修改 layer/enable，但不修改原封的 relic/charBuffs。 */
 export function getRelicsData(
-  relics: Record<RogueKey, Record<string, RelicData>>,
-  items: Record<RogueKey, Record<string, ItemData>>,
-  rogueKey: RogueKey,
-): Record<string, RelicDataExt> {
-  const relicsData: Record<string, RelicDataExt> = {};
-  for (const [itemId, item] of Object.entries(items[rogueKey])) {
-    if (item.type === "RELIC") {
-      const relicData = relics[rogueKey][itemId];
-      if (relicData) {
-        relicsData[itemId] = {
-          ...item,
-          ...relicData,
-        };
-      }
-    }
+  sourceRelics: Record<string, WrappedRelicItem>,
+): Record<string, WrappedRelicItem> {
+  const relicsData: Record<string, WrappedRelicItem> = {};
+  for (const wrapped of Object.values(sourceRelics)) {
+    relicsData[wrapped.id] = {
+      ...wrapped,
+      // 原始对象仅复用引用，用户态只能改包装层的两个字段。
+      layer: wrapped.layer ?? 0,
+      enable: wrapped.enable ?? true,
+    };
   }
   return relicsData;
-} /** 设置藏品状态 */
+}
 
-export function getRelicWrappers(relicsData: Record<string, RelicDataExt>): Record<string, RelicWrapper> {
-  const relicWrappers: Record<string, RelicWrapper> = {};
+/** 生成不污染 WrappedRelicItem 契约的展示派生状态。 */
+export function getRelicUiStates(
+  relicsData: Record<string, WrappedRelicItem>,
+): Record<string, RelicUiState> {
+  const relicUiStates: Record<string, RelicUiState> = {};
   for (const [relicId, relicData] of Object.entries(relicsData)) {
-    relicWrappers[relicId] = wrapRelicData(relicData);
+    relicUiStates[relicId] = createRelicUiState(relicData);
   }
-  return relicWrappers;
+  return relicUiStates;
 }
 
 /** 藏品是否可叠层 */
-export function relicHasLayer(relicDataExt: RelicDataExt): boolean {
-  return relicDataExt.buffs.some(
+export function relicHasLayer(relic: WrappedRelicItem): boolean {
+  return relic.relic.buffs.some(
     (buff) =>
       buff.key.startsWith("layer_char") ||
       buff.key.startsWith("char_squad") ||
@@ -41,26 +38,15 @@ export function relicHasLayer(relicDataExt: RelicDataExt): boolean {
   );
 }
 
-const zeroInitLayerRelicNames = ["家常小炒"];
-
 /**
  * 计算藏品相关属性
- * @param relicDataExt
- * @param charData
+ * @param relic 包装藏品本体
  */
-export function wrapRelicData(relicDataExt: RelicDataExt): RelicWrapper {
-  const hasLayer = relicHasLayer(relicDataExt);
+export function createRelicUiState(relic: WrappedRelicItem): RelicUiState {
   return {
-    id: relicDataExt.id,
-    name: relicDataExt.name,
-    rarity: relicDataExt.rarity,
-    usage: relicDataExt.usage,
-    userActive: true,
     isFavorite: false,
-    hasLayer: hasLayer,
-    layer: zeroInitLayerRelicNames.includes(relicDataExt.name) ? 0 : 1,
-    pinyin: relicDataExt.pinyin.replace(/_/g, ""),
-    initials: relicDataExt.pinyin
+    hasLayer: relicHasLayer(relic),
+    initials: relic.pinyin
       .split("_")
       .map((s) => s[0])
       .join(""),

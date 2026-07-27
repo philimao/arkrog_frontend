@@ -176,7 +176,7 @@ registerRelicBlackboard("rogue_2_atk_up[life_point][king_suit]", {
     // 是否存在三件国王套
     const isUp =
       relics.filter((relic) => {
-        return relic.buffs.find((buff) =>
+        return relic.relic.buffs.find((buff) =>
           buff.blackboard.find(
             (blackboard) => blackboard.key === "key" && blackboard.valueStr === "rogue_2_relic_mark[king_suit]",
           ),
@@ -724,7 +724,7 @@ registerRelicBlackboard("attri_up_filter_level_cost", {
     if (costThreshold) {
       let maxCostBonus = 99;
       for (const relic of relics) {
-        for (const relicBuff of relic.buffs) {
+        for (const relicBuff of relic.relic.buffs) {
           if (relicBuff.key === "level_max_cost_add") {
             const maxCost = getByKey(relicBuff.blackboard, "max_cost");
             if (maxCost) {
@@ -916,7 +916,7 @@ export const commonCharRelicBlackboard: RelicBlackboard = {
       }
 
       /** 化境地块选择器 */
-      const dygmny_tile = relic.usage?.includes("化境地块");
+      const dygmny_tile = relic.relic.usage.includes("化境地块");
       if (debugRelic) console.log("化境地块选择器", dygmny_tile, charInput?.dygmnyTile);
       if (dygmny_tile && !charInput?.dygmnyTile) {
         throw new Error();

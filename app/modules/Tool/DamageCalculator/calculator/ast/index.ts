@@ -1,6 +1,6 @@
 import type { RelicBuff } from "~/types/gameData";
 
-import type { RelicDataExt } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 
 /** 提供一个计算公式AST结构树(显性化计算公共部分) */
 export type ASTNode = NumericLiteral | ExpressionGroup;
@@ -79,7 +79,7 @@ export class NumericLiteralNode extends BaseNode {
     public value: number,
     tooltip: string,
     public source?: {
-      relic: RelicDataExt;
+      relic: WrappedRelicItem;
       buff: RelicBuff;
     },
   ) {

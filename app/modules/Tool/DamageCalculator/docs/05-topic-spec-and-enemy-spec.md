@@ -39,7 +39,7 @@ sources:
 1. 选择器组件（`TopicSpecSection/components/` 下的 `Rogue4Selector` / `Rogue5Selector`）在 `useEffect` 中把手抄配置或解包派生数据加工成 `ITopicSpecItem[]`，写入 store 的四个数组：`rogue4_inspiration_spec_items`、`rogue4_disaster_spec_items`、`rogue5_wrath_spec_items`、`rogue5_copper_spec_items`。
 2. 用户的选中状态另存于 `rogueInput`：rogue_4 为单选字段 `rogue_4.inspiration` / `rogue_4.disaster`；rogue_5 为多选数组 `rogue_5.wraths` / `rogue_5.coppers`（toggle 逻辑在 `app/stores/damageCalculator/slices/gameDataSlice.ts` 的 `setRogue5Wraths` / `setRogue5Coppers`）。
 3. `calculator/CalcCenter.tsx` 的 `topicSpecItems` useMemo 按 `rogueInput.topic` 分支组装：ROGUE_5 取 wraths + coppers，ROGUE_4 取 inspiration + disaster，**其他主题返回空数组**（新主题必须在此新增分支）；同时过滤掉 `userActive === false` 的项。
-4. `calculator/helper.ts` 的 `CalculatorHelper.analyzeTopicSpec` 把每个 `ITopicSpecItem` 强转为 `RelicDataExt & RelicWrapper`，逐个调用 `CalculatorHelper.applyRelic`——从这一步起与藏品共用同一套黑板分发。
+4. `calculator/helper.ts` 的 `CalculatorHelper.analyzeTopicSpec` 把每个 `ITopicSpecItem` 显式包装为 `WrappedRelicItem`，逐个调用 `CalculatorHelper.applyRelic`——从这一步起与藏品共用同一套黑板分发。
 5. 底栏的 `TopicSpecSection/TopicSpecTrigger.tsx` 展示当前已选项的图标，点击可单独切换每项的 `userActive`（半透明 = 关闭）。其 `triggerConfigs`（按 `RogueTopic` 全键枚举）与 `allowedRogueKeys` 决定哪些主题显示入口。
 
 两点容易踩空的机制：
@@ -71,7 +71,7 @@ sources:
 
 岁时目前仅"巳农"（部署费用）与"申铸"（化物敌人属性）`disabled: false`，其余 10 条手抄了数值但标记 `disabled: true`（含义见第 2 节）。
 
-通宝的自动派生链：`getRogue5Coppers`（`use-rogue5-topic-spec-items.ts` 导出）先用 `wrapRelicData`（`app/stores/damageCalculator/calcUtils/relicUtils.ts`）包出 `RelicWrapper`（含 `hasLayer` 判定），再调用 `applyAnyRelics`（`calculator/debug/print-relics-info.ts`）**跳过 isActive 强制应用全部 buff**，遍历返回的 `BuffContext` 所有乘区节点的 tooltip：没有在任何乘区留下节点的通宝标记 `disabled = true`（UI 置灰、不可选）。这只回答"计算器是否实现了该通宝的黑板"，**不能**用来验证数值（互斥 buff 会同时生效）。
+通宝的自动派生链：`getRogue5CopperUiStates`（`use-rogue5-topic-spec-items.ts` 导出）直接接收 `WrappedRelicItem[]`，用 `relicHasLayer` 派生 `hasLayer`，再调用 `applyAnyRelics`（`calculator/debug/print-relics-info.ts`）**跳过 isActive 强制应用全部 buff**。它遍历返回的 `BuffContext` 所有乘区节点的 tooltip，没有留下节点的通宝只在独立 UI 状态中标记 `disabled = true`，不会改写包装藏品。这只回答"计算器是否实现了该通宝的黑板"，**不能**用来验证数值（互斥 buff 会同时生效）。
 
 带层数的通宝（`hasLayer`）在 `Rogue5Selector` 的卡片上有"共计投出"输入框（`LayerInput`），更新 `rogue5_copper_spec_items` 中对应项的 `layer`。
 
@@ -106,7 +106,7 @@ sources:
 | `layer` | 层数；通宝由"共计投出"输入，其余恒为 1 |
 | `url` / `invert` / `rows` | 图标渲染参数（年代图标 `invert: 1` 反色；岁时 `rows: 1`、其余 2） |
 | `disabled` | 同上；通宝由 `getRogue5Coppers` 自动判定 |
-| `usage` / `hasLayer` | 通宝从 `RelicWrapper` 继承的可选字段 |
+| `description` / `hasLayer` | 描述来自 `WrappedRelicItem.relic.usage`，层数能力由 `WrappedRelicItem.relic.buffs` 派生 |
 
 `EnemySpecConfig`（每个特殊敌人一份，键 = 敌人解包 id）：
 

@@ -1,10 +1,10 @@
-import type { RelicDataExt } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 import { ExpressionGroupNode, NumericLiteralNode } from "./ast";
 
 /** 藏品分析结果 */
 export interface IBuffContext {
   /** 不生效的藏品 */
-  invalidRelics: RelicDataExt[];
+  invalidRelics: WrappedRelicItem[];
   stage_rune_mul: {
     /** 敌人攻击力改变来源 */
     enemy_atk: ExpressionGroupNode;
@@ -135,7 +135,7 @@ export interface IBuffContext {
 }
 
 export class BuffContext implements IBuffContext {
-  invalidRelics: RelicDataExt[] = [];
+  invalidRelics: WrappedRelicItem[] = [];
   stage_rune_mul: IBuffContext["stage_rune_mul"] = {
     enemy_atk: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def: new ExpressionGroupNode("*", "关卡加成").addChild(new NumericLiteralNode(1, "基数")),

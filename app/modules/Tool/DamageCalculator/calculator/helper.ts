@@ -3,7 +3,6 @@ import type {
   CalculatorOutput,
   CharData,
   DamageByType,
-  RelicWrapper,
   CharAttributeExt,
   CharAttribute,
   BlackboardData,
@@ -11,7 +10,7 @@ import type {
   StageData,
   EnemyData,
   LevelData,
-  RelicDataExt,
+  WrappedRelicItem,
 } from "~/types/gameData";
 import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
 import {
@@ -280,8 +279,8 @@ export class CalculatorHelper {
 
   static applyRelic(
     input: {
-      relic: RelicDataExt & RelicWrapper;
-      relics: (RelicDataExt & RelicWrapper)[];
+      relic: WrappedRelicItem;
+      relics: WrappedRelicItem[];
       charData?: CharData;
       charInput?: CharInput;
       enemyData?: EnemyData;
@@ -290,9 +289,11 @@ export class CalculatorHelper {
     result: BuffContext,
   ) {
     const { relic, relics, charData, charInput, enemyData, stageData } = input;
+    // enable=false 是包装契约的统一总开关，任何黑板都不得绕过。
+    if (!relic.enable) return;
     if (debugRelic) console.groupCollapsed("藏品", relic.name);
     // 遍历藏品buff
-    relic.buffs.forEach((buff) => {
+    relic.relic.buffs.forEach((buff) => {
       // 藏品在黑名单中
       if (debugRelic) console.log("位于黑名单中", isRelicInBlacklist(relic.name));
       if (isRelicInBlacklist(relic.name)) {
@@ -370,7 +371,7 @@ export class CalculatorHelper {
       charInput?: CharInput;
       charData?: CharData;
       enemyData: EnemyData;
-      relics: (RelicDataExt & RelicWrapper)[];
+      relics: WrappedRelicItem[];
       stageData?: StageData;
     },
     context?: BuffContext,
@@ -624,11 +625,30 @@ export class CalculatorHelper {
   ) {
     const { topicSpecItems, charData, charInput, enemyData, stageData } = input;
     const activeItems = topicSpecItems.filter((item) => item && item.userActive);
-    for (const item of activeItems) {
+    // 主题特殊项在进入统一计算管道前显式包装，避免继续伪装成扁平藏品。
+    const wrappedItems: WrappedRelicItem[] = activeItems.map((item) => ({
+      id: item.id,
+      name: item.name,
+      pinyin: "",
+      relic: {
+        id: item.id,
+        name: item.name,
+        usage: item.description ?? "",
+        description: null,
+        rarity: "",
+        sortId: 0,
+        type: "RELIC",
+        buffs: item.buffs,
+      },
+      charBuffs: [],
+      layer: item.layer ?? 0,
+      enable: item.userActive,
+    }));
+    for (const item of wrappedItems) {
       this.applyRelic(
         {
-          relic: item as unknown as RelicDataExt & RelicWrapper,
-          relics: activeItems as unknown as (RelicDataExt & RelicWrapper)[],
+          relic: item,
+          relics: wrappedItems,
           charData,
           charInput,
           enemyData,
@@ -653,15 +673,29 @@ export class CalculatorHelper {
       const runes = levelRunes.filter(
         (rune) => rune.difficultyMask === stageDifficulty || rune.difficultyMask === "ALL",
       );
-      const runeWrap = {
+      // 关卡 rune 也使用统一包装结构进入藏品黑板管道。
+      const runeWrap: WrappedRelicItem = {
+        id: "stage_runes",
         name: "关卡加成",
+        pinyin: "",
+        relic: {
+          id: "stage_runes",
+          name: "关卡加成",
+          usage: "",
+          description: null,
+          rarity: "",
+          sortId: 0,
+          type: "RELIC",
+          buffs: runes,
+        },
+        charBuffs: [],
         layer: 1,
-        buffs: runes,
+        enable: true,
       };
       this.applyRelic(
         {
-          relic: runeWrap as unknown as RelicDataExt & RelicWrapper,
-          relics: [runeWrap as unknown as RelicDataExt & RelicWrapper],
+          relic: runeWrap,
+          relics: [runeWrap],
           enemyData,
           stageData,
         },
@@ -863,7 +897,7 @@ export class CalculatorHelper {
    * @param context
    * @param relics
    */
-  static printAdditionContext(context: BuffContext, relics: (RelicDataExt & RelicWrapper)[]) {
+  static printAdditionContext(context: BuffContext, relics: WrappedRelicItem[]) {
     interface StringRow {
       藏品名称: string;
       rune_add?: string;
@@ -894,12 +928,12 @@ export class CalculatorHelper {
 
     /** 用于debug时获取自定义内容 */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const getKey = (relic?: RelicDataExt & RelicWrapper) => "";
+    const getKey = (relic?: WrappedRelicItem) => "";
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const filterKey = (row: ObjectRow) => true;
     /** 获取所有key: key的黑板 */
-    // const getKey = (relic?: RelicDataExt & RelicWrapper) =>
-    //   relic?.buffs
+    // const getKey = (relic?: WrappedRelicItem) =>
+    //   relic?.relic.buffs
     //     .find((buff) => buff.blackboard.find((bb) => bb.key === "key"))
     //     ?.blackboard.find((bb) => bb.key === "key")?.valueStr || "";
     // const filterKey = (row: ObjectRow) => !!row.key;
@@ -992,7 +1026,8 @@ export class CalculatorHelper {
           usage: "",
         };
       }
-      objectLogMap[relic.name].usage = relic.usage;
+      // usage 来自 GameData items 表的原始效果描述，可直接用于调试输出。
+      objectLogMap[relic.name].usage = relic.relic.usage ?? "";
     }
     console.table(
       Object.values(objectLogMap)

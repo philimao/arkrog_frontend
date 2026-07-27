@@ -1,24 +1,24 @@
 import { relicAlterToBasic } from "~/modules/Tool/DamageCalculator/utils";
 import { styled } from "styled-components";
 import { assetsHost } from "~/utils/tools";
-import type { RelicWrapper } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useState } from "react";
 import { Tooltip } from "@heroui/react";
 
 const StyledRelicItem = styled.div<{
   $editable: boolean;
-  $userActive: boolean;
+  $enable: boolean;
 }>`
   position: relative;
   height: 100%;
   aspect-ratio: 1;
   cursor: pointer;
   background: ${(props) => (props.$editable ? "var(--black-gray)" : "transparent")};
-  opacity: ${(props) => (props.$userActive ? "1" : "0.3")};
+  opacity: ${(props) => (props.$enable ? "1" : "0.3")};
   user-select: none;
   & > div > * {
-    pointer-events: ${(props) => (props.$userActive ? "auto" : "none")};
+    pointer-events: ${(props) => (props.$enable ? "auto" : "none")};
   }
 `;
 
@@ -80,28 +80,30 @@ const StyledLayerWrapper = styled.div`
 `;
 
 export default function RelicItem({
-  relicWrapper: relicWrapper,
+  relic,
   editable = false,
 }: {
-  relicWrapper: RelicWrapper;
+  relic: WrappedRelicItem;
   editable?: boolean;
 }) {
   const { updateRelic, setRelicLayer, toggleRelicSelection } = useDamageCalculatorStore();
+  const topic = useDamageCalculatorStore((state) => state.rogueInput.topic);
+  const relicUiState = useDamageCalculatorStore((state) => state.relicUiStateMap[topic][relic.id]);
 
-  const [layer, setLayer] = useState<string>(relicWrapper.layer.toString());
+  const [layer, setLayer] = useState<string>(relic.layer.toString());
 
   return (
-    <Tooltip delay={500} closeDelay={150} content={relicWrapper.usage || "无"}>
+    <Tooltip delay={500} closeDelay={150} content={relic.relic.usage || "无"}>
       <StyledRelicItem
-        onClick={() => updateRelic(relicWrapper.id, "userActive", !relicWrapper.userActive)}
-        $userActive={relicWrapper.userActive}
+        onClick={() => updateRelic(relic.id, "enable", !relic.enable)}
+        $enable={relic.enable}
         $editable={editable}
       >
         <StyledInner>
           <StyledRelicImg
             draggable={false}
-            src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relicWrapper.id)}.png`}
-            alt={relicWrapper.name}
+            src={assetsHost + `roguelike_topic_itempic/${relicAlterToBasic(relic.id)}.png`}
+            alt={relic.name}
           />
         </StyledInner>
 
@@ -109,14 +111,14 @@ export default function RelicItem({
           <StyledCloseButton
             onClick={(evt) => {
               evt.stopPropagation();
-              toggleRelicSelection(relicWrapper.id);
+              toggleRelicSelection(relic.id);
             }}
             tabIndex={-1}
           >
             <span>X</span>
           </StyledCloseButton>
         )}
-        {relicWrapper.hasLayer && (
+        {relicUiState.hasLayer && (
           <StyledLayerWrapper>
             <input
               type="text"
@@ -125,7 +127,7 @@ export default function RelicItem({
               onClick={(evt) => evt.stopPropagation()}
               onKeyDown={(evt) => evt.key === "Enter" && evt.currentTarget.blur()}
               onBlur={() => {
-                setLayer(setRelicLayer(relicWrapper.id, layer));
+                setLayer(setRelicLayer(relic.id, layer));
               }}
             />
           </StyledLayerWrapper>

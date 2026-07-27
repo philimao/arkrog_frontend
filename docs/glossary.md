@@ -27,7 +27,7 @@ sources:
 |---|---|---|---|---|
 | 集成战略 / 肉鸽 | rogue / roguelike | `rogue_1`…`rogue_5` | 明日方舟的 roguelike 玩法，本站工具的主题维度 | `app/types/gameData.ts` `RogueTopic` |
 | 主题 | topic / `RogueTopic` | `rogue_N` | 一期肉鸽（如萨卡兹=rogue_4、界园=rogue_5） | `app/types/gameData.ts` |
-| 藏品 | relic / `RelicDataExt` | `relics[rogueKey][id]` | 局内拾取的增益道具，携带若干 buff | `app/stores/damageCalculator/calcUtils/relicUtils.ts` |
+| 藏品 | relic / `WrappedRelicItem` | `relics[rogueKey][id]` | 局内拾取的增益道具，原始 buff 位于 `relic.buffs` | `app/stores/damageCalculator/calcUtils/relicUtils.ts` |
 | 通宝 | copper | id 含 `copper` | 界园(rogue_5)特有，与藏品同结构、无独立类型 | `TopicSpecSection/components/Rogue5Selector.tsx` |
 | 岁时 / 天象 | wrath | `rogue_5_wrath_N` | 界园的全局环境词条 | `TopicSpecSection/components/use-rogue5-topic-spec-items.ts` `WRATH_CONFIG` |
 | 年代 | disaster | — | 萨卡兹(rogue_4)的难度环境词条 | `TopicSpecSection/components/Rogue4Selector.tsx` |

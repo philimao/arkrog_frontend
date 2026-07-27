@@ -4,14 +4,14 @@ import {
   type EnemyData,
   type EnemyInput,
   type LevelData,
-  type RelicDataExt,
-  type RelicWrapper,
+  type RelicUiState,
   type RogueKey,
   type StageData,
   type StageOfRogue,
   type ZoneOfRogue,
+  type WrappedRelicItem,
 } from "~/types/gameData";
-import type { CharInput, RogueInput, SlicedCalcRelicState } from "./calcTypes";
+import type { CharInput, SlicedCalcRelicState } from "./calcTypes";
 import type {
   DCalculatorState,
   SlicedCalcEnemyState,
@@ -172,8 +172,8 @@ export const initialCalcUIState: SlicedCalcUIState = {
 };
 
 export const initialRelicState: SlicedCalcRelicState = {
-  relicDataMap: {} as Record<RogueKey, Record<string, RelicDataExt>>,
-  relicWrapperMap: {} as Record<RogueKey, Record<string, RelicWrapper>>,
+  relics: {} as Record<RogueKey, Record<string, WrappedRelicItem>>,
+  relicUiStateMap: {} as Record<RogueKey, Record<string, RelicUiState>>,
 };
 
 export const initialState: DCalculatorState = {

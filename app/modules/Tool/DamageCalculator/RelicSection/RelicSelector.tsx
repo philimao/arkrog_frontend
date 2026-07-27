@@ -10,7 +10,7 @@ import {
   StyledRelicCountInner,
 } from "~/modules/Tool/DamageCalculator/RelicSection/Shared";
 import RelicsContainer from "~/modules/Tool/DamageCalculator/RelicSection/RelicsContainer";
-import type { RelicWrapper } from "~/types/gameData";
+import type { WrappedRelicItem } from "~/types/gameData";
 import RelicItem from "~/modules/Tool/DamageCalculator/RelicSection/RelicItem";
 import BuffText from "~/modules/Tool/DamageCalculator/RelicSection/BuffText";
 import type { AdditionEntry } from "../calculator/helper";
@@ -70,12 +70,12 @@ const filterTags = [
   ["收藏", "物理", "法术", "真实", "元素", "异常", "召唤", "闪避"],
 ];
 
-const filterFuncMap: Record<string, (relic: RelicWrapper) => boolean> = {
-  结局: (relic: RelicWrapper) => relic.id.includes("final"),
-  攻速: (relic: RelicWrapper) => relic.usage.includes("攻击速度"),
-  美愿: (relic: RelicWrapper) => ["国王", "诸王", "之手", "金酒之杯", "投币玩具"].some((kw) => relic.name.includes(kw)),
-  伺烛: (relic: RelicWrapper) => relic.usage.includes("伺烛"),
-  化境: (relic: RelicWrapper) => relic.usage.includes("化境"),
+const filterFuncMap: Record<string, (relic: WrappedRelicItem) => boolean> = {
+  结局: (relic) => relic.id.includes("final"),
+  攻速: (relic) => relic.relic.usage.includes("攻击速度"),
+  美愿: (relic) => ["国王", "诸王", "之手", "金酒之杯", "投币玩具"].some((kw) => relic.name.includes(kw)),
+  伺烛: (relic) => relic.relic.usage.includes("伺烛"),
+  化境: (relic) => relic.relic.usage.includes("化境"),
 };
 
 const StyledSelectedRelics = styled.div`
@@ -151,7 +151,7 @@ export default function RelicSelector() {
   const { showRelics, toggleShowRelics, setSelectedIds, rogueInput, relicAnalysisResult } = useDamageCalculatorStore();
   const rogueKey = rogueInput.topic;
   const difficulty = rogueInput[rogueKey].difficulty;
-  const relicWrappers = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[rogueKey]));
+  const relics = useDamageCalculatorStore(useShallow((state) => state.relics[rogueKey]));
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
 
   const filterTagsMemo: string[][] = useMemo(() => {
@@ -178,15 +178,15 @@ export default function RelicSelector() {
   /** 用户筛选藏品id */
   const showIds = useMemo(
     () =>
-      Object.values(relicWrappers)
+      Object.values(relics)
         // 难度筛选
-        .filter((relicWrapper) => {
-          if (relicWrappers[relicWrapper.id + "_a"] || relicWrappers[relicWrapper.id.replace(/_[a-z0-9]+$/, "_a")]) {
+        .filter((relic) => {
+          if (relics[relic.id + "_a"] || relics[relic.id.replace(/_[a-z0-9]+$/, "_a")]) {
             // 代表随等级难度变化的藏品
-            if (difficulty >= 9) return relicWrapper.id.endsWith("_c");
-            else if (difficulty >= 6) return relicWrapper.id.endsWith("_b");
-            else if (difficulty >= 3) return relicWrapper.id.endsWith("_a");
-            else return relicWrapper.id[relicWrapper.id.length - 2] !== "_";
+            if (difficulty >= 9) return relic.id.endsWith("_c");
+            else if (difficulty >= 6) return relic.id.endsWith("_b");
+            else if (difficulty >= 3) return relic.id.endsWith("_a");
+            else return relic.id[relic.id.length - 2] !== "_";
           } else {
             // 随难度不变的藏品
             return true;
@@ -194,26 +194,26 @@ export default function RelicSelector() {
         })
         // Tag筛选
         .filter(
-          (relicWrapper) =>
-            !(valueFilter.size && !valueFilter.has(relicWrapper.rarity)) &&
+          (relic) =>
+            !(valueFilter.size && !valueFilter.has(relic.relic.rarity)) &&
             (!searchValue ||
-              relicWrapper.name.includes(searchValue) ||
-              relicWrapper.pinyin.includes(searchValue) ||
-              relicWrapper.initials.includes(searchValue) ||
-              relicWrapper.usage.includes(searchValue)),
+              relic.name.includes(searchValue) ||
+              relic.pinyin.replace(/_/g, "").includes(searchValue) ||
+              relic.pinyin.split("_").map((s) => s[0]).join("").includes(searchValue) ||
+              relic.relic.usage.includes(searchValue)),
         )
         // 藏品价值与关键字筛选
         .filter(
-          (relicWrapper) =>
+          (relic) =>
             !selectedTags.length ||
             selectedTags.some((kw) =>
               filterFuncMap[kw]
-                ? filterFuncMap[kw](relicWrapper)
-                : relicWrapper.name.includes(kw) || relicWrapper.usage.includes(kw),
+                ? filterFuncMap[kw](relic)
+                : relic.name.includes(kw) || relic.relic.usage.includes(kw),
             ),
         )
         .map((r) => r.id),
-    [difficulty, relicWrappers, searchValue, selectedTags, valueFilter],
+    [difficulty, relics, searchValue, selectedTags, valueFilter],
   );
 
   // // 根据 JSON 格式的藏品 ID 数组选中对应的藏品
@@ -331,10 +331,10 @@ export default function RelicSelector() {
           </StyledRelicCount>
           <StyledSelectedRelicsContainer>
             {selectedIds
-              .map((id) => relicWrappers[id])
+              .map((id) => relics[id])
               .filter((i) => i)
-              .map((relicWrapper) => (
-                <RelicItem key={relicWrapper.id} relicWrapper={relicWrapper} editable={true} />
+              .map((relic) => (
+                <RelicItem key={relic.id} relic={relic} editable={true} />
               ))}
           </StyledSelectedRelicsContainer>
           <StyledClearRelicsButton onClick={() => setSelectedIds([])}>清空</StyledClearRelicsButton>
@@ -364,7 +364,7 @@ export default function RelicSelector() {
           ))}
         </StyledBuffContainer>
 
-        <RelicsContainer relicsWrappers={relicWrappers} showIds={showIds} />
+        <RelicsContainer relics={relics} showIds={showIds} />
       </StyledRelicSelectorInner>
     </StyledRelicSelector>
   );

@@ -1,5 +1,19 @@
 import type { BuffContext } from "~/modules/Tool/DamageCalculator/calculator/buff-context";
 import type { CharInput, RogueInput } from "~/stores/damageCalculator/calcTypes";
+import type {
+  OriginalRelicCharacterBuffData,
+  OriginalRelicData,
+  WrappedRelicItem,
+  WrappedRelicTopicArtifact,
+} from "@arkrog/arknights-knowledge-graph/formula";
+
+// 统一转出共享契约，frontend 其他模块无需直接依赖知识图谱包的深层路径。
+export type {
+  OriginalRelicCharacterBuffData,
+  OriginalRelicData,
+  WrappedRelicItem,
+  WrappedRelicTopicArtifact,
+};
 
 /** @deprecated 使用RogueTopic枚举替代 */
 export type RogueKey = "rogue_1" | "rogue_2" | "rogue_3" | "rogue_4" | "rogue_5" | "rogue_6";
@@ -358,36 +372,12 @@ export interface RelicBuff {
   blackboard: BlackboardData[];
 }
 
-export type RelicDataExt = ItemData & RelicData;
-
-export interface RelicData {
-  id: string;
-  buffs: RelicBuff[];
-  /** 藏品效果 */
-  usage: string;
-  /** 藏品名称 */
-  name: string;
-}
-
-export interface RelicWrapper {
-  /** 藏品ID */
-  id: string;
-  /** 藏品名称 */
-  name: string;
-  /** 藏品稀有度 */
-  rarity: string;
-  /** 藏品效果 */
-  usage: string;
+/** 藏品选择器的派生状态；藏品本体始终使用 WrappedRelicItem。 */
+export interface RelicUiState {
   /** 是否被用户收藏 TODO */
   isFavorite: boolean;
-  /** 是否被用户选中生效，默认生效 */
-  userActive: boolean;
   /** 是否存在层数 */
   hasLayer: boolean;
-  /** 藏品层数 */
-  layer: number;
-  /** 拼音 */
-  pinyin: string;
   /** 首字母 */
   initials: string;
   /** 是否尚未实现效果 */
@@ -614,7 +604,7 @@ export interface CalculatorInput {
   /** 敌人基础数据 */
   enemyData: EnemyData;
   /** 藏品 */
-  relics: (RelicDataExt & RelicWrapper)[];
+  relics: WrappedRelicItem[];
   /** 肉鸽输入数据 */
   rogueInput: RogueInput;
 }

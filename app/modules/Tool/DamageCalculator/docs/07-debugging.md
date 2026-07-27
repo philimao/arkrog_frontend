@@ -69,7 +69,7 @@ calculator/helper.ts 导出 `export const debugRelic = true`——**硬编码常
 | `对该干员生效状态 <a> <b> <c>` | 依次为：不在藏品黑名单 / 不在 valueStr 黑名单 / 选择器+key 白名单通过 | `isRelicInBlacklist`、`isBuffInBlacklist`、utils.ts 的 `isBlackboardActiveForChar` |
 | `关卡类型 ...` | `validator.roguelike_event_type`（BATTLE_BOSS/DUEL） | 同上 isActive 内 |
 | `伺烛客选择器 ...` | valueStr 含 `rogue_5_character_in_candle_holder` 时要求 `charInput.candleHolder` | 同上 |
-| `化境地块选择器 ...` | `relic.usage` 文案含"化境地块"时要求 `charInput.dygmnyTile` | 同上 |
+| `化境地块选择器 ...` | 原始 `buff.key === "rogue_5_left_or_right_most_tile_col"` 时要求 `charInput.dygmnyTile` | 同上 |
 | `敌人数据` / `敌人ID选择器` / `陷阱ID选择器` / `敌人等级选择器` / `敌人TAG选择器` / `关卡类型选择器` / `岁兽残识选择器` | 敌人侧逐项选择器判定 | `commonEnemyRelicBlackboard.isActive` |
 | `*** buff生效 ***` / `*** buff不生效 ***` | 该 buff 的判定结论 | — |
 
@@ -96,7 +96,7 @@ calculator/helper.ts 导出 `export const debugRelic = true`——**硬编码常
 | 直接加算 | `in_game_buff_add` 桶 |
 | 直接乘算 | `in_game_buff_mul` 桶 |
 | 最终乘算 | `in_game_buff_final_mul` 桶 |
-| 描述 | `relic.usage` 原文 |
+| 描述 | `WrappedRelicItem.relic.usage`，原封来自主题 `items` 表 |
 
 表格外需要知道的事：
 
@@ -126,7 +126,7 @@ app/modules/Tool/index.tsx 的 `DebugInfoWrapper` 仅在 `import.meta.env.DEV` �
 
 用途：排查"算出来不对"之前，先确认**喂进计算器的敌人原始数值就是你以为的那个**（等级档位、attributes 各项）。如果这里就不对，问题在数据选取/档位映射，不在计算，转 [05-topic-spec-and-enemy-spec.md](./05-topic-spec-and-enemy-spec.md)。
 
-与之相邻的一个仅开发环境输出：app/stores/damageCalculator/slices/calculatorSlice.ts 的 `initStore` 在 DEV 下会对 rogue_4/rogue_5 的**全量藏品**各打一份 `printAdditionContext`（基于 `applyAnyRelics`，见第 5 节）。这份表回答"全主题哪些藏品已有实现"，与单次计算打印的那份（只含当前勾选藏品、且经过 isActive）口径不同，不要混读。
+与之相邻的一个仅开发环境输出：app/stores/damageCalculator/slices/calculatorSlice.ts 的 `loadRelicTopic` 在 rogue_4/rogue_5 **首次按需加载时**打印该主题的 `printAdditionContext`（基于 `applyAnyRelics`，见第 5 节）。它不再在启动时同时加载两个主题；这份表与单次计算打印的结果口径不同，不要混读。
 
 ## 3. 症状导向排查表
 
@@ -134,7 +134,7 @@ app/modules/Tool/index.tsx 的 `DebugInfoWrapper` 仅在 `import.meta.env.DEV` �
 
 | 症状 | 第一现场 | 详见 |
 |---|---|---|
-| 藏品/通宝在列表中置灰（悬浮提示"该藏品暂未生效"） | `relicWrapper.disabled` | 3.1 |
+| 藏品/通宝在列表中置灰（悬浮提示"该藏品暂未生效"） | `relicUiStateMap[id].disabled` | 3.1 |
 | 藏品勾选了但没任何效果 | 藏品判定 console.group | 3.2 |
 | 效果数值翻倍/减半/差层数 | printAdditionContext 节点值 | 3.3 |
 | 面板数值与计算结果对不上 | 双 BuffContext | 3.4 |

@@ -37,7 +37,7 @@ const StyledCollapseButton = styled.div`
 export default function FooterPanel() {
   const relicsContainerRef = useRef<HTMLDivElement>(null);
   const { showRelics, toggleShowRelics, setSelectedIds, setTopicSpecItems } = useDamageCalculatorStore();
-  const relicsState = useDamageCalculatorStore(useShallow((state) => state.relicWrapperMap[state.rogueInput.topic]));
+  const relicsState = useDamageCalculatorStore(useShallow((state) => state.relics[state.rogueInput.topic]));
   const selectedIds = useDamageCalculatorStore(useShallow((state) => state.rogueInput[state.rogueInput.topic].relics));
 
   const [showBuff, setShowBuff] = useState(false);
@@ -117,8 +117,8 @@ export default function FooterPanel() {
               {selectedIds
                 .map((id) => relicsState[id])
                 .filter((i) => i)
-                .map((relicWrapper) => (
-                  <RelicItem key={relicWrapper.id} relicWrapper={relicWrapper} />
+                .map((relic) => (
+                  <RelicItem key={relic.id} relic={relic} />
                 ))}
             </div>
           </div>

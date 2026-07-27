@@ -60,6 +60,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       "setRogueInput",
     ),
   setRogueKey: async (rogueTopic: RogueTopic) => {
+    // 等待目标主题藏品准备完成后再切换 topic，避免消费者读取空映射。
+    await get().loadRelicTopic(rogueTopic);
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     rogueInput.topic = rogueTopic;

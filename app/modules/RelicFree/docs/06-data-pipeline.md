@@ -146,7 +146,7 @@ flowchart LR
 >
 > - fc2f75f（2025-11-14，缓存迁移 Redis 的重构）删除了 `dataCacheManager` 的公有 `get`/`set` 后未迁移全部调用点，此后区间内：增量/全量重算在持久化一步 100% TypeError（增量的错误被 `.catch(console.error)` 吞掉）、`stageEnemies.js` 因从已迁移的旧位置 import `processLevelData` 而使 `updateGameData.ts` 无法启动，另有 async 未 await、`camelToKebab` 被当映射表下标访问两处隐藏层断裂。
 > - 790afd6（2026-07-13，本地 HEAD 已含）修复：`DataCacheManager` 补公有 `set`；`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时重建面包屑；`stageEnemies.js` 改从 `#utils/gamedata/level.js` 导入 `processLevelData` 并补 await；`loadAppDataFromSource` 修复 `camelToKebab` 下标误用。本篇第 3.1/3.2/6 节均按修复后的现行代码描述。
-> - 生产后端已于 2026-07-18 部署至 `7dd455e`，随后完整执行 `yarn update-data:prod --yes`：`stage-preview` 与 `stage-enemies` 已重建并写入 Mongo/Redis；验证得到 70 条 `ro6` preview 与 70 条 `ro6` stageEnemies。历史部署与回填顺序仍见 [07-ops-runbook.md](./07-ops-runbook.md)；缺陷销项见 [known-issues.md](./known-issues.md)。
+> - 生产后端已于 2026-07-18 部署至 `65961b7`，随后完整执行 `yarn update-data:prod --yes`：`stage-preview` 与 `stage-enemies` 已重建并写入 Mongo/Redis；验证得到 70 条 `ro6` preview 与 70 条 `ro6` stageEnemies。历史部署与回填顺序仍见 [07-ops-runbook.md](./07-ops-runbook.md)；缺陷销项见 [known-issues.md](./known-issues.md)。
 
 ## 4. StagePreviewData 字段语义
 

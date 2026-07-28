@@ -39,7 +39,7 @@ sources:
 | **改名单必须同步文档** | 改 `app/modules/Tool/DamageCalculator/utils.ts` 任一名单或 `blackboard.ts` 注册，必须同 PR 更新对应文档并重跑 `pnpm docs:gen` | [CONTRIBUTING.md](CONTRIBUTING.md) 第三节映射表 |
 | **stage id 字符串解析是无藏收录的基石** | 无藏侧一切分类建立在 `ro{n}_{类型码}_{编号}[_变体]` 的字符串切分上：前端 `app/utils/stageSelector.ts` 的 `navOfZone` 筛选、后端 `skipStage`/面包屑生成都依赖它；rogueKey 推导有两种写法并存（`"rogue_" + ro.slice(-1)` 在 ro10 会产出 `rogue_0`，处数以生成物快照为准）；改 id 约定同时影响两个仓库 | [无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md)、[hardcode-snapshot](app/modules/RelicFree/docs/generated/hardcode-snapshot.md) |
 | **前后端双份 boss 数量表必须同步改** | 前端 `app/utils/stageSelector.ts` 的 `numOfMinorBoss` 与后端 `arkrog_backend/utils/appData/shared.js` 的 `numOfZone3Boss` 等三张表是同值双份硬编码；只改一边 = 险路恶敌筛选组静默消失或面包屑错层 | [version-sensitive-hardcode](app/modules/RelicFree/docs/version-sensitive-hardcode.md)、[new-topic-checklist](app/modules/RelicFree/docs/new-topic-checklist.md) |
-| **无藏数据写路径已部署并完成回填** | 后端 stage-preview/stage-enemies 写路径断裂存在于 `fc2f75f`~`790afd6` 区间，已由 `790afd6` 修复；生产后端于 2026-07-18 部署至 `7dd455e`，并以完整七步脚本回填 `Data.stage-preview` / `Data.stage-enemies` | [docs/data-pipeline.md](docs/data-pipeline.md)、[无藏模块 07](app/modules/RelicFree/docs/07-ops-runbook.md) |
+| **无藏数据写路径已部署并完成回填** | 后端 stage-preview/stage-enemies 写路径断裂存在于 `fc2f75f`~`790afd6` 区间，已由 `790afd6` 修复；生产后端于 2026-07-18 部署至 `65961b7`，并以完整七步脚本回填 `Data.stage-preview` / `Data.stage-enemies` | [docs/data-pipeline.md](docs/data-pipeline.md)、[无藏模块 07](app/modules/RelicFree/docs/07-ops-runbook.md) |
 
 ## 命令速查与测试现状
 

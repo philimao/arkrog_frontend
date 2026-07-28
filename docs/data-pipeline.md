@@ -26,7 +26,7 @@ sources:
 
 > ⚠️ 安全约定：本文及任何文档只允许出现环境变量**名**（`DATA_PATH`、`MONGO_URI`、`ACTIVE_CHARS` 等），严禁把 `.env` 的实际值写入文档或提交记录。
 
-> 🚨 **链路断裂与修复（2026-07-18 状态更新）**：本文所述管线中"记录 → stage-preview 重算"与"stage-enemies 重建"两段的写路径曾整体断裂。**断裂存在于后端 `fc2f75f`（2025-11-14）~ `790afd6`（2026-07-13）区间；生产后端已于 2026-07-18 部署至 `7dd455e`，并完成 `Data.stage-preview` / `Data.stage-enemies` 全量回填。** 四处断裂一句话摘要：
+> 🚨 **链路断裂与修复（2026-07-18 状态更新）**：本文所述管线中"记录 → stage-preview 重算"与"stage-enemies 重建"两段的写路径曾整体断裂。**断裂存在于后端 `fc2f75f`（2025-11-14）~ `790afd6`（2026-07-13）区间；生产后端已于 2026-07-18 部署至 `65961b7`，并完成 `Data.stage-preview` / `Data.stage-enemies` 全量回填。** 四处断裂一句话摘要：
 >
 > 1. `fc2f75f` 删除 `dataCacheManager` 公有 `get`/`set` 后调用点未迁移——stage-preview 增量重算（提交/删除记录触发）100% TypeError 且被 `.catch(console.error)` 吞掉，admin 全量重算必 500；
 > 2. `stageEnemies.js` 仍从已迁移的旧位置 import `processLevelData`——`updateGameData.ts` 整体无法启动（本文第 3 节脚本在该区间不可用）；

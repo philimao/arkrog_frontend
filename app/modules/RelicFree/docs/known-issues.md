@@ -42,7 +42,7 @@ sources:
 ## 维护约定
 
 1. **修复后同 PR 销项**：修掉某条问题的 PR 必须同时删除（或更新）本表对应行，不允许"先修代码、回头再改文档"。
-2. **区分本地 HEAD 与线上部署**：本表所有"已确认"针对本地 HEAD 代码；生产后端于 2026-07-18 部署至 `7dd455e`，dev 后端仍为 `398672a`。表内其余"待部署"条目仍须按各自前端/后端部署状态单独核实。
+2. **区分本地 HEAD 与线上部署**：本表所有"已确认"针对本地 HEAD 代码；生产后端于 2026-07-18 部署至 `65961b7`，dev 后端仍为 `398672a`。表内其余"待部署"条目仍须按各自前端/后端部署状态单独核实。
 3. 处置定性取值：**bug 待修**（应该修，没人反对）；**已修待部署**（本地 HEAD 已修，线上未上）；**设计如此**（有意为之，链接对应 ADR 或正文文档）；**待决策**（修不修、怎么修需要人拍板）。
 4. level 语义一律以 `arkrog_backend/docs/Permission.md` 为权威（0=VISITOR / 1=USER / 2=LINKED / 3=CONTENT_ADMIN / 4=ADMIN / 5=SU / 6=ROOT），不要按业务想象另起解释。
 
@@ -50,8 +50,8 @@ sources:
 
 | 症状 | 位置（路径 + 符号） | 确认状态 | 影响 | 处置定性 |
 |---|---|---|---|---|
-| **写路径四处断裂（fc2f75f~790afd6 区间）**：①`persistStagePreview`/`persistStageEnemies` 调用被 fc2f75f（2025-11-14）移除的 `dataCacheManager.set` → 增量重算 100% TypeError 且被 `.catch(console.error)` 吞掉、admin 全量重算必 500；②`stagePreviewSingleUpdate` 以已删除的缓存读接口起步；③`stageEnemies.js` 从 `#routers/gamedata.js` 导入已迁移的 `processLevelData` → import 即抛错，`util-scripts/updateGameData.ts` 整体无法启动；④隐藏层：`processLevelData` 已变 async 未 await、`loadAppDataFromSource` 把 `camelToKebab` 函数当映射表下标访问恒 undefined | arkrog_backend/utils/appData/stagePreview.js 的 `stagePreviewSingleUpdate`/`persistStagePreview`；utils/appData/stageEnemies.js 的 `stageEnemiesUpdate`；utils/appData/db.js 的 `loadAppDataFromSource`；utils/dataCache.js 的 `DataCacheManager` | **已由 790afd6（2026-07-13）全部修复并于 2026-07-18 部署**：补公有 `set`（Redis 优先、内存保底）、`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时调用 `buildPreloadData` 重建 breadcrumb、`stageEnemies.js` 修正导入并补 await、camelToKebab 下标误用修复 | 断裂期间：提交/删除记录后"最高难度最少人数"永不更新、游戏数据更新脚本瘫痪 | **已修复、已部署、已回填**：生产 `7dd455e` 完整执行七步数据更新，Mongo/Redis 的 `stage-preview` 与 `stage-enemies` 已重建；验证见 [07-ops-runbook.md](07-ops-runbook.md) 与 [06-data-pipeline.md](06-data-pipeline.md) |
-| **线上部署滞后（无藏域四个提交）**：生产曾停在 3b04de7，不含 4015ad6/15e6de6/6fe4525（record 服务端权限校验、删除收紧 L4、字段白名单 + URL 协议校验）与 790afd6（缓存链路修复） | arkrog_backend/routers/record.js | **已于 2026-07-18 随生产 `7dd455e` 部署** | 历史窗口内线上权限行为与现行文档不一致 | **已部署销项**（权限对照正文见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)） |
+| **写路径四处断裂（fc2f75f~790afd6 区间）**：①`persistStagePreview`/`persistStageEnemies` 调用被 fc2f75f（2025-11-14）移除的 `dataCacheManager.set` → 增量重算 100% TypeError 且被 `.catch(console.error)` 吞掉、admin 全量重算必 500；②`stagePreviewSingleUpdate` 以已删除的缓存读接口起步；③`stageEnemies.js` 从 `#routers/gamedata.js` 导入已迁移的 `processLevelData` → import 即抛错，`util-scripts/updateGameData.ts` 整体无法启动；④隐藏层：`processLevelData` 已变 async 未 await、`loadAppDataFromSource` 把 `camelToKebab` 函数当映射表下标访问恒 undefined | arkrog_backend/utils/appData/stagePreview.js 的 `stagePreviewSingleUpdate`/`persistStagePreview`；utils/appData/stageEnemies.js 的 `stageEnemiesUpdate`；utils/appData/db.js 的 `loadAppDataFromSource`；utils/dataCache.js 的 `DataCacheManager` | **已由 790afd6（2026-07-13）全部修复并于 2026-07-18 部署**：补公有 `set`（Redis 优先、内存保底）、`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时调用 `buildPreloadData` 重建 breadcrumb、`stageEnemies.js` 修正导入并补 await、camelToKebab 下标误用修复 | 断裂期间：提交/删除记录后"最高难度最少人数"永不更新、游戏数据更新脚本瘫痪 | **已修复、已部署、已回填**：生产 `65961b7` 完整执行七步数据更新，Mongo/Redis 的 `stage-preview` 与 `stage-enemies` 已重建；验证见 [07-ops-runbook.md](07-ops-runbook.md) 与 [06-data-pipeline.md](06-data-pipeline.md) |
+| **线上部署滞后（无藏域四个提交）**：生产曾停在 3b04de7，不含 4015ad6/15e6de6/6fe4525（record 服务端权限校验、删除收紧 L4、字段白名单 + URL 协议校验）与 790afd6（缓存链路修复） | arkrog_backend/routers/record.js | **已于 2026-07-18 随生产 `65961b7` 部署** | 历史窗口内线上权限行为与现行文档不一致 | **已部署销项**（权限对照正文见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)） |
 
 ## 二、幻影端点与外链解析
 

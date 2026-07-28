@@ -34,7 +34,7 @@ sources:
 | 后端 cwd | `/home/ubuntu/arkrog_backend` | `/home/ubuntu/temp/arkrog_backend` |
 | 端口（`.env` 的 `PORT`） | 5174 | 5175 |
 | `NODE_ENV` | production | **production**（不是 development） |
-| 部署分支 / 提交 | `dev_tournament` @ `7dd455e`（2026-07-18） | `dev_tournament` @ `398672a`（2026-07-18 核实） |
+| 部署分支 / 提交 | `dev_tournament` @ `65961b7`（2026-07-18） | `dev_tournament` @ `398672a`（2026-07-18 核实） |
 | Redis 前缀（`REDIS_PREFIX`） | 未配置 → 默认 `arkrog` | `arkrog-dev` |
 | Mongo | **同一台 localhost mongod、同一个 `arkrog` 库**（见第 4 节） | 同左 |
 
@@ -151,7 +151,7 @@ pm2 restart <进程> && pm2 save
 
 ### ⚠️ 工作树不会自动更新
 
-服务器不自动拉代码。生产后端已于 2026-07-18 更新至 `7dd455e`，包含 `/record` 服务端守卫三连修复（`4015ad6` / `15e6de6` / `6fe4525`）、数据缓存写路径修复（`790afd6`）、rogue_6 适配（`c43f858`）、Linux 关卡路径大小写修复（`46be23a`）与生产 dotenv 层叠修复（`7dd455e`）；dev 后端同日核实仍为 `398672a`。在文档或排障中引用"后端行为"时，仍须区分 prod/dev 与本地 HEAD。
+服务器不自动拉代码。生产后端已于 2026-07-18 更新至 `65961b7`，包含 `/record` 服务端守卫三连修复（`4015ad6` / `15e6de6` / `6fe4525`）、数据缓存写路径修复（`790afd6`）、rogue_6 适配（`c43f858`）、Linux 关卡路径大小写修复（`46be23a`）与生产 dotenv 层叠修复（`65961b7`）；dev 后端同日核实仍为 `398672a`。在文档或排障中引用"后端行为"时，仍须区分 prod/dev 与本地 HEAD。
 
 部署含缓存修复的版本后，还需按[无藏运维手册](../app/modules/RelicFree/docs/07-ops-runbook.md)回填：L4 管理员 `POST /admin/calculate-stage-preview` 重算 stage-preview，再跑 `util-scripts/updateGameData.ts` 重建 stage-enemies。
 

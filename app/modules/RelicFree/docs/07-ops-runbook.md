@@ -47,7 +47,7 @@ sources:
 | 离线全量数据管线 | `yarn update-data` / `yarn update-data:prod --yes`（`util-scripts/updateGameData.ts` 七步，含 stage-enemies + stage-preview） | 服务器 shell；生产库必须 `--yes` | 全部游戏数据 + 两份无藏派生数据 + 缓存预热 | 七步日志全 `done`；正文见[顶层数据管线](../../../../docs/data-pipeline.md)第 3 节 |
 | 重启后端（兜底） | `pm2 restart <进程>`；启动时 `app.ts` 清空全部非 `sess:` Redis 键并 `warmUpCache` | 服务器 shell | 隐式全量**缓存**重建（§5） | 启动日志 `Cache warm-up completed` |
 
-> `GET /redis-admin/status` 现整体透传 `dataCacheManager.getStats()` 的 `{ redis, memory, total }` 三层嵌套结构（2026-07-13 修复：此前路由按旧扁平字段名取值恒 undefined，Redis 侧计数又因 KEYS 模式不带物理前缀恒为 0，返回的 `stats` 是空对象；现 `getStats` 内部手动拼物理前缀统计，详见 `arkrog_backend/docs/DataCache.md`）。该修复已随生产后端 `7dd455e` 于 2026-07-18 部署。
+> `GET /redis-admin/status` 现整体透传 `dataCacheManager.getStats()` 的 `{ redis, memory, total }` 三层嵌套结构（2026-07-13 修复：此前路由按旧扁平字段名取值恒 undefined，Redis 侧计数又因 KEYS 模式不带物理前缀恒为 0，返回的 `stats` 是空对象；现 `getStats` 内部手动拼物理前缀统计，详见 `arkrog_backend/docs/DataCache.md`）。该修复已随生产后端 `65961b7` 于 2026-07-18 部署。
 
 ### curl 示例
 

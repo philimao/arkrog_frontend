@@ -608,6 +608,65 @@ export class CalculatorHelper {
         // trap_226_dychss
       }
     }
+    /** 黑流树海肉鸽 */
+    if (rogueInput.topic === "rogue_6") {
+      const { difficulty, layer } = rogueInput.rogue_6;
+      /**
+       * 肉鸽难度加成（每层敌人属性提升百分比，下标 = 保密等级 N 值）
+       * ⚠️ 该数组的值**不存在于任何解包表**（roguelike_topic_table 的 difficulties 只有 ruleDesc 文案），
+       * 与 ro4/ro5 一样只能对照游戏内难度面板手抄。当前为占位全 0 = 逐层加成不参与计算，
+       * 敌人面板会低于游戏内实际值。补齐前请勿据此做数值结论。
+       */
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
+      /** 层数选择器到实际层数的映射（ro6 共 6 层，无第七层，参照 ro4） */
+      const layerToZoneMap: Record<string, number> = {
+        layer_1: 1,
+        layer_2: 2,
+        layer_3: 3,
+        layer_4: 4,
+        layer_5: 5,
+        layer_6: 6,
+      };
+      const zoneValue = layerToZoneMap[layer] || 1;
+
+      if (enemyAttrMultiplier) {
+        const pow = new Array(zoneValue).fill(
+          new NumericLiteralNode(enemyAttrMultiplier / 100 + 1, `每层+${enemyAttrMultiplier}%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new ExpressionGroupNode("*", `保密等级·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new ExpressionGroupNode("*", `保密等级·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
+        );
+      }
+      /** N5 所有敌人最大生命+30% */
+      if (difficulty >= 5) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.3, `保密等级·5 | 所有敌人最大生命+30%`),
+        );
+      }
+      /** N8 精英及领袖敌人攻击力+15% */
+      if (difficulty >= 8 && enemyData && ["ELITE", "BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(1.15, `保密等级·8 | 精英及领袖敌人攻击力+15%`),
+        );
+      }
+      /** N11 领袖敌人受到的伤害降低20% */
+      if (difficulty >= 11 && enemyData && ["BOSS"].includes(parseDefinedData(enemyData.levelType)!)) {
+        context.relic_rune_mul.enemy_damage_resistance.addChild(
+          new NumericLiteralNode(0.2, `保密等级·11 | 领袖敌人受到的伤害降低20%`),
+        );
+      }
+      /**
+       * N13/N14/N15 的特定敌人词条解包只写了“提升”而无具体数值，无法量化实现：
+       *   N13 “玻利瓦尔，症结之核”的防御力提升
+       *   N14 “源阶方”的最大生命值提升
+       *   N15 “猎犬proto”的最大生命值提升
+       * 待游戏内实测后按 ro5 的特定敌人写法（比对 enemyData.id）补齐。
+       */
+    }
     return context;
   }
 

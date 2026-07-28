@@ -498,6 +498,10 @@ export const ALL_TOPIC_TECHTREE_BUFF: Record<
   ],
   [RogueTopic.ROGUE_6]: [
     { label: "1", buff: { def: 1, atk: 1, max_hp: 1 } },
+    // label 仅是展示文案与查表键，def/atk/max_hp 三项本就可各自独立取值
+    // （如 rogue_5 的 max_hp 是 1.24 而 atk/def 是 1.2）；
+    // ro6 生命值加成若与攻防不同，直接改 max_hp 即可，无需动 label
+    { label: "1.2", buff: { def: 1.2, atk: 1.2, max_hp: 1.2 } },
   ],
 };
 

@@ -81,6 +81,7 @@ const numOfZone3Boss = {
   ro3: 3,
   ro4: 3,
   ro5: 3,
+  ro6: 3, // 黑流树海：b_1~b_3
 };
 
 // 五层boss关数量（异格记为同一个）
@@ -90,6 +91,7 @@ const numOfZone5Boss = {
   ro3: 2,
   ro4: 2,
   ro5: 2,
+  ro6: 2, // 黑流树海：b_4/b_5
 };
 
 // 六七层boss关数量（异格记为同一个）
@@ -99,6 +101,10 @@ const numberOfZone67Boss = {
   ro3: 2,
   ro4: 3,
   ro5: 2,
+  // 黑流树海：六七层实际只有 b_6（六层），无第七层Boss。
+  // 与后端 shared.js 同值双份，且同样是刻意填 2——isBoss 的 `zoneIndex - bossNum === zone3+zone5-6`
+  // 判据要求该值把 b_6 落在 zoneIndex 5（第6层）；理由详见无藏模块 version-sensitive-hardcode。
+  ro6: 2,
 };
 
 const isBase = (args: string[]) => args[1] === "n" || args[1] === "e";
@@ -145,6 +151,9 @@ const suffixBossNames: Record<string, Record<number, string>> = {
   rogue_5: {
     6: "望",
     7: "后兽",
+  },
+  rogue_6: {
+    6: "症结之核",
   },
 };
 
@@ -205,6 +214,18 @@ export function getNavOfZone(rogueKey: RogueKey, zones: Record<string, ZoneOfRog
           },
           // 固定为6层
           getLayer: () => "layer_6",
+        },
+      ],
+      rogue_6: [
+        {
+          id: "zone_portal",
+          name: "未萌生的摇篮",
+          filter: (stage: StageData) => {
+            const args = stage.id.split("_");
+            return args[1] === "c";
+          },
+          // 传送门网格区，可出现在多层：沿用用户当前选择的层数（同"不期而遇"处理）
+          getLayer: (rogueInput: RogueInput) => rogueInput[rogueInput.topic].layer,
         },
       ],
     }[rogueKey as string] || [];

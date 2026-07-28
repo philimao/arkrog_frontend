@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-17
 sources:
   - app/routes/RequireAuth.tsx
   - app/routes/AdminLayout.tsx
@@ -40,7 +40,7 @@ sources:
 3. 真正的安全边界在后端各 router 的中间件与处理器内检查；不同 router 的阈值写法并不一致，且存在无鉴权反例（见第 5 节对照表）。
 4. 仓库里另有一整套**看起来像权限系统、实际零生产引用的死代码**（RouteGuard 子系统，见第 4 节）。它的配置不产生任何效果，勿据此理解或修改站点权限。
 
-> 部署提示：本文一律以**本地 HEAD 现行代码**为准。线上后端截至 2026-07-13 仍部署在 `3b04de7`（2026-06-22），**不含**其后的 `/record` 三连安全修复（`4015ad6`/`15e6de6`/`6fe4525`）——即线上 `routers/record.js` 目前没有任何服务端等级校验（已登服务器 grep 核实）；也**不含** `/storage` 守卫修复（`289baa8`，2026-07-13）——第 5 节表格的"本地"列已按修复后行为记述。部署实态见[部署与环境矩阵](deployment-env-matrix.md)，滞后事项登记于[无藏 known-issues](../app/modules/RelicFree/docs/known-issues.md)。
+> 部署提示：本文一律以**本地 HEAD 现行代码**为准。2026-07-17 前后端已部署到当时最新（后端 `ba7fe38`，含 `/record` 三连安全修复与 `/storage` 守卫修复），第 5 节表格"线上（3b04de7）"列描述的安全缺口对该部署**已不适用**；但 **2026-07-17 的记录编辑 + 审计改造（`/record/edit`、`/audit-log` L4 守卫、record 域审计接线）在本文成文时尚未部署**——部署前线上仍无编辑端点、`/audit-log` 仍无鉴权。部署实态见[部署与环境矩阵](deployment-env-matrix.md)，滞后事项登记于[无藏 known-issues](../app/modules/RelicFree/docs/known-issues.md)。
 
 ## 1. level 0–6 语义（权威源：后端 Permission.md）
 
@@ -103,7 +103,8 @@ sources:
 
 | 操作入口 | 条件 | 代码位置 |
 |---|---|---|
-| 无藏提交记录表单 | `level < 3` 时整个表单 `return null` | `app/modules/RelicFree/Stage/SubmitRecordForm.tsx` |
+| 无藏提交记录表单 | 提交模式 `level < 3` 时整个表单 `return null`；编辑模式（2026-07-17 起同组件复用）要求 `level >= 4` 或（`level >= 3` 且 `record.submitterId === userInfo.userId`） | `app/modules/RelicFree/Stage/SubmitRecordForm.tsx` |
+| 记录编辑图标（桌面 + 移动两处，删除图标左侧） | `level >= 4` 或（`level >= 3` 且本人提交），2026-07-17 新增 | `app/components/RecordCard/RecordCard.tsx` |
 | 记录删除图标（桌面 + 移动两处） | `level >= 4` 才渲染（`def7203`，2026-07-13 起的现行口径） | `app/components/RecordCard/RecordCard.tsx` |
 | 记录收藏 / 举报按钮 | 未登录（`!userInfo?.level`）点击时 `openModal("login")`，见第 7 节 | 同上 |
 | 赛事编辑入口 | `level > 3`（即 ≥4）才显示 `editable` | `app/modules/Tournament/index.tsx` 的 `editable` 判断、`app/modules/Tournament/TournamentEdit/index.tsx` |
@@ -144,18 +145,19 @@ sources:
 |---|---|---|---|
 | 读记录 `POST /record/`、`POST /record/ids` | 无 | 无（守卫中间件挂在这两个路由**之后**，属刻意公开） | 同 |
 | 提交记录 `POST /record/submit` | SubmitRecordForm `level >= 3` 才渲染 | `routers/record.js` 的 `router.use`：登录 + `level >= 3`；另有 `submitFields` 白名单与 URL 协议校验 | **无守卫** |
-| 删除记录 `POST /record/delete` | RecordCard 删除图标 `level >= 4` | 同上 L3 中间件 + 处理器内 `level >= 4` 双守卫 | **无守卫** |
+| 删除记录 `POST /record/delete` | RecordCard 删除图标 `level >= 4` | 同上 L3 中间件 + 处理器内 `level >= 4` 双守卫；2026-07-17 起写审计 delete | **无守卫** |
+| 编辑记录 `POST /record/edit`（2026-07-17 新增） | RecordCard 编辑图标 / 编辑表单：`level >= 4` 或（`level >= 3` 且本人提交） | 同上 L3 中间件 + 处理器内 `level >= 4 \|\| 本人记录` 双守卫；写审计 update | **端点不存在**（未部署） |
 | 管理后台 `/admin/*` | LevelGuard `>= 4` + 菜单 `minLevel: 4` | `routers/admin.js` 的 `requireAdminLevel`：登录 + `level >= 4` | 同 |
 | 缓存管理 `/redis-admin/*` | 无任何 UI 入口（只能 curl） | `routers/redis-admin.js` 的 `router.use`：`level <= 4` 拒绝 → **实际要求 L5+** | 同 |
 | 权限授予/撤销 `POST /permission/grant`、`/revoke` | 赛事权限页（L4+ 才可见） | `routers/permission.ts` 的 `requireAdminLevel`：`level >= 4` | 同 |
 | 举报/反馈 `POST /user/feedback` | ReportModal（登录后可用） | 仅 `routers/user.js` 的 `router.use` 登录检查，**无等级门槛**；且 `stageId` 被 insertOne 字段清单丢弃（["写入即黑洞"](../app/modules/RelicFree/docs/known-issues.md)） | 同 |
-| 审计日志 `GET /audit-log/*` | 仅 admin 页有展示组件 | **完全无鉴权**——`routers/auditLog.js` 无任何中间件，游客可读全部审计日志 | 同 |
+| 审计日志 `GET /audit-log/*` | 仅 admin 页有展示组件（赛事审计 + 无藏审计，均在 L4 后台内） | `routers/auditLog.js` 前置 `router.use`：登录（401）+ `level >= 4`（403）（2026-07-17 修复；此前完全无鉴权，游客可读全部审计日志） | **无鉴权**（修复未部署） |
 | COS 桶信息/临时凭证 `GET /storage/bucket`、`GET /storage/sts` | —（上传 UI 入口仅存在于赛事表单，见 2.4） | `routers/storage.js` 的 `router.use`：登录（401）+ `level >= 3`（403），覆盖两个端点；`/sts` 按调用者实际等级签发凭证（`storage/sts.js` 的 `getSts({ level })`：L3 仅 `tournament/*` 上传，L4+ 才有全桶写 + DeleteObject） | **无守卫**，且按硬编码 `level: 6` 签发最大权限凭证（含删除） |
 
 要点：
 
 - **`/admin`（`>= 4`）与 `/redis-admin`（`> 4`）阈值一字之差**：前者 L4 可用，后者实际要求 L5。若这是刻意设计（Redis 操作只留给 SU），应在改动任一侧前先确认；若是笔误，属待修复项。
-- `/user/feedback`、`/audit-log` 是"前端看起来受控、后端不设防（或只设登录）"的反例，评审任何新端点时以它们为鉴。`/storage/sts` 曾是第三个反例，2026-07-13 已在本地修复（登录 + L3 守卫、按实际等级签发凭证），但该修复尚未部署，**线上仍向任意游客签发最大权限 COS 凭证**。
+- `/user/feedback` 是"前端看起来受控、后端只设登录"的反例，评审任何新端点时以它为鉴。`/audit-log` 与 `/storage/sts` 曾是另外两个反例：`/storage/sts` 于 2026-07-13 修复（登录 + L3 守卫、按实际等级签发凭证，已随 2026-07-17 部署上线）；`/audit-log` 于 2026-07-17 修复（登录 + L4 守卫，**尚未部署**）。
 - 前端阈值改动必须与后端同步评审：`def7203` 把删除图标从旧阈值收紧到 `level >= 4`，正是为了与后端 `/record/delete` 的 L4 硬门槛对齐。
 
 ## 6. 失败模式：fetchUserInfo 失败 → 受守卫页面永久空白

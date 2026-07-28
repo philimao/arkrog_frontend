@@ -15,8 +15,9 @@ import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
 import ModalTemplate from "~/components/Modal";
 import { useAppDataStore } from "~/stores/appDataStore";
-import { DeleteIcon, ReportIcon, StarIcon } from "../Icons";
+import { DeleteIcon, EditIcon, ReportIcon, StarIcon } from "../Icons";
 import { useRelicFreeStore } from "~/stores/relicFreeStore";
+import SubmitRecordForm from "~/modules/RelicFree/Stage/SubmitRecordForm";
 
 const StyledCardContainer = styled.div`
   width: 100%;
@@ -164,6 +165,12 @@ export default function RecordCard({
   const { charImages } = useAppDataStore();
   const [stageData, setStageData] = useState<StageData | undefined>();
   const [showNote, setShowNote] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  // 编辑软守卫（安全边界在后端 /record/edit）：L4+ 可编辑任意记录，L3 仅可编辑自己提交的记录
+  const level = userInfo?.level ?? 0;
+  const canEdit =
+    level >= 4 || (level >= 3 && !!record?.submitterId && record.submitterId === userInfo?.userId);
 
   const ro = "rogue_" + record?.stageId.split("_")[0].slice(-1);
 
@@ -367,6 +374,9 @@ export default function RecordCard({
                   openModal("report-modal");
                 }}
               />
+              {canEdit && (
+                <EditIcon className="hover:text-yellow-300" role="button" onClick={() => setIsEditing(true)} />
+              )}
               {userInfo?.level !== undefined && userInfo?.level >= 4 && (
                 <DeleteIcon className="hover:text-yellow-300" role="button" onClick={handleDeleteRecord} />
               )}
@@ -422,6 +432,9 @@ export default function RecordCard({
               openModal("report-modal");
             }}
           />
+          {canEdit && (
+            <EditIcon className="hover:text-yellow-300 w-4 h-4" role="button" onClick={() => setIsEditing(true)} />
+          )}
           {userInfo?.level !== undefined && userInfo?.level >= 4 && (
             <DeleteIcon className="hover:text-yellow-300 w-4 h-4" role="button" onClick={handleDeleteRecord} />
           )}
@@ -432,6 +445,10 @@ export default function RecordCard({
           </a>
         </div>
       </div>
+      {/* 编辑弹窗：仅编辑时挂载；表单内部会按需拉取干员数据（首页/收藏页未预加载） */}
+      {isEditing && (
+        <SubmitRecordForm record={record} setRecords={setRecords ?? (() => {})} onClose={() => setIsEditing(false)} />
+      )}
     </div>
   );
 }

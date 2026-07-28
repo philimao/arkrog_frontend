@@ -44,27 +44,55 @@ const MyButton = (props: ButtonProps) => (
   </Button>
 );
 
+/** 将存量队伍数据反序列化为输入字符串（与 charStrToData 的 name+skillStr 解析规则互逆） */
+function teamToString(team: TeamMemberData[]) {
+  return team.map((memberData) => memberData.name + memberData.skillStr).join("+");
+}
+
+/**
+ * 记录提交/编辑表单。
+ * - 提交模式（默认）：自带"提交记录"触发按钮，走 /record/submit，成功后整表替换
+ * - 编辑模式（传入 record）：弹窗受控（由父组件条件渲染 + onClose 关闭），
+ *   走 /record/edit，成功后按 _id 原位更新——编辑入口在首页/收藏页也存在，
+ *   那里的列表不是单关卡记录列表，不能整表替换
+ */
 export default function SubmitRecordForm({
   stageId,
   setRecords,
+  record,
+  onClose: onCloseProp,
 }: {
-  stageId: string;
+  stageId?: string;
   setRecords: Dispatch<SetStateAction<RecordType[]>>;
+  /** 编辑模式：被编辑的记录 */
+  record?: RecordType;
+  /** 编辑模式：关闭弹窗回调 */
+  onClose?: () => void;
 }) {
-  const { character_basic, uniequip_basic } = useRelicFreeStore();
+  const isEdit = !!record;
+  const { character_basic, uniequip_basic, fetchRelicFreeData } = useRelicFreeStore();
   const { userInfo } = useUserInfoStore();
   const { fetchStagePreview } = useRelicFreeStore();
-  const { onOpen, onClose, isOpen } = useDisclosure();
-  const [team, setTeam] = useState("");
+  const disclosure = useDisclosure();
+  const isOpen = isEdit ? true : disclosure.isOpen;
+  const onClose = isEdit ? (onCloseProp ?? (() => {})) : disclosure.onClose;
+  const [team, setTeam] = useState(record ? teamToString(record.team) : "");
   const [memberDataArray, setMemberDataArray] = useState<TeamMemberData[]>([]);
 
+  /** 生效关卡：编辑模式取记录自身的 stageId（不可改），提交模式取当前关卡 */
+  const effectiveStageId = record?.stageId ?? stageId ?? "";
   /** 肉鸽主题 */
-  const rogueKey = stageId.split("_")[0].replace("ro", "rogue_");
+  const rogueKey = effectiveStageId.split("_")[0].replace("ro", "rogue_");
   /** 肉鸽主题最高难度等级 */
   const maxLevel = topicMaxLevels[rogueKey as keyof typeof topicMaxLevels];
 
   /** 队伍组成分隔符 */
   const teamSplitterRe = /[+、]/;
+
+  // 编辑入口在首页/收藏页也存在，那里未加载干员数据；fetch 有 loaded 闩锁，幂等
+  useEffect(() => {
+    if (isEdit) fetchRelicFreeData();
+  }, [isEdit]);
 
   useEffect(() => {
     if (!character_basic) return;
@@ -76,12 +104,10 @@ export default function SubmitRecordForm({
       memberDataArray.map((memberData) => {
         const { charId, charData } = memberData;
         const prevData = prev.find((md) => md.charId === charId);
-        // 继承过去选择的uniequipId
-        if (prevData) {
-          memberData.uniequipId = prevData.uniequipId;
-        }
-        // 默认选择最新模组
+        // 模组初值优先级：本次会话已选 > 记录存量（编辑模式） > 最新模组
+        const inheritedId = prevData?.uniequipId || record?.team.find((md) => md.charId === charId)?.uniequipId;
         memberData.uniequipId =
+          inheritedId ||
           Object.values(charData?.uniequip || {}).sort((a, b) => b.charEquipOrder - a.charEquipOrder)[0]?.uniEquipId ||
           "";
         memberData.uniequipName = uniequip_basic[memberData.uniequipId || ""]?.typeIcon.toUpperCase() || "";
@@ -100,9 +126,12 @@ export default function SubmitRecordForm({
         }, [])
         .map((memberData) => {
           const { charData } = memberData;
+          // 与上方 effect 的初值保持一致，编辑模式下勾选记录存量模组
           const defaultChecked =
+            memberData.uniequipId ||
             Object.values(charData?.uniequip || {}).sort((a, b) => b.charEquipOrder - a.charEquipOrder)[0]
-              ?.uniEquipId || "";
+              ?.uniEquipId ||
+            "";
           return {
             charData,
             defaultChecked,
@@ -115,14 +144,6 @@ export default function SubmitRecordForm({
         .filter((i) => i),
     [memberDataArray],
   );
-
-  // useEffect(() => {
-  //   console.log("有效干员", memberDataArray);
-  // }, [memberDataArray]);
-
-  // useEffect(() => {
-  //   console.log("模组选项", uniequipOptions);
-  // }, [uniequipOptions]);
 
   async function handleSubmit(evt: FormEvent<HTMLFormElement>) {
     evt.preventDefault();
@@ -177,11 +198,23 @@ export default function SubmitRecordForm({
         delete memberData.charData;
         return memberData;
       });
-      data.stageId = stageId;
-      const records: RecordType[] | undefined = await _post<RecordType[]>("/record/submit", data);
-      if (records) {
-        setRecords(records);
-        onClose();
+
+      if (isEdit && record) {
+        // 编辑：stageId 不可改（不发送），按 _id 原位更新列表
+        data._id = record._id;
+        const records: RecordType[] | undefined = await _post<RecordType[]>("/record/edit", data);
+        if (records) {
+          const updated = records.find((r) => r._id === record._id);
+          setRecords((prev) => prev.map((r) => (r._id === record._id && updated ? updated : r)));
+          onClose();
+        }
+      } else {
+        data.stageId = effectiveStageId;
+        const records: RecordType[] | undefined = await _post<RecordType[]>("/record/submit", data);
+        if (records) {
+          setRecords(records);
+          onClose();
+        }
       }
       setTimeout(() => {
         fetchStagePreview(true);
@@ -192,10 +225,14 @@ export default function SubmitRecordForm({
     }
   }
 
-  if (!userInfo?.level || userInfo?.level < 3) return null;
+  // 软守卫（安全边界在后端）：提交需 L3+；编辑需 L4+ 或 L3 本人记录
+  const level = userInfo?.level ?? 0;
+  const canEdit =
+    level >= 4 || (level >= 3 && !!record?.submitterId && record.submitterId === userInfo?.userId);
+  if (isEdit ? !canEdit : level < 3) return null;
   return (
     <>
-      <MyButton onPress={onOpen}>提交记录</MyButton>
+      {!isEdit && <MyButton onPress={disclosure.onOpen}>提交记录</MyButton>}
       <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -209,10 +246,16 @@ export default function SubmitRecordForm({
         }}
       >
         <ModalContent>
-          <ModalHeader>提交记录</ModalHeader>
+          <ModalHeader>{isEdit ? "编辑记录" : "提交记录"}</ModalHeader>
           <ModalBody>
             <Form validationBehavior="native" onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
-              <MyInput name="url" label="视频链接" placeholder="B站长短链，单独BV号，YouTube链接均可解析" required />
+              <MyInput
+                name="url"
+                label="视频链接"
+                placeholder="B站长短链，单独BV号，YouTube链接均可解析"
+                defaultValue={record?.url}
+                required
+              />
               <MyInput
                 value={team}
                 onValueChange={setTeam}
@@ -258,20 +301,36 @@ export default function SubmitRecordForm({
                   </div>
                 </div>
               )}
-              <MySelect name="type" label="作战类型" defaultSelectedKeys={[Object.keys(StageTypes)[0]]} required>
+              <MySelect
+                name="type"
+                label="作战类型"
+                defaultSelectedKeys={[record?.type ?? Object.keys(StageTypes)[0]]}
+                required
+              >
                 {Object.keys(StageTypes).map((typeKey) => (
                   <SelectItem key={typeKey}>{StageTypes[typeKey] + "作战"}</SelectItem>
                 ))}
               </MySelect>
-              <MySelect name="level" label="难度等级" defaultSelectedKeys={[maxLevel]} required>
+              <MySelect name="level" label="难度等级" defaultSelectedKeys={[record?.level ?? maxLevel]} required>
                 {StageLevels.map((l) => (
                   <SelectItem key={l}>{l}</SelectItem>
                 ))}
               </MySelect>
-              <MyTextarea name="note" label="备注" minRows={5} placeholder="攻略者ID、等效情况等" />
+              <MyTextarea name="note" label="备注" minRows={5} placeholder="攻略者ID、等效情况等" defaultValue={record?.note} />
               <MyButton className="w-full" type="submit">
-                提交
+                {isEdit ? "保存" : "提交"}
               </MyButton>
+              {isEdit && record && (
+                <div className="w-full text-xs text-white/60">
+                  <span>提交人：{record.submitter || "未知"}</span>
+                  {record.editor && (
+                    <span className="ms-4">
+                      最近编辑：{record.editor}
+                      {record.date_modified ? `（${new Date(record.date_modified).toLocaleString("zh-CN")}）` : ""}
+                    </span>
+                  )}
+                </div>
+              )}
             </Form>
           </ModalBody>
           <ModalFooter></ModalFooter>

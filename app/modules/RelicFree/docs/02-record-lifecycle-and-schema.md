@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-17
 sources:
   - app/types/recordType.ts
   - app/types/constant.ts
@@ -15,6 +15,7 @@ sources:
   - app/utils/tools.ts
   - arkrog_backend/routers/record.js
   - arkrog_backend/routers/user.js
+  - arkrog_backend/database/auditLog.js
   - arkrog_backend/utils/record.js
   - arkrog_backend/utils/appData/stagePreview.js
   - arkrog_backend/utils/appData/db.js
@@ -38,16 +39,18 @@ sources:
 
 ```
 提交（POST /record/submit，Level 3+）
-  └─ setRaiderInfo 解析外链 → 落库即发布（无审核、无去重、无审计）
+  └─ setRaiderInfo 解析外链 → 落库即发布（无审核、无去重）＋ 审计 create
        └─ 非阻塞触发 stagePreviewSingleUpdate（最少人数重算）＋ 失效 latestRecordIds 缓存
 展示（POST /record 关卡页 / POST /record/ids 首页与收藏页）
 收藏（POST /user/favorite，写 Users.favorite）
 举报（POST /user/feedback，写入即黑洞，见第 8 节）
-删除（POST /record/delete，Level 4+，硬删除）
+编辑（POST /record/edit，Level 4+ 或 Level 3 本人记录，2026-07-17 新增，见 4.3）
+  └─ url 变化时重解析 → updateOne ＋ 审计 update ＋ stagePreviewSingleUpdate ＋ 失效 latestRecordIds
+删除（POST /record/delete，Level 4+，硬删除）＋ 审计 delete（oldData 快照是唯一事后追溯依据）
   └─ 级联清理全体 Users.favorite ＋ 再次触发 stagePreviewSingleUpdate ＋ 失效 latestRecordIds（完整矩阵见第 6 节）
 ```
 
-关键定性：**提交即发布**。`routers/record.js` 的 `/submit` 处理器解析成功后直接 `insertOne`，没有待审队列、没有内容审核、没有重复提交检测（同一 URL 可反复落库）、没有审计日志。这是有意为之的轻流程（补记为模块 ADR 0001），代价由删除权限（Level 4+）与举报入口兜底——而举报链路目前是黑洞（第 8 节）。
+关键定性：**提交即发布**。`routers/record.js` 的 `/submit` 处理器解析成功后直接 `insertOne`，没有待审队列、没有内容审核、没有重复提交检测（同一 URL 可反复落库）。这是有意为之的轻流程（补记为模块 ADR 0001）——产品定义上无藏的提交/编辑由管理员负责、不涉及普通用户，因此**不存在待审/退回流程**；代价由删除权限（Level 4+）与举报入口兜底——而举报链路目前是黑洞（第 8 节）。2026-07-17 起 submit/edit/delete 三条写路径均接入审计日志（`database/auditLog.js` 的 `logResourceOperation`，resourceType=`record`，快照剔除 `data` 字段），后台"无藏审计"页可查（`/admin/record-audit`）。
 
 ## 2. 前端契约：RecordType 与 TeamMemberData
 
@@ -67,12 +70,14 @@ sources:
 | `team` | `TeamMemberData[]` | 队伍成员，见 2.2 |
 | `note` | `string` | 备注（攻略者 ID、等效情况等自由文本） |
 | `level` | `string` | 难度等级，取值域为 `StageLevels`（`N0`/`N15`/`N18`），同样无类型与服务端校验 |
-| `submitter` | `string` | 提交者用户名（服务端从 session 写入，前端目前不渲染） |
+| `submitter` | `string` | 提交者用户名（服务端从 session 写入；编辑弹窗底部元信息行渲染） |
+| `submitterId?` | `string` | 提交者的 Users `_id` 字符串（服务端 session 写入；2026-07-17 起前端声明并用于"L3 编辑本人记录"判定；老记录可能缺失） |
+| `editor?` | `string` | 最近编辑人用户名（`/record/edit` 服务端写入；仅被编辑过的记录有，编辑弹窗底部渲染） |
 | `date_created` | `number` | 提交时刻（毫秒时间戳，服务端 `Date.now()`） |
-| `date_modified?` | `number` | 现行代码恒等于 `date_created`——不存在编辑端点，该字段没有独立含义 |
+| `date_modified?` | `number` | 提交时等于 `date_created`；被 `/record/edit` 编辑后更新为编辑时刻（2026-07-17 起） |
 | `date_published` | `number` | 视频/动态的发布时刻（毫秒），语义见 3.2 |
 
-**前端契约窄于落库事实**：后端实际下发的文档还带有 `submitterId`（提交者的 Users `_id` 字符串）与 `data`（外链解析器的原始负载，见 3.1），`RecordType` 未声明这两个字段。`POST /record` 与 `/record/ids` 均无 projection，把 Mongo 原始文档整体下发。
+**前端契约窄于落库事实**：后端实际下发的文档还带有 `data`（外链解析器的原始负载，见 3.1），`RecordType` 未声明该字段。`POST /record` 与 `/record/ids` 均无 projection，把 Mongo 原始文档整体下发。
 
 ### 2.2 TeamMemberData
 
@@ -97,15 +102,16 @@ sources:
 |---|---|
 | `stageId`、`url`、`team`、`type`、`level`、`note` | 客户端 `req.body`，按 `routers/record.js` 的 `submitFields` 白名单逐键拷贝 |
 | `submitter`、`submitterId` | 服务端 session（`req.session.username` / `userId`） |
-| `date_created`、`date_modified` | 服务端 `Date.now()`（两者提交时相同） |
+| `date_created`、`date_modified` | 服务端 `Date.now()`（两者提交时相同；`date_modified` 会被编辑更新，见 4.3） |
 | `raider`、`raiderImage`、`raiderLink`、`date_published`、`data` | 服务端 `utils/record.js` 的 `setRaiderInfo` 派生（第 4 节） |
+| `editor` | 仅 `/record/edit` 写入（`req.session.username`），提交不写（4.3） |
 
 `data` 是解析器原始负载：B 站视频为 view API 响应裁剪版（删除 `tname`/`desc_v2`/`rights`/`stat`/`dimension`/`no_cache`/`subtitle`/`user_garb`，`pages` 映射为分 P 标题数组）；B 站动态为标题/图/发布时间/作者摘要；YouTube 为 snippet 拼装；不在解析范围内的 URL 为 `{ code: 0, message: "网址不在解析范围内" }`。该负载随 `/record` 全量下发。
 
 ### 3.2 三个时间字段的语义
 
 - `date_created`：提交落库时刻。
-- `date_modified`：等于 `date_created`。没有任何更新 `Records` 的端点（全仓库对该集合的写操作只有 `/submit` 的 `insertOne` 与 `/delete` 的 `deleteOne`）。
+- `date_modified`：提交时等于 `date_created`；`/record/edit`（2026-07-17 新增，见 4.3）每次编辑更新为编辑时刻。对该集合的写操作共三处：`/submit` 的 `insertOne`、`/edit` 的 `updateOne`、`/delete` 的 `deleteOne`。
 - `date_published`：`setRaiderInfo` 写入的 `data.pubdate * 1000`——正常取视频/动态的真实发布时刻；三种情况回落为提交时刻：①URL 不在解析范围内；②解析失败但走了含回落的分支；③**B 站分 P 链接（带 `?p=`）被 `parseBilibiliVideo` 显式改写为当前时刻**（源码仅注释 "if it is a part"，未说明动机）。首页"最新"栏目（`latestRecordIds`）按 `date_published` 倒序取前 2 条（`utils/appData/db.js` 的 `loadAppDataFromSource`），RecordCard 展示的日期也是它。
 
 ### 3.3 无校验层、无索引
@@ -154,6 +160,20 @@ sources:
 
 `parseYoutubeURL`：URL 含 `"undefined"` 或无 `?v=` 参数 → 404 `"Invalid URL"`；视频/频道查不到 → 400 `"Failed to parse video info"` / `"Failed to parse channel info"`。**线上两份 .env 均未配置 `YoutubeToken`**，googleapis 返回错误 JSON 后 `listData.items[0]` 取值抛 TypeError，落入异常分支 → 400 堆栈原文——即**线上目前无法提交 YouTube 记录**（[known-issues.md](known-issues.md)）。
 
+### 4.3 编辑链路（POST /record/edit，2026-07-17 新增）
+
+处理顺序（`routers/record.js`）：
+
+1. 守卫：前置 `router.use`（登录 + `level >= 3`）之后，处理器内查出记录再判 **`level >= 4` 或（`level >= 3` 且 `submitterId === session.userId`）**，否则 403 `"无权编辑该记录"`。老记录缺 `submitterId` 时 L3 自然不可编辑（仅 L4+ 可）。
+2. 编辑白名单 `editableFields = ["url", "team", "type", "level", "note"]`——**`stageId` 锁定**（跨关卡迁移走删除+重提交，避免双关卡 stagePreview 重算与表单复杂化），`submitter`/`submitterId`/`date_created` 及一切派生字段不接受客户端值。
+3. `url` 校验同 `/submit`（`isValidRecordUrl`）。
+4. **仅当 url 发生变化时**调 `setRaiderInfo(record, true)`（forceUpdate）重解析 raider 三件套、`date_published`、`data`，解析失败按 4.2 映射抛 400；url 未变则完全不碰派生字段——不能"顺手"调 `setRaiderInfo`：其跳过分支仍无条件读 `data.pubdate`，老记录缺 `data` 时会抛 TypeError。
+5. 写入 `editor = session.username`、`date_modified = Date.now()`，`updateOne` 后写审计 `update`（old/new 快照均剔除 `data` 字段）。
+6. 副作用与 `/submit` 对齐：非阻塞 `stagePreviewSingleUpdate(stageId)`（人数变化影响最少人徽标）＋ 失效 `latestRecordIds`（url 变化会改 `date_published` 排序）。
+7. 响应：该关卡记录全量列表（与 `/submit` 一致）。**前端消费方式不同**：编辑入口在首页/收藏页也存在，那里的列表不是单关卡列表，`SubmitRecordForm` 编辑模式按 `_id` 从响应中取出更新后的记录**原位替换**，不做整表替换。
+
+前端入口：`RecordCard` 操作栏（桌面/移动两处）删除图标左侧的编辑图标，显示条件与后端守卫同款；点击后卡内条件渲染 `SubmitRecordForm`（编辑模式），表单挂载时按需 `fetchRelicFreeData()`（首页/收藏页未预加载干员数据，fetch 有 loaded 闩锁幂等）。队伍字符串由存量 `team` 反序列化（`name + skillStr` 以 `+` 连接，与 `charStrToData` 解析互逆）；模组初值优先级：本次会话已选 > 记录存量 > 最新模组。表单底部渲染元信息行：提交人 + 最近编辑人（含 `date_modified`）。
+
 > ⚠️ 这些中文提示的送达链路：`BusinessError` 以 JSON `{success:false,message}` 返回，`app/utils/tools.ts` 的 `_post` 对非 2xx 抛 `Error(响应原文)`；`SubmitRecordForm.handleSubmit` 与 `RecordCard.handleDeleteRecord` 已补 try/catch（2026-07-13），失败以 `toast.error` 呈现原文、弹窗与已填内容保留。线上旧前端（待部署）仍无 try/catch——错误变成 unhandled rejection，用户看不到任何提示、Modal 不关闭。登记见 [known-issues.md](known-issues.md)。
 
 ## 5. 读取端点契约
@@ -175,7 +195,7 @@ sources:
 
 ## 6. 删除链路与副作用矩阵
 
-`POST /record/delete`：`{_id}` 缺失 → 404；处理器内二次守卫 `session.level >= 4`；`findOne` 确认存在（否则 404 `"未找到记录"`）后 `deleteOne` **硬删除**，随后对**全体用户** `Users.favorite` 级联 `$pull` 该记录条目并同步当前请求 session（2026-07-13），再非阻塞触发 `stagePreviewSingleUpdate(record.stageId)` 与 `latestRecordIds` 失效。
+`POST /record/delete`：`{_id}` 缺失 → 404；处理器内二次守卫 `session.level >= 4`；`findOne` 取**全文档**确认存在（否则 404 `"未找到记录"`）后 `deleteOne` **硬删除**，随即写审计 `delete`（2026-07-17 起；oldData 快照剔除 `data` 字段，是硬删除后唯一的事后追溯依据），随后对**全体用户** `Users.favorite` 级联 `$pull` 该记录条目并同步当前请求 session（2026-07-13），再非阻塞触发 `stagePreviewSingleUpdate(record.stageId)` 与 `latestRecordIds` 失效。
 
 前端入口是 `app/components/RecordCard/RecordCard.tsx` 的 `handleDeleteRecord`：`window.confirm` → `_post`（失败 `toast.error` 后中止，见第 4.2 节警示）→ `setRecords?.(...)` 本地 `filter` 剔除 → 删除者自己收藏过该记录时调 `/user/favorite` remove 自清（失败仅 `toast.warning`，不阻断）→ `setTimeout(2000)` 后 `fetchStagePreview(true)`（第 10 节）。
 
@@ -222,21 +242,22 @@ level 数值语义的**唯一权威源**是 `arkrog_backend/docs/Permission.md`�
 |---|---|---|
 | 查看记录（`/record`、`/record/ids`） | 无 | 无（公开端点） |
 | 提交（`/record/submit`） | `SubmitRecordForm` 在 `userInfo.level < 3` 时返回 `null`（按钮不渲染） | `routers/record.js` 前置 `router.use`：未登录 401 `"未登录"`；`level < 3` → 403 `"等级不足"` |
+| 编辑（`/record/edit`，2026-07-17 新增） | `RecordCard` 编辑图标 / 编辑弹窗：`level >= 4` 或（`level >= 3` 且 `submitterId === userInfo.userId`）才渲染（桌面/移动两处操作栏一致） | 前置 `router.use`（≥3）+ 处理器内同款判定，否则 403 `"无权编辑该记录"` |
 | 删除（`/record/delete`） | `RecordCard` 删除图标仅 `level >= 4` 显示（def7203，2026-07-13，桌面/移动两处操作栏一致） | 前置 `router.use`（≥3）+ 处理器内 `level < 4` → 403 `"无权删除该记录"` |
 | 收藏（`/user/favorite`） | 未登录点击星标 → `openModal("login")` | 登录即可，无等级要求 |
 | 举报（`/user/feedback`） | 未登录点击 → `openModal("login")` | 登录即可 |
 
 > ⚠️ **线上部署滞后**：线上运行的 3b04de7 早于 4015ad6/15e6de6/6fe4525 三个安全修复——线上 `/submit` 与 `/delete` **没有任何服务端等级校验**，且 `/submit` 无字段白名单（mass-assignment：客户端可伪造 `raiderImage` 使 `setRaiderInfo` 跳过解析、伪造 `data.code` 绕过失败拦截）。前端软守卫只是渲染层隐藏，不构成防线。此差异登记在 [known-issues.md](known-issues.md)，部署后应同步销项。
 
-## 10. 提交/删除后的 2 秒强刷时序契约
+## 10. 提交/编辑/删除后的 2 秒强刷时序契约
 
-提交成功与删除后，前端都执行：
+提交、编辑成功与删除后，前端都执行：
 
 ```
 setTimeout(() => fetchStagePreview(true), 2000)
 ```
 
-（`SubmitRecordForm.handleSubmit` 与 `RecordCard.handleDeleteRecord`；`fetchStagePreview` 为 `app/stores/relicFreeStore.ts` 导出 store 的 action，`force=true` 绕过 `stagePreviewLoaded` 闩锁重新 GET `/relic-free/stage-preview`——该端点无 HTTP 缓存头，见 [06-data-pipeline.md](06-data-pipeline.md)。）
+（`SubmitRecordForm.handleSubmit`（提交/编辑两模式共用）与 `RecordCard.handleDeleteRecord`；`fetchStagePreview` 为 `app/stores/relicFreeStore.ts` 导出 store 的 action，`force=true` 绕过 `stagePreviewLoaded` 闩锁重新 GET `/relic-free/stage-preview`——该端点无 HTTP 缓存头，见 [06-data-pipeline.md](06-data-pipeline.md)。）
 
 契约语义：后端的最少人数重算是 fire-and-forget（第 4、6 节），响应里不含重算结果；前端赌"2 秒内后端算完"，到点强刷预览数据以更新关卡列表徽标。三点注意：
 

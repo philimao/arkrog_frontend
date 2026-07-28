@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-18
 sources:
   - app/modules/RelicFree/Stage/index.tsx
   - app/modules/RelicFree/Stage/StageDetail.tsx
@@ -42,7 +42,7 @@ sources:
 ## 维护约定
 
 1. **修复后同 PR 销项**：修掉某条问题的 PR 必须同时删除（或更新）本表对应行，不允许"先修代码、回头再改文档"。
-2. **区分本地 HEAD 与线上部署**：本表所有"已确认"针对本地 HEAD 代码；线上服务器仍运行 `3b04de7`（2026-07-13 调研核查），凡标注"待部署"的行，线上行为以旧代码为准。部署完成后须同步更新对应行与 [07-ops-runbook.md](07-ops-runbook.md) 的线上现状段。
+2. **区分本地 HEAD 与线上部署**：本表所有"已确认"针对本地 HEAD 代码；生产后端于 2026-07-18 部署至 `7dd455e`，dev 后端仍为 `398672a`。表内其余"待部署"条目仍须按各自前端/后端部署状态单独核实。
 3. 处置定性取值：**bug 待修**（应该修，没人反对）；**已修待部署**（本地 HEAD 已修，线上未上）；**设计如此**（有意为之，链接对应 ADR 或正文文档）；**待决策**（修不修、怎么修需要人拍板）。
 4. level 语义一律以 `arkrog_backend/docs/Permission.md` 为权威（0=VISITOR / 1=USER / 2=LINKED / 3=CONTENT_ADMIN / 4=ADMIN / 5=SU / 6=ROOT），不要按业务想象另起解释。
 
@@ -50,8 +50,8 @@ sources:
 
 | 症状 | 位置（路径 + 符号） | 确认状态 | 影响 | 处置定性 |
 |---|---|---|---|---|
-| **写路径四处断裂（fc2f75f~790afd6 区间）**：①`persistStagePreview`/`persistStageEnemies` 调用被 fc2f75f（2025-11-14）移除的 `dataCacheManager.set` → 增量重算 100% TypeError 且被 `.catch(console.error)` 吞掉、admin 全量重算必 500；②`stagePreviewSingleUpdate` 以已删除的缓存读接口起步；③`stageEnemies.js` 从 `#routers/gamedata.js` 导入已迁移的 `processLevelData` → import 即抛错，`util-scripts/updateGameData.ts` 整体无法启动；④隐藏层：`processLevelData` 已变 async 未 await、`loadAppDataFromSource` 把 `camelToKebab` 函数当映射表下标访问恒 undefined | arkrog_backend/utils/appData/stagePreview.js 的 `stagePreviewSingleUpdate`/`persistStagePreview`；utils/appData/stageEnemies.js 的 `stageEnemiesUpdate`；utils/appData/db.js 的 `loadAppDataFromSource`；utils/dataCache.js 的 `DataCacheManager` | **本地 HEAD 已由 790afd6（2026-07-13）全部修复**：补公有 `set`（Redis 优先、内存保底）、`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时调用 `buildPreloadData` 重建 breadcrumb（调研预告的"增量更新丢面包屑"次级问题在同一提交内一并处理）、`stageEnemies.js` 改从 `#utils/gamedata/level.js` 导入并补 await、camelToKebab 下标误用修复 | 断裂期间：提交/删除记录后"最高难度最少人数"永不更新（前端 2 秒刷新契约落空，见 [adr/0006](adr/0006-settimeout-2000-refresh-contract.md)）、游戏数据更新脚本瘫痪 | **已修待部署 + 待回填**：线上仍跑 3b04de7，Mongo `Data.stage-preview`/`stage-enemies` 尚未回填。回填顺序：部署 790afd6 → L4 管理员 `POST /admin/calculate-stage-preview` 重建 stage-preview → 跑 `util-scripts/updateGameData.ts` 重建 stage-enemies。操作细节见 [07-ops-runbook.md](07-ops-runbook.md)，链路正文见 [06-data-pipeline.md](06-data-pipeline.md) |
-| **线上部署滞后（无藏域四个提交）**：线上 3b04de7 不含 4015ad6/15e6de6/6fe4525（record 服务端权限校验、删除收紧 L4、`submitFields` 白名单 + `isValidRecordUrl` 协议校验）与 790afd6（缓存链路修复）；另有 storage 域修复 289baa8 同样未部署，登记于 [../../../../docs/auth-and-permissions.md](../../../../docs/auth-and-permissions.md)。3b04de7 的 `/record/submit` 只查登录不查等级、`record = req.body` 整包落库（mass-assignment）、`/record/delete` 任何登录用户可删 | arkrog_backend/routers/record.js（对比 `git show 3b04de7:routers/record.js`） | 已确认（2026-07-13 git 对比 + 调研核查线上版本；线上版本无法从仓库内直接复核） | 线上实际权限行为与本模块文档描述的现行代码不一致：任何 L1 登录用户可 curl 提交/删除记录并注入任意字段 | **待部署**（部署 runbook 见 [07-ops-runbook.md](07-ops-runbook.md)；权限对照正文见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)） |
+| **写路径四处断裂（fc2f75f~790afd6 区间）**：①`persistStagePreview`/`persistStageEnemies` 调用被 fc2f75f（2025-11-14）移除的 `dataCacheManager.set` → 增量重算 100% TypeError 且被 `.catch(console.error)` 吞掉、admin 全量重算必 500；②`stagePreviewSingleUpdate` 以已删除的缓存读接口起步；③`stageEnemies.js` 从 `#routers/gamedata.js` 导入已迁移的 `processLevelData` → import 即抛错，`util-scripts/updateGameData.ts` 整体无法启动；④隐藏层：`processLevelData` 已变 async 未 await、`loadAppDataFromSource` 把 `camelToKebab` 函数当映射表下标访问恒 undefined | arkrog_backend/utils/appData/stagePreview.js 的 `stagePreviewSingleUpdate`/`persistStagePreview`；utils/appData/stageEnemies.js 的 `stageEnemiesUpdate`；utils/appData/db.js 的 `loadAppDataFromSource`；utils/dataCache.js 的 `DataCacheManager` | **已由 790afd6（2026-07-13）全部修复并于 2026-07-18 部署**：补公有 `set`（Redis 优先、内存保底）、`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时调用 `buildPreloadData` 重建 breadcrumb、`stageEnemies.js` 修正导入并补 await、camelToKebab 下标误用修复 | 断裂期间：提交/删除记录后"最高难度最少人数"永不更新、游戏数据更新脚本瘫痪 | **已修复、已部署、已回填**：生产 `7dd455e` 完整执行七步数据更新，Mongo/Redis 的 `stage-preview` 与 `stage-enemies` 已重建；验证见 [07-ops-runbook.md](07-ops-runbook.md) 与 [06-data-pipeline.md](06-data-pipeline.md) |
+| **线上部署滞后（无藏域四个提交）**：生产曾停在 3b04de7，不含 4015ad6/15e6de6/6fe4525（record 服务端权限校验、删除收紧 L4、字段白名单 + URL 协议校验）与 790afd6（缓存链路修复） | arkrog_backend/routers/record.js | **已于 2026-07-18 随生产 `7dd455e` 部署** | 历史窗口内线上权限行为与现行文档不一致 | **已部署销项**（权限对照正文见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)） |
 
 ## 二、幻影端点与外链解析
 
@@ -105,7 +105,7 @@ sources:
 | 症状 | 位置（路径 + 符号） | 确认状态 | 影响 | 处置定性 |
 |---|---|---|---|---|
 | **Express 4 裸 async 处理器（请求挂起）**：`POST /user/favorite` 与 `POST /seed/ids` 未包 `asyncHandler`；`new ObjectId(非法字符串)` 抛错后 Express 4 不接管 async 异常 → 请求既无响应也无错误页，挂到客户端超时。对照组：`routers/record.js` 全部处理器已用 `asyncHandler` | arkrog_backend/routers/user.js 的 `POST /favorite`；arkrog_backend/routers/seed.js 的 `POST /ids`；arkrog_backend/middleware/errorHandler.js 的 `asyncHandler` | **本地 HEAD 已修（2026-07-13）**：两处理器均包 `asyncHandler`，且 `new ObjectId(非法串)` 的 BSONError 就地 try/catch 转 `BusinessError(400)`，请求不再挂起 | 构造非法 id 的请求可无限占用连接；前端 `handleStarRecord` 的 try/catch 对挂起请求无效（Promise 永不 settle） | **已修待部署** |
-| **`/audit-log` 无鉴权 + 无藏无审计（双缺口）**：①`app.ts` 挂载 `/audit-log` 无任何守卫，`routers/auditLog.js` 自身也无 session 检查 → 任何访客可查全部审计日志（含操作者用户名）；②记录域的 submit/delete 根本不写审计——`logResourceOperation` 的调用方只有赛事域（utils/tournament、utils/pendingTournaments） | arkrog_backend/app.ts（router 挂载段）；arkrog_backend/routers/auditLog.js；arkrog_backend/routers/record.js（无审计调用） | 已确认（2026-07-13 全仓库检索） | 有审计的资源日志对外裸奔，需要审计的无藏操作（谁删了记录）反而无日志——删除是硬删除，事后完全不可追溯 | bug 待修（端点加 L4 守卫；record 写路径接入审计。权限机制见 [../../../../docs/auth-and-permissions.md](../../../../docs/auth-and-permissions.md)） |
+| **`/audit-log` 无鉴权 + 无藏无审计（双缺口）**：①`app.ts` 挂载 `/audit-log` 无任何守卫，`routers/auditLog.js` 自身也无 session 检查 → 任何访客可查全部审计日志（含操作者用户名）；②记录域的 submit/delete 根本不写审计——`logResourceOperation` 的调用方只有赛事域（utils/tournament、utils/pendingTournaments） | arkrog_backend/routers/auditLog.js；arkrog_backend/routers/record.js | **本地 HEAD 已修（2026-07-17）**：①`routers/auditLog.js` 前置 `router.use` 登录 + `level >= 4` 守卫；②record 域 submit/edit/delete 三条写路径均接入 `logResourceOperation`（resourceType=`record`，快照剔除 `data` 字段），后台新增"无藏审计"页（`/admin/record-audit`）可查 | 修复部署前：审计日志对外裸奔、无藏删除不可追溯 | **已修待部署**（权限机制见 [../../../../docs/auth-and-permissions.md](../../../../docs/auth-and-permissions.md)） |
 
 ## 八、杂项（不产出错误数据，但埋坑）
 
@@ -113,7 +113,7 @@ sources:
 |---|---|---|---|---|
 | `recordStore.clearActiveRecord` 零调用：举报弹窗关闭后 `activeRecord` 残留 | app/stores/recordStore.tsx 的 `clearActiveRecord` | 已确认（2026-07-13 全仓库检索） | 死代码 + 状态残留（下次打开举报弹窗前短暂显示旧记录信息的隐患） | bug 待修（关闭时调用或删除） |
 | console.log 残留多处：store 全量数据打印、`setTitle` 调试输出（`SubmitRecordForm.handleSubmit` 的 payload 整包打印与 `ReportModal.onOpenChange` 调试输出已于 2026-07-13 随相关修复删除） | app/stores/relicFreeStore.ts 的 `fetchRelicFreeData`；app/stores/appDataStore.ts 的 `fetchAppData`；app/modules/Home/Favorite/index.tsx 的 `setTitle` 回调；arkrog_backend/utils/appData/stagePreview.js 的 `persistStagePreview`（打印整个 stagePreview 对象） | 已确认（2026-07-13 源码核实） | 生产环境噪音；后端整对象打印在全量重算时刷屏 | bug 待修 |
-| 模组"继承上次选择"死逻辑：`setMemberDataArray` 里 `prevData` 的 uniequipId 继承赋值**紧接着**被无条件的"默认选择最新模组"赋值覆盖 | app/modules/RelicFree/Stage/SubmitRecordForm.tsx 的 team 解析 `useEffect` | 已确认（2026-07-13 源码核实） | 注释宣称的继承行为从未生效：每次改动队伍字符串都重置为最新模组 | 待决策（补 else 恢复继承语义，或删继承分支承认现状） |
+| 模组"继承上次选择"死逻辑：`setMemberDataArray` 里 `prevData` 的 uniequipId 继承赋值**紧接着**被无条件的"默认选择最新模组"赋值覆盖 | app/modules/RelicFree/Stage/SubmitRecordForm.tsx 的 team 解析 `useEffect` | **本地 HEAD 已修（2026-07-17，随编辑功能改造）**：初值优先级理顺为 本次会话已选 > 记录存量（编辑模式）> 最新模组 | 修复前每次改动队伍字符串都重置为最新模组 | **已修待部署** |
 | 敌情列表布局依赖 falsy 短路：`[...enemies, ...Array(5).fill(0)]` 用数字 0 填充占位，靠 `EnemyAvatar` 的 `if (!name) return null` 兜底不渲染 | app/modules/RelicFree/Stage/StageDetail.tsx 的敌方情报渲染段；app/components/Character/Enemy/EnemyAvatar.tsx 的 `EnemyAvatar` | 已确认（2026-07-13 源码核实） | `name` prop 类型声明是 `string \| null` 却传入 `0`；EnemyAvatar 的空值守卫一旦被"修理"，敌情区渲染 5 个损坏头像 | 待决策（改用 CSS 占位或显式 null 填充） |
 | 背景立绘 `Math.random` 非确定性：每次渲染在"队伍成员 ∩ 可用立绘"交集里重抽一张，无 memo | app/components/RecordCard/RecordCard.tsx 的 `availableBg`/`charId` 计算（渲染体内） | 已确认（2026-07-13 源码核实） | 任何触发重渲染的操作（收藏、resize、父组件刷新）都会随机换背景图并重新发起图片请求 | 待决策（设计上"随机立绘"可能是特性，但至少应按 record._id 稳定取样；见 [04-record-card-and-display.md](04-record-card-and-display.md)） |
 

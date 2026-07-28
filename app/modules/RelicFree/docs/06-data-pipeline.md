@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-18
 sources:
   - ../arkrog_backend/routers/relic-free.js
   - ../arkrog_backend/routers/appData.js
@@ -140,13 +140,13 @@ flowchart LR
 2. `util-scripts/updateGameData.ts` 的**第 6 步**（可 `--skip-preview` 跳过，理由见第 5 节）；
 3. 直接执行 `utils/appData/stagePreview.js`（文件尾部的直执守卫经 `initDatabaseForScript` 起库连接）。
 
-### 3.3 修复历史与线上滞后（措辞规范）
+### 3.3 修复历史与生产部署状态
 
-> ⚠️ **写路径断裂存在于 fc2f75f ~ 790afd6 区间；本地 HEAD 已修复；线上待部署 + 待回填。**
+> ⚠️ **写路径断裂存在于 fc2f75f ~ 790afd6 区间；生产已于 2026-07-18 部署修复并完成回填。**
 >
 > - fc2f75f（2025-11-14，缓存迁移 Redis 的重构）删除了 `dataCacheManager` 的公有 `get`/`set` 后未迁移全部调用点，此后区间内：增量/全量重算在持久化一步 100% TypeError（增量的错误被 `.catch(console.error)` 吞掉）、`stageEnemies.js` 因从已迁移的旧位置 import `processLevelData` 而使 `updateGameData.ts` 无法启动，另有 async 未 await、`camelToKebab` 被当映射表下标访问两处隐藏层断裂。
 > - 790afd6（2026-07-13，本地 HEAD 已含）修复：`DataCacheManager` 补公有 `set`；`stagePreviewSingleUpdate` 改用 `getOrLoadAppData` 读取且单关更新时重建面包屑；`stageEnemies.js` 改从 `#utils/gamedata/level.js` 导入 `processLevelData` 并补 await；`loadAppDataFromSource` 修复 `camelToKebab` 下标误用。本篇第 3.1/3.2/6 节均按修复后的现行代码描述。
-> - **线上服务器仍运行 3b04de7（不含修复）**，且断裂期间 Mongo 的 `Data.stage-preview` / `Data.stage-enemies` 未被更新过，尚未回填。部署与回填顺序见 [07-ops-runbook.md](./07-ops-runbook.md)；缺陷登记见 [known-issues.md](./known-issues.md)。
+> - 生产后端已于 2026-07-18 部署至 `7dd455e`，随后完整执行 `yarn update-data:prod --yes`：`stage-preview` 与 `stage-enemies` 已重建并写入 Mongo/Redis；验证得到 70 条 `ro6` preview 与 70 条 `ro6` stageEnemies。历史部署与回填顺序仍见 [07-ops-runbook.md](./07-ops-runbook.md)；缺陷销项见 [known-issues.md](./known-issues.md)。
 
 ## 4. StagePreviewData 字段语义
 

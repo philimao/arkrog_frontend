@@ -6,6 +6,18 @@ export interface AdminTournamentLite {
   name: string;
 }
 
+export interface AdminRecordLite {
+  _id: string;
+  stageId: string;
+  type: string;
+  level: string;
+  teamSize: number;
+  raider?: string;
+  submitter?: string;
+  editor?: string;
+  date_created?: number;
+}
+
 export type PendingStatus = "pending" | "approved" | "rejected";
 
 export interface AuditChange {
@@ -51,6 +63,11 @@ export const adminServices = {
   searchTournaments: (keyword: string) =>
     api.get<{ tournaments: AdminTournamentLite[] }>(
       `/admin/search-tournaments?keyword=${encodeURIComponent(keyword)}`,
+    ),
+
+  searchRecords: (keyword: string) =>
+    api.get<{ records: AdminRecordLite[] }>(
+      `/admin/search-records?keyword=${encodeURIComponent(keyword)}`,
     ),
 
   listPendingTournaments: (params: {

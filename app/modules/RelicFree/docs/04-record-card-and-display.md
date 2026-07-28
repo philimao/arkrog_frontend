@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-17
 sources:
   - app/components/RecordCard/RecordCard.tsx
   - app/components/RecordCard/CharAvatar.tsx
@@ -89,12 +89,13 @@ setTimeout(() => { fetchStagePreview(true); }, 2000);
 
 ## 4. 操作权限矩阵与 openModal DOM-id 契约
 
-三个操作按钮的门槛全部是**前端渲染层软守卫**；后端硬门槛在 arkrog_backend/routers/record.js（本地 HEAD 与线上部署版本存在差异），对照表见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)。等级语义以 arkrog_backend/docs/Permission.md 为权威（0=VISITOR、1=USER、2=LINKED、3=CONTENT_ADMIN、4=ADMIN、5=SU、6=ROOT）。
+操作按钮的门槛全部是**前端渲染层软守卫**；后端硬门槛在 arkrog_backend/routers/record.js（本地 HEAD 与线上部署版本存在差异），对照表见 [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md)。等级语义以 arkrog_backend/docs/Permission.md 为权威（0=VISITOR、1=USER、2=LINKED、3=CONTENT_ADMIN、4=ADMIN、5=SU、6=ROOT）。
 
 | 操作 | 前端门槛 | 行为 | 端点 |
 |---|---|---|---|
 | 收藏（星标） | `!userInfo?.level` 时 `openModal("login")`——未登录**与 level 0（VISITOR）等价对待** | `handleStarRecord` 按当前是否已收藏发 `add`/`remove`，成功后 `updateUserInfo({ favorite })` 就地更新星标 | `POST /user/favorite` |
 | 举报 | 同上 | `recordStore.setActiveRecord(record)` → `openModal("report-modal")`；`ReportModal` 从 `recordStore.activeRecord` 取卡片信息 | `POST /user/feedback` |
+| 编辑（2026-07-17 新增，删除图标左侧） | `level >= 4` 或（`level >= 3` 且 `record.submitterId === userInfo.userId`），即 **ADMIN 任意记录 / CONTENT_ADMIN 本人记录**（桌面/移动两处同判，`canEdit` 单点计算） | `setIsEditing(true)` → 卡内条件渲染 `SubmitRecordForm`（编辑模式，不走 openModal DOM-id 契约）→ 保存成功按 `_id` 原位更新本地列表 → 2 秒后强刷预览；编辑链路详解见 [02 §4.3](02-record-lifecycle-and-schema.md) | `POST /record/edit` |
 | 删除 | `userInfo?.level !== undefined && userInfo?.level >= 4`（**ADMIN 及以上才渲染删除图标**，桌面/移动两处同判） | `window.confirm` → 删除（2026-07-13 补 try/catch，失败 `toast.error` 后中止、不动本地列表）→ `setRecords?.` 剔除 → 自己收藏过该记录时调 `/user/favorite` remove 自清（失败仅 `toast.warning`）→ 2 秒后强刷预览 | `POST /record/delete` |
 
 **openModal 的 DOM-id 全局契约**（`app/utils/dom.ts` 的 `openModal`）：`openModal(id)` 等价于 `document.getElementById(id)?.click()`，点击的是 `app/components/Modal/index.tsx` 的 `ModalTemplate` 渲染的隐藏触发按钮。两个 id 的注册点：
@@ -141,10 +142,10 @@ charId = availableBg.length ? availableBg[Math.floor(availableBg.length * Math.r
 
 操作栏存在**两份重复实现**，同改必须两处同步：
 
-- 桌面：卡片内右侧 `StyledCardActions`（`hidden sm:flex`），收藏/举报/删除三图标 + "跳转原址"；
-- 移动：卡片下方独立条（`flex sm:hidden`），同样三图标 + "跳转原址"，另加"查看备注"开关（`showNote`，桌面版备注直接内嵌在左信息区）。
+- 桌面：卡片内右侧 `StyledCardActions`（`hidden sm:flex`），收藏/举报/编辑/删除四图标 + "跳转原址"；
+- 移动：卡片下方独立条（`flex sm:hidden`），同样四图标 + "跳转原址"，另加"查看备注"开关（`showNote`，桌面版备注直接内嵌在左信息区）。
 
-三个按钮的 onClick 逻辑（含登录守卫、level>=4 判断）在两处**逐字重复**——改权限门槛或换弹窗 id 时漏改另一套是现实风险。移动条里还挂着一个 `ModalTemplate triggerId={record._id}` 的备注弹窗，其隐藏触发按钮全仓无人 `openModal(record._id)`，属死标记。
+各按钮的 onClick 逻辑（含登录守卫、level 判断）在两处**逐字重复**——改权限门槛或换弹窗 id 时漏改另一套是现实风险（编辑按钮的 `canEdit` 已提升为组件级单点计算，两处只重复渲染判断）。移动条里还挂着一个 `ModalTemplate triggerId={record._id}` 的备注弹窗，其隐藏触发按钮全仓无人 `openModal(record._id)`，属死标记。
 
 ## 7. `!record` 占位分支与条件 Hook 违规
 

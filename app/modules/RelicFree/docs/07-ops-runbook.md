@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-18
 sources:
   - ../arkrog_backend/routers/admin.js
   - ../arkrog_backend/routers/redis-admin.js
@@ -47,7 +47,7 @@ sources:
 | 离线全量数据管线 | `yarn update-data` / `yarn update-data:prod --yes`（`util-scripts/updateGameData.ts` 七步，含 stage-enemies + stage-preview） | 服务器 shell；生产库必须 `--yes` | 全部游戏数据 + 两份无藏派生数据 + 缓存预热 | 七步日志全 `done`；正文见[顶层数据管线](../../../../docs/data-pipeline.md)第 3 节 |
 | 重启后端（兜底） | `pm2 restart <进程>`；启动时 `app.ts` 清空全部非 `sess:` Redis 键并 `warmUpCache` | 服务器 shell | 隐式全量**缓存**重建（§5） | 启动日志 `Cache warm-up completed` |
 
-> `GET /redis-admin/status` 现整体透传 `dataCacheManager.getStats()` 的 `{ redis, memory, total }` 三层嵌套结构（2026-07-13 修复：此前路由按旧扁平字段名取值恒 undefined，Redis 侧计数又因 KEYS 模式不带物理前缀恒为 0，返回的 `stats` 是空对象；现 `getStats` 内部手动拼物理前缀统计，详见 `arkrog_backend/docs/DataCache.md`）。矩阵与本条标注"2026-07-13"的行为——**以下修复均未部署**：线上仍运行旧版后端，线上 `/status` 仍返回空 `stats`，验证线上缓存请改用 `/redis-admin/keys` 或 `/redis-admin/info`。
+> `GET /redis-admin/status` 现整体透传 `dataCacheManager.getStats()` 的 `{ redis, memory, total }` 三层嵌套结构（2026-07-13 修复：此前路由按旧扁平字段名取值恒 undefined，Redis 侧计数又因 KEYS 模式不带物理前缀恒为 0，返回的 `stats` 是空对象；现 `getStats` 内部手动拼物理前缀统计，详见 `arkrog_backend/docs/DataCache.md`）。该修复已随生产后端 `7dd455e` 于 2026-07-18 部署。
 
 ### curl 示例
 
@@ -95,7 +95,7 @@ curl -X DELETE "$HOST/redis-admin/key/appdata:stagePreview" -H "$COOKIE"
 
 ## 4. 断裂修复后的回填顺序
 
-背景与措辞规范见 [06](./06-data-pipeline.md) 第 3.3 节：写路径断裂存在于 fc2f75f ~ 790afd6 区间，已由 790afd6（2026-07-13）修复、本地 HEAD 已含该提交；**线上仍跑 3b04de7，Mongo 的 `Data.stage-preview` / `Data.stage-enemies` 自断裂起未更新，部署后必须回填**。顺序：
+背景与措辞规范见 [06](./06-data-pipeline.md) 第 3.3 节：写路径断裂存在于 fc2f75f ~ 790afd6 区间，已由 790afd6（2026-07-13）修复。**以下部署与回填步骤已于 2026-07-18 在生产完成**；保留顺序供后续同类恢复操作复用：
 
 1. **部署修复**：服务器拉取含 790afd6 的分支，安装依赖后 pm2 重启后端。重启自带的"清缓存 + warmUpCache"只是把 Mongo 里**仍是旧的**两份数据回灌 Redis，不会重算——所以仅部署不够。
 2. **回填 stage-preview**：Level 4 管理员 `POST /admin/calculate-stage-preview`（§2 curl 示例），从现存 Records 全量重算并写 Mongo + Redis。

@@ -26,6 +26,7 @@ export const homePages = [
 export const adminPages = [
   { pathname: "/tournament-audit", title: "赛事审计" },
   { pathname: "/pending-tournaments", title: "待审核赛事" },
+  { pathname: "/record-audit", title: "无藏审计" },
 ];
 
 export default [
@@ -70,6 +71,7 @@ export default [
     route("/admin", "routes/AdminLayout.tsx", [
       index("modules/Admin/index.tsx"),
       route("tournament-audit", "modules/Admin/TournamentAudit/index.tsx"),
+      route("record-audit", "modules/Admin/RecordAudit/index.tsx"),
       route(
         "pending-tournaments",
         "modules/Admin/PendingTournaments/index.tsx",

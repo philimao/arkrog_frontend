@@ -12,6 +12,10 @@ export interface RecordType {
   note: string;
   level: string;
   submitter: string;
+  /** 提交人用户ID（后端返回全文档；老记录可能缺失） */
+  submitterId?: string;
+  /** 最近编辑人用户名（仅被编辑过的记录有） */
+  editor?: string;
   date_created: number;
   date_modified?: number;
   date_published: number;

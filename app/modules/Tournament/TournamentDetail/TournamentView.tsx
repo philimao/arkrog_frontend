@@ -148,7 +148,7 @@ export default function TournamentView({
             <div>
               {tournamentData.organizers?.map((organizer, index) => (
                 <BilibiliUser
-                  key={organizer.mid}
+                  key={organizer.mid === '0' ? index : organizer.mid}
                   mid={organizer.mid}
                   name={organizer.name}
                   face={organizer.avatar}

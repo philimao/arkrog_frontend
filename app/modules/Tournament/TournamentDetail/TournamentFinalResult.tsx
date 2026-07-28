@@ -39,6 +39,63 @@ const StyledFinalResultRank = styled.div`
   user-select: none;
 `;
 
+const StyledBracketParticipant = styled.div<{ $isWinner?: boolean }>`
+  border-left: 3px solid
+    ${(props) => (props.$isWinner ? "var(--ak-blue)" : "transparent")};
+`;
+
+const StyledBracketMatch = styled.div`
+  position: relative;
+  padding: 1rem 1.25rem;
+  background: var(--black-gray-70);
+  border-radius: 1rem;
+  min-height: 5.5rem;
+`
+
+const StyledBracketMatchWrapper = styled.div<{
+  $showLeftConnector?: boolean;
+  $showRightConnector?: boolean;
+}>`
+  position: relative;
+
+  &::before {
+    content: "";
+    display: ${(props) => (props.$showLeftConnector ? "block" : "none")};
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--ak-blue);
+  }
+
+  &:nth-child(odd):after {
+    content: "";
+    position: absolute;
+    display: ${(props) => (props.$showRightConnector ? "block" : "none")};
+    border-top: 1px solid var(--ak-blue);
+    border-top-right-radius: 0.3em;
+    border-right: 1px solid var(--ak-blue);
+    top: 50%;
+    width: 0.75rem;
+    height: 100%;
+    right: -0.75rem;
+  }
+
+  &:nth-child(even):after {
+    content: "";
+    position: absolute;
+    display: ${(props) => (props.$showRightConnector ? "block" : "none")};
+    border-bottom: 1px solid var(--ak-blue);
+    border-bottom-right-radius: 0.3em;
+    border-right: 1px solid var(--ak-blue);
+    bottom: 50%;
+    width: 0.75rem;
+    height: 100%;
+    right: -0.75rem;
+  }
+`;
+
 // Constants
 const rankMap: { [key: number]: string } = {
   1: "冠军",
@@ -134,6 +191,273 @@ export const getFinalStage = (
   };
 };
 
+type TournamentBracketParticipant = {
+  id: string;
+  name: string;
+  result?: TournamentGame["result"];
+  point?: number;
+  face?: string;
+};
+
+type TournamentBracketMatch = {
+  left: TournamentBracketParticipant;
+  right: TournamentBracketParticipant;
+  leftSourceIndex?: number;
+  rightSourceIndex?: number;
+};
+
+type TournamentBracketRound = {
+  stageName: string;
+  matches: TournamentBracketMatch[];
+};
+
+export const buildTournamentBracketRounds = (
+  tournamentData: TournamentData,
+): TournamentBracketRound[] => {
+  const finalInfo = getFinalStage(tournamentData);
+  const finalStage = finalInfo.stage;
+  const finalIndex = finalInfo.index;
+
+  if (finalIndex < 0 || !finalStage || finalStage.type !== "1on1") {
+    return [];
+  }
+
+  // only show bracket when final stage has at least one win and one lose recorded
+  const finalStageName = finalStage.name;
+  const hasWin = tournamentData.players.some((p) => p.games.find((g) => g.stage === finalStageName && g.result === "win"));
+  const hasLose = tournamentData.players.some((p) => p.games.find((g) => g.stage === finalStageName && g.result === "lose"));
+  if (!hasWin || !hasLose) return [];
+
+  // collect consecutive 1on1 stages ending at finalIndex, stop when encountering non-1on1
+  const allStages = tournamentData.stages ?? [];
+  let startIdx = finalIndex;
+  while (startIdx - 1 >= 0 && allStages[startIdx - 1].type === "1on1") {
+    startIdx -= 1;
+  }
+  const includeStages = allStages.slice(startIdx, finalIndex + 1);
+
+  const rounds = includeStages
+    .sort((a, b) => a.startTime - b.startTime)
+    .filter((stage) => stage.type === "1on1")
+    .map((stage) => {
+      const matchMap = new Map<
+        string,
+        {
+          left?: TournamentBracketParticipant;
+          right?: TournamentBracketParticipant;
+        }
+      >();
+
+      tournamentData.players.forEach((player) => {
+        const game = player.games.find((item) => item.stage === stage.name);
+        if (!game) return;
+
+        const rivalMid = game.rivalMid || player.mid;
+        const key = [player.mid, rivalMid].sort().join("|");
+        const isLeft = player.mid <= rivalMid;
+
+        const participant: TournamentBracketParticipant = {
+          id: player.mid,
+          name: player.name,
+          result: game.result,
+          point: game.point,
+          face: player.face,
+        };
+
+        const entry = matchMap.get(key) ?? {};
+        if (isLeft) {
+          entry.left = participant;
+        } else {
+          entry.right = participant;
+        }
+        matchMap.set(key, entry);
+      });
+
+      const matches = Array.from(matchMap.values())
+        .map((entry) => ({
+          left: entry.left || {
+            id: `missing-${Math.random().toString(36).slice(2, 8)}`,
+            name: "-",
+          },
+          right: entry.right || {
+            id: `missing-${Math.random().toString(36).slice(2, 8)}`,
+            name: "-",
+          },
+        }))
+        .sort((a, b) => {
+          if (a.left.name !== b.left.name) return a.left.name.localeCompare(b.left.name);
+          return a.right.name.localeCompare(b.right.name);
+        });
+
+      return {
+        stageName: stage.name,
+        matches,
+      };
+    })
+    .filter((round) => round.matches.length > 0);
+
+  // Helper to pick a winner participant from a match if available
+  const pickWinner = (
+    match?: TournamentBracketMatch,
+  ): TournamentBracketParticipant | undefined => {
+    if (!match) return undefined;
+    const { left, right } = match;
+    if (left.result === "win") return left;
+    if (right.result === "win") return right;
+    // fallback to higher point if numeric
+    const lPoint = typeof left.point === "number" ? left.point : Number.NEGATIVE_INFINITY;
+    const rPoint = typeof right.point === "number" ? right.point : Number.NEGATIVE_INFINITY;
+    if (lPoint !== Number.NEGATIVE_INFINITY || rPoint !== Number.NEGATIVE_INFINITY) {
+      return lPoint >= rPoint ? left : right;
+    }
+    // otherwise prefer a real player (not placeholder "-")
+    if (left.name && left.name !== "-") return left;
+    if (right.name && right.name !== "-") return right;
+    return undefined;
+  };
+
+  // For each next-round match, find which previous-round matches feed into its left/right
+  // by matching participant ids, then reorder previous-round matches so feeding matches
+  // become adjacent (2*i, 2*i+1 -> i). Do not overwrite actual next-round participants.
+  for (let r = 1; r < rounds.length; r++) {
+    const prevRound = rounds[r - 1];
+    const currRound = rounds[r];
+    const prev = prevRound.matches;
+
+    // Map participant id -> prev match index
+    const idToPrevIndex = new Map<string, number>();
+    prev.forEach((m, idx) => {
+      if (m.left?.id) idToPrevIndex.set(m.left.id, idx);
+      if (m.right?.id) idToPrevIndex.set(m.right.id, idx);
+    });
+
+    // Determine source indices for current matches
+    const leftSourceFor: Array<number | undefined> = [];
+    const rightSourceFor: Array<number | undefined> = [];
+    currRound.matches.forEach((m) => {
+      const lId = m.left?.id;
+      const rId = m.right?.id;
+      const lIdx = lId ? idToPrevIndex.get(lId) : undefined;
+      const rIdx = rId ? idToPrevIndex.get(rId) : undefined;
+      leftSourceFor.push(lIdx);
+      rightSourceFor.push(rIdx);
+    });
+
+    // Rebuild previous round order so that for each curr match j,
+    // its left-source match comes first, then right-source match.
+    const used = new Array(prev.length).fill(false);
+    const newPrev: TournamentBracketMatch[] = [];
+    for (let j = 0; j < currRound.matches.length; j++) {
+      const lIdx = leftSourceFor[j];
+      const rIdx = rightSourceFor[j];
+      if (typeof lIdx === "number" && !used[lIdx]) {
+        newPrev.push(prev[lIdx]);
+        used[lIdx] = true;
+        // annotate source index on current match
+        (currRound.matches[j] as TournamentBracketMatch).leftSourceIndex = newPrev.length - 1;
+      }
+      if (typeof rIdx === "number" && !used[rIdx]) {
+        newPrev.push(prev[rIdx]);
+        used[rIdx] = true;
+        (currRound.matches[j] as TournamentBracketMatch).rightSourceIndex = newPrev.length - 1;
+      }
+      // If neither source found, try to take by bracket position fallback
+      if ((typeof lIdx !== "number" || used[lIdx]) && (typeof rIdx !== "number" || used[rIdx])) {
+        const fallbackLeft = prev[j * 2];
+        const fallbackRight = prev[j * 2 + 1];
+        if (fallbackLeft && !used[j * 2]) {
+          newPrev.push(fallbackLeft);
+          used[j * 2] = true;
+        }
+        if (fallbackRight && !used[j * 2 + 1]) {
+          newPrev.push(fallbackRight);
+          used[j * 2 + 1] = true;
+        }
+      }
+    }
+
+    // Append any remaining unmatched prev matches
+    prev.forEach((m, idx) => {
+      if (!used[idx]) newPrev.push(m);
+    });
+
+    // Replace prev round matches order
+    prevRound.matches = newPrev;
+  }
+
+  return rounds;
+};
+
+const TournamentBracketGraph = ({
+  tournamentData,
+}: {
+  tournamentData: TournamentData;
+}) => {
+  const rounds = buildTournamentBracketRounds(tournamentData);
+
+  if (!rounds.length) {
+    return null;
+  }
+
+  return (
+    <div className="hidden lg:block border-t border-mid-gray pt-8">
+      <div className="mb-4 text-xl font-semibold text-white">淘汰赛赛况</div>
+      <div className="flex overflow-x-auto gap-6 pr-2">
+        {rounds.map((round, roundIndex) => (
+          <div key={round.stageName} className="min-w-[280px] flex flex-col gap-4">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-ak-blue">
+              {round.stageName}
+            </div>
+            <div className="flex-1 space-y-6 flex justify-around flex-col">
+              {round.matches.map((match, matchIndex) => {
+                const leftIsWinner = match.left.result === "win";
+                const rightIsWinner = match.right.result === "win";
+                const nextRoundExists = roundIndex < rounds.length - 1;
+
+                return (
+                  <StyledBracketMatchWrapper
+                    key={`${round.stageName}-${roundIndex}-${matchIndex}`}
+                    $showLeftConnector={roundIndex > 0}
+                    $showRightConnector={nextRoundExists}
+                    className="h-full flex flex-col justify-center"
+                  >
+                    <StyledBracketMatch
+                      className="grid gap-3"
+                    >
+                      <StyledBracketParticipant
+                        $isWinner={leftIsWinner}
+                        className={`flex items-center justify-between rounded-md bg-black-gray-70 px-3 py-2 ${
+                          leftIsWinner ? "text-ak-blue" : "text-white"
+                        }`}
+                      >
+                        <span className="truncate">{match.left.name}</span>
+                        <span className="ml-2 text-xs text-light-mid-gray">
+                          {match.left.result === "win" ? "胜" : match.left.result === "lose" ? "负" : "-"}
+                        </span>
+                      </StyledBracketParticipant>
+                      <StyledBracketParticipant
+                        $isWinner={rightIsWinner}
+                        className={`flex items-center justify-between rounded-md bg-black-gray-70 px-3 py-2 ${
+                          rightIsWinner ? "text-ak-blue" : "text-white"
+                        }`}
+                      >
+                        <span className="truncate">{match.right.name}</span>
+                        <span className="ml-2 text-xs text-light-mid-gray">
+                          {match.right.result === "win" ? "胜" : match.right.result === "lose" ? "负" : "-"}
+                        </span>
+                      </StyledBracketParticipant>
+                    </StyledBracketMatch>
+                  </StyledBracketMatchWrapper>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Individual tournament result component
 export function TournamentFinalResultIndividual({
   tournamentData,
@@ -162,38 +486,41 @@ export function TournamentFinalResultIndividual({
     return <>暂无比赛结果</>;
 
   return (
-    <div
-      className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}
-    >
-      {topTiers.map((player, index) => {
-        const lastGame = player.games.find((game) => game.stage === final.name);
-        const rank = index + 1;
+    <div className="flex flex-col gap-8">
+      <div
+        className={`grid ${isFinalOneOnOne ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-8`}
+      >
+        {topTiers.map((player, index) => {
+          const lastGame = player.games.find((game) => game.stage === final.name);
+          const rank = index + 1;
 
-        if (!lastGame) return null;
+          if (!lastGame) return null;
 
-        return (
-          <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
-            <ResultCardHeader rank={rank} />
-            <div className="relative flex flex-row sm:flex-col lg:flex-row gap-4">
-              <PlayerAvatar imageSrc={player.face} name={player.name} />
-              <div className="flex flex-col">
-                <div className="text-white text-3xl">{player.name}</div>
-                <div className="text-ak-blue text-xl pt-2">
-                  {(final.type === "1on1" ? "赛事积分：" : "") + lastGame.point}
+          return (
+            <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
+              <ResultCardHeader rank={rank} />
+              <div className="relative flex flex-row sm:flex-col lg:flex-row gap-4">
+                <PlayerAvatar imageSrc={player.face} name={player.name} />
+                <div className="flex flex-col">
+                  <div className="text-white text-3xl">{player.name}</div>
+                  <div className="text-ak-blue text-xl pt-2">
+                    {(final.type === "1on1" ? "赛事积分：" : "") + lastGame.point}
+                  </div>
                 </div>
+                <img
+                  src={`/images/squad/${lastGame.starterSquad}.png`}
+                  alt="squad"
+                  className="absolute bottom-0 right-0 h-14 aspect-square object-contain self-end opacity-30"
+                />
               </div>
-              <img
-                src={`/images/squad/${lastGame.starterSquad}.png`}
-                alt="squad"
-                className="absolute bottom-0 right-0 h-14 aspect-square object-contain self-end opacity-30"
-              />
+              <div className="bg-black-gray text-center p-2">
+                {lastGame.ending}
+              </div>
             </div>
-            <div className="bg-black-gray text-center p-2">
-              {lastGame.ending}
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      {isFinalOneOnOne ? <TournamentBracketGraph tournamentData={tournamentData} /> : null}
     </div>
   );
 }
@@ -315,46 +642,49 @@ export function TournamentFinalResultTeam({
   if (!topTiers?.length) return <>暂无比赛结果</>;
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8">
-      {topTiers.map((team, index) => {
-        const lastGame = team.games[team.games.length - 1];
-        const rank = index + 1;
+    <div className="flex flex-col gap-8">
+      <div className="grid lg:grid-cols-2 gap-8">
+        {topTiers.map((team, index) => {
+          const lastGame = team.games[team.games.length - 1];
+          const rank = index + 1;
 
-        if (!lastGame) return null;
+          if (!lastGame) return null;
 
-        return (
-          <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
-            <ResultCardHeader rank={rank} />
-            <div className="relative flex flex-row gap-4">
-              <PlayerAvatar imageSrc={team.avatar} name={team.name} />
-              <div className="flex flex-col">
-                <div className="text-white text-3xl">{team.name}</div>
-                <div className="text-ak-blue text-xl pt-2">
-                  {(final.type === "1on1" ? "队伍积分：" : "") + Number((lastGame.point).toFixed(3))}
+          return (
+            <div key={index} className="flex flex-col bg-black-gray-70 p-4 gap-4">
+              <ResultCardHeader rank={rank} />
+              <div className="relative flex flex-row gap-4">
+                <PlayerAvatar imageSrc={team.avatar} name={team.name} />
+                <div className="flex flex-col">
+                  <div className="text-white text-3xl">{team.name}</div>
+                  <div className="text-ak-blue text-xl pt-2">
+                    {(final.type === "1on1" ? "队伍积分：" : "") + Number((lastGame.point).toFixed(3))}
+                  </div>
                 </div>
               </div>
-            </div>
-            {team.members.map((member, memberIndex) => {
-              const player = tournamentData.players?.find(
-                (player) => player.name === member,
-              );
-              const isKeyMember = team.keyMember === member;
-              const isTeamLeader = team.leader === member;
+              {team.members.map((member, memberIndex) => {
+                const player = tournamentData.players?.find(
+                  (player) => player.name === member,
+                );
+                const isKeyMember = team.keyMember === member;
+                const isTeamLeader = team.leader === member;
 
-              return (
-                <TeamMemberRow
-                  key={memberIndex}
-                  isTeamLeader={isTeamLeader}
-                  isKeyMember={isKeyMember}
-                  keyMemberAlias={tournamentData.keyMemberAlias}
-                  memberAlias={tournamentData.memberAlias}
-                  player={player}
-                />
-              );
-            })}
-          </div>
-        );
-      })}
+                return (
+                  <TeamMemberRow
+                    key={memberIndex}
+                    isTeamLeader={isTeamLeader}
+                    isKeyMember={isKeyMember}
+                    keyMemberAlias={tournamentData.keyMemberAlias}
+                    memberAlias={tournamentData.memberAlias}
+                    player={player}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      {final.type === "1on1" ? <TournamentBracketGraph tournamentData={tournamentData} /> : null}
     </div>
   );
 }

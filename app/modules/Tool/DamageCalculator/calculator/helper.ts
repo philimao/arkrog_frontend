@@ -613,11 +613,10 @@ export class CalculatorHelper {
       const { difficulty, layer } = rogueInput.rogue_6;
       /**
        * 肉鸽难度加成（每层敌人属性提升百分比，下标 = 保密等级 N 值）
-       * ⚠️ 该数组的值**不存在于任何解包表**（roguelike_topic_table 的 difficulties 只有 ruleDesc 文案），
-       * 与 ro4/ro5 一样只能对照游戏内难度面板手抄。当前为占位全 0 = 逐层加成不参与计算，
-       * 敌人面板会低于游戏内实际值。补齐前请勿据此做数值结论。
+       * 取自游戏内难度面板「敌人难度」列（N0~N4 为 ——，N5 起 +1/+2/+3/+5/+6/+7/+8/+10/+12/+16/+20）。
+       * 该数组不存在于解包表（difficulties 只有 ruleDesc 文案），与 ro4/ro5 一样靠面板手抄。
        */
-      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 12, 16, 20];
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
       /** 层数选择器到实际层数的映射（ro6 共 6 层，无第七层，参照 ro4） */
       const layerToZoneMap: Record<string, number> = {
@@ -641,6 +640,41 @@ export class CalculatorHelper {
           new ExpressionGroupNode("*", `保密等级·${difficulty} | 每层加成${enemyAttrMultiplier}%`).addChild(...pow),
         );
       }
+      /**
+       * N0~N3 的敌人减益标注「仅限该难度」，不向上累积，故用 === 而非 >=
+       */
+      if (difficulty === 0) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.6, `保密等级 | 所有敌人最大生命值-40%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.7, `保密等级 | 所有敌人攻击力-30%`),
+        );
+      }
+      if (difficulty === 1) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.8, `保密等级·1 | 所有敌人最大生命值-20%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.8, `保密等级·1 | 所有敌人攻击力-20%`),
+        );
+      }
+      if (difficulty === 2) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.85, `保密等级·2 | 所有敌人最大生命值-15%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.85, `保密等级·2 | 所有敌人攻击力-15%`),
+        );
+      }
+      if (difficulty === 3) {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(0.9, `保密等级·3 | 所有敌人最大生命值-10%`),
+        );
+        context.in_game_buff_final_mul.enemy_atk.addChild(
+          new NumericLiteralNode(0.9, `保密等级·3 | 所有敌人攻击力-10%`),
+        );
+      }
       /** N5 所有敌人最大生命+30% */
       if (difficulty >= 5) {
         context.in_game_buff_final_mul.enemy_max_hp.addChild(
@@ -659,12 +693,29 @@ export class CalculatorHelper {
           new NumericLiteralNode(0.2, `保密等级·11 | 领袖敌人受到的伤害降低20%`),
         );
       }
+      /** N13 “玻利瓦尔，症结之核”的防御力提升至150% */
+      if (difficulty >= 13 && enemyData && enemyData.id === "enemy_2150_shchmr") {
+        context.in_game_buff_final_mul.enemy_def.addChild(
+          new NumericLiteralNode(1.5, `保密等级·13 | “玻利瓦尔，症结之核”的防御力提升至150%`),
+        );
+      }
+      /** N14 “源阶方”的最大生命值提升至200% */
+      if (difficulty >= 14 && enemyData && enemyData.id === "enemy_2148_shorbb") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(2, `保密等级·14 | “源阶方”的最大生命值提升至200%`),
+        );
+      }
+      /** N15 “猎犬proto”的最大生命值提升至150% */
+      if (difficulty >= 15 && enemyData && enemyData.id === "enemy_2137_shsdgo") {
+        context.in_game_buff_final_mul.enemy_max_hp.addChild(
+          new NumericLiteralNode(1.5, `保密等级·15 | “猎犬proto”的最大生命值提升至150%`),
+        );
+      }
       /**
-       * N13/N14/N15 的特定敌人词条解包只写了“提升”而无具体数值，无法量化实现：
-       *   N13 “玻利瓦尔，症结之核”的防御力提升
-       *   N14 “源阶方”的最大生命值提升
-       *   N15 “猎犬proto”的最大生命值提升
-       * 待游戏内实测后按 ro5 的特定敌人写法（比对 enemyData.id）补齐。
+       * 未实现（非敌人属性乘区，或计算器不建模的机制）：
+       *   N13 “未熄之地”额外造成攻击力10%的灼燃损伤（伤害事件，非面板加成）
+       *   N14 “猎犬proto”进入目标点后行动力-1；激活后全场我方每秒流失100点生命
+       *   N15 “猎犬proto”攻击时为“卡德霍，黑流之源”回复1%最大生命
        */
     }
     return context;

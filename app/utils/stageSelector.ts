@@ -11,7 +11,7 @@ export const numOfMinorBoss = {
   ro3: 3,
   ro4: 3,
   ro5: 3,
-  ro6: 0, // 黑流树海 b_1~6 全部计入险路恶敌（含第3层 b_1~3）
+  ro6: 3, // 黑流树海：b_1~b_3 为三层小boss，不计入险路恶敌（与后端 numOfZone3Boss 同值）
 };
 
 // 定义每层的名称，以及筛选器

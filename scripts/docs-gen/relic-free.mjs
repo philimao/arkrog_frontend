@@ -152,6 +152,7 @@ const NAV_PURPOSES = {
   4: "普通作战（作战段 n）第四层",
   zone_sky_1: "是非境：作战段为 sv 且 id 末段不是 dlc1",
   zone_sky_2: "今昔境：作战段为 sv 且 id 末段是 dlc1（DLC1 新增分境）",
+  zone_portal: "未萌生的摇篮：作战段为 c（黑流树海 ro6 新增的 GRID_ZONE 传送门关卡类型码）",
   others: "特殊关卡：作战段为 ev/t（不期而遇）、duel（狭路）、dv（分明）",
 };
 

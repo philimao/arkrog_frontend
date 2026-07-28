@@ -271,4 +271,4 @@ Mon3tr: {
 - [ ] 没有 `Math.random()`；没有遗留 `console.log`
 - [ ] 本地 UI 验证：输出非全 0、控制台无"未实现 / 实现为空"告警、切技能与模组数值有响应
 - [ ] 为该干员补了测试 fixture 与用例（流程见 [09-fixtures-and-baselines.md](./09-fixtures-and-baselines.md)）
-- [ ] 若已接入 `yarn docs:gen`，重新生成 `generated/char-impl-coverage.md` 覆盖矩阵
+- [ ] 若已接入 `pnpm docs:gen`，重新生成 `generated/char-impl-coverage.md` 覆盖矩阵

@@ -28,7 +28,7 @@ sources:
 
 ## 1. 现状声明：4/4 全红
 
-> ⚠️ **当前测试套件不可作为任何重构的安全网。** `test/DamageCalculator/index.test.ts` 的全部 4 个用例（赫德雷 / Mon3tr / 维娜·维多利亚 / 维什戴尔）在 `yarn test` 下全部失败（2026-06-11 实测复核），统一报错：
+> ⚠️ **当前测试套件不可作为任何重构的安全网。** `test/DamageCalculator/index.test.ts` 的全部 4 个用例（赫德雷 / Mon3tr / 维娜·维多利亚 / 维什戴尔）在 `pnpm test` 下全部失败（2026-06-11 实测复核），统一报错：
 >
 > ```
 > TypeError: Cannot read properties of undefined (reading 'in_game_buff_add')
@@ -140,7 +140,7 @@ const output = calculator(input);
 由此推出两条纪律：
 
 - 金值**只在两种情况下允许更新**：(a) 上游游戏数据变更（干员/技能/藏品数值调整），且新值已与游戏内表现或可信数据源人工对账；(b) 确认旧值源于实现 bug，修复后以新值为准（需在 PR 里写明 bug 与对账依据）。
-- 除上述两种情况外，`yarn test` 出现的任何金值差异一律按回归处理，不许"顺手改基线让它绿"。
+- 除上述两种情况外，`pnpm test` 出现的任何金值差异一律按回归处理，不许"顺手改基线让它绿"。
 
 ### 3.2 金值从哪来
 
@@ -154,7 +154,7 @@ const output = calculator(input);
 
 上游数据更新落地（流程见 [docs/data-pipeline.md](../../../../../docs/data-pipeline.md)）后：
 
-1. 跑 `yarn test`，收集全部金值差异；
+1. 跑 `pnpm test`，收集全部金值差异；
 2. 对每个红用例，判断差异来源：上游数值变更（预期内）还是计算实现回归（预期外）——用 [07-debugging.md](07-debugging.md) 的 `printAdditionContext` 表格逐乘区对比新旧加成来源；
 3. 预期内的差异：按 3.2 的对账步骤确认新值，更新用例字面量（"回填"）；
 4. 预期外的差异：先修实现，再回到第 1 步；
@@ -192,5 +192,5 @@ const output = calculator(input);
 - [ ] 用例内按 2.2 的七步管线重建 `CalculatorInput`，不使用 `as unknown as` 强转；
 - [ ] 金值已按 3.2 完成人工对账，用例注释记录数据版本与对账日期；
 - [ ] 用例至少断言一个非零字段（防假绿，见 3.4）；
-- [ ] 本地 `yarn test` 通过（过渡期内：至少不新增红，存量 4 红的修复进度见 [10-relic-buff-verification.md](10-relic-buff-verification.md) 实施路线阶段 0）；
+- [ ] 本地 `pnpm test` 通过（过渡期内：至少不新增红，存量 4 红的修复进度见 [10-relic-buff-verification.md](10-relic-buff-verification.md) 实施路线阶段 0）；
 - [ ] 夹具、用例、（如有）实现改动在同一个 PR。

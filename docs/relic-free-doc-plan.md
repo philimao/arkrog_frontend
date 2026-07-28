@@ -47,7 +47,7 @@ arkrog_frontend/
 │     ├─ version-sensitive-hardcode.md        # 版本敏感硬编码正文（配生成物快照）
 │     ├─ new-topic-checklist.md               # 新主题上线无藏侧手册 ★
 │     ├─ adr/                                 # 架构决策补记（0001~0006）
-│     └─ generated/                           # ★脚本生成物（yarn docs:gen）
+│     └─ generated/                           # ★脚本生成物（pnpm docs:gen）
 │        ├─ api-endpoints.md                  # 端点-调用点对照表
 │        ├─ stage-filter-rules.md             # navOfZone 筛选规则表
 │        └─ hardcode-snapshot.md              # 版本敏感字面量快照
@@ -88,7 +88,7 @@ arkrog_backend/docs/DataCache.md               # 跨仓库联动件（见 E 表�
 | `new-topic-checklist.md` ★ | P1 | 新主题（ro6+）上线两仓库 10+ 处散点清单：后端（names_en、三张 boss 表、preload 文案、enemyModify、topic_banner 静态图）+ 前端（RogueKey 类型、topicMaxLevels、numOfMinorBoss、navOfZone 特判、EnemyAvatar preset、card 装饰三图）；数据回填顺序；与计算器侧 checklist 互链不合并 |
 | `adr/0001~0006` | P1 | 补记已发生决策并注明推翻条件：0001 提交即发布无审核流；0002 记录列表局部 state 不进 store；0003 bundle 强缓存与 stage-preview 无缓存的不对称；0004 stage id 字符串解析作为分类学基础；0005 前端软守卫+后端硬门槛的权限分层；0006 setTimeout 2000 时序契约（vs 响应驱动，修复断裂后再裁决） |
 
-### C. 生成物 `generated/`（扩展 yarn docs:gen）
+### C. 生成物 `generated/`（扩展 pnpm docs:gen）
 
 | 文档 | 优先级 | 要点 |
 |---|---|---|

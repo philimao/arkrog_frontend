@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-18
 sources:
   - ../arkrog_backend/package.json
   - ../arkrog_backend/pm2.config.json
@@ -34,7 +34,7 @@ sources:
 | 后端 cwd | `/home/ubuntu/arkrog_backend` | `/home/ubuntu/temp/arkrog_backend` |
 | 端口（`.env` 的 `PORT`） | 5174 | 5175 |
 | `NODE_ENV` | production | **production**（不是 development） |
-| 部署分支 / 提交 | `dev_tournament` @ `3b04de7`（2026-06-22） | 同 |
+| 部署分支 / 提交 | `dev_tournament` @ `7dd455e`（2026-07-18） | `dev_tournament` @ `398672a`（2026-07-18 核实） |
 | Redis 前缀（`REDIS_PREFIX`） | 未配置 → 默认 `arkrog` | `arkrog-dev` |
 | Mongo | **同一台 localhost mongod、同一个 `arkrog` 库**（见第 4 节） | 同左 |
 
@@ -138,7 +138,7 @@ dotenv 加载顺序（`app.ts`）：`.env` → `.env.${NODE_ENV}`，`override: t
 
 ### 前端
 
-`yarn build`（SPA，`ssr: false`）只产出 `build/client/`；打包 scp 后解压进 `/var/www/{arkrog,arkrog-dev}/client`，**无需重启任何进程**。旧目录保留 `client.bak.<时间戳>` 作回滚。
+`pnpm build`（SPA，`ssr: false`）只产出 `build/client/`；打包 scp 后解压进 `/var/www/{arkrog,arkrog-dev}/client`，**无需重启任何进程**。旧目录保留 `client.bak.<时间戳>` 作回滚。
 
 ### 后端
 
@@ -149,9 +149,9 @@ yarn install --production=false   # tsx 是 devDependency，必装
 pm2 restart <进程> && pm2 save
 ```
 
-### ⚠️ 工作树可能落后数周
+### ⚠️ 工作树不会自动更新
 
-服务器不自动拉代码。核实于 2026-07-13：两环境后端均停在 `3b04de7`（2026-06-22），落后本地 HEAD（`790afd6`，2026-07-13）四个提交——`/record` 服务端守卫三连修复（`4015ad6` / `15e6de6` / `6fe4525`）与数据缓存写路径修复（`790afd6`）**均未上线**。在文档或排障中引用"后端行为"时，务必区分本地 HEAD 与线上部署版本；权限影响见[全站鉴权与权限机制](auth-and-permissions.md)第 5 节。
+服务器不自动拉代码。生产后端已于 2026-07-18 更新至 `7dd455e`，包含 `/record` 服务端守卫三连修复（`4015ad6` / `15e6de6` / `6fe4525`）、数据缓存写路径修复（`790afd6`）、rogue_6 适配（`c43f858`）、Linux 关卡路径大小写修复（`46be23a`）与生产 dotenv 层叠修复（`7dd455e`）；dev 后端同日核实仍为 `398672a`。在文档或排障中引用"后端行为"时，仍须区分 prod/dev 与本地 HEAD。
 
 部署含缓存修复的版本后，还需按[无藏运维手册](../app/modules/RelicFree/docs/07-ops-runbook.md)回填：L4 管理员 `POST /admin/calculate-stage-preview` 重算 stage-preview，再跑 `util-scripts/updateGameData.ts` 重建 stage-enemies。
 

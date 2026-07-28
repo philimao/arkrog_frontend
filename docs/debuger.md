@@ -21,7 +21,7 @@
 
 ![](https://cdn.nlark.com/yuque/0/2025/png/594794/1746865272945-a501b3cb-9d5e-4f74-ae84-8375596882e4.png)
 
-4. 点击出现新的命令行窗口在此窗口运行命令“yarn test"
+4. 点击出现新的命令行窗口在此窗口运行命令“pnpm test"
 
 ![](https://cdn.nlark.com/yuque/0/2025/png/594794/1746865704017-e021b564-8a5f-4d1a-8a12-4aa3229725c1.png)
 

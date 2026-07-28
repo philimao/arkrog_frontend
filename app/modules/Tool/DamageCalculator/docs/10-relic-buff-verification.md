@@ -19,7 +19,7 @@ sources:
 
 > 状态：**设计文档**。本篇描述的报告脚本与 CI 均尚未实现；当前唯一可用的验证手段是浏览器控制台的人工核对（见 [07-debugging.md](07-debugging.md)）。实施顺序见第 6 节。
 
-目标场景：上游数据更新后，**自动**识别本次新增的藏品/通宝，判定每条 buff 被计算器以何种方式消化，输出"藏品 × 乘区 × 数值"的结构化报告供人工签核——把现在"在浏览器里逐个藏品点选、肉眼看 console.table"的人肉流程变成一条 `yarn test`/脚本命令。
+目标场景：上游数据更新后，**自动**识别本次新增的藏品/通宝，判定每条 buff 被计算器以何种方式消化，输出"藏品 × 乘区 × 数值"的结构化报告供人工签核——把现在"在浏览器里逐个藏品点选、肉眼看 console.table"的人肉流程变成一条 `pnpm test`/脚本命令。
 
 ## 1. 目标拆解
 
@@ -210,7 +210,7 @@ JSON 给机器，markdown 给签核人。从同一份 JSON 渲染：
 
 ### 5.3 存放路径
 
-推荐 `test/DamageCalculator/reports/<dataVersion>/<topic>.report.json`（+ 同名 `.md`），随仓库提交。理由：报告是**数据版本维度**的事实快照，和夹具同属测试资产，按版本归档天然支持回溯"某藏品是哪个版本签核的"。不放 `docs/generated/`——那里是 `yarn docs:gen` 从**当前源码**再生的内容、CI 要校验"与源码一致"，而报告与某个历史数据版本绑定、再生没有意义，混放会破坏 generated 目录"可随时删掉重建"的约定。
+推荐 `test/DamageCalculator/reports/<dataVersion>/<topic>.report.json`（+ 同名 `.md`），随仓库提交。理由：报告是**数据版本维度**的事实快照，和夹具同属测试资产，按版本归档天然支持回溯"某藏品是哪个版本签核的"。不放 `docs/generated/`——那里是 `pnpm docs:gen` 从**当前源码**再生的内容、CI 要校验"与源码一致"，而报告与某个历史数据版本绑定、再生没有意义，混放会破坏 generated 目录"可随时删掉重建"的约定。
 
 ### 5.4 人工签核流程
 
@@ -224,7 +224,7 @@ JSON 给机器，markdown 给签核人。从同一份 JSON 渲染：
 
 | 阶段 | 内容 | 前置 |
 |---|---|---|
-| 0 | **修绿基线**：按 [09 篇](09-fixtures-and-baselines.md)重建 4 份夹具与用例，`yarn test` 全绿 | 无 |
+| 0 | **修绿基线**：按 [09 篇](09-fixtures-and-baselines.md)重建 4 份夹具与用例，`pnpm test` 全绿 | 无 |
 | 1 | **报告脚本**：抽 `collectRelicEffects` 纯函数（§3）→ 实现 diff 与消化判定（§4）→ 产出 §5 双格式报告；以 vitest 用例形态落地（§2 的 vite 体系约束），输入的新旧数据 JSON 路径走环境变量或 CLI 参数 | 阶段 0（报告里的 analyzeRelics 数值路径依赖与金值同一套管线被验证过） |
 | 2 | **CI**：仓库当前**没有 `.github/workflows`、没有 git hooks**（2026-06-11 复核），一切验证靠人手跑。最小起步是 PR/push 跑测试（见下）；"数据更新自动触发报告生成"则受阻于数据版本可观测性缺口（无版本端点，见 [docs/data-pipeline.md](../../../../../docs/data-pipeline.md)），需先立 ADR 决定版本来源，暂不纳入 | 阶段 0 |
 
@@ -238,13 +238,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4          # 版本取自 package.json 的 packageManager 字段
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: yarn }
-      - run: yarn install --frozen-lockfile
-      - run: yarn test
+        with: { node-version: 20, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
 ```
 
-> ⚠️ 仓库同时存在 `yarn.lock` 与 `pnpm-lock.yaml`，CI 选定 yarn（README 约定）意味着锁文件歧义必须先收敛，否则 CI 与本地装出来的依赖树可能不同——现状与建议见 [docs/testing.md](../../../../../docs/testing.md)。
+> ⚠️ `pnpm/action-setup` 必须排在 `setup-node` **之前**：`cache: pnpm` 需要 pnpm 已在 PATH 上才能定位 store 目录。仓库根仍残留一份已失效的 `yarn.lock`，CI 只认 `pnpm-lock.yaml`（`--frozen-lockfile` 在锁文件与 `package.json` 不一致时直接失败）——包管理器现状见 [docs/testing.md](../../../../../docs/testing.md)。
 
 ## 7. 已知笔误对账提示
 

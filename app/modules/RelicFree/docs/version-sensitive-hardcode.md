@@ -23,13 +23,13 @@ sources:
 
 本篇登记无藏模块所有"上游一变、这里必须人改"的散点硬编码，解释**每处对应的上游变更类型与更新流程**。共同特征：漏改不报错，只静默出错。
 
-分工约定：**值本身以 [generated/hardcode-snapshot.md](generated/hardcode-snapshot.md) 的机器快照为准，本文不复制值**（快照由 `yarn docs:gen` 从源码导出，防手抄漂移）；新增散点硬编码的 PR 必须同步本文与快照（触发映射见 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)）。体例与边界对齐[计算器侧同名清单](../../Tool/DamageCalculator/docs/version-sensitive-hardcode.md)：本文只管"会过期的位置"，已经错了的存量缺陷登记在 [known-issues.md](known-issues.md)。
+分工约定：**值本身以 [generated/hardcode-snapshot.md](generated/hardcode-snapshot.md) 的机器快照为准，本文不复制值**（快照由 `pnpm docs:gen` 从源码导出，防手抄漂移）；新增散点硬编码的 PR 必须同步本文与快照（触发映射见 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)）。体例与边界对齐[计算器侧同名清单](../../Tool/DamageCalculator/docs/version-sensitive-hardcode.md)：本文只管"会过期的位置"，已经错了的存量缺陷登记在 [known-issues.md](known-issues.md)。
 
 ## 总表
 
 | 位置（路径 + 符号） | 硬编码内容 | 触发更新的上游变更类型 | 漏改症状 | 详见 |
 |---|---|---|---|---|
-| app/utils/stageSelector.ts 的 `numOfMinorBoss`、`navOfZone`（内含 `excludeIds`、洞天福地 `"7"` 特判、`dlc1` 尾缀判断、`others` 类型码名单） | 各主题三层小 Boss 数量表；七组筛选器的类型码/层号/尾缀规则 | 新主题上线；现有主题新增 Boss/层/区域/类型码；上游改 stage id 命名 | Boss 组整组消失（查表回退 99）；新类型关卡静默不渲染 | [03 第二节](03-stage-taxonomy-and-selector.md) |
+| app/utils/stageSelector.ts 的 `numOfMinorBoss`、`navOfZone`（内含 `excludeIds`、洞天福地 `"7"` 特判、`dlc1` 尾缀判断、`others` 类型码名单） | 各主题三层小 Boss 数量表；八组筛选器的类型码/层号/尾缀规则 | 新主题上线；现有主题新增 Boss/层/区域/类型码；上游改 stage id 命名 | Boss 组整组消失（查表回退 99）；新类型关卡静默不渲染 | [03 第二节](03-stage-taxonomy-and-selector.md) |
 | 后端 utils/appData/shared.js 的 `numOfZone3Boss` / `numOfZone5Boss` / `numberOfZone67Boss`（消费方 `skipStage` 与 stagePreview.js 的 `buildPreloadData`） | 与前端同值双份的 Boss 数量三表 | 同上；**与前端 `numOfMinorBoss` 必须同 PR 同步** | 小 Boss 关混入数据侧；面包屑层数/结局错位或出现 `undefined结局` | [03 第三节](03-stage-taxonomy-and-selector.md) |
 | 后端 utils/appData/stagePreview.js 的 `preload` 与 `buildPreloadData` 文案分支 | 按 stageId 写死的带船描述；按类型码写死的面包屑文案（含"岁兽残识"专名） | 新特殊关上线；新类型码；主题复用 `sv` 码 | 带船块缺失；面包屑空白或顶错主题文案 | [new-topic-checklist.md](new-topic-checklist.md) 散点 4 |
 | 后端 utils/gamedata/buildGameData.js 的 `names_en`、`hiddenEnemies` | 位置索引的主题英文名表；代表敌人排除名单 | 新主题上线；新彩蛋/通用敌人 | banner 英文行空白；TYPE tooltip 代表敌人失真 | [new-topic-checklist.md](new-topic-checklist.md) 散点 1、2 |
@@ -114,7 +114,7 @@ setTimeout(() => { fetchStagePreview(true); }, 2000);
 
 ## 本清单与自动化的关系
 
-[generated/hardcode-snapshot.md](generated/hardcode-snapshot.md) 已把总表中"可正则枚举"的部分（Boss 数量表、rogueKey 推导点、excludeIds、难度序列等）纳入 `yarn docs:gen` 的确定性输出；本文与快照的分工是"为什么敏感/怎么更新"vs"现在的值/在哪几行级位置"。尚未被机器覆盖的项（外链 host 存活性、COS/静态图齐备性、前后端 Boss 表跨仓库一致性比对）是 docs:gen 的待建设方向，见 [../../../../docs/doc-generation.md](../../../../docs/doc-generation.md)。
+[generated/hardcode-snapshot.md](generated/hardcode-snapshot.md) 已把总表中"可正则枚举"的部分（Boss 数量表、rogueKey 推导点、excludeIds、难度序列等）纳入 `pnpm docs:gen` 的确定性输出；本文与快照的分工是"为什么敏感/怎么更新"vs"现在的值/在哪几行级位置"。尚未被机器覆盖的项（外链 host 存活性、COS/静态图齐备性、前后端 Boss 表跨仓库一致性比对）是 docs:gen 的待建设方向，见 [../../../../docs/doc-generation.md](../../../../docs/doc-generation.md)。
 
 ## 相关篇目
 

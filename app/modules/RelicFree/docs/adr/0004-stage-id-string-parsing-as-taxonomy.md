@@ -25,7 +25,7 @@ sources:
 
 直接解析。分段语义的权威文档见 [03-stage-taxonomy-and-selector.md](../03-stage-taxonomy-and-selector.md)；落地点横跨两仓库：
 
-- 前端：`app/utils/stageSelector.ts` 的 `navOfZone` 七组筛选器全部 `stage.id.split("_")` 判段；`StagePage`/`StageDetail`/`SubmitRecordForm`/`RecordCard` 等处从 id 首段推导 rogueKey；
+- 前端：`app/utils/stageSelector.ts` 的 `navOfZone` 八组筛选器全部 `stage.id.split("_")` 判段；`StagePage`/`StageDetail`/`SubmitRecordForm`/`RecordCard` 等处从 id 首段推导 rogueKey；
 - 后端：`arkrog_backend/utils/appData/shared.js` 的 `skipStage`（前 3 层与三层 boss 不收录）、`stagePreview.js` 的 `buildPreloadData`（breadcrumb 生成）同样按分段解析。
 
 配套的数量表也随之硬编码且**前后端双份**：前端 `stageSelector.ts` 的 `numOfMinorBoss` 与后端 `shared.js` 的 `numOfZone3Boss` 同值双份，必须人工同步。

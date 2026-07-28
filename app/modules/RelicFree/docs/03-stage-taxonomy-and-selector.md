@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-28
 sources:
   - app/utils/stageSelector.ts
   - app/modules/RelicFree/Selector/index.tsx
@@ -18,7 +18,7 @@ sources:
 
 本篇是无藏模块的基石文档：整个模块**没有独立的关卡分类数据结构**，所有"这关属于哪层/哪类"的判断都建立在对 `stage.id` 字符串的切分解析上。同一套 id 语法同时支撑：
 
-- 前端 `app/utils/stageSelector.ts` 的 `navOfZone` 七组筛选器（关卡选择页分层渲染）；
+- 前端 `app/utils/stageSelector.ts` 的 `navOfZone` 八组筛选器（关卡选择页分层渲染）；
 - 后端 `utils/appData/shared.js` 的 `skipStage`（决定哪些关进 stage-preview / stage-enemies 数据）与 `utils/appData/stagePreview.js` 的 `buildPreloadData`（面包屑文案）；
 - 关卡详情页的紧急关推导（`app/modules/RelicFree/Stage/StageDetail.tsx`）；
 - 伤害计算器侧的另一套同名异物筛选器（见[消歧警告](#七与伤害计算器筛选器的消歧警告)）。
@@ -43,6 +43,7 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 | `n` | 普通层作战 | 第四/五/六层（编号 4/5/6，7 归第六层） | `// 第 x 层` |
 | `e` | 紧急作战（普通关的紧急变体） | **无**——不被任何筛选器命中，经普通关推导展示（见[第六节](#六紧急关推导)） | 无独立分支（`e_t` 组合例外，见下） |
 | `sv` | 岁兽残识（界园 DLC 区域） | 是非境 / 今昔境（按 `dlc1` 尾缀分流） | `// 岁兽残识 · 是非境` / `· 今昔境` |
+| `c` | 未萌生的摇篮（黑流树海 GRID_ZONE 传送门关卡，ro6 新增）；**编号段是序号而非层数** | 未萌生的摇篮（`zone_portal`，不带主题条件） | `// 未萌生的摇篮` |
 | `ev` | 诡意行商（商店类遭遇） | 特殊关卡 | `// 诡意行商` |
 | `t` | 不期而遇 | 特殊关卡 | `// 不期而遇` |
 | `duel` | 狭路相逢 | 特殊关卡 | `// 狭路相逢` |
@@ -65,9 +66,9 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 
 1. **主题号是单个数字**。`rogueKey` 推导存在两种写法：多数调用点用 `"rogue_" + ro.slice(-1)`（`ro10` 会产出 `rogue_0`），仅 `SubmitRecordForm` 用 `replace("ro", "rogue_")`（安全）。分布枚举以 [generated/hardcode-snapshot.md](generated/hardcode-snapshot.md) 为准，分歧解析与收敛建议见 [version-sensitive-hardcode.md](version-sensitive-hardcode.md)。
 2. **`ro{n}` 段不含字母 `n`**。紧急关推导 `id.replace("n", "e")` 替换的是首个 `n`，只因主题段是 `ro`+数字才恰好落在类型码上。
-3. **编号段是层数**这一假设仅对 `n` 类成立；对 `t`/`ev`/`duel`/`dv`/`fs` 而言编号是序号，后端 `skipStage` 并不区分（后果见[第五节](#五前-3-层不收录规则分裂在三处)）。
+3. **编号段是层数**这一假设仅对 `n` 类成立；对 `t`/`ev`/`duel`/`dv`/`fs`/`c` 而言编号是序号。后端 `skipStage` 只对 `c` 做了显式豁免（`args[1]==="c"` 直接返回 false，绕开"编号 ≤3 略过"分支），其余几类仍被当层数比较（后果见[第五节](#五前-3-层不收录规则分裂在三处)）。
 
-## 二、navOfZone 七组筛选器逐条语义
+## 二、navOfZone 八组筛选器逐条语义
 
 `app/utils/stageSelector.ts` 的 `navOfZone` 是模块级常量数组，每项 `{ id, name, filter }`。消费方是 `app/modules/RelicFree/Selector/SelectorDetail.tsx`：先用它渲染层级筛选按钮（额外拼一个伪筛选器"全部"，其 `filter` 恒返回非空数组，只用于按钮可见性判断，不参与关卡分组），再按组渲染关卡卡片。机器生成的规则对照表见 [generated/stage-filter-rules.md](generated/stage-filter-rules.md)。
 
@@ -79,7 +80,8 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 | 4 | `4` | 第四层 | `args[1]==="n"` 且 `args[2]==="4"` |
 | 5 | `zone_sky_1` | 是非境 | `args[1]==="sv"` 且末段不是 `dlc1` |
 | 6 | `zone_sky_2` | 今昔境 | `args[1]==="sv"` 且末段是 `dlc1` |
-| 7 | `others` | 特殊关卡 | `args[1]` ∈ `ev` / `t` / `duel` / `dv` |
+| 7 | `zone_portal` | 未萌生的摇篮 | `args[1]==="c"`（不带主题条件） |
+| 8 | `others` | 特殊关卡 | `args[1]` ∈ `ev` / `t` / `duel` / `dv` |
 
 逐条要点：
 
@@ -94,9 +96,13 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 
 **5–6. 是非境 / 今昔境。** 按 `dlc1` 尾缀二分 `sv` 关。组名"是非境/今昔境"写死在 `navOfZone`，与后端面包屑的"岁兽残识 · X境"文案是两份独立硬编码。
 
-**7. 特殊关卡。** 收录 `ev`/`t`/`duel`/`dv` 四码。`fs`（渡劫）不在列表中，也不被其余六组命中——**渡劫关当前不出现在无藏选择器**。
+**7. 未萌生的摇篮。** ro6（黑流树海）的 GRID_ZONE 传送门关卡，判定只有 `args[1]==="c"` 一条，**不带主题条件**——与"第六层"的 `n_7` 特判同类，任何主题出现 `c` 关都会落进本组。该类关卡的编号段是序号而非层数，后端 `skipStage` 为此专设了豁免分支（见第一节前提 3）。
+
+**8. 特殊关卡。** 收录 `ev`/`t`/`duel`/`dv` 四码。`fs`（渡劫）不在列表中，也不被其余七组命中——**渡劫关当前不出现在无藏选择器**。
 
 **未命中即静默不可见。** `SelectorDetail` 只按 `navOfZone` 分组渲染，不存在"其他未分类"兜底组。因此 1–3 层 `n` 关、全部 `e` 关、`fs` 关都不渲染卡片。这是刻意的收录范围表达方式之一（另两处见[第五节](#五前-3-层不收录规则分裂在三处)），但也意味着**新增类型码若不扩筛选器就整类蒸发，无任何报错**。
+
+ro6 的 `c` 码是这条约束的正面样本：新增类型码的同时补齐了三处——前端 `zone_portal` 筛选组、后端 `skipStage` 的豁免分支、后端 `buildPreloadData` 的面包屑分支。三处缺任何一处的表现各不相同且都不报错（缺筛选组＝有数据无卡片；缺 `skipStage` 豁免＝编号 ≤3 的传送门关被当低层略过，有卡片无数据；缺面包屑分支＝落进末尾的"第 N 层"兜底，编号被误读成层数）。新增类型码时按这三处逐一核对。
 
 另：筛选栏右上的「按干员」入口是占位 stub（Tooltip "开发中，敬请期待"），无实现。
 
@@ -111,7 +117,7 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 
 后端另有 `numOfZone5Boss`、`numberOfZone67Boss` 两张表，与 `numOfZone3Boss` 一起用于 `buildPreloadData` 把 Boss 编号折算成"第 5/6/7 层"和"x结局"（编号减去三层 Boss 数即结局序数；超出三表之和显示"误入奇境"）。前端不消费这两张，但三表任何一张过期都会让面包屑层数/结局错位。
 
-**改任意一侧必须同 PR 改另一侧，并重跑 `yarn docs:gen` 刷新快照**（触发映射见 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)）。当前两侧值一致（快照见 [generated/hardcode-snapshot.md](generated/hardcode-snapshot.md)）。
+**改任意一侧必须同 PR 改另一侧，并重跑 `pnpm docs:gen` 刷新快照**（触发映射见 [CONTRIBUTING.md](../../../../CONTRIBUTING.md)）。当前两侧值一致（快照见 [generated/hardcode-snapshot.md](generated/hardcode-snapshot.md)）。
 
 此外伤害计算器在 `app/modules/Tool/DamageCalculator/EnemySection/enemyUtils.ts` 还持有**第三份**私有拷贝（`numOfZone3Boss`/`numOfZone5Boss`/`numberOfZone67Boss` 三表全量），其同步义务由[计算器侧新主题手册](../../Tool/DamageCalculator/docs/new-topic-checklist.md)覆盖，不在本模块职责内——但排查"两边 Boss 关归层不一致"时要记得一共有三份。
 
@@ -133,11 +139,11 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 
 | # | 位置 | 实现形态 | 只改这处漏其他的后果 |
 |---|---|---|---|
-| 1 | 后端 `utils/appData/shared.js` 的 `skipStage` | 数据侧：`stagePreviewFullUpdate` 与 `stageEnemiesUpdate` 生成时跳过——`b` 类编号 ≤ `numOfZone3Boss` 略过，其余类型 `args[2]` 为数字且 ≤3 略过 | 有卡片无数据：徽标恒 `"??"`、最少人数空、关卡页敌方情报空 |
+| 1 | 后端 `utils/appData/shared.js` 的 `skipStage` | 数据侧：`stagePreviewFullUpdate` 与 `stageEnemiesUpdate` 生成时跳过——`b` 类编号 ≤ `numOfZone3Boss` 略过，`c` 类显式豁免（一律不略过），其余类型 `args[2]` 为数字且 ≤3 略过 | 有卡片无数据：徽标恒 `"??"`、最少人数空、关卡页敌方情报空 |
 | 2 | 前端 `navOfZone` 结构 | 展示侧：不存在 1–3 层筛选组，低层关不被命中即不渲染 | 有数据无卡片：只能靠 URL 直达 |
 | 3 | `SelectorDetail` 页面文案 | "注：前3层不做无藏收录，特定干员开局攻略见攻略博客页" | 文案与行为脱节 |
 
-**`skipStage` 的编号误读警告**（读第一节前提 3）：它对非 `b` 类型统一把 `args[2]` 当层数比较，而 `t`/`ev`/`duel`/`dv`/`fs` 的该段是序号。已核实的后果：`ro5_duel_1`（狭路，序号 1 ≤ 3）被数据侧略过，但前端"特殊关卡"组照常渲染其卡片——徽标 `"??"`、无最少人数、敌方情报空。且 `stagePreviewSingleUpdate`（提交/删除记录触发的增量重算，`utils/appData/stagePreview.js`）**不调用 `skipStage`**：对这类关提交记录会把它临时写进 stagePreview（顺带出现在上一关/下一关键序里），下一次全量重建又会抹掉。这一不对称在修改收录规则时极易踩中。
+**`skipStage` 的编号误读警告**（读第一节前提 3）：除 `b` 与显式豁免的 `c` 之外，它对其余类型统一把 `args[2]` 当层数比较，而 `t`/`ev`/`duel`/`dv`/`fs` 的该段是序号。（ro6 新增 `c` 码时专门加了豁免分支，说明这个坑是已知的；但既有的四五个类型码并未一并修，仍是下面这个后果。）已核实的后果：`ro5_duel_1`（狭路，序号 1 ≤ 3）被数据侧略过，但前端"特殊关卡"组照常渲染其卡片——徽标 `"??"`、无最少人数、敌方情报空。且 `stagePreviewSingleUpdate`（提交/删除记录触发的增量重算，`utils/appData/stagePreview.js`）**不调用 `skipStage`**：对这类关提交记录会把它临时写进 stagePreview（顺带出现在上一关/下一关键序里），下一次全量重建又会抹掉。这一不对称在修改收录规则时极易踩中。
 
 ## 六、紧急关推导
 
@@ -161,7 +167,7 @@ ro{n} _ {类型码} _ {编号} [ _ {变体} ]
 | | 无藏：`stageSelector.ts` 的 `navOfZone` | 计算器：`EnemySection/enemyUtils.ts` 的 `getNavOfZone` |
 |---|---|---|
 | 形态 | 模块级静态常量数组 | 工厂函数，按 `zones` 解包数据动态生成 `baseZones + otherZones + sharedZones` |
-| 覆盖范围 | 仅收录范围（4–6 层、大 Boss、sv、部分特殊关） | 全部层与全部关卡类型（含 1–3 层、`fs`、按层归属的 `duel`） |
+| 覆盖范围 | 仅收录范围（4–6 层、大 Boss、sv、`c` 传送门、部分特殊关） | 全部层与全部关卡类型（含 1–3 层、`fs`、按层归属的 `duel`） |
 | filter 签名 | 险路恶敌组为双参 `(stage, array)` 带 push 副作用 | 一律单参 `(stage)` 无副作用 |
 | 附加职责 | 无 | 每组带 `getLayer`（难度层数推导） |
 | Boss 表 | `numOfMinorBoss` 一张 | 私有三表（`numOfZone3Boss` 等） |

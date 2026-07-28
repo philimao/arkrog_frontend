@@ -56,7 +56,7 @@ arkrog_frontend/
    │  │  ├─ 0004-chinese-filename-registry-keys.md
    │  │  ├─ 0005-manual-ingame-relic-name-lists.md
    │  │  └─ 0006-exact-golden-values-and-frozen-prng.md
-   │  └─ generated/                          # ★脚本生成物（勿手改，yarn docs:gen 重新生成）
+   │  └─ generated/                          # ★脚本生成物（勿手改，pnpm docs:gen 重新生成）
    │     ├─ relic-blackboard-registry.md     # 已适配独立黑板清单
    │     ├─ allowed-keys.md                  # 白名单/黑名单/局内名单/层数同步组
    │     └─ char-impl-coverage.md            # 干员×技能实现覆盖矩阵
@@ -105,7 +105,7 @@ scripts/docs-gen.mjs                          # 新建：生成脚本（package.
 2. 每篇 frontmatter：`last-verified: 日期` + `sources: [关联源码路径]`。
 3. 引用代码用"路径 + 导出符号名"，**禁用行号**（行号必烂）。
 4. 单一正文源：每个主题一份正文，其余位置只放链接。
-5. 清单类内容生成化：`yarn docs:gen` 从源码导出 generated/ 三件，CI 校验一致性。
+5. 清单类内容生成化：`pnpm docs:gen` 从源码导出 generated/ 三件，CI 校验一致性。
 6. 过时即标横幅：旧 DamageCalculatorDataSchema.md、debuger.md 处理见目录树注释。
 7. 文档与代码同 PR：CONTRIBUTING 中维护"触发条件→文档"映射表。
 

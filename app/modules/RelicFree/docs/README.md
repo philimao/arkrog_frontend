@@ -18,7 +18,7 @@ sources:
 |---|---|
 | [01-architecture-and-data-flow.md](01-architecture-and-data-flow.md) | 架构与数据流总览：Selector/Stage 两页组件树、四 store 分工与端点映射、双保险加载与 loaded 闩锁、缓存不对称 |
 | [02-record-lifecycle-and-schema.md](02-record-lifecycle-and-schema.md) | 记录数据契约与生命周期：RecordType/Records 集合 schema、提交即发布、删除副作用矩阵与悬挂收藏、权限对照 |
-| [03-stage-taxonomy-and-selector.md](03-stage-taxonomy-and-selector.md) | stage id 语法权威文档与 navOfZone 七组筛选器逐条语义、跨仓库双份 boss 表同步义务 |
+| [03-stage-taxonomy-and-selector.md](03-stage-taxonomy-and-selector.md) | stage id 语法权威文档与 navOfZone 八组筛选器逐条语义、跨仓库双份 boss 表同步义务 |
 | [04-record-card-and-display.md](04-record-card-and-display.md) | RecordCard/RecordDisplay 复用契约：三消费入口、props 语义、逆向依赖、主题化静态资源 |
 | [05-submit-form-and-links.md](05-submit-form-and-links.md) | 提交表单规格：team 字符串解析、五步校验链、URLValidation 归一化、parse-redirect 幻影端点结论 |
 | [06-data-pipeline.md](06-data-pipeline.md) | 无藏专有数据链路：三端点与缓存差异、stage-preview 增量/全量双路径、外部素材依赖 |
@@ -39,7 +39,7 @@ sources:
 
 ### generated/ —— 脚本生成物，勿手改
 
-[generated/](generated/) 下三份清单由 `yarn docs:gen` 从源码导出，直接编辑会被下次生成覆盖；改了源码后重跑 `yarn docs:gen`：
+[generated/](generated/) 下三份清单由 `pnpm docs:gen` 从源码导出，直接编辑会被下次生成覆盖；改了源码后重跑 `pnpm docs:gen`：
 
 - [api-endpoints.md](generated/api-endpoints.md) —— 端点-调用点对照表
 - [stage-filter-rules.md](generated/stage-filter-rules.md) —— navOfZone 筛选规则表

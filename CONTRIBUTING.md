@@ -28,27 +28,27 @@ sources:
 
 ### 包管理器与 Node
 
-**本仓库以 yarn（classic 1.x）为准**，`yarn.lock` 是唯一权威锁文件。Node 版本要求 `>= 20`。
+**本仓库以 pnpm 为准**（2026-07-18 起，此前为 yarn classic 1.x），`pnpm-lock.yaml` 是唯一权威锁文件。Node 版本要求 `>= 20`。首次切换：`corepack enable` 后 `pnpm install`。
 
-> ⚠️ 仓库当前同时存在 `yarn.lock` 与 `pnpm-lock.yaml`。后者是历史残留：**不要用 pnpm 安装依赖，也不要更新 `pnpm-lock.yaml`**。残留锁文件的删除待维护者决定。
+> ⚠️ `package.json` 的 `"packageManager": "pnpm@11.2.2"` 会让 **yarn 1.x 直接拒绝运行**（报 `yarn@pnpm@11.2.2`），`yarn build` / `yarn typecheck` 等全部失效。仓库中残留的 `yarn.lock` 已失效：**不要用 yarn 安装依赖，也不要更新 `yarn.lock`**。残留锁文件的删除待维护者决定。
 
 ### 命令速查
 
 | 命令 | 作用 |
 |---|---|
-| `yarn install` | 安装依赖 |
-| `yarn dev` | 启动开发服务器（HMR，端口 5173） |
-| `yarn build` | 生产构建 |
-| `yarn start` | 运行已构建产物（`react-router-serve`，**不是**开发服务器） |
-| `yarn typecheck` | `react-router typegen` + `tsc` 类型检查 |
-| `yarn test` | 单次运行 vitest（当前 4/4 全红为已知状态，见下） |
-| `yarn test:watch` | vitest 监听模式 |
-| `yarn docs:gen` | 从源码重新生成各模块 `docs/generated/` 清单文档（伤害计算器 + 无藏收录共六份）；单模块用 `yarn docs:gen:damage-calculator` / `yarn docs:gen:relic-free`，架构见 [docs/doc-generation.md](docs/doc-generation.md) |
+| `pnpm install` | 安装依赖 |
+| `pnpm dev` | 启动开发服务器（HMR，端口 5173） |
+| `pnpm build` | 生产构建 |
+| `pnpm start` | 运行已构建产物（`react-router-serve`，**不是**开发服务器） |
+| `pnpm typecheck` | `react-router typegen` + `tsc` 类型检查 |
+| `pnpm test` | 单次运行 vitest（当前 4/4 全红为已知状态，见下） |
+| `pnpm test:watch` | vitest 监听模式 |
+| `pnpm docs:gen` | 从源码重新生成各模块 `docs/generated/` 清单文档（伤害计算器 + 无藏收录共六份）；单模块用 `pnpm docs:gen:damage-calculator` / `pnpm docs:gen:relic-free`，架构见 [docs/doc-generation.md](docs/doc-generation.md) |
 
 两点容易踩的环境事实，正文解释见 [docs/testing.md](docs/testing.md)：
 
 - vitest **没有独立配置文件**，隐式复用 `vite.config.ts`；`~/*` 路径别名靠 `vite-tsconfig-paths` 插件从 `tsconfig.json` 解析。单独新建 `vitest.config.*` 而漏带该插件会导致所有 `~` 导入失败。
-- `yarn test` 当前 4 个用例全部失败是**已知状态**（fixture 为旧 schema、缺 `buffContext`），不是你的改动弄坏的；修复方案见 [模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md)。在测试修复前，PR 的底线是"不引入新增失败"。
+- `pnpm test` 当前 4 个用例全部失败是**已知状态**（fixture 为旧 schema、缺 `buffContext`），不是你的改动弄坏的；修复方案见 [模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md)。在测试修复前，PR 的底线是"不引入新增失败"。
 
 ## 二、代码硬约定速列
 
@@ -67,19 +67,19 @@ sources:
 
 | 代码改动 | 必须同步的文档动作 |
 |---|---|
-| 改 `app/modules/Tool/DamageCalculator/utils.ts` 中任一名单（`allowedBlackboardKeyMap`、`allowedBlackboardValueStrs`、`blackboardValueStrsForEnemy`、`blackboardValueStrsForChar`、`layerValueStrs`、`inGameRelicNames`、各 `*_layer_sync`、`disallowedRelicNames`、`disallowedValueStrs`、`allyTraps`） | 更新[模块 03](app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) 对应章节 + 重跑 `yarn docs:gen`（刷新 `generated/allowed-keys.md`） |
+| 改 `app/modules/Tool/DamageCalculator/utils.ts` 中任一名单（`allowedBlackboardKeyMap`、`allowedBlackboardValueStrs`、`blackboardValueStrsForEnemy`、`blackboardValueStrsForChar`、`layerValueStrs`、`inGameRelicNames`、各 `*_layer_sync`、`disallowedRelicNames`、`disallowedValueStrs`、`allyTraps`） | 更新[模块 03](app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) 对应章节 + 重跑 `pnpm docs:gen`（刷新 `generated/allowed-keys.md`） |
 | 改 `calculator/buff-context.ts`（新增/调整乘区、`IBuffContext`/`BuffContext`/`clone`） | 更新[模块 02](app/modules/Tool/DamageCalculator/docs/02-buff-context-and-formulas.md) |
-| 新增/修改 `calculator/charImpl/` 干员实现 | 过一遍[模块 04](app/modules/Tool/DamageCalculator/docs/04-char-impl-cookbook.md) 的 checklist + 按[模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md) 新增/更新测试 fixture + 重跑 `yarn docs:gen`（刷新 `generated/char-impl-coverage.md`） |
-| 改 `calculator/blackboard.ts` 的 `registerRelicBlackboard` 注册 | 重跑 `yarn docs:gen`（刷新 `generated/relic-blackboard-registry.md`）；若引入了新的注册模式，同步[模块 03](app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) |
+| 新增/修改 `calculator/charImpl/` 干员实现 | 过一遍[模块 04](app/modules/Tool/DamageCalculator/docs/04-char-impl-cookbook.md) 的 checklist + 按[模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md) 新增/更新测试 fixture + 重跑 `pnpm docs:gen`（刷新 `generated/char-impl-coverage.md`） |
+| 改 `calculator/blackboard.ts` 的 `registerRelicBlackboard` 注册 | 重跑 `pnpm docs:gen`（刷新 `generated/relic-blackboard-registry.md`）；若引入了新的注册模式，同步[模块 03](app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) |
 | 改 `app/stores/damageCalculator/`（slices、`localStorage.ts`） | 更新[模块 01](app/modules/Tool/DamageCalculator/docs/01-architecture.md)；若改了 `CalculatorLocalState` 结构，**必须 bump** `calculatorStorage`（`app/stores/damageCalculator/localStorage.ts`）的版本号——版本不符时旧数据会被整体清空（`app/components/VersionLocalStoarge.ts` 的 `VersionLocalStorage`），但**不 bump 会让旧数据以新结构被读出** |
 | 改后端数据脚本（`arkrog_backend/util-scripts/updateGameData.ts`、buildGameData 链路、`ACTIVE_CHARS` 机制） | 更新 [docs/data-pipeline.md](docs/data-pipeline.md) |
-| 改 `app/utils/stageSelector.ts` 的任一筛选器或数量表（`navOfZone`、`numOfMinorBoss`） | 更新[无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) + 核对后端 `arkrog_backend/utils/appData/shared.js` 三张 boss 表的跨仓库同步（同值双份硬编码）+ 重跑 `yarn docs:gen`（刷新 `stage-filter-rules.md`/`hardcode-snapshot.md`） |
+| 改 `app/utils/stageSelector.ts` 的任一筛选器或数量表（`navOfZone`、`numOfMinorBoss`） | 更新[无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) + 核对后端 `arkrog_backend/utils/appData/shared.js` 三张 boss 表的跨仓库同步（同值双份硬编码）+ 重跑 `pnpm docs:gen`（刷新 `stage-filter-rules.md`/`hardcode-snapshot.md`） |
 | 改 `app/types/recordType.ts` 或 `arkrog_backend/routers/record.js`（记录 schema、守卫、提交/删除副作用） | 更新[无藏模块 02](app/modules/RelicFree/docs/02-record-lifecycle-and-schema.md) |
-| 改 `app/types/constant.ts` 的 `StageTypes`/`StageLevels`/`topicMaxLevels` | 更新[无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) + 核对[无藏 new-topic-checklist](app/modules/RelicFree/docs/new-topic-checklist.md) + 重跑 `yarn docs:gen`（刷新 `hardcode-snapshot.md`） |
+| 改 `app/types/constant.ts` 的 `StageTypes`/`StageLevels`/`topicMaxLevels` | 更新[无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) + 核对[无藏 new-topic-checklist](app/modules/RelicFree/docs/new-topic-checklist.md) + 重跑 `pnpm docs:gen`（刷新 `hardcode-snapshot.md`） |
 | 改 `arkrog_backend/utils/appData/stagePreview.js`（增量/全量重算、面包屑生成） | 更新[无藏模块 06](app/modules/RelicFree/docs/06-data-pipeline.md) |
-| 改 `app/components/Character/Enemy/EnemyAvatar.tsx` 的 `preset`/`enemyNameTransform`，或增删无藏范围内任何 `_get`/`_post` 调用点 | 重跑 `yarn docs:gen`（刷新 `hardcode-snapshot.md` / `api-endpoints.md`） |
+| 改 `app/components/Character/Enemy/EnemyAvatar.tsx` 的 `preset`/`enemyNameTransform`，或增删无藏范围内任何 `_get`/`_post` 调用点 | 重跑 `pnpm docs:gen`（刷新 `hardcode-snapshot.md` / `api-endpoints.md`） |
 
-各模块 `docs/generated/` 目录（`app/modules/Tool/DamageCalculator/docs/generated/` 三份 + `app/modules/RelicFree/docs/generated/` 三份）是 `yarn docs:gen` 的产物，**禁止手改**——手改会在下次生成时被覆盖，且生成物与源码的一致性是 CI 校验目标（现状与目标形态见 [docs/doc-generation.md](docs/doc-generation.md)）。
+各模块 `docs/generated/` 目录（`app/modules/Tool/DamageCalculator/docs/generated/` 三份 + `app/modules/RelicFree/docs/generated/` 三份）是 `pnpm docs:gen` 的产物，**禁止手改**——手改会在下次生成时被覆盖，且生成物与源码的一致性是 CI 校验目标（现状与目标形态见 [docs/doc-generation.md](docs/doc-generation.md)）。
 
 ### 写作与引用约定
 
@@ -96,12 +96,12 @@ sources:
 
 ```markdown
 ## Checklist
-- [ ] `yarn typecheck` 通过
-- [ ] `yarn test` 已运行，未引入新增失败（4/4 全红为已知基线，见 docs/testing.md）
+- [ ] `pnpm typecheck` 通过
+- [ ] `pnpm test` 已运行，未引入新增失败（4/4 全红为已知基线，见 docs/testing.md）
 - [ ] 本次改动是否触及 CONTRIBUTING「文档触发映射表」中的条件？
   - [ ] 否
   - [ ] 是 → 已同步对应文档，并更新其 frontmatter 的 last-verified
-- [ ] 若改动命中映射表中任何「重跑 `yarn docs:gen`」条目：已重跑并提交对应模块 generated/ 变更
+- [ ] 若改动命中映射表中任何「重跑 `pnpm docs:gen`」条目：已重跑并提交对应模块 generated/ 变更
 - [ ] 若改了 CalculatorLocalState 结构：已 bump calculatorStorage 版本号
 - [ ] 新增/修改的文档：引用代码用"路径 + 导出符号"，无行号
 - [ ] 新增图片已放入 docs/assets/，无外链图床

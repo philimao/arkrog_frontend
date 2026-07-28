@@ -34,7 +34,7 @@ sources:
 
 ## generated/ —— 脚本生成物，勿手改
 
-[generated/](generated/) 下三份清单（[relic-blackboard-registry.md](generated/relic-blackboard-registry.md) 已适配独立黑板清单、[allowed-keys.md](generated/allowed-keys.md) 白名单/黑名单/局内名单/层数同步组、[char-impl-coverage.md](generated/char-impl-coverage.md) 干员×技能覆盖矩阵）由 `yarn docs:gen` 从源码（`calculator/blackboard.ts`、`utils.ts`、`calculator/charImpl/`）导出。**不要手改**——直接编辑会被下次生成覆盖，且 CI 校验其与源码一致；改了源码后重跑 `yarn docs:gen`。
+[generated/](generated/) 下三份清单（[relic-blackboard-registry.md](generated/relic-blackboard-registry.md) 已适配独立黑板清单、[allowed-keys.md](generated/allowed-keys.md) 白名单/黑名单/局内名单/层数同步组、[char-impl-coverage.md](generated/char-impl-coverage.md) 干员×技能覆盖矩阵）由 `pnpm docs:gen` 从源码（`calculator/blackboard.ts`、`utils.ts`、`calculator/charImpl/`）导出。**不要手改**——直接编辑会被下次生成覆盖，且 CI 校验其与源码一致；改了源码后重跑 `pnpm docs:gen`。
 
 ## 顶层共享文档
 

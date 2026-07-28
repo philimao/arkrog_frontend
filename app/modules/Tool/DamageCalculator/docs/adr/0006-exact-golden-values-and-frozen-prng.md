@@ -69,6 +69,6 @@ sources:
 
 1. **人工确认新值来源**：上游数据变更需与游戏内表现或可信数据源对账；bug 修复需在 PR 写明 bug 与对账依据；
 2. 回填与对应的数据/实现变更同一个 PR，PR 描述列出"哪些金值因什么变更回填"；
-3. 除上述两种情形外，`yarn test` 出现的任何金值差异一律按回归处理，不许"顺手改基线让它绿"。
+3. 除上述两种情形外，`pnpm test` 出现的任何金值差异一律按回归处理，不许"顺手改基线让它绿"。
 
 （金值回填的完整操作步骤见 [09-fixtures-and-baselines.md](../09-fixtures-and-baselines.md) 第 3 节；PRNG 的接入约定与 `checkProbability` 三参数语义见 [08-simulate-and-legacy.md](../08-simulate-and-legacy.md) 第 5 节。）

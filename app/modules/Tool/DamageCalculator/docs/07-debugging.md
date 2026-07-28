@@ -198,14 +198,14 @@ app/modules/Tool/index.tsx 的 `DebugInfoWrapper` 仅在 `import.meta.env.DEV` �
 1. 用 VSCode 打开仓库；
 2. 计算实现的位置：`calculator/charImpl/`（所有干员实现）与 `calculator/calculator.ts`（总入口 `calculator`）。在目标干员函数内行号左侧点出红点设断点；
 3. 打开调试面板，选择 **JavaScript Debug Terminal**；
-4. 在弹出的终端里运行 `yarn test`（package.json 的 `test` 脚本即 `vitest run`）；
+4. 在弹出的终端里运行 `pnpm test`（package.json 的 `test` 脚本即 `vitest run`）；
 5. 执行到对应测试时会停在断点。
 
 > ⚠️ 测试套件当前 4/4 全红：test/DamageCalculator/index.test.ts 的 fixture 是旧 schema、缺 `buffContext`，干员实现第一行解引用即抛 TypeError。断点本身仍会命中（在抛错之前），可以用来观察控制流，但 fixture 喂进来的输入是过时的，**不能**据此核对数值。测试基建的修复方案与 fixture 重建流程见 [09-fixtures-and-baselines.md](./09-fixtures-and-baselines.md)，vitest 运行环境见 [docs/testing.md](../../../../../docs/testing.md)。
 
 ### 4.2 浏览器 Sources 断点
 
-1. 本地启动前端（`yarn dev`）；
+1. 本地启动前端（`pnpm dev`）；
 2. 打开页面，F12 进入开发者工具，切到 **Sources（源代码）** 面板；
 3. 按 `Ctrl+P` 搜索并打开目标干员的实现文件（原文写 `Ctrl+Shift+P`，在 DevTools 中那是命令菜单，搜文件用 `Ctrl+P`；vite dev 下可直接搜中文文件名）；
 4. 在想停的行点击行号设断点；

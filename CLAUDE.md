@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-07-18
 sources:
   - package.json
   - README.md
@@ -36,23 +36,25 @@ sources:
 | **BuffContext 不可 JSON 序列化** | `calculator/buff-context.ts` 的 `BuffContext` 是带方法的类实例树（表达式 AST），`JSON.stringify` 后无法回灌；fixture 只能存原始输入，测试内用 `CalculatorHelper` 的 analyze 管线重建。不要给它加 fromJSON/序列化"修复" | [模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md) |
 | **黑板注册靠模块副作用，未注册 key 静默 no-op** | `calculator/blackboard.ts` 顶层数十处 `registerRelicBlackboard`；`getRelicBlackboard`（`calculator/impls.ts`）对未注册 key 返回空实现且**告警被注释**——新藏品"看似生效实际无效果"不会报错 | [模块 03](app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) |
 | **PRNG 与金值基线冻结，勿"修复"** | `calculator/simulate/random-probability.ts` 的 xorshift32 实现与 `test/DamageCalculator/index.test.ts` 的精确浮点基线是冻结契约；改位运算写法或把 `toEqual` 改成容差断言都会击碎全部基线 | [ADR-0006](app/modules/Tool/DamageCalculator/docs/adr/0006-exact-golden-values-and-frozen-prng.md) |
-| **改名单必须同步文档** | 改 `app/modules/Tool/DamageCalculator/utils.ts` 任一名单或 `blackboard.ts` 注册，必须同 PR 更新对应文档并重跑 `yarn docs:gen` | [CONTRIBUTING.md](CONTRIBUTING.md) 第三节映射表 |
+| **改名单必须同步文档** | 改 `app/modules/Tool/DamageCalculator/utils.ts` 任一名单或 `blackboard.ts` 注册，必须同 PR 更新对应文档并重跑 `pnpm docs:gen` | [CONTRIBUTING.md](CONTRIBUTING.md) 第三节映射表 |
 | **stage id 字符串解析是无藏收录的基石** | 无藏侧一切分类建立在 `ro{n}_{类型码}_{编号}[_变体]` 的字符串切分上：前端 `app/utils/stageSelector.ts` 的 `navOfZone` 筛选、后端 `skipStage`/面包屑生成都依赖它；rogueKey 推导有两种写法并存（`"rogue_" + ro.slice(-1)` 在 ro10 会产出 `rogue_0`，处数以生成物快照为准）；改 id 约定同时影响两个仓库 | [无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md)、[hardcode-snapshot](app/modules/RelicFree/docs/generated/hardcode-snapshot.md) |
 | **前后端双份 boss 数量表必须同步改** | 前端 `app/utils/stageSelector.ts` 的 `numOfMinorBoss` 与后端 `arkrog_backend/utils/appData/shared.js` 的 `numOfZone3Boss` 等三张表是同值双份硬编码；只改一边 = 险路恶敌筛选组静默消失或面包屑错层 | [version-sensitive-hardcode](app/modules/RelicFree/docs/version-sensitive-hardcode.md)、[new-topic-checklist](app/modules/RelicFree/docs/new-topic-checklist.md) |
-| **无藏数据写路径：本地已修复，线上待部署待回填** | 后端 stage-preview/stage-enemies 写路径断裂存在于 `fc2f75f`~`790afd6` 区间，已由 `790afd6` 修复（本地 HEAD 已含），线上仍跑 `3b04de7`（不含修复）且断裂期数据未回填——操作数据更新前先读 data-pipeline 文首勘误警示块，勿按旧文直接操作线上 | [docs/data-pipeline.md](docs/data-pipeline.md)、[无藏模块 07](app/modules/RelicFree/docs/07-ops-runbook.md) |
+| **无藏数据写路径已部署并完成回填** | 后端 stage-preview/stage-enemies 写路径断裂存在于 `fc2f75f`~`790afd6` 区间，已由 `790afd6` 修复；生产后端于 2026-07-18 部署至 `7dd455e`，并以完整七步脚本回填 `Data.stage-preview` / `Data.stage-enemies` | [docs/data-pipeline.md](docs/data-pipeline.md)、[无藏模块 07](app/modules/RelicFree/docs/07-ops-runbook.md) |
 
 ## 命令速查与测试现状
 
 | 命令 | 作用 |
 |---|---|
-| `yarn dev` | 开发服务器（HMR）；`yarn start` 是跑构建产物，不是 dev |
-| `yarn build` / `yarn typecheck` | 构建 / 类型检查 |
-| `yarn test` / `yarn test:watch` | vitest 单跑 / 监听 |
-| `yarn docs:gen` | 按模块重新生成 `docs/generated/` 清单（伤害计算器 + 无藏收录共六份）；单模块用 `yarn docs:gen:damage-calculator` / `yarn docs:gen:relic-free` |
+| `pnpm dev` | 开发服务器（HMR）；`pnpm start` 是跑构建产物，不是 dev |
+| `pnpm build` / `pnpm typecheck` | 构建 / 类型检查 |
+| `pnpm test` / `pnpm test:watch` | vitest 单跑 / 监听 |
+| `pnpm docs:gen` | 按模块重新生成 `docs/generated/` 清单（伤害计算器 + 无藏收录共六份）；单模块用 `pnpm docs:gen:damage-calculator` / `pnpm docs:gen:relic-free` |
 
-包管理器用 yarn（`pnpm-lock.yaml` 是残留，勿动）。
+> ⚠️ **包管理器为 pnpm，不再是 yarn**（2026-07-18 起）。`package.json` 的 `"packageManager": "pnpm@11.2.2"` 会让 **yarn 1.x 直接拒绝运行**（报 `yarn@pnpm@11.2.2`），`yarn build`/`yarn typecheck` 全部失效。权威 lockfile 是 `pnpm-lock.yaml`（`yarn.lock` 已成残留）。首次切换：`corepack enable` 后 `pnpm install`。应急绕过（不经包管理器）：`./node_modules/.bin/react-router build`、`./node_modules/.bin/tsc --noEmit -p .`。
 
-> ⚠️ `yarn test` 当前 **4/4 全红是已知状态**（fixture 为旧 schema、缺 `buffContext`，报 `Cannot read properties of undefined (reading 'in_game_buff_add')`）——不是你的改动造成的，也不要为了变绿去改金值基线或绕过断言。修复方案见[模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md)。
+> ⚠️ `pnpm test` 当前 **4/4 全红是已知状态**（fixture 为旧 schema、缺 `buffContext`，报 `Cannot read properties of undefined (reading 'in_game_buff_add')`）——不是你的改动造成的，也不要为了变绿去改金值基线或绕过断言。修复方案见[模块 09](app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md)。
+
+> ⚠️ `pnpm typecheck` 当前 **21 个错误是已知状态**：10 个在 `app/stores/damageCalculator/slices/gameDataSlice.ts`（上游 `calcTypes.ts` 的 `RougeTopicInput` 重构未收尾），其余在 `simulate-core.ts`/`Hoederer_beta.ts`/`赫德雷.ts`/`matcher.worker.ts`(jsfeat)/`TournamentTeamsAccordionItem.tsx`。构建不做类型检查，故 `pnpm build` 仍可成功。
 
 ## 常见任务入口
 

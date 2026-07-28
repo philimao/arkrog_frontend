@@ -7,7 +7,7 @@
  *   node scripts/docs-gen.mjs damage-calculator   仅伤害计算器 → app/modules/Tool/DamageCalculator/docs/generated/
  *   node scripts/docs-gen.mjs relic-free          仅无藏收录   → app/modules/RelicFree/docs/generated/
  *
- * 对应 npm script：yarn docs:gen / docs:gen:damage-calculator / docs:gen:relic-free。
+ * 对应 npm script：pnpm docs:gen / docs:gen:damage-calculator / docs:gen:relic-free。
  *
  * 约束：纯 Node（>=20）、零依赖、输出确定性（不写时间戳）。
  * 共享提取/输出辅助在 scripts/docs-gen/lib.mjs；新模块注册步骤见 docs/doc-generation.md。

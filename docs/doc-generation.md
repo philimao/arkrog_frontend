@@ -54,7 +54,7 @@ sources:
 | 首行 | 无横幅 | `AUTO_BANNER` 横幅（勿手改声明） |
 | frontmatter | `last-verified: <日期>` + `sources:`（作者核实事实的日期与依据） | `generated: true` + `sources:`（提取自哪些源码），**不写日期** |
 | 时效语义 | 日期越旧越可疑，需人工重核 | 与源码的一致性由重跑校验，不靠日期——写时间戳只会让每次重跑都产生无意义 diff，破坏"重跑无 diff = 一致"的校验手段 |
-| 改动方式 | 直接编辑，更新 `last-verified` | 只能改源码或生成脚本后重跑 `yarn docs:gen` |
+| 改动方式 | 直接编辑，更新 `last-verified` | 只能改源码或生成脚本后重跑 `pnpm docs:gen` |
 
 判断一篇清单该手写还是该生成：值会随源码/版本漂移、且能被稳定锚点提取的，生成；需要解释"为什么"与取舍的，手写并链接生成物（例：[app/modules/RelicFree/docs/version-sensitive-hardcode.md](../app/modules/RelicFree/docs/version-sensitive-hardcode.md) 解释为何敏感，值以 [generated/hardcode-snapshot.md](../app/modules/RelicFree/docs/generated/hardcode-snapshot.md) 为准）。
 
@@ -62,10 +62,10 @@ sources:
 
 | 命令 | 作用 |
 |---|---|
-| `yarn docs:gen` | 全量生成（伤害计算器 + 无藏收录，共 6 份） |
-| `yarn docs:gen:damage-calculator` | 仅伤害计算器三份 → `app/modules/Tool/DamageCalculator/docs/generated/` |
-| `yarn docs:gen:relic-free` | 仅无藏收录三份 → `app/modules/RelicFree/docs/generated/` |
+| `pnpm docs:gen` | 全量生成（伤害计算器 + 无藏收录，共 6 份） |
+| `pnpm docs:gen:damage-calculator` | 仅伤害计算器三份 → `app/modules/Tool/DamageCalculator/docs/generated/` |
+| `pnpm docs:gen:relic-free` | 仅无藏收录三份 → `app/modules/RelicFree/docs/generated/` |
 
 ## CI 校验（待建设）
 
-生成物与源码的一致性目前**靠人工重跑**，没有 CI 强制。目标形态：CI 中执行 `yarn docs:gen` 后跑 `git diff --exit-code -- app/modules/Tool/DamageCalculator/docs/generated app/modules/RelicFree/docs/generated`，有 diff 即失败——含义是"提交者改了被扫描的源码但没重跑生成/没提交生成物"。确定性输出（无时间戳）是这一校验成立的前提。落地前，[CONTRIBUTING.md](../CONTRIBUTING.md) 映射表中"改 XX 必须重跑 docs:gen"的条目是唯一约束。
+生成物与源码的一致性目前**靠人工重跑**，没有 CI 强制。目标形态：CI 中执行 `pnpm docs:gen` 后跑 `git diff --exit-code -- app/modules/Tool/DamageCalculator/docs/generated app/modules/RelicFree/docs/generated`，有 diff 即失败——含义是"提交者改了被扫描的源码但没重跑生成/没提交生成物"。确定性输出（无时间戳）是这一校验成立的前提。落地前，[CONTRIBUTING.md](../CONTRIBUTING.md) 映射表中"改 XX 必须重跑 docs:gen"的条目是唯一约束。

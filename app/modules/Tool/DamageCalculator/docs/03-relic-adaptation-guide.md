@@ -192,7 +192,7 @@ registerRelicBlackboard("<上面抄准的 valueStr>", {
 | 决定不实现 / 无法实现 | `disallowedRelicNames`（按中文名）或 `disallowedValueStrs`（按 valueStr） | 一直进 `invalidRelics` 或算出错值 |
 | 初始层数应为 0 | `relicUtils.ts` 的 `zeroInitLayerRelicNames` | 默认从 1 层起算 |
 
-> 这些名单是"必随版本漂移"的内容，已由 `yarn docs:gen` 导出到 [generated/allowed-keys.md](generated/allowed-keys.md)。改名单后请重跑生成脚本。
+> 这些名单是"必随版本漂移"的内容，已由 `pnpm docs:gen` 导出到 [generated/allowed-keys.md](generated/allowed-keys.md)。改名单后请重跑生成脚本。
 
 ## 6. 通宝（copper）
 

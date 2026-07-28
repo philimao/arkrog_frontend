@@ -8,7 +8,7 @@
 
 ```
 node >= 20
-yarn
+pnpm
 ```
 
 #### Environment
@@ -33,20 +33,20 @@ VITE_WASM_URL=http://localhost:8080  # optional for wasm developer
 
 Install the dependencies:
 
-请使用yarn安装和运行项目
+请使用 pnpm 安装和运行项目（`package.json` 的 `packageManager` 字段已固定 `pnpm@11.2.2`，yarn 1.x 会直接拒绝运行）
 
 ```bash
 # 国内用户配置镜像源
 npm config set registry https://registry.npmmirror.com
 npm config set ELECTRON_MIRROR https://npmmirror.com/mirrors/electron/
 
-# 安装yarn工具
-npm install -g yarn
+# 启用 pnpm（corepack 随 node >= 20 内置，会按 packageManager 字段取到对应版本）
+corepack enable
 ```
 
 ```bash
 # 安装依赖
-yarn install
+pnpm install
 ```
 
 ### Development
@@ -54,7 +54,7 @@ yarn install
 Start the development server with HMR:
 
 ```bash
-yarn start
+pnpm start
 ```
 
 Your application will be available at `http://localhost:5173`.
@@ -64,7 +64,7 @@ Your application will be available at `http://localhost:5173`.
 Create a production build:
 
 ```bash
-yarn build
+pnpm build
 ```
 
 ## 🧩 项目结构

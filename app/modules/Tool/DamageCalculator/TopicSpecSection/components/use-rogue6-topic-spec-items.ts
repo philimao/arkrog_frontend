@@ -25,6 +25,8 @@ import { getPath, imageHost } from "~/utils/tools";
 interface Rogue6SpecConfig {
   id: string;
   name: string;
+  /** 图标文件名中的条目名；仅当展示名与之不同（如同一条目拆成多个可选项）时需要指定 */
+  iconName?: string;
   /** 各等级效果文案，逐字取自解包原文；无分级的条目只有一项 */
   descs: string[];
   values: RelicBuff[][];
@@ -231,12 +233,20 @@ export const VARIATION_CONFIG: Record<string, Rogue6SpecConfig> = {
     values: [[]],
     disabled: true,
   },
-  rogue_6_variation_4: {
-    id: "rogue_6_variation_4",
-    name: "“孤立石林”",
-    descs: ["我方攻击范围内存在我方干员时攻速+30，否则攻速-50"],
-    // 按「范围内存在我方干员」的 +30 建模，用户按实际情况勾选
+  // 一个条目含两种互斥状态，单个开关无法表达，故拆成两项分别可选（勿同时勾选）
+  rogue_6_variation_4_up: {
+    id: "rogue_6_variation_4_up",
+    name: "“孤立石林”（攻速+30）",
+    iconName: "“孤立石林”",
+    descs: ["我方攻击范围内存在我方干员时攻速+30，否则攻速-50（本条目按存在我方干员计算）"],
     values: [[{ key: "", blackboard: [{ key: "attack_speed", value: 30, valueStr: null }] }]],
+  },
+  rogue_6_variation_4_down: {
+    id: "rogue_6_variation_4_down",
+    name: "“孤立石林”（攻速-50）",
+    iconName: "“孤立石林”",
+    descs: ["我方攻击范围内存在我方干员时攻速+30，否则攻速-50（本条目按不存在我方干员计算）"],
+    values: [[{ key: "", blackboard: [{ key: "attack_speed", value: -50, valueStr: null }] }]],
   },
   rogue_6_variation_5: {
     id: "rogue_6_variation_5",
@@ -303,7 +313,7 @@ function toSpecItem(cfg: Rogue6SpecConfig, level: number, prefix: string): ITopi
   return {
     ...cfg,
     description: cfg.descs[level],
-    url: specItemUrl(prefix, cfg.name),
+    url: specItemUrl(prefix, cfg.iconName ?? cfg.name),
     userActive: true,
     invert: 0,
     buffs: cfg.values[level],

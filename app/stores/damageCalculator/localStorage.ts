@@ -32,6 +32,8 @@ export interface Rouge4State extends RougeBaseState {
 export interface Rouge6State extends RougeBaseState {
   /** 理想域（解包 weather 模块，难度描述中称「实托邦」） */
   utopias: string[];
+  /** 零件（引擎配件） */
+  scraps: string[];
 }
 
 /** 界园主题状态 */

@@ -22,6 +22,7 @@ export default function CalcCenter() {
     rogue5_wrath_spec_items,
     rogue5_copper_spec_items,
     rogue6_utopia_spec_items,
+    rogue6_scrap_spec_items,
     stageData,
     rogueInput,
     enemyBase,
@@ -67,7 +68,8 @@ export default function CalcCenter() {
       const utopias = rogueInput.rogue_6.utopias.map(
         (id) => rogue6_utopia_spec_items.find((item) => item.id === id)!,
       );
-      return utopias.filter((item) => item?.userActive) as ITopicSpecItem[];
+      const scraps = rogueInput.rogue_6.scraps.map((id) => rogue6_scrap_spec_items.find((item) => item.id === id)!);
+      return [...utopias, ...scraps].filter((item) => item?.userActive) as ITopicSpecItem[];
     }
     return [];
   }, [
@@ -76,6 +78,7 @@ export default function CalcCenter() {
     rogue5_copper_spec_items,
     rogue5_wrath_spec_items,
     rogue6_utopia_spec_items,
+    rogue6_scrap_spec_items,
     rogueInput,
   ]);
 
@@ -287,6 +290,7 @@ export default function CalcCenter() {
         enemyName: enemyBase.id,
         relics: selectedIds,
         utopias: rogueInput[localState.topic].utopias,
+        scraps: rogueInput[localState.topic].scraps,
         layer: rogueInput[localState.topic].layer,
       };
     }

@@ -10,22 +10,32 @@ import {
   StyledGridItemInner,
   StyledGridItemTitle,
 } from "../TopicSpecSelector";
-import { getRogue6Utopias, getUtopiaLevel, UTOPIA_LEVELS } from "./use-rogue6-topic-spec-items";
+import { getRogue6Scraps, getRogue6Utopias, getUtopiaLevel, UTOPIA_LEVELS } from "./use-rogue6-topic-spec-items";
 
 /**
- * 黑流树海主题特殊效果选择器。
- * 当前仅含「理想域」；「零件」需要后端先把 scrap 相关表纳入 API 下发（见 known-issues）。
+ * 黑流树海主题特殊效果选择器：理想域 + 零件。
+ * 零件只收录影响战斗数值的两个概念体，其余为移动/估价类，见 use-rogue6-topic-spec-items。
  */
 export default memo(function Rogue6Selector() {
-  const { rogueInput, rogue6_utopia_spec_items, setRogue6Utopias, setRogue6UtopiaSpecItems } =
-    useDamageCalculatorStore(
-      useShallow((state) => ({
-        rogueInput: state.rogueInput,
-        rogue6_utopia_spec_items: state.rogue6_utopia_spec_items,
-        setRogue6Utopias: state.setRogue6Utopias,
-        setRogue6UtopiaSpecItems: state.setRogue6UtopiaSpecItems,
-      })),
-    );
+  const {
+    rogueInput,
+    rogue6_utopia_spec_items,
+    rogue6_scrap_spec_items,
+    setRogue6Utopias,
+    setRogue6UtopiaSpecItems,
+    setRogue6Scraps,
+    setRogue6ScrapSpecItems,
+  } = useDamageCalculatorStore(
+    useShallow((state) => ({
+      rogueInput: state.rogueInput,
+      rogue6_utopia_spec_items: state.rogue6_utopia_spec_items,
+      rogue6_scrap_spec_items: state.rogue6_scrap_spec_items,
+      setRogue6Utopias: state.setRogue6Utopias,
+      setRogue6UtopiaSpecItems: state.setRogue6UtopiaSpecItems,
+      setRogue6Scraps: state.setRogue6Scraps,
+      setRogue6ScrapSpecItems: state.setRogue6ScrapSpecItems,
+    })),
+  );
 
   const difficulty = rogueInput.rogue_6.difficulty;
 
@@ -34,6 +44,11 @@ export default memo(function Rogue6Selector() {
     const utopiaList = getRogue6Utopias(difficulty);
     setRogue6UtopiaSpecItems(() => utopiaList);
   }, [difficulty, setRogue6UtopiaSpecItems]);
+
+  // 零件不随难度变化，仅需物化一次
+  useEffect(() => {
+    setRogue6ScrapSpecItems(() => getRogue6Scraps());
+  }, [setRogue6ScrapSpecItems]);
 
   const level = getUtopiaLevel(difficulty);
   const levelStr = level < 0 ? "" : UTOPIA_LEVELS[level];
@@ -68,6 +83,30 @@ export default memo(function Rogue6Selector() {
           ))}
         </StyledGridContainer>
       )}
+      <StyledTitle>零件</StyledTitle>
+      <div className="text-tiny">仅列出影响战斗数值的零件，其余为移动、估价等非面板效果。</div>
+      <StyledGridContainer $cols={4}>
+        {rogue6_scrap_spec_items.map((sc) => (
+          <StyledGridItem
+            key={sc.id}
+            $selected={rogueInput.rogue_6.scraps.includes(sc.id)}
+            onClick={() => setRogue6Scraps(sc.id)}
+            $disabled={sc.disabled}
+          >
+            <StyledGridItemInner>
+              <StyledGridItemIcon>
+                <LazyImage src={sc.url} alt={sc.name} />
+              </StyledGridItemIcon>
+              <div className="flex flex-col gap-0.5 justify-center">
+                <StyledGridItemTitle>
+                  <span>{sc.name}</span>
+                </StyledGridItemTitle>
+                <div className="text-tiny">{sc.description}</div>
+              </div>
+            </StyledGridItemInner>
+          </StyledGridItem>
+        ))}
+      </StyledGridContainer>
     </>
   );
 });

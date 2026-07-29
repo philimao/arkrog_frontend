@@ -101,6 +101,8 @@ export default memo(function TopicSpecTrigger() {
     setRogue4DisasterSpecItems,
     rogue6_utopia_spec_items,
     setRogue6UtopiaSpecItems,
+    rogue6_scrap_spec_items,
+    setRogue6ScrapSpecItems,
   } = useDamageCalculatorStore(
     useShallow((state) => ({
       rogueInput: state.rogueInput,
@@ -114,6 +116,8 @@ export default memo(function TopicSpecTrigger() {
       setRogue4DisasterSpecItems: state.setRogue4DisasterSpecItems,
       rogue6_utopia_spec_items: state.rogue6_utopia_spec_items,
       setRogue6UtopiaSpecItems: state.setRogue6UtopiaSpecItems,
+      rogue6_scrap_spec_items: state.rogue6_scrap_spec_items,
+      setRogue6ScrapSpecItems: state.setRogue6ScrapSpecItems,
       toggleShowTopicSpec: state.toggleShowTopicSpec,
     })),
   );
@@ -169,6 +173,13 @@ export default memo(function TopicSpecTrigger() {
             <TopicSpecTriggerNode
               items={rogue6_utopia_spec_items.filter((item) => rogueInput.rogue_6.utopias.includes(item.id))}
               onClick={(item) => toggleTopicSpecUserActive(item, setRogue6UtopiaSpecItems)}
+            />
+          )}
+          {/* 零件 */}
+          {rogueInput.topic === RogueTopic.ROGUE_6 && (
+            <TopicSpecTriggerNode
+              items={rogue6_scrap_spec_items.filter((item) => rogueInput.rogue_6.scraps.includes(item.id))}
+              onClick={(item) => toggleTopicSpecUserActive(item, setRogue6ScrapSpecItems)}
             />
           )}
           {/* 通宝 */}

@@ -131,6 +131,8 @@ export type RogueInput = {
     relics: string[];
     /** 理想域（解包 weather 模块，难度描述中称「实托邦」） */
     utopias: string[];
+    /** 零件（引擎配件，仅收录影响战斗数值的条目） */
+    scraps: string[];
   },
 }
 
@@ -147,6 +149,8 @@ export interface SlicedCalcGameDataState {
   rogue5_copper_spec_items: ITopicSpecItem[];
   /** 黑流树海理想域 */
   rogue6_utopia_spec_items: ITopicSpecItem[];
+  /** 黑流树海零件 */
+  rogue6_scrap_spec_items: ITopicSpecItem[];
   /** 肉鸽主题特殊效果列表 @deprecated 解耦后不再使用 */
   topicSpecItems: ITopicSpecItem[];
   /** 技能解包数据 */
@@ -204,6 +208,8 @@ export interface SlicedCalcGameDataActions {
   /** 设置选中的理想域（传数组整体替换，传单个 id 则增删切换） */
   setRogue6Utopias: (utopias: string | string[]) => void;
   setRogue6UtopiaSpecItems: (callback: (utopias: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
+  setRogue6Scraps: (scraps: string | string[]) => void;
+  setRogue6ScrapSpecItems: (callback: (scraps: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
   /** 设置肉鸽主题特殊效果列表 */
   setTopicSpecItems: (callback: (items: ITopicSpecItem[]) => ITopicSpecItem[]) => void;
 }

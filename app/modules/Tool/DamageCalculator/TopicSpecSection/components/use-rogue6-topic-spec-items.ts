@@ -262,6 +262,53 @@ export const UTOPIA_CONFIG: Record<string, ITopicSpecConfig> = {
 };
 
 /**
+ * 零件（引擎配件）中**影响战斗数值**的条目。
+ *
+ * 全部零件分自然物 / 加工品 / 概念体三类共数十项，但绝大多数只作用于移动、估价、
+ * 护盾等非面板效果；经 prts「引擎配件目录」核对，进入伤害计算的只有下面两个概念体，
+ * 故此处硬编码而非走 API——解包侧 scrap 相关表（scrapItemToType 等）目前也不在下发范围内。
+ *
+ * 两者均为「装载加工品移动至作战节点时，本次战斗生效」，勾选即代表本场战斗已触发。
+ * attack_speed 走 relic_rune_add 加算区，写字面值（+50 即 50）。
+ */
+export const SCRAP_CONFIG: Record<string, ITopicSpecConfig> = {
+  rogue_6_scrap_baimoniao: {
+    id: "rogue_6_scrap_baimoniao",
+    name: "白模鸟",
+    functionDesc: (blackboard: BlackboardData[]) =>
+      `装载加工品移动至作战节点时，本次战斗我方单位攻击速度+${blackboard.find((item) => item.key === "attack_speed")?.value}，战斗后获得1个随机收藏品`,
+    values: [[{ key: "", blackboard: [{ key: "attack_speed", value: 50, valueStr: null }] }]],
+  },
+  rogue_6_scrap_tuzhuangliboli: {
+    id: "rogue_6_scrap_tuzhuangliboli",
+    name: "涂装黎博利",
+    functionDesc: (blackboard: BlackboardData[]) =>
+      `装载加工品移动至作战节点时，本次战斗我方单位攻击速度+${blackboard.find((item) => item.key === "attack_speed")?.value}`,
+    values: [[{ key: "", blackboard: [{ key: "attack_speed", value: 35, valueStr: null }] }]],
+  },
+};
+
+/** 获取零件（仅影响战斗数值的条目，无难度分级） */
+export function getRogue6Scraps(): ITopicSpecItem[] {
+  return Object.values(SCRAP_CONFIG).map((sc) => {
+    const buffs = sc.values[0];
+    const desc = sc.functionDesc(buffs.map((buff) => buff.blackboard).flat());
+    // TODO(素材): 零件图标的 prts 命名前缀待核实（理想域用的是「乌托邦幸福论」）
+    const url = imageHost + getPath(`沉沦者的黑流树海_引擎配件_${sc.name}.png`);
+    return {
+      ...sc,
+      description: desc,
+      url,
+      userActive: true,
+      invert: 0,
+      buffs,
+      rows: 1,
+      layer: 1,
+    };
+  });
+}
+
+/**
  * 保密等级 → 理想域等级下标。
  * 依据游戏内难度面板「实托邦景象」列：N0/N1 无 → N2 早期 → N6 中期 → N12 晚期。
  * 返回 -1 表示该难度下不生成理想域。

@@ -43,6 +43,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogue6UtopiaSpecItems",
     ),
+  setRogue6ScrapSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue6_scrap_spec_items = callback(state.rogue6_scrap_spec_items);
+      },
+      undefined,
+      "setRogue6ScrapSpecItems",
+    ),
   setRogue5CopperSpecItems: (callback) =>
     set(
       (state) => {
@@ -95,7 +103,9 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       rogueInput[rogueTopic].wraths = ro5Defaults.wraths;
       rogueInput[rogueTopic].coppers = ro5Defaults.coppers;
     } else if (rogueTopic === RogueTopic.ROGUE_6) {
-      rogueInput[rogueTopic].utopias = defaultValues[rogueTopic].utopias;
+      const ro6Defaults = defaultValues[rogueTopic];
+      rogueInput[rogueTopic].utopias = ro6Defaults.utopias;
+      rogueInput[rogueTopic].scraps = ro6Defaults.scraps;
     }
 
     const renderStages = getStageList(state.zones, state.stages, rogueInput);
@@ -134,7 +144,9 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
           state.rogueInput[rogueTopic].wraths = ro5Defaults.wraths;
           state.rogueInput[rogueTopic].coppers = ro5Defaults.coppers;
         } else if (rogueTopic === RogueTopic.ROGUE_6) {
-          state.rogueInput[rogueTopic].utopias = defaultValues[rogueTopic].utopias;
+          const ro6Defaults = defaultValues[rogueTopic];
+          state.rogueInput[rogueTopic].utopias = ro6Defaults.utopias;
+          state.rogueInput[rogueTopic].scraps = ro6Defaults.scraps;
         }
       },
       undefined,
@@ -325,5 +337,20 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       },
       undefined,
       "setRogue6Utopias",
+    ),
+  setRogue6Scraps: (scraps) =>
+    set(
+      (state) => {
+        if (Array.isArray(scraps)) {
+          state.rogueInput.rogue_6.scraps = scraps;
+        } else {
+          const updated = [...state.rogueInput.rogue_6.scraps];
+          if (updated.includes(scraps)) updated.splice(updated.indexOf(scraps), 1);
+          else updated.unshift(scraps);
+          state.rogueInput.rogue_6.scraps = updated;
+        }
+      },
+      undefined,
+      "setRogue6Scraps",
     ),
 });

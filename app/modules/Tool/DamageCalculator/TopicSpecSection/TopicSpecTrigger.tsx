@@ -29,9 +29,8 @@ const triggerConfigs: Record<RogueTopic, { text: string; background: string }> =
     background: "/images%2Frogue_5%2F%E9%80%9A%E5%AE%9D%E5%B2%81%E6%97%B6.png",
   },
   [RogueTopic.ROGUE_6]: {
-    // 零件(SCRAP)尚未接入——需后端先下发 scrap 相关表，故入口暂只含理想域
-    text: "理想域",
-    background: "",
+    text: "零件&理想域",
+    background: "/images/rogue_6/%E9%9B%B6%E4%BB%B6%E7%90%86%E6%83%B3%E5%9F%9F.png",
   },
 };
 

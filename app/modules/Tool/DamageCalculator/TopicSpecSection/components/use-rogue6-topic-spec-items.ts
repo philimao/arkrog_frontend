@@ -3,11 +3,21 @@ import type { BlackboardData } from "~/types/gameData";
 import { getPath, imageHost } from "~/utils/tools";
 
 /**
- * 黑流树海「理想域」（解包数据中的 weather 模块；难度描述里称作「实托邦」，同一机制的两种叫法）。
+ * 黑流树海「理想域」（解包数据中的 weather 模块）。
+ *
+ * ── 名词层级（三处叫法不同，勿混）──────────────────────────
+ *   理想域       黑流树海中的生物聚落总称，分「崇尚交互的实托邦」与「崇尚内圣的乌托邦」两类（prts 主题贴士）
+ *   实托邦       难度面板中的用词：「实托邦景象」列、「实托邦·方针」
+ *   乌托邦幸福论  prts 上这组效果的条目名，也是图片文件名前缀
+ * 本文件对外统一用「理想域」。
  *
  * 与界园「岁时」完全同构：同一效果分三级，随保密等级解锁：
  *   N0~N1 不生成 → N2 早期 → N6 中期 → N12 晚期
- * 数据来源：roguelike_topic_table.modules.rogue_6.weather.mainWeatherData（10 种 × 3 级 = 30 条）。
+ * 数据来源：roguelike_topic_table.modules.rogue_6.weather.mainWeatherData（10 种 × 3 级 = 30 条），
+ * 全部 30 个数值已与 prts「黑流数据库」页面逐条核对一致。
+ *
+ * 未建模：subWeatherData 的 4 个「实托邦·方针」（改良/修正/激进/增益）——
+ * 效果均为途经节点时的源石锭/护盾/生命/估价增减，不进入伤害计算。
  *
  * ⚠️ blackboard 数值是对照 functionDesc 手工建模的，与 WRATH_CONFIG 同属版本敏感硬编码。
  * 乘区语义（勿写反）：
@@ -273,8 +283,9 @@ export function getRogue6Utopias(difficulty: number): ITopicSpecItem[] {
     .map((ut) => {
       const buffs = ut.values[level];
       const desc = ut.functionDesc(buffs.map((buff) => buff.blackboard).flat());
-      // TODO(素材): prts.wiki 的理想域图标命名待核实，暂沿用岁时的路径模式并去掉中文引号
-      const url = imageHost + getPath(`集成战略_7_理想域_${ut.name.replace(/[“”]/g, "")}.png`);
+      // prts.wiki 命名为「沉沦者的黑流树海_乌托邦幸福论_{名称}.png」，名称含中文引号，勿去除
+      // （已按 media.prts.wiki 实际 URL 的 MD5 目录校验：“黑流地脉” → /9/99/）
+      const url = imageHost + getPath(`沉沦者的黑流树海_乌托邦幸福论_${ut.name}.png`);
       return {
         ...ut,
         description: desc,

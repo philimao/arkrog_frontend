@@ -10,7 +10,8 @@ export const pages = [
   { pathname: "/relic-free", title: "穷集一生", subtitle: "无藏收录" },
   // { pathname: "/seed", title: "百种交集", subtitle: "种子分享" },
   { pathname: "/blog", title: "集思广益", subtitle: "攻略博客" },
-  { pathname: "/tool/autochess", title: "卫戍协议", subtitle: "何忆卫" },
+  // 活动已结束，隐藏导航入口（路由保留，仍可直接访问 /tool/autochess）
+  // { pathname: "/tool/autochess", title: "卫戍协议", subtitle: "何忆卫" },
   { pathname: "/tool", title: "小集器人", subtitle: "伤害计算" },
   { pathname: "/tournament", title: "高手云集", subtitle: "赛事整理" },
   { pathname: "/admin", title: "后台管理", subtitle: "管理后台", minLevel: 4 },

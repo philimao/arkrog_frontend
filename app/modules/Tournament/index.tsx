@@ -203,7 +203,7 @@ function RougeSelector({
                     {tournament.avatar ? (
                       <img
                         src={tournament.avatar}
-                        className="w-full rounded-xl aspect-square"
+                        className="w-full rounded-xl aspect-square bg-black-gray"
                         alt="avatar"
                         referrerPolicy="no-referrer"
                         crossOrigin="anonymous"

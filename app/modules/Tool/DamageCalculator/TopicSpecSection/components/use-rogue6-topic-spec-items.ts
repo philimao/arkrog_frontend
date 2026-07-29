@@ -262,6 +262,100 @@ export const UTOPIA_CONFIG: Record<string, ITopicSpecConfig> = {
 };
 
 /**
+ * 乌托邦（解包 details.rogue_6.variationData，9 条）。
+ * 与实托邦并列，同属「理想域」下的两类聚落；无等级分级，一场探索中固定生效。
+ *
+ * `type` 字段区分用途：BAT=战斗、MAP=地图、RES=资源。仅 BAT 类可能进入伤害计算，
+ * 但其中三项要么解包与 prts 都未给出数值（巨人摇篮），要么非面板效果
+ * （已知浩劫为每秒真伤、迪斯科狂热为技力需求），故实际建模的只有「孤立石林」。
+ */
+export const VARIATION_CONFIG: Record<string, ITopicSpecConfig> = {
+  rogue_6_variation_1: {
+    id: "rogue_6_variation_1",
+    name: "“巨人摇篮”",
+    // ⚠️ 解包 functionDesc 与 prts 均只给定性描述，未给出提升/降低的具体百分比
+    functionDesc: () => "我方攻击力提升，但对较远的敌人造成的伤害降低（未公布具体数值，暂不计入计算）",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_2: {
+    id: "rogue_6_variation_2",
+    name: "“迪斯科狂热”",
+    functionDesc: () => "我方干员技力需求-40%，技能结束后向周围随机移动（技力需求不进入面板计算）",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_3: {
+    id: "rogue_6_variation_3",
+    name: "“已知浩劫”",
+    functionDesc: () => "所有单位每秒受到其最大生命值3%的真实伤害（持续伤害，非面板加成）",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_4: {
+    id: "rogue_6_variation_4",
+    name: "“孤立石林”",
+    functionDesc: (blackboard: BlackboardData[]) =>
+      `我方攻击范围内存在我方干员时攻速+${blackboard.find((item) => item.key === "attack_speed")?.value}（勾选按此计算），否则攻速-50`,
+    values: [[{ key: "", blackboard: [{ key: "attack_speed", value: 30, valueStr: null }] }]],
+  },
+  rogue_6_variation_5: {
+    id: "rogue_6_variation_5",
+    name: "“全知者盲区”",
+    functionDesc: () => "每次移动后，刷新其余未经过节点",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_6: {
+    id: "rogue_6_variation_6",
+    name: "“未亡者遗怨”",
+    functionDesc: () => "生成更多“居民”的恶意",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_7: {
+    id: "rogue_6_variation_7",
+    name: "“源石之城”",
+    functionDesc: () => "完成节点后获得源石锭，敌方属性随源石锭数量提升（提升量随局内进度变化，无法静态建模）",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_8: {
+    id: "rogue_6_variation_8",
+    name: "“消耗螺旋”",
+    functionDesc: () => "每名干员仅可在一场狭路相逢中出战",
+    values: [[]],
+    disabled: true,
+  },
+  rogue_6_variation_9: {
+    id: "rogue_6_variation_9",
+    name: "“换心联结”",
+    functionDesc: () => "每完成一个失与得节点，获得5源石锭",
+    values: [[]],
+    disabled: true,
+  },
+};
+
+/** 获取乌托邦（无难度分级） */
+export function getRogue6Variations(): ITopicSpecItem[] {
+  return Object.values(VARIATION_CONFIG).map((va) => {
+    const buffs = va.values[0];
+    return {
+      ...va,
+      description: va.functionDesc(buffs.map((buff) => buff.blackboard).flat()),
+      // 与实托邦共用「乌托邦幸福论」前缀（已按 /d/d8/ 巨人摇篮、/6/6c/ 孤立石林 校验）
+      url: imageHost + getPath(`沉沦者的黑流树海_乌托邦幸福论_${va.name}.png`),
+      userActive: true,
+      invert: 0,
+      buffs,
+      rows: 1,
+      layer: 1,
+      disabled: va.disabled,
+    };
+  });
+}
+
+/**
  * 零件（引擎配件）中**影响战斗数值**的条目。
  *
  * 全部零件分自然物 / 加工品 / 概念体三类共数十项，但绝大多数只作用于移动、估价、
@@ -293,8 +387,8 @@ export function getRogue6Scraps(): ITopicSpecItem[] {
   return Object.values(SCRAP_CONFIG).map((sc) => {
     const buffs = sc.values[0];
     const desc = sc.functionDesc(buffs.map((buff) => buff.blackboard).flat());
-    // TODO(素材): 零件图标的 prts 命名前缀待核实（理想域用的是「乌托邦幸福论」）
-    const url = imageHost + getPath(`沉沦者的黑流树海_引擎配件_${sc.name}.png`);
+    // 零件图标前缀是「零件」而非页面标题的「引擎配件」（已按 /1/1e/ 白模鸟 校验）
+    const url = imageHost + getPath(`沉沦者的黑流树海_零件_${sc.name}.png`);
     return {
       ...sc,
       description: desc,

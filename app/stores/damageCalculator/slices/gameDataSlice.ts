@@ -35,6 +35,14 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogue5WrathSpecItems",
     ),
+  setRogue6UtopiaSpecItems: (callback) =>
+    set(
+      (state) => {
+        state.rogue6_utopia_spec_items = callback(state.rogue6_utopia_spec_items);
+      },
+      undefined,
+      "setRogue6UtopiaSpecItems",
+    ),
   setRogue5CopperSpecItems: (callback) =>
     set(
       (state) => {
@@ -75,13 +83,19 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     rogueInput[rogueTopic].relics = topicDefaults.relics;
 
     // 设置主题特定属性
+    // 注意：默认值必须在收窄后的分支内重新索引 defaultValues[rogueTopic]——
+    // 分支外取的 topicDefaults 类型是「所有主题形状的联合」，TS 不会因后续收窄而回头重算它
     if (rogueTopic === RogueTopic.ROGUE_4) {
-      rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
-      rogueInput[rogueTopic].inspiration = topicDefaults.inspiration;
-      rogueInput[rogueTopic].disaster = topicDefaults.disaster;
+      const ro4Defaults = defaultValues[rogueTopic];
+      rogueInput[rogueTopic].thoughtLoad = ro4Defaults.thoughtLoad;
+      rogueInput[rogueTopic].inspiration = ro4Defaults.inspiration;
+      rogueInput[rogueTopic].disaster = ro4Defaults.disaster;
     } else if (rogueTopic === RogueTopic.ROGUE_5) {
-      rogueInput[rogueTopic].wraths = topicDefaults.wraths;
-      rogueInput[rogueTopic].coppers = topicDefaults.coppers;
+      const ro5Defaults = defaultValues[rogueTopic];
+      rogueInput[rogueTopic].wraths = ro5Defaults.wraths;
+      rogueInput[rogueTopic].coppers = ro5Defaults.coppers;
+    } else if (rogueTopic === RogueTopic.ROGUE_6) {
+      rogueInput[rogueTopic].utopias = defaultValues[rogueTopic].utopias;
     }
 
     const renderStages = getStageList(state.zones, state.stages, rogueInput);
@@ -109,14 +123,18 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
 
-        // 设置主题特定属性
+        // 设置主题特定属性（同上：默认值需在收窄分支内重新索引）
         if (rogueTopic === RogueTopic.ROGUE_4) {
-          state.rogueInput[rogueTopic].thoughtLoad = topicDefaults.thoughtLoad;
-          state.rogueInput[rogueTopic].inspiration = topicDefaults.inspiration;
-          state.rogueInput[rogueTopic].disaster = topicDefaults.disaster;
+          const ro4Defaults = defaultValues[rogueTopic];
+          state.rogueInput[rogueTopic].thoughtLoad = ro4Defaults.thoughtLoad;
+          state.rogueInput[rogueTopic].inspiration = ro4Defaults.inspiration;
+          state.rogueInput[rogueTopic].disaster = ro4Defaults.disaster;
         } else if (rogueTopic === RogueTopic.ROGUE_5) {
-          state.rogueInput[rogueTopic].wraths = topicDefaults.wraths;
-          state.rogueInput[rogueTopic].coppers = topicDefaults.coppers;
+          const ro5Defaults = defaultValues[rogueTopic];
+          state.rogueInput[rogueTopic].wraths = ro5Defaults.wraths;
+          state.rogueInput[rogueTopic].coppers = ro5Defaults.coppers;
+        } else if (rogueTopic === RogueTopic.ROGUE_6) {
+          state.rogueInput[rogueTopic].utopias = defaultValues[rogueTopic].utopias;
         }
       },
       undefined,
@@ -292,5 +310,20 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       },
       undefined,
       "setRogueCoppers",
+    ),
+  setRogue6Utopias: (utopias) =>
+    set(
+      (state) => {
+        if (Array.isArray(utopias)) {
+          state.rogueInput.rogue_6.utopias = utopias;
+        } else {
+          const updated = [...state.rogueInput.rogue_6.utopias];
+          if (updated.includes(utopias)) updated.splice(updated.indexOf(utopias), 1);
+          else updated.unshift(utopias);
+          state.rogueInput.rogue_6.utopias = updated;
+        }
+      },
+      undefined,
+      "setRogue6Utopias",
     ),
 });

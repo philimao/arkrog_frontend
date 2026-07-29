@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import Rogue5Selector from "./components/Rogue5Selector";
 import Rogue4Selector from "./components/Rogue4Selector";
+import Rogue6Selector from "./components/Rogue6Selector";
 import type { BlackboardData, RelicBuff } from "~/types/gameData";
 
 /** 主题特殊效果，模拟藏品relicWrapper结构 */
@@ -112,6 +113,8 @@ export default function TopicSpecSelector() {
         return <Rogue4Selector />;
       case "rogue_5":
         return <Rogue5Selector />;
+      case "rogue_6":
+        return <Rogue6Selector />;
       default:
         return null;
     }

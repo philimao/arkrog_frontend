@@ -21,6 +21,7 @@ export default function CalcCenter() {
     rogue4_disaster_spec_items,
     rogue5_wrath_spec_items,
     rogue5_copper_spec_items,
+    rogue6_utopia_spec_items,
     stageData,
     rogueInput,
     enemyBase,
@@ -62,12 +63,19 @@ export default function CalcCenter() {
       const disaster = rogue4_disaster_spec_items.find((item) => item.id === rogueInput.rogue_4.disaster);
       return [inspiration, disaster].filter((item) => item?.userActive) as ITopicSpecItem[];
     }
+    if (rogueInput.topic === RogueTopic.ROGUE_6) {
+      const utopias = rogueInput.rogue_6.utopias.map(
+        (id) => rogue6_utopia_spec_items.find((item) => item.id === id)!,
+      );
+      return utopias.filter((item) => item?.userActive) as ITopicSpecItem[];
+    }
     return [];
   }, [
     rogue4_disaster_spec_items,
     rogue4_inspiration_spec_items,
     rogue5_copper_spec_items,
     rogue5_wrath_spec_items,
+    rogue6_utopia_spec_items,
     rogueInput,
   ]);
 
@@ -266,6 +274,19 @@ export default function CalcCenter() {
         relics: selectedIds,
         wraths: rogueInput[localState.topic].wraths,
         coppers: rogueInput[localState.topic].coppers,
+        layer: rogueInput[localState.topic].layer,
+      };
+    }
+    // 保存黑流树海肉鸽主题状态
+    if (localState.topic === RogueTopic.ROGUE_6) {
+      localState.rougeTopic[RogueTopic.ROGUE_6] = {
+        tech: rogueInput[localState.topic].tech,
+        difficulty: rogueInput[localState.topic].difficulty,
+        zone: rogueInput[localState.topic].zone,
+        stage: stageId,
+        enemyName: enemyBase.id,
+        relics: selectedIds,
+        utopias: rogueInput[localState.topic].utopias,
         layer: rogueInput[localState.topic].layer,
       };
     }

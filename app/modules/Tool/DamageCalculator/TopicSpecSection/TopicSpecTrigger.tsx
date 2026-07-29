@@ -28,9 +28,9 @@ const triggerConfigs: Record<RogueTopic, { text: string; background: string }> =
     text: "通宝&岁时",
     background: "/images%2Frogue_5%2F%E9%80%9A%E5%AE%9D%E5%B2%81%E6%97%B6.png",
   },
-  // TODO(rogue_6): 黑流树海主题特殊效果(WEATHER 天象 / SCRAP)待建（计算器阶段）；空文案=暂不显示入口
   [RogueTopic.ROGUE_6]: {
-    text: "",
+    // 零件(SCRAP)尚未接入——需后端先下发 scrap 相关表，故入口暂只含理想域
+    text: "理想域",
     background: "",
   },
 };
@@ -99,6 +99,8 @@ export default memo(function TopicSpecTrigger() {
     setRogue5WrathSpecItems,
     setRogue5CopperSpecItems,
     setRogue4DisasterSpecItems,
+    rogue6_utopia_spec_items,
+    setRogue6UtopiaSpecItems,
   } = useDamageCalculatorStore(
     useShallow((state) => ({
       rogueInput: state.rogueInput,
@@ -110,11 +112,13 @@ export default memo(function TopicSpecTrigger() {
       setRogue5WrathSpecItems: state.setRogue5WrathSpecItems,
       setRogue5CopperSpecItems: state.setRogue5CopperSpecItems,
       setRogue4DisasterSpecItems: state.setRogue4DisasterSpecItems,
+      rogue6_utopia_spec_items: state.rogue6_utopia_spec_items,
+      setRogue6UtopiaSpecItems: state.setRogue6UtopiaSpecItems,
       toggleShowTopicSpec: state.toggleShowTopicSpec,
     })),
   );
 
-  const allowedRogueKeys = [RogueTopic.ROGUE_4, RogueTopic.ROGUE_5];
+  const allowedRogueKeys = [RogueTopic.ROGUE_4, RogueTopic.ROGUE_5, RogueTopic.ROGUE_6];
 
   /** 主题切换激活状态 */
   function toggleTopicSpecUserActive(
@@ -158,6 +162,13 @@ export default memo(function TopicSpecTrigger() {
             <TopicSpecTriggerNode
               items={rogue5_wrath_spec_items.filter((item) => rogueInput.rogue_5.wraths.includes(item.id))}
               onClick={(item) => toggleTopicSpecUserActive(item, setRogue5WrathSpecItems)}
+            />
+          )}
+          {/* 理想域 */}
+          {rogueInput.topic === RogueTopic.ROGUE_6 && (
+            <TopicSpecTriggerNode
+              items={rogue6_utopia_spec_items.filter((item) => rogueInput.rogue_6.utopias.includes(item.id))}
+              onClick={(item) => toggleTopicSpecUserActive(item, setRogue6UtopiaSpecItems)}
             />
           )}
           {/* 通宝 */}

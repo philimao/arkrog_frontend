@@ -245,7 +245,7 @@ function RougeSelector({
           </StyledBackButton>
         </StyledBackButtonContainer>
       )}
-      <div className="mb-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="mb-12 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {topicsData.reverse().map((topic) => (
           <div
             key={topic.id}

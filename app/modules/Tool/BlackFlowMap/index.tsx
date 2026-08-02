@@ -1,0 +1,382 @@
+import { useState } from "react";
+import Loading from "~/components/Loading";
+import { useGameDataStore } from "~/stores/gameDataStore";
+import { useNodeGrid } from "./useNodeGrid";
+import { NodeMapCanvas } from "./mapCanvas";
+import {
+  toGridState,
+  initialMaps,
+  nodeOptions,
+  nodeTypeLimits,
+  zoneNotes,
+} from "./mapData";
+import type { ZoneData } from "~/types/gameData";
+import { intToRoman } from "~/utils/tools";
+import { Tooltip } from "@heroui/react";
+
+export default function BlackFlowMap() {
+  const { zones } = useGameDataStore();
+  const zoneOfRogue: ZoneData[] = Object.values(zones["rogue_6"]).slice(0, 5);
+  const { toggle, load } = useNodeGrid(toGridState(initialMaps[0]));
+  const [currentZoneId, setCurrentZoneId] = useState<string>(
+    zoneOfRogue[0]?.id || "",
+  );
+  const [selectedMapId, setSelectedMapId] = useState<string>(
+    initialMaps[0]?.id || "",
+  );
+  const [selectedOptionId, setSelectedOptionId] = useState<string>("");
+  const [highlightRange, setHighlightRange] = useState<{
+    min: number;
+    max: number;
+  } | null>(null);
+  const [selectedNode, setSelectedNode] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
+  const [markedNodes, setMarkedNodes] = useState<Record<string, string>>({});
+  const currentMap = initialMaps.find((m) => m.id === selectedMapId);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  if (!zoneOfRogue) return <Loading />;
+
+  const visibleOptions = nodeOptions.filter(
+    (option) => option.steps.filter((s) => s.zone === currentZoneId).length > 0,
+  );
+
+  const handleNodeClick = (row: number, col: number) => {
+    setSelectedNode({ row, col });
+  };
+
+  const handleOptionClick = (option: (typeof nodeOptions)[number]) => {
+    if (selectedOptionId === option.id) {
+      setSelectedOptionId("");
+      setHighlightRange(null);
+      return;
+    }
+
+    const step = option.steps.find((s) => s.zone === currentZoneId);
+    setSelectedOptionId(option.id);
+    setHighlightRange(step ? { min: step.min, max: step.max } : null);
+  };
+
+  const handleMarkNodeAt = (row: number, col: number, optionId: string) => {
+    const key = `${row},${col}`;
+    setMarkedNodes((prev) => {
+      const next = { ...prev };
+      if (next[key] === optionId) {
+        delete next[key];
+      } else {
+        next[key] = optionId;
+      }
+      return next;
+    });
+    setSelectedNode(null);
+  };
+
+  const getOptionLimit = (optionId: string) => {
+    const option = nodeOptions.find((opt) => opt.id === optionId);
+    return option?.steps.find((step) => step.zone === currentZoneId)
+      ?.maxAllowed;
+  };
+
+  const getTypeLimit = (type: string) => {
+    const entry = nodeTypeLimits.find((limit) => limit.type === type);
+    return entry?.steps.find((step) => step.zone === currentZoneId)?.maxAllowed;
+  };
+
+  const getSidebarCounts = () => {
+    const optionCounts = new Map<string, number>();
+    const typeCounts = new Map<string, number>();
+
+    const add = (optionId: string, type: string, amount = 1) => {
+      optionCounts.set(optionId, (optionCounts.get(optionId) || 0) + amount);
+      typeCounts.set(type, (typeCounts.get(type) || 0) + amount);
+    };
+
+    if (currentMap?.knownBattles?.length) {
+      add("battle_normal", "battle", currentMap.knownBattles.length);
+    }
+    if (currentMap?.knownShops?.length) {
+      add("shop", "other", currentMap.knownShops.length);
+    }
+
+    for (const id of Object.values(markedNodes)) {
+      const option = nodeOptions.find((opt) => opt.id === id);
+      if (!option) continue;
+      add(id, option.type);
+    }
+
+    return { optionCounts, typeCounts };
+  };
+
+  const renderNodeOptions = () => {
+    const { optionCounts, typeCounts } = getSidebarCounts();
+
+    return visibleOptions.map((option, index) => {
+      const isActive = selectedOptionId === option.id;
+      const optionLimit = getOptionLimit(option.id);
+      const currentOptionCount = optionCounts.get(option.id) || 0;
+      const optionFull =
+        optionLimit !== undefined && currentOptionCount >= optionLimit;
+      const typeLimit = getTypeLimit(option.type);
+      const currentTypeCount = typeCounts.get(option.type) || 0;
+      const typeFull = typeLimit !== undefined && currentTypeCount >= typeLimit;
+      const disabled = optionFull || typeFull;
+      const note = optionFull
+        ? `已达${option.name}标记上限`
+        : typeFull
+          ? `已达到${option.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+          : "";
+
+      return (
+        <div
+          className={`border-2 rounded-md flex items-center ${
+            isActive
+              ? "border-ak-blue bg-ak-blue/10"
+              : "border-mid-gray bg-black-gray"
+          } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+          role="button"
+          key={index}
+          onClick={() => {
+            if (!disabled) handleOptionClick(option);
+          }}
+          style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+          aria-disabled={disabled}
+        >
+          <img
+            src={`/images/map/${option.id}.webp`}
+            className="w-12 h-12 aspect-square"
+          />
+          <div className="flex flex-col justify-center">
+            <span>{option.name}</span>
+            {note ? (
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.6)",
+                  paddingBottom: 2,
+                  paddingRight: 4,
+                }}
+              >
+                {note}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      );
+    });
+  };
+
+  const selectedNodeKey = selectedNode
+    ? `${selectedNode.row},${selectedNode.col}`
+    : null;
+  const highlightOptionType = selectedOptionId
+    ? nodeOptions.find((o) => o.id === selectedOptionId)?.type || null
+    : null;
+
+  return (
+    <div className="relative">
+      {/* 区域选择 */}
+      <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+        {zoneOfRogue.map((zone, index) => (
+          <div
+            key={zone.id}
+            className={
+              "text-center font-bold leading-[2rem] p-1 " +
+              `${currentZoneId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
+            }
+            role="button"
+            onClick={() => {
+              setCurrentZoneId(zone.id);
+              setSelectedMapId(
+                initialMaps.find((m) => m.zone === zone.id)?.id || "",
+              );
+              setSelectedOptionId("");
+              setHighlightRange(null);
+              setSelectedNode(null);
+              setMarkedNodes({});
+              setMenuOpen(false);
+              load(
+                toGridState(
+                  initialMaps.find((m) => m.zone === zone.id) || initialMaps[0],
+                ),
+              );
+            }}
+          >
+            {intToRoman(index + 1)} {zone.name}
+          </div>
+        ))}
+      </div>
+
+      <div>
+        {/* 基底选择 */}
+        <div className="mb-8">
+          <h3 className="font-bold text-xl mb-2">基底</h3>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 grow">
+            {initialMaps
+              .filter((m) => m.zone === currentZoneId)
+              .map((m) => {
+                const isSelected = selectedMapId === m.id;
+                return (
+                  <div
+                    key={m.id}
+                    className={`p-2 bg-black-gray border-2 ${isSelected ? "border-ak-blue" : "border-transparent"} cursor-pointer`}
+                    onClick={() => {
+                      setSelectedMapId(m.id);
+                      setMarkedNodes({});
+                      setSelectedOptionId("");
+                      setHighlightRange(null);
+                      setSelectedNode(null);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    <NodeMapCanvas
+                      state={toGridState(m)}
+                      onToggle={() => {}}
+                      start={
+                        m?.start ? { row: m.start[0], col: m.start[1] } : null
+                      }
+                      ends={
+                        m?.ends
+                          ? m.ends.map((en) => ({ row: en[0], col: en[1] }))
+                          : null
+                      }
+                      battleEnd={
+                        m?.battleEnd
+                          ? { row: m.battleEnd[0], col: m.battleEnd[1] }
+                          : null
+                      }
+                      knownBattles={
+                        m?.knownBattles
+                          ? m.knownBattles.map((b) => ({
+                              row: b[0],
+                              col: b[1],
+                            }))
+                          : null
+                      }
+                      knownShops={
+                        m?.knownShops
+                          ? m.knownShops.map((s) => ({ row: s[0], col: s[1] }))
+                          : null
+                      }
+                      cellSize={20}
+                      zone={m.zone}
+                      readOnly
+                    />
+                    <div
+                      className={`font-bold text-center ${isSelected ? "text-ak-blue" : "text-white"}`}
+                    >
+                      {m.id}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
+        {/* 大地图 */}
+        <h3 className="font-bold text-xl mb-2">地图</h3>
+        <div
+          className="grow p-4"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, .4)), url('/images/map/rogue_6_map_${currentZoneId}.webp')`,
+          }}
+        >
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* 预测节点选择 */}
+            <div className="bg-black-gray-70 rounded-md p-2 lg:w-[324px] lg:min-w-[324px]">
+              <div className="grid w-full gap-2 grid-cols-3 sm:grid-cols-4 lg:grid-cols-2">
+                {renderNodeOptions()}
+              </div>
+            </div>
+
+            {/* 地图 */}
+            <div className="flex flex-col w-full items-center relative gap-4">
+              <Tooltip
+                content={
+                  <div className="whitespace-pre-wrap">
+                    {zoneNotes[currentZoneId]}
+                  </div>
+                }
+                closeDelay={0}
+                placement="bottom"
+                className="border border-mid-gray leading-6"
+              >
+                <img
+                  className="h-12 w-auto"
+                  src={`/images/map/${currentZoneId}.png`}
+                />
+              </Tooltip>
+              <NodeMapCanvas
+                state={toGridState(currentMap || initialMaps[0])}
+                onToggle={toggle}
+                onNodeClick={handleNodeClick}
+                selectedNodeKey={selectedNodeKey}
+                start={
+                  currentMap?.start
+                    ? {
+                        row: currentMap.start[0] || 0,
+                        col: currentMap.start[1] || 0,
+                      }
+                    : null
+                }
+                ends={
+                  currentMap?.ends
+                    ? currentMap.ends.map((en) => ({ row: en[0], col: en[1] }))
+                    : null
+                }
+                battleEnd={
+                  currentMap?.battleEnd
+                    ? {
+                        row: currentMap.battleEnd[0],
+                        col: currentMap.battleEnd[1],
+                      }
+                    : null
+                }
+                knownBattles={
+                  currentMap?.knownBattles
+                    ? currentMap.knownBattles.map((b) => ({
+                        row: b[0],
+                        col: b[1],
+                      }))
+                    : null
+                }
+                knownShops={
+                  currentMap?.knownShops
+                    ? currentMap.knownShops.map((s) => ({
+                        row: s[0],
+                        col: s[1],
+                      }))
+                    : null
+                }
+                zone={currentZoneId}
+                highlightRange={highlightRange}
+                highlightOptionId={selectedOptionId}
+                highlightOptionType={highlightOptionType}
+                markedNodes={markedNodes}
+                options={visibleOptions
+                  .concat(
+                    currentZoneId === "zone_5"
+                      ? nodeOptions.filter((n) => n.name === "命运所指")
+                      : [],
+                  )
+                  .concat(
+                    nodeOptions.filter(
+                      (n) => n.name === "未知的凶戾" || n.name === "未知的诡秘",
+                    ),
+                  )}
+                onMarkNode={handleMarkNodeAt}
+                menuOpen={menuOpen}
+                setMenuOpen={setMenuOpen}
+              />
+              <div className="w-full p-2 bg-black-gray-70 rounded-md">
+                {selectedMapId}
+                {currentMap?.notes && ": " + currentMap?.notes}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

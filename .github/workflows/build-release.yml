@@ -61,8 +61,9 @@ jobs:
       - name: 打包并生成校验和
         run: |
           set -euo pipefail
+          # 不写死资源目录名（assetsDir 可变），只断言入口与至少一个 js 存在
           test -f build/client/index.html
-          test -d build/client/assets
+          test -n "$(find build/client -name '*.js' -print -quit)"
 
           # 构建信息随包走，服务器上可追溯这份产物来自哪个 commit
           printf 'source_commit=%s\nsource_ref=%s\nbuilt_at=%s\nrun=%s\n' \

@@ -458,6 +458,7 @@ export function NodeMapCanvas({
                 : "translate(10%, -50%)",
           }}
         >
+          <span>可能出现以下节点</span>
           {(() => {
             const currentKey = nodeId(menuNode.row, menuNode.col);
             const currentMark = markedNodes[currentKey];

@@ -1,0 +1,82 @@
+# 构建前端并把产物发布为 GitHub Release 资产。
+# 服务器（国内）从固定 URL 下载，避免开发者跨境上传 26MB 产物。
+# 用 Release 而非 dist 分支：产物不进 git 历史，仓库不膨胀；
+# 且 Release 资产在公开仓库下可匿名下载（Actions artifact 下载需要 token）。
+name: build-release
+
+on:
+  push:
+    branches: [teresa-dev]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  workflow_dispatch:
+
+# 同一时间只跑一个，避免两次 push 并发覆盖同一个资产
+concurrency:
+  group: build-release
+  cancel-in-progress: true
+
+env:
+  TAG: dist-latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 需要创建/更新 Release
+    steps:
+      - uses: actions/checkout@v4
+
+      # 读 package.json 的 packageManager 字段（pnpm@11.2.2）
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: 打包并生成校验和
+        run: |
+          set -euo pipefail
+          test -f build/client/index.html
+          test -d build/client/assets
+
+          # 构建信息随包走，服务器上可追溯这份产物来自哪个 commit
+          printf 'source_commit=%s\nsource_ref=%s\nbuilt_at=%s\nrun=%s\n' \
+            "$GITHUB_SHA" "$GITHUB_REF_NAME" "$(date -u +%FT%TZ)" "$GITHUB_RUN_ID" \
+            > build/client/.build-info
+
+          tar -czf build-client.tgz -C build/client .
+          sha256sum build-client.tgz | cut -d' ' -f1 > build-client.tgz.sha256
+          ls -lh build-client.tgz
+
+      - name: 发布到 ${{ env.TAG }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # 首次运行时创建；之后一律 --clobber 覆盖资产。
+          # 不删除再重建 Release —— 那样会出现几秒钟下载 404 的窗口。
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --prerelease \
+              --title "最新构建产物" \
+              --notes "由 CI 自动覆盖，始终对应 teresa-dev 的最新构建。请勿手动编辑。"
+          fi
+          gh release upload "$TAG" \
+            build-client.tgz build-client.tgz.sha256 --clobber
+
+      - name: 部署提示
+        run: |
+          echo "产物已发布到 Release: $TAG"
+          echo "  https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/build-client.tgz"
+          echo ""
+          echo "在服务器上执行："
+          echo "  sudo -u arkrog /arkrog/bin/deploy-frontend.sh dev --from-release"
+          echo "验证 dev 后提升到 prod（不重新下载）："
+          echo "  sudo -u arkrog /arkrog/bin/deploy-frontend.sh prod --from-dir /arkrog/dev/frontend/current"

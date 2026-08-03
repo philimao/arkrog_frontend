@@ -38,7 +38,23 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # ⚠️ .env.production 在 .gitignore 里，CI checkout 拿不到它。
+      # 不显式给这个变量，Vite 会把 import.meta.env.VITE_API_BASE_URL 内联成
+      # undefined，前端所有请求变成 /undefined/user/id —— 2026-08-03 曾以此打挂 prod。
+      # VITE_ 前缀的变量本来就会被内联进浏览器包，不是密钥，直接写在这里即可。
       - run: pnpm build
+        env:
+          VITE_API_BASE_URL: /api
+
+      # 兜底：产物里必须能找到内联后的 API base，否则不发布
+      - name: 校验 API base 已内联
+        run: |
+          set -euo pipefail
+          if ! grep -qrF --include='*.js' '"/api"' build/client/assets; then
+            echo "产物里找不到 \"/api\"，构建环境变量没生效，中止发布" >&2
+            exit 1
+          fi
+          echo "API base 校验通过"
 
       - name: 打包并生成校验和
         run: |

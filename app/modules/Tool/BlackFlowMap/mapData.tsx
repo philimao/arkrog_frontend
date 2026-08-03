@@ -36,7 +36,7 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_1", min: 1, max: 4, maxAllowed: 5 },
       { zone: "zone_2", min: 1, max: 7, maxAllowed: 5 },
       { zone: "zone_3", min: 1, max: 13, maxAllowed: 4 },
-      { zone: "zone_4", min: 1, max: 12, maxAllowed: 4 },
+      { zone: "zone_4", min: 1, max: 13, maxAllowed: 4 },
       { zone: "zone_5", min: 1, max: 14, maxAllowed: 5 },
     ],
     type: "battle",
@@ -92,7 +92,7 @@ export const nodeOptions: nodeOption[] = [
     name: "应急助力",
     steps: [
       { zone: "zone_2", min: 2, max: 5, maxAllowed: 1 },
-      { zone: "zone_3", min: 4, max: 9, maxAllowed: 1 },
+      { zone: "zone_3", min: 4, max: 11, maxAllowed: 1 },
       { zone: "zone_4", min: 2, max: 3, maxAllowed: 1 },
       { zone: "zone_5", min: 3, max: 5, maxAllowed: 1 },
     ],

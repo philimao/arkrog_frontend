@@ -57,7 +57,7 @@ export const nodeOptions: nodeOption[] = [
     id: "battle_savage",
     name: "“居民”据点",
     steps: [
-      { zone: "zone_2", min: 4, max: 6, maxAllowed: 1 },
+      { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
       { zone: "zone_4", min: 4, max: 13, maxAllowed: 1 },
       { zone: "zone_5", min: 5, max: 11, maxAllowed: 1 },
     ],
@@ -116,7 +116,7 @@ export const nodeOptions: nodeOption[] = [
     steps: [
       { zone: "zone_2", min: 3, max: 5, maxAllowed: 1 },
       { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 11, maxAllowed: 1 },
+      { zone: "zone_4", min: 2, max: 14, maxAllowed: 1 },
       { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
     ],
     type: "other",

@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import type { GridState, Coord } from "./types";
-import { getConnectedNeighbors, nodeId } from "./gridUtils";
+import { getConnectedNeighbors, nodeId, getOptionsForNodeDistance } from "./gridUtils";
 import { CloseIcon } from "@mantine/core";
 import { nodeOptions, nodeTypeLimits } from "./mapData";
 
@@ -61,6 +61,16 @@ export function NodeMapCanvas({
     placement: "left" | "right";
   } | null>(null);
   const [menuNode, setMenuNode] = useState<Coord | null>(null);
+  const visibleMenuOptions = useMemo(() => {
+    if (!menuNode) return options;
+    return getOptionsForNodeDistance({
+      state,
+      start,
+      node: menuNode,
+      zone,
+      options,
+    });
+  }, [menuNode, options, start, state, zone]);
 
   const optionMap = useMemo(
     () => new Map(nodeOptions.map((option) => [option.id, option])),
@@ -189,11 +199,7 @@ export function NodeMapCanvas({
           <path
             key={key}
             d={path}
-            fill="none"
-            stroke="var(--color-light-mid-gray)"
-            strokeWidth={1.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            className="fill-none stroke-[var(--color-light-mid-gray)] stroke-[1.5] stroke-linecap-round stroke-linejoin-round"
           />
         );
       }
@@ -202,29 +208,17 @@ export function NodeMapCanvas({
         <g key={key}>
           <path
             d={path}
-            fill="none"
-            stroke="rgba(0,0,0,0.35)"
-            strokeWidth={10}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            className="fill-none stroke-[rgba(0,0,0,0.35)] stroke-[10] stroke-linecap-round stroke-linejoin-round"
           />
 
           <path
             d={path}
-            fill="none"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth={6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            className="fill-none stroke-[rgba(255,255,255,0.35)] stroke-[6] stroke-linecap-round stroke-linejoin-round"
           />
 
           <path
             d={path}
-            fill="none"
-            stroke="#444"
-            strokeWidth={3}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            className="fill-none stroke-[#444] stroke-[3] stroke-linecap-round stroke-linejoin-round"
           />
         </g>
       );
@@ -444,42 +438,24 @@ export function NodeMapCanvas({
   return (
     <div
       ref={containerRef}
-      style={{
-        width: "100%",
-        position: "relative",
-        minHeight: readOnly ? "" : "320px",
-      }}
       onPointerLeave={() => {}}
       onClick={() => setMenuOpen && setMenuOpen(false)}
-      className="flex justify-center items-center grow"
+      className={`relative flex w-full items-center justify-center grow ${readOnly ? "" : "min-h-[320px]"}`}
     >
-      <svg width={width} height={height} style={{ display: "block" }}>
+      <svg width={width} height={height} className="block">
         {lines}
         {dots}
       </svg>
       {menuOpen && menuPos && menuNode ? (
         <div
+          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[180px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black/95 p-2 text-white"
           style={{
-            position: "absolute",
             left: menuPos.left,
             top: menuPos.top,
             transform:
               menuPos.placement === "left"
                 ? "translate(-110%, -50%)"
                 : "translate(10%, -50%)",
-            background: "rgba(0,0,0,0.95)",
-            color: "white",
-            padding: 8,
-            borderRadius: 8,
-            zIndex: 50,
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            pointerEvents: "auto",
-            minWidth: 180,
-            maxWidth: 200,
-            maxHeight: 340,
-            overflowY: "auto",
           }}
         >
           {(() => {
@@ -495,17 +471,7 @@ export function NodeMapCanvas({
                       onMarkNode(menuNode.row, menuNode.col, "");
                     }
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "transparent",
-                    border: "1px solid rgba(255,255,255,0.18)",
-                    borderRadius: 6,
-                    padding: "6px 8px",
-                    color: "white",
-                    cursor: "pointer",
-                  }}
+                  className="flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
                 >
                   <div>
                     <CloseIcon width={24} height={24} />
@@ -515,7 +481,7 @@ export function NodeMapCanvas({
               )
             );
           })()}
-          {options.map((opt) => {
+          {visibleMenuOptions.map((opt) => {
             const option = optionMap.get(opt.id);
             const perOptionLimit = option
               ? option.steps.find((step) => step.zone === zone)?.maxAllowed
@@ -523,14 +489,14 @@ export function NodeMapCanvas({
             const optionCount = optionCounts.get(opt.id) || 0;
             const isOptionLimitReached =
               perOptionLimit !== undefined && optionCount >= perOptionLimit;
-            const typeLimit = option ? currentTypeLimit(option.type) : Infinity;
-            const typeCount = option ? typeCounts.get(option.type) || 0 : 0;
-            const isTypeLimitReached = typeCount >= typeLimit;
-            const disabled = isOptionLimitReached || isTypeLimitReached;
+            // const typeLimit = option ? currentTypeLimit(option.type) : Infinity;
+            // const typeCount = option ? typeCounts.get(option.type) || 0 : 0;
+            // const isTypeLimitReached = typeCount >= typeLimit;
+            const disabled = isOptionLimitReached; // || isTypeLimitReached;
             const disabledNote = isOptionLimitReached
               ? `已达${opt.name}标记上限`
-              : isTypeLimitReached
-                ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+              // : isTypeLimitReached
+              //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
                 : "";
 
             return (
@@ -544,36 +510,17 @@ export function NodeMapCanvas({
                   }
                 }}
                 disabled={disabled}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  borderRadius: 6,
-                  color: disabled ? "rgba(255,255,255,0.35)" : "white",
-                  cursor: disabled ? "not-allowed" : "pointer",
-                  textAlign: "left",
-                  opacity: disabled ? 0.5 : 1,
-                }}
+                className={`flex items-center rounded-md border border-mid-gray bg-transparent text-left ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                style={{ cursor: disabled ? "not-allowed" : "pointer" }}
               >
                 <img
                   src={`/images/map/${opt.id}.webp`}
                   className="w-8 h-8 aspect-square"
                 />
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 2 }}
-                >
+                <div className="flex flex-col">
                   <span>{opt.name}</span>
                   {disabledNote ? (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: "rgba(255,255,255,0.6)",
-                        paddingBottom: 2,
-                        paddingRight: 4,
-                      }}
-                    >
+                    <span className="text-xs text-white/60">
                       {disabledNote}
                     </span>
                   ) : null}

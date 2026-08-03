@@ -1,4 +1,5 @@
 import type { GridState, Coord, Direction } from "./types";
+import { nodeOptions } from "./mapData";
 
 export function nodeId(row: number, col: number): string {
   return `${row},${col}`;
@@ -68,4 +69,65 @@ export function getConnectedNeighbors(
     if (n && isConnected(state, row, col, n.row, n.col)) result.push(n);
   });
   return result;
+}
+
+export interface OptionFilterCandidate {
+  id: string;
+  name: string;
+}
+
+export function getNodeDistanceMap(state: GridState, start: Coord | null) {
+  if (!start) return new Map<string, number>();
+
+  const distances = new Map<string, number>();
+  const queue: Coord[] = [start];
+  distances.set(nodeId(start.row, start.col), 0);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const currentKey = nodeId(current.row, current.col);
+    const currentDistance = distances.get(currentKey)!;
+
+    for (const neighbor of getConnectedNeighbors(state, current.row, current.col)) {
+      const neighborKey = nodeId(neighbor.row, neighbor.col);
+      if (distances.has(neighborKey)) continue;
+      distances.set(neighborKey, currentDistance + 1);
+      queue.push(neighbor);
+    }
+  }
+
+  return distances;
+}
+
+export function getOptionsForNodeDistance({
+  state,
+  start,
+  node,
+  zone,
+  options,
+}: {
+  state: GridState;
+  start: Coord | null;
+  node: Coord | null;
+  zone: string;
+  options: OptionFilterCandidate[];
+}) {
+  if (!start || !node) return options;
+
+  const nodeKey = nodeId(node.row, node.col);
+  const distance = getNodeDistanceMap(state, start).get(nodeKey);
+  if (distance === undefined) return [];
+
+  return options.filter((option) => {
+    if (option.name === "未知的凶戾" || option.name === "未知的诡秘") return true;
+    const optionMeta = nodeOptions.find((entry) => entry.id === option.id);
+    const step = optionMeta?.steps.find((entry) => entry.zone === zone);
+    return (
+      step !== undefined &&
+      step.min !== undefined &&
+      step.max !== undefined &&
+      distance >= step.min &&
+      distance <= step.max
+    );
+  });
 }

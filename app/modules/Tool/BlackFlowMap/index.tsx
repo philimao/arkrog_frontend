@@ -67,7 +67,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const visibleOptions = nodeOptions.filter(
-    (option) => option.steps.filter((s) => s.zone === currentZoneId).length > 0,
+    (option) => option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min).length > 0,
   );
 
   const handleNodeClick = (row: number, col: number) => {
@@ -83,7 +83,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
     const step = option.steps.find((s) => s.zone === currentZoneId);
     setSelectedOptionId(option.id);
-    setHighlightRange(step ? { min: step.min, max: step.max } : null);
+    setHighlightRange((step && step.min && step.max) ? { min: step.min, max: step.max } : null);
   };
 
   const handleMarkNodeAt = (row: number, col: number, optionId: string) => {
@@ -106,10 +106,10 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       ?.maxAllowed;
   };
 
-  const getTypeLimit = (type: string) => {
-    const entry = nodeTypeLimits.find((limit) => limit.type === type);
-    return entry?.steps.find((step) => step.zone === currentZoneId)?.maxAllowed;
-  };
+  // const getTypeLimit = (type: string) => {
+  //   const entry = nodeTypeLimits.find((limit) => limit.type === type);
+  //   return entry?.steps.find((step) => step.zone === currentZoneId)?.maxAllowed;
+  // };
 
   const getSidebarCounts = () => {
     const optionCounts = new Map<string, number>();
@@ -145,23 +145,23 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       const currentOptionCount = optionCounts.get(option.id) || 0;
       const optionFull =
         optionLimit !== undefined && currentOptionCount >= optionLimit;
-      const typeLimit = getTypeLimit(option.type);
+      // const typeLimit = getTypeLimit(option.type);
       const currentTypeCount = typeCounts.get(option.type) || 0;
-      const typeFull = typeLimit !== undefined && currentTypeCount >= typeLimit;
-      const disabled = optionFull || typeFull;
+      // const typeFull = typeLimit !== undefined && currentTypeCount >= typeLimit;
+      const disabled = optionFull; // || typeFull;
       const note = optionFull
         ? `已达${option.name}标记上限`
-        : typeFull
-          ? `已达到${option.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+        // : typeFull
+        //   ? `已达到${option.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
           : "";
 
       return (
         <div
-          className={`border-2 rounded-md flex items-center ${
+          className={`flex items-center rounded-md border-2 ${
             isActive
               ? "border-ak-blue bg-ak-blue/10"
               : "border-mid-gray bg-black-gray"
-          } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+          } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           role="button"
           key={index}
           onClick={() => {
@@ -177,14 +177,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           <div className="flex flex-col justify-center">
             <span>{option.name}</span>
             {note ? (
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "rgba(255,255,255,0.6)",
-                  paddingBottom: 2,
-                  paddingRight: 4,
-                }}
-              >
+              <span className="text-xs text-white/60 pb-[1px] pr-[2px]">
                 {note}
               </span>
             ) : null}
@@ -204,7 +197,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   return (
     <div className="relative">
       {/* 区域选择 */}
-      <div className="mb-4 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+      <div className="mb-4 mt-4 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {zoneOfRogue.map((zone, index) => (
           <div
             key={zone.id}
@@ -215,19 +208,14 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
             role="button"
             onClick={() => {
               setCurrentZoneId(zone.id);
-              setSelectedMapId(
-                initialMaps.find((m) => m.zone === zone.id)?.id || "",
-              );
+              const nextMap = initialMaps.find((m) => m.zone === zone.id);
+              setSelectedMapId(nextMap?.id || "");
               setSelectedOptionId("");
               setHighlightRange(null);
               setSelectedNode(null);
               setMarkedNodes({});
               setMenuOpen(false);
-              load(
-                toGridState(
-                  initialMaps.find((m) => m.zone === zone.id) || initialMaps[0],
-                ),
-              );
+              load(toGridState(nextMap || initialMaps[0]));
             }}
           >
             {intToRoman(index + 1)} {zone.name}

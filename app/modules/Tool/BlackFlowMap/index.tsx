@@ -298,9 +298,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           }}
         >
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* 预测节点选择 */}
+            {/* 节点选择 */}
             <div className="bg-black-gray-70 rounded-md p-2 lg:w-[324px] lg:min-w-[324px]">
-              <div className="grid w-full gap-2 grid-cols-3 sm:grid-cols-4 lg:grid-cols-2">
+              <div className="grid w-full gap-2 grid-cols-2 sm:grid-cols-4 lg:grid-cols-2">
                 {renderNodeOptions()}
               </div>
             </div>

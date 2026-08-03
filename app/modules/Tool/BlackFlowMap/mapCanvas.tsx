@@ -442,7 +442,12 @@ export function NodeMapCanvas({
       onClick={() => setMenuOpen && setMenuOpen(false)}
       className={`relative flex w-full items-center justify-center grow ${readOnly ? "" : "min-h-[320px]"}`}
     >
-      <svg width={width} height={height} className="block">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="xMidYMid meet"
+        className="block h-auto w-full"
+        style={{ maxWidth: width, maxHeight: "100%" }}
+      >
         {lines}
         {dots}
       </svg>

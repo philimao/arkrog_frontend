@@ -14,8 +14,17 @@ import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
 import { Tooltip } from "@heroui/react";
 
+function Notice({ children }: { children: string }) {
+  return (
+    <div className="w-full text-center pt-[20vh] text-xl font-bold text-ak-blue">
+      {children}
+    </div>
+  );
+}
+
 export default function BlackFlowMapWrapper() {
-  const { zones, fetchGameDataBasic } = useGameDataStore();
+  const { zones, basicLoaded, basicError, fetchGameDataBasic } =
+    useGameDataStore();
 
   // 本页是 ToolLayout 下与 /tool 索引页平级的兄弟路由，蹭不到索引页的加载闸门；
   // 而 RootLayout 的 preload 只在首屏挂载时跑一次，站内跳转进来不会补拉，故自行拉取
@@ -25,7 +34,12 @@ export default function BlackFlowMapWrapper() {
 
   // 必须先守卫再解引用：bundle 未加载时 zones 为 undefined
   const zonesOfRogue6 = zones?.["rogue_6"];
-  if (!zonesOfRogue6) return <Loading />;
+  if (!zonesOfRogue6) {
+    // store 已重试过一轮（含绕缓存），仍失败就别再转圈了
+    if (basicError) return <Notice>游戏数据加载失败，请刷新页面重试</Notice>;
+    if (basicLoaded) return <Notice>暂无黑流树海数据</Notice>;
+    return <Loading />;
+  }
 
   return <BlackFlowMap zones={zonesOfRogue6} />;
 }

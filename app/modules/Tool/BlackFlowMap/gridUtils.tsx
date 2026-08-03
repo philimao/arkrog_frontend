@@ -119,7 +119,7 @@ export function getOptionsForNodeDistance({
   if (distance === undefined) return [];
 
   return options.filter((option) => {
-    if (option.name === "未知的凶戾" || option.name === "未知的诡秘") return true;
+    if (["未知的凶戾", "未知的诡秘", "命运所指"].includes(option.name)) return true;
     const optionMeta = nodeOptions.find((entry) => entry.id === option.id);
     const step = optionMeta?.steps.find((entry) => entry.zone === zone);
     return (

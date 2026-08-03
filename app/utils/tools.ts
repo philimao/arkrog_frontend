@@ -1,8 +1,19 @@
 import MD5 from "crypto-js/md5.js";
 
-async function _get<T>(url: string): Promise<T> {
+/**
+ * 绕过缓存的请求配置：后端 strongCacheMiddleware 见到 `Cache-Control: no-cache`
+ * 会跳过强缓存头（严格等值匹配，不能写成 "no-cache, no-store"），CDN 随之回源；
+ * `cache: "reload"` 负责跳过浏览器自身的 HTTP 缓存。
+ */
+const noCacheInit: RequestInit = {
+  cache: "reload",
+  headers: { "Cache-Control": "no-cache" },
+};
+
+async function _get<T>(url: string, init?: RequestInit): Promise<T> {
   return fetch(`${import.meta.env.VITE_API_BASE_URL}` + url, {
     credentials: "include",
+    ...init,
   }).then(
     async (response: Response) => {
       if (response.ok) {
@@ -205,4 +216,12 @@ export function intToRoman(num: number): string {
   return result;
 }
 
-export { _get, _post, generateID, hashString, findDuplicates, mergeArray };
+export {
+  _get,
+  _post,
+  noCacheInit,
+  generateID,
+  hashString,
+  findDuplicates,
+  mergeArray,
+};

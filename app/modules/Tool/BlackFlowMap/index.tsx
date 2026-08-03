@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useNodeGrid } from "./useNodeGrid";
@@ -10,13 +10,28 @@ import {
   nodeTypeLimits,
   zoneNotes,
 } from "./mapData";
-import type { ZoneData } from "~/types/gameData";
+import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
 import { Tooltip } from "@heroui/react";
 
-export default function BlackFlowMap() {
-  const { zones } = useGameDataStore();
-  const zoneOfRogue: ZoneData[] = Object.values(zones["rogue_6"]).slice(0, 5);
+export default function BlackFlowMapWrapper() {
+  const { zones, fetchGameDataBasic } = useGameDataStore();
+
+  // 本页是 ToolLayout 下与 /tool 索引页平级的兄弟路由，蹭不到索引页的加载闸门；
+  // 而 RootLayout 的 preload 只在首屏挂载时跑一次，站内跳转进来不会补拉，故自行拉取
+  useEffect(() => {
+    void fetchGameDataBasic();
+  }, [fetchGameDataBasic]);
+
+  // 必须先守卫再解引用：bundle 未加载时 zones 为 undefined
+  const zonesOfRogue6 = zones?.["rogue_6"];
+  if (!zonesOfRogue6) return <Loading />;
+
+  return <BlackFlowMap zones={zonesOfRogue6} />;
+}
+
+function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
+  const zoneOfRogue: ZoneData[] = Object.values(zones).slice(0, 5);
   const { toggle, load } = useNodeGrid(toGridState(initialMaps[0]));
   const [currentZoneId, setCurrentZoneId] = useState<string>(
     zoneOfRogue[0]?.id || "",
@@ -36,8 +51,6 @@ export default function BlackFlowMap() {
   const [markedNodes, setMarkedNodes] = useState<Record<string, string>>({});
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  if (!zoneOfRogue) return <Loading />;
 
   const visibleOptions = nodeOptions.filter(
     (option) => option.steps.filter((s) => s.zone === currentZoneId).length > 0,

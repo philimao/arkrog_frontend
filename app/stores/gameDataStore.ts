@@ -1,4 +1,4 @@
-import { _get } from "~/utils/tools";
+import { _get, noCacheInit } from "~/utils/tools";
 import type {
   CharData,
   CharId,
@@ -58,7 +58,8 @@ export type GameDataState = GameDataBasic &
   };
 
 type GameDataAction = {
-  fetchGameDataBasic: () => Promise<void>;
+  /** `force` 跳过 basicLoaded 闩锁并绕过 /gamedata/bundle 的 24 小时强缓存 */
+  fetchGameDataBasic: (options?: { force?: boolean }) => Promise<void>;
   fetchGameDataExt: () => Promise<GameDataState>;
   fetchAutochessData: () => Promise<AutochessPayload>;
 };
@@ -80,10 +81,14 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
       extLoaded: false,
       autochessLoaded: false,
       // stageEnemies: undefined,
-      fetchGameDataBasic: async () => {
+      fetchGameDataBasic: async (options) => {
+        const force = options?.force ?? false;
         try {
-          if (get().basicLoaded) return;
-          const data = await _get<GameDataState>("/gamedata/bundle");
+          if (!force && get().basicLoaded) return;
+          const data = await _get<GameDataState>(
+            "/gamedata/bundle",
+            force ? noCacheInit : undefined,
+          );
           if (data) {
             set(
               (state) => ({

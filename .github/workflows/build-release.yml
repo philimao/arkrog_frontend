@@ -47,10 +47,12 @@ jobs:
           VITE_API_BASE_URL: /api
 
       # 兜底：产物里必须能找到内联后的 API base，否则不发布
+      # 不要写死资源目录名（assetsDir 可能变，2026-08-03 改成过 assets-v2），
+      # 直接在整个 build/client 下找
       - name: 校验 API base 已内联
         run: |
           set -euo pipefail
-          if ! grep -qrF --include='*.js' '"/api"' build/client/assets; then
+          if ! grep -qrF --include='*.js' '"/api"' build/client; then
             echo "产物里找不到 \"/api\"，构建环境变量没生效，中止发布" >&2
             exit 1
           fi

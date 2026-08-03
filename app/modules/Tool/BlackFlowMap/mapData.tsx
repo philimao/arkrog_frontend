@@ -5,7 +5,7 @@ export const zoneNotes: Record<string, string> = {
   zone_1:
     "该层通常情况下生成7~8个有效节点（不包含险路尽头和起始点）\n固定生成的诡异行商（绿）和普通作战导致了秘境商店（黄）的生成概率下降",
   zone_2:
-    "该层通常情况下生成10~13个有效节点（不包含险路尽头和起始点）\n由于没有保底，只有起始点附近的普通作战固定生成\n总体节点数少且相较于一层多了较5种可以生成的非作战节点，\n导致该层容易出现极端情况，及作战极少或秘境行商（黄），先行一步不生成\n如果生成应急助力，可能诡异行商（绿）或秘境行商（黄）中有一个不生产",
+    "该层通常情况下生成10~13个有效节点（不包含险路尽头和起始点）\n由于没有保底，只有起始点附近的普通作战固定生成\n总体节点数少且相较于一层多了较5种可以生成的非作战节点，\n导致该层容易出现极端情况，及作战极少或秘境行商（黄），先行一步不生成\n如果生成应急助力，可能诡异行商（绿）或秘境行商（黄）中有一个不生成",
   zone_3:
     "该层通常情况下生成17~20个有效节点（不包含险路恶敌和起始点）\n由于必须进入险路恶敌，该层不会刷新险路小径\n该层非作战节点生成占比较大，容易生成曲折密道，有利于行动\n该层总体误入奇境生成概率较低\n该层开始，与起点相邻的节点可能出现不期而遇和曲折密道",
   zone_4:
@@ -59,7 +59,7 @@ export const nodeOptions: nodeOption[] = [
     steps: [
       { zone: "zone_2", min: 4, max: 6, maxAllowed: 1 },
       { zone: "zone_4", min: 4, max: 12, maxAllowed: 1 },
-      { zone: "zone_5", min: 5, max: 10, maxAllowed: 1 },
+      { zone: "zone_5", min: 5, max: 11, maxAllowed: 1 },
     ],
     type: "battle",
   },
@@ -82,8 +82,8 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_1", min: 2, max: 4, maxAllowed: 1 },
       { zone: "zone_2", min: 2, max: 6, maxAllowed: 1 },
       { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 6, maxAllowed: 2 },
-      { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
+      { zone: "zone_4", min: 2, max: 6, maxAllowed: 3 },
+      { zone: "zone_5", min: 2, max: 14, maxAllowed: 3 },
     ],
     type: "other",
   },
@@ -159,8 +159,8 @@ export const nodeOptions: nodeOption[] = [
     name: "狭路相逢",
     steps: [
       { zone: "zone_3", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 12, maxAllowed: 1 },
-      { zone: "zone_5", min: 2, max: 4, maxAllowed: 1 },
+      { zone: "zone_4", min: 2, max: 12, maxAllowed: 2 },
+      { zone: "zone_5", min: 2, max: 4, maxAllowed: 2 },
     ],
     type: "other",
   },

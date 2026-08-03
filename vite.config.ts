@@ -30,6 +30,11 @@ export default defineConfig({
   // },
   build: {
     sourcemap: "hidden",
+    // 2026-08-03：CDN 在故障期间把 index.html 缓存进了 /assets/ 下多个文件的
+    // gzip 变体（源站不发 gzip，是 CDN 自己压的），刷新缓存清不掉该变体，
+    // 浏览器必发 gzip 因而必中毒。换目录 = 换全部 URL，绕开所有投毒条目。
+    // nginx 侧 assets 与 assets-v2 都会命中长缓存规则。
+    assetsDir: "assets-v2",
   },
   plugins: [
     tailwindcss(),

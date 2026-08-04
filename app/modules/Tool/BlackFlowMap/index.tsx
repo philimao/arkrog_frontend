@@ -237,6 +237,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               setMarkedNodes({});
               setMenuOpen(false);
               load(toGridState(nextMap || initialMaps[0]));
+              setShowZoneNotes(false);
             }}
           >
             {intToRoman(index + 1)} {zone.name}

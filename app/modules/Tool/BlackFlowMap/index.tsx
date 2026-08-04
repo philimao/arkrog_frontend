@@ -344,9 +344,11 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   />
                 </button>
                 {showZoneNotes && (
-                  <div className="absolute rounded-md bg-black-gray top-full left-1/2 -translate-x-1/2 z-10 mt-2 w-max max-w-[90vw] whitespace-pre-wrap leading-6 border border-mid-gray p-2 text-sm text-white shadow-lg">
-                    {zoneNotes[currentZoneId]}
-                  </div>
+                  <ul className="absolute list-disc rounded-md bg-black-gray top-full left-1/2 -translate-x-1/2 z-10 mt-2 w-max max-w-[90vw] space-y-1 pl-6 pr-2 py-2 leading-6 border border-mid-gray text-sm text-white shadow-lg">
+                    {zoneNotes[currentZoneId]?.split("\n").map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <NodeMapCanvas

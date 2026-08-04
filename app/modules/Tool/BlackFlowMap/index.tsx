@@ -226,7 +226,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       <div>
         {/* 基底选择 */}
         <div className="mb-8">
-          <h3 className="font-bold text-xl mb-2">基底</h3>
+          <h3 className="font-bold text-xl mb-2">基底（暂不支持追忆）</h3>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 grow">
             {initialMaps
               .filter((m) => m.zone === currentZoneId)

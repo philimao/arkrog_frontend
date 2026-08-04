@@ -127,7 +127,7 @@ export const nodeOptions: nodeOption[] = [
     steps: [
       { zone: "zone_1", min: 2, max: 5, maxAllowed: 1 },
       { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
-      { zone: "zone_3", min: 4, max: 10, maxAllowed: 3 },
+      { zone: "zone_3", min: 4, max: 11, maxAllowed: 3 },
       { zone: "zone_4", min: 4, max: 12, maxAllowed: 3 },
       { zone: "zone_5", min: 1, max: 10, maxAllowed: 4 },
     ],

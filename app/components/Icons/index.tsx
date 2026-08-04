@@ -2,6 +2,7 @@ export * from "./Svg";
 
 export * from "./ArrowIcon";
 export * from "./BilibiliIcon";
+export * from "./ChevronIcon";
 export * from "./CommentIcon";
 export * from "./CopyIcon";
 export * from "./DeleteIcon";

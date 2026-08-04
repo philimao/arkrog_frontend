@@ -13,6 +13,7 @@ import { Button, Tooltip } from "@heroui/react";
 import EnemyMiniPreview from "../EnemySection/EnemyMiniPreview";
 import { cosHost, mergeClassNameSafe } from "~/utils/tools";
 import OperatorAttributes from "./OperatorAttributes";
+import { ChevronIcon } from "~/components/Icons";
 
 const StyledOperatorDisplayWrapper = styled.div`
   margin-bottom: 1rem;
@@ -493,8 +494,9 @@ function SkillDisplay({ skill }: { skill: SkillLevelData }) {
           </div>
         </div>
         <StyledChevron $rotate={isOpen}>
-          <use href="#chevron-up" />
+          <ChevronIcon />
         </StyledChevron>
+        
       </ButtonWrapper>
       {isOpen && (
         <div className="skill-description">{parseBlackboardDescription(skill.description!, skill.blackboard)}</div>
@@ -565,7 +567,7 @@ function UniEquipDisplay({
           </div>
         </div>
         <StyledChevron $rotate={isOpen}>
-          <use href="#chevron-up" />
+          <ChevronIcon />
         </StyledChevron>
       </ButtonWrapper>
       {isOpen && (

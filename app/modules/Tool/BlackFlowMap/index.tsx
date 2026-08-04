@@ -12,7 +12,27 @@ import {
 } from "./mapData";
 import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
-import { Tooltip } from "@heroui/react";
+import { ChevronIcon } from "~/components/Icons";
+import type { Route } from "./+types/index";
+
+// 该地图渲染依赖大量动态 DOM 节点（节点网格、选项列表），且切换区域时变动量很大；
+// 浏览器翻译插件等外部脚本可能在此时抢改 DOM 引发 removeChild 报错。
+// 用局部边界兜住，避免整站被带崩到 root.tsx 的全局错误页。
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const details =
+    import.meta.env.DEV && error instanceof Error ? error.message : undefined;
+
+  return (
+    <div className="w-full text-center pt-[20vh] text-xl">
+      地图渲染出错，请刷新页面重试
+      {details && (
+        <pre className="mt-4 text-sm whitespace-pre-wrap text-left">
+          {"<DEV ONLY> Error message: " + details}
+        </pre>
+      )}
+    </div>
+  );
+}
 
 function Notice({ children }: { children: string }) {
   return (
@@ -65,6 +85,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [markedNodes, setMarkedNodes] = useState<Record<string, string>>({});
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showZoneNotes, setShowZoneNotes] = useState(false);
 
   const visibleOptions = nodeOptions.filter(
     (option) => option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min).length > 0,
@@ -139,7 +160,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const renderNodeOptions = () => {
     const { optionCounts, typeCounts } = getSidebarCounts();
 
-    return visibleOptions.map((option, index) => {
+    return visibleOptions.map((option) => {
       const isActive = selectedOptionId === option.id;
       const optionLimit = getOptionLimit(option.id);
       const currentOptionCount = optionCounts.get(option.id) || 0;
@@ -163,7 +184,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               : "border-mid-gray bg-black-gray"
           } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           role="button"
-          key={index}
+          key={option.id}
           onClick={() => {
             if (!disabled) handleOptionClick(option);
           }}
@@ -307,21 +328,27 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
             {/* 地图 */}
             <div className="flex flex-col w-full items-center relative gap-4">
-              <Tooltip
-                content={
-                  <div className="whitespace-pre-wrap">
+              <div className="relative">
+                <button
+                  type="button"
+                  className="flex items-center gap-1"
+                  onClick={() => setShowZoneNotes((prev) => !prev)}
+                >
+                  <img
+                    className="h-12 w-auto"
+                    src={`/images/map/${currentZoneId}.png`}
+                  />
+                  <ChevronIcon
+                    direction={showZoneNotes ? "down" : "up"}
+                    className="w-3 h-3 text-white"
+                  />
+                </button>
+                {showZoneNotes && (
+                  <div className="absolute rounded-md bg-black-gray top-full left-1/2 -translate-x-1/2 z-10 mt-2 w-max max-w-[90vw] whitespace-pre-wrap leading-6 border border-mid-gray p-2 text-sm text-white shadow-lg">
                     {zoneNotes[currentZoneId]}
                   </div>
-                }
-                closeDelay={0}
-                placement="bottom"
-                className="border border-mid-gray leading-6"
-              >
-                <img
-                  className="h-12 w-auto"
-                  src={`/images/map/${currentZoneId}.png`}
-                />
-              </Tooltip>
+                )}
+              </div>
               <NodeMapCanvas
                 state={toGridState(currentMap || initialMaps[0])}
                 onToggle={toggle}

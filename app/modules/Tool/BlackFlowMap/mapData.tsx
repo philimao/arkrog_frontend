@@ -11,7 +11,7 @@ export const zoneNotes: Record<string, string> = {
   zone_4:
     "该层通常情况下生成18~21个有效节点（不包含险路尽头和起始点）\n该层保底生成一个羽瞰点\n该层若无应急助力出现，则大概率诡异行商（绿）或秘境行商（黄）中有一个重复生成\n该层是最后一个会生成先行一步的层数\n该层非作战节点生成占比较大，容易出现双羽瞰点\n该层小概率同时生成误入奇境和险路小径",
   zone_5:
-    "该层通常情况下生成24个有效节点，上下浮动较多（不包含险路恶敌和起始点）\n由于必须进入险路恶敌，该层不会刷新险路小径\n该层开始，与起点相邻的节点可能出现诡异行商（绿）\n该层各类节点生成合法位置多，缺少某种节点的概率较低\n该层中若持有三结局藏品，命运所指会占用一部分有效节点的生成\n该层疑似存在某些节点填充机制，多见紧急作战和得偿所愿反复出现",
+    "该层通常情况下生成24个有效节点，上下浮动较多（不包含险路恶敌和起始点）\n由于必须进入险路恶敌，该层不会刷新险路小径\n该层开始，与起点相邻的节点可能出现诡异行商（绿）\n该层各类节点生成合法位置多，缺少某种节点的概率较低\n该层中若持有三结局藏品，命运所指会占用一部分有效节点的生成\n该层疑似存在某些节点填充机制，多见紧急作战和得偿所愿反复出现\n该层有保底机制，如果有效节点不够用，非作战节点会替换成得偿所愿，作战节点会替换为紧急作战",
 };
 
 interface nodeStepsPerZone {
@@ -49,7 +49,7 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_2", min: 3, max: 7, maxAllowed: 1 },
       { zone: "zone_3", min: 3, max: 13, maxAllowed: 3 },
       { zone: "zone_4", min: 3, max: 11, maxAllowed: 3 },
-      { zone: "zone_5", min: 3, max: 13, maxAllowed: 5 },
+      { zone: "zone_5", min: 3, max: Infinity, maxAllowed: 5 },
     ],
     type: "battle",
   },
@@ -129,7 +129,7 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
       { zone: "zone_3", min: 4, max: 11, maxAllowed: 3 },
       { zone: "zone_4", min: 4, max: 12, maxAllowed: 3 },
-      { zone: "zone_5", min: 1, max: 10, maxAllowed: 5 },
+      { zone: "zone_5", min: 1, max: Infinity, maxAllowed: 5 },
     ],
     type: "other",
   },
@@ -169,7 +169,7 @@ export const nodeOptions: nodeOption[] = [
     name: "险路小径",
     steps: [
       { zone: "zone_1", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_2", min: 5, max: 6, maxAllowed: 1 },
+      { zone: "zone_2", min: 5, max: 7, maxAllowed: 1 },
       { zone: "zone_4", min: 5, max: 14, maxAllowed: 1 },
     ],
     type: "other",

@@ -4,6 +4,31 @@ import { getConnectedNeighbors, nodeId, getOptionsForNodeDistance } from "./grid
 import { CloseIcon } from "@mantine/core";
 import { nodeOptions, nodeTypeLimits } from "./mapData";
 
+// 节点名字只在屏幕够宽时显示，小屏幕上地图本来就挤，只留图标；用 SVG text
+// 而不是额外的 HTML 元素，这样能跟着 viewBox 一起缩放、不用另外定位。
+// 描边是为了在背景图亮暗不一的情况下都能看清字（paintOrder 让描边在填色下面）。
+function NodeLabel({
+  x,
+  y,
+  children,
+}: {
+  x: number;
+  y: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      className="pointer-events-none select-none fill-white text-[10px]"
+      style={{ paintOrder: "stroke", stroke: "rgba(0,0,0,0.75)", strokeWidth: 3 }}
+    >
+      {children}
+    </text>
+  );
+}
+
 interface NodeMapCanvasProps {
   state: GridState;
   onToggle: (r1: number, c1: number, r2: number, c2: number) => void;
@@ -328,6 +353,9 @@ export function NodeMapCanvas({
                 height={iconSize}
                 style={{ cursor: nodeCursor }}
               />
+              <NodeLabel x={x} y={y + iconSize / 2 - 10}>
+                {isBattleEnd ? "险路恶敌" : "险路尽头"}
+              </NodeLabel>
             </g>,
           );
         }
@@ -344,6 +372,9 @@ export function NodeMapCanvas({
             </g>,
           );
         } else {
+          const knownOptionName = optionMap.get(
+            isKnownBattle ? "battle_normal" : "shop",
+          )?.name;
           dots.push(
             <g key={`${r},${c}`}>
               <image
@@ -358,6 +389,11 @@ export function NodeMapCanvas({
                 height={iconSize}
                 style={{ cursor: nodeCursor }}
               />
+              {knownOptionName && (
+                <NodeLabel x={x} y={y + iconSize / 2 - 10}>
+                  {knownOptionName}
+                </NodeLabel>
+              )}
             </g>,
           );
         }
@@ -429,6 +465,11 @@ export function NodeMapCanvas({
                 }
               }}
             />
+            {isMarked && !isTempReveal && (
+              <NodeLabel x={x} y={y + iconHeight / 2 - 10}>
+                {optionMap.get(markedNodes[nodeKey])?.name}
+              </NodeLabel>
+            )}
           </g>,
         );
       }

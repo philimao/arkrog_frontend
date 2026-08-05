@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { ChevronIcon } from "~/components/Icons";
+import { CheckIcon, ChevronIcon } from "~/components/Icons";
 import { NodeMapCanvas } from "./mapCanvas";
 import { initialMaps, toGridState, type MapShorthand } from "./mapData";
 import {
@@ -27,6 +27,8 @@ interface ScreenshotRecognizerProps {
   /** 层数识别失败时的兜底：用户当前手选的层 */
   currentZoneId: string;
   onMatched: (zone: string, mapId: string, nodes: MarkableNode[]) => void;
+  /** 用户选了"没有正确地图，取消"：之前挑候选时自动填过的节点也要一并清掉 */
+  onCancel: () => void;
 }
 
 function MapPreview({ map, cellSize = 22 }: { map: MapShorthand; cellSize?: number }) {
@@ -60,6 +62,7 @@ export function ScreenshotRecognizer({
   zones,
   currentZoneId,
   onMatched,
+  onCancel,
 }: ScreenshotRecognizerProps) {
   const [expanded, setExpanded] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -125,6 +128,18 @@ export function ScreenshotRecognizer({
     [result, onMatched],
   );
 
+  // 候选里没有一个是对的：撤回这次识别的展示状态，让用户自己回去手动选基底。
+  // 地图之前为了方便对照已经被切过去了，用户接下来手动选基底本来就会覆盖掉，
+  // 无需额外撤销；但如果之前挑过某个候选，那个候选自动填的节点还留在地图上，
+  // 得靠 onCancel 让外层把这些自动填入的节点也清掉
+  const cancelRecognition = useCallback(() => {
+    setResult(null);
+    setError(null);
+    setPickedIndex(null);
+    setConfirmed(false);
+    onCancel();
+  }, [onCancel]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) void runRecognition(file);
@@ -185,7 +200,6 @@ export function ScreenshotRecognizer({
             ) : (
               <div className="text-sm text-light-gray">
                 点击选择地图截图，或拖拽到此处
-                <span className="text-ak-blue">（层数会自动识别，无需先选层）</span>
               </div>
             )}
           </div>
@@ -210,7 +224,7 @@ export function ScreenshotRecognizer({
               )}
 
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-sm px-2 py-0.5 rounded border text-ak-blue border-ak-blue/40 bg-ak-blue/10">
+                <span className="text-sm">
                   {zoneLabel}
                 </span>
                 <span className="text-lg font-bold text-ak-blue">{appliedMapId}</span>
@@ -223,18 +237,17 @@ export function ScreenshotRecognizer({
                   {result.confidence.tone === "high"
                     ? "已自动切换并填入节点，可直接跟截图对照。"
                     : showCandidates
-                      ? "识别存在歧义，请从下方候选中确认是哪一张。"
-                      : "已切换，可直接跟截图对照。若不正确请手动选择。"}
+                      ? "识别结果不确定，请从下方候选中确认是哪一张。"
+                      : "已切换并填入节点，可直接跟截图对照。若不正确请手动选择。"}
                 </div>
               </div>
 
               {showCandidates ? (
-                <div className="space-y-2 border border-yellow-400/30 rounded p-2 bg-yellow-400/5">
-                  <div className="text-xs text-light-gray">
-                    实测识别有歧义时，正确答案几乎总在这两个里。点选后会填入对应的节点信息，
+                <div className="space-y-4 border border-mid-gray rounded p-2">
+                  <div className="text-sm text-light-gray">
                     可以反复切换对照，确认无误再关闭。
                   </div>
-                  <div className="flex gap-3 flex-wrap">
+                  <div className="grid grid-cols-[repeat(2,minmax(0,220px))] gap-3">
                     {result.topCandidates.map((candidate, index) => {
                       const map = initialMaps.find((m) => m.id === candidate.mapId);
                       if (!map) return null;
@@ -244,14 +257,17 @@ export function ScreenshotRecognizer({
                           key={candidate.mapId}
                           role="button"
                           onClick={() => pickCandidate(index)}
-                          className={`p-2 cursor-pointer border-2 rounded ${
+                          className={`relative min-w-0 p-2 bg-black-gray cursor-pointer border rounded ${
                             active
-                              ? "border-ak-blue bg-ak-blue/10"
-                              : "border-transparent bg-black-gray hover:border-mid-gray"
+                              ? "border-ak-blue"
+                              : "border-transparent hover:border-mid-gray"
                           }`}
                         >
+                          {active && (
+                            <CheckIcon className="absolute top-2 right-2 text-ak-blue" />
+                          )}
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-ak-blue">{candidate.mapId}</span>
+                            <span className={`font-bold ${active ? "text-ak-blue" : ""}`}>{candidate.mapId}</span>
                             {index === 0 && (
                               <span className="text-xs text-light-gray">最高分</span>
                             )}
@@ -260,31 +276,39 @@ export function ScreenshotRecognizer({
                                 落后 {(candidate.gapToBest * 100).toFixed(2)}%
                               </span>
                             )}
-                            {active && <span className="text-xs text-ak-blue">已选用</span>}
                           </div>
                           <MapPreview map={map} />
                         </div>
                       );
                     })}
                   </div>
-                  <button
-                    type="button"
-                    className="text-sm px-3 py-1 border border-ak-blue text-ak-blue rounded hover:bg-ak-blue/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                    disabled={pickedIndex === null}
-                    onClick={() => setConfirmed(true)}
-                  >
-                    {pickedIndex === null ? "请先选择一个候选" : "确认，关闭候选"}
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      className="text-sm px-3 py-1 border border-ak-blue text-ak-blue rounded hover:bg-ak-blue/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={pickedIndex === null}
+                      onClick={() => setConfirmed(true)}
+                    >
+                      {pickedIndex === null ? "请选择一个地图" : "确认，关闭候选"}
+                    </button>
+                    <button
+                      type="button"
+                      className="text-sm px-3 py-1 border border-mid-gray text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
+                      onClick={cancelRecognition}
+                    >
+                      没有正确地图，取消
+                    </button>
+                  </div>
                 </div>
               ) : (
                 appliedMap && (
                   <div className="p-2 bg-black-gray w-fit">
-                    <MapPreview map={appliedMap} cellSize={26} />
+                    <MapPreview map={appliedMap} cellSize={20} />
                   </div>
                 )
               )}
 
-              {import.meta.env.DEV && (
+              {/* {import.meta.env.DEV && (
                 <div className="pt-2 border-t border-mid-gray/50">
                   <div className="text-xs text-light-gray mb-1">
                     [DEV ONLY] 文字节点 {result.stats.labels} / 空白点{" "}
@@ -311,7 +335,7 @@ export function ScreenshotRecognizer({
                       ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           )}
         </div>

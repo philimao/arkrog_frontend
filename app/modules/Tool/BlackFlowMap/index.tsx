@@ -94,6 +94,14 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
     col: number;
   } | null>(null);
   const [markedNodes, setMarkedNodes] = useState<Record<string, string>>({});
+  // 截图识别自动填入、且用户还没手动改过的节点坐标（"row,col"）。用户只要
+  // 手动点过某个格子（不管是改成别的选项还是取消），这个格子就从"自动填入"
+  // 转正成"用户自己选的"，不再算识别结果，也就不会被"清除识别节点"带走。
+  const [autoFilledKeys, setAutoFilledKeys] = useState<Set<string>>(new Set());
+  // 隐藏自动填入节点时，把它们暂存在这——跟 markedNodes 分开放，这样"恢复"
+  // 才知道要填回哪些格子、填回什么选项。key 存在于这里就代表"当前处于隐藏
+  // 状态、还没被恢复也没被用户碰过"。
+  const [hiddenAutoFilled, setHiddenAutoFilled] = useState<Record<string, string>>({});
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showZoneNotes, setShowZoneNotes] = useState(false);
@@ -150,7 +158,54 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       }
       return next;
     });
+    // 用户手动改过这个格子了（不管是改选项还是取消），就不再算识别自动填入的
+    setAutoFilledKeys((prev) => {
+      if (!prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+    // 这个格子当前是隐藏状态的话，用户手动碰过就不该再被"恢复"带回来
+    setHiddenAutoFilled((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
     setSelectedNode(null);
+  };
+
+  // 供"没有正确地图，取消"用：彻底清掉，不留可恢复的暂存
+  const clearAutoFilledNodes = () => {
+    setMarkedNodes((prev) => {
+      const next = { ...prev };
+      for (const key of autoFilledKeys) delete next[key];
+      return next;
+    });
+    setAutoFilledKeys(new Set());
+    setHiddenAutoFilled({});
+  };
+
+  // 按钮用：隐藏时把自动填入的节点挪进暂存区（地图上先消失，但记得住填的是
+  // 什么，能再点回来）；已经隐藏的话再点一次就是把暂存区的填回去
+  const toggleAutoFilledVisibility = () => {
+    if (autoFilledKeys.size > 0) {
+      const stashed: Record<string, string> = {};
+      for (const key of autoFilledKeys) {
+        if (markedNodes[key] !== undefined) stashed[key] = markedNodes[key];
+      }
+      setMarkedNodes((prev) => {
+        const next = { ...prev };
+        for (const key of autoFilledKeys) delete next[key];
+        return next;
+      });
+      setHiddenAutoFilled(stashed);
+      setAutoFilledKeys(new Set());
+    } else if (Object.keys(hiddenAutoFilled).length > 0) {
+      setMarkedNodes((prev) => ({ ...prev, ...hiddenAutoFilled }));
+      setAutoFilledKeys(new Set(Object.keys(hiddenAutoFilled)));
+      setHiddenAutoFilled({});
+    }
   };
 
   const getOptionLimit = (optionId: string) => {
@@ -210,7 +265,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
       return (
         <div
-          className={`flex items-center rounded-md border-2 ${
+          className={`flex items-center rounded-md border ${
             isActive
               ? "border-ak-blue bg-ak-blue/10"
               : "border-mid-gray bg-black-gray"
@@ -267,6 +322,8 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               setHighlightRange(null);
               setSelectedNode(null);
               setMarkedNodes({});
+              setAutoFilledKeys(new Set());
+              setHiddenAutoFilled({});
               setMenuOpen(false);
               load(toGridState(nextMap || initialMaps[0]));
               setShowZoneNotes(false);
@@ -277,7 +334,8 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           </div>
         ))}
       </div>
-
+ 
+      {/* 识图工具 */}
       <div className="mb-4">
         {showScreenshotRecognizer && (
           <ScreenshotRecognizer
@@ -289,7 +347,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
               setCurrentZoneId(zone);
               setShowZoneNotes(false);
-              setShowBaseMaps(true);
               setSelectedMapId(mapId);
               // 把识别出来、有把握的节点自动标记上，代替用户手动一个个点选
               const nextMarkedNodes: Record<string, string> = {};
@@ -298,12 +355,15 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 if (option) nextMarkedNodes[`${n.row},${n.col}`] = option.id;
               }
               setMarkedNodes(nextMarkedNodes);
+              setAutoFilledKeys(new Set(Object.keys(nextMarkedNodes)));
+              setHiddenAutoFilled({});
               setSelectedOptionId("");
               setHighlightRange(null);
               setSelectedNode(null);
               setMenuOpen(false);
               load(toGridState(matched));
             }}
+            onCancel={clearAutoFilledNodes}
           />
         )}
       </div>
@@ -334,10 +394,12 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   return (
                     <div
                       key={m.id}
-                      className={`p-2 bg-black-gray border-2 ${isSelected ? "border-ak-blue" : "border-transparent"} cursor-pointer`}
+                      className={`p-2 bg-black-gray border ${isSelected ? "border-ak-blue" : "border-transparent"} cursor-pointer rounded`}
                       onClick={() => {
                         setSelectedMapId(m.id);
                         setMarkedNodes({});
+                        setAutoFilledKeys(new Set());
+                        setHiddenAutoFilled({});
                         setSelectedOptionId("");
                         setHighlightRange(null);
                         setSelectedNode(null);
@@ -411,6 +473,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
             {/* 地图 */}
             <div className="flex flex-col w-full items-center relative gap-4">
               <div className="relative">
+                {/* 当前区域笔记 */}
                 <button
                   type="button"
                   className="flex items-center gap-1"
@@ -433,10 +496,13 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   </ul>
                 )}
               </div>
+
+              {/* 实际大地图 */}
               <NodeMapCanvas
                 state={toGridState(currentMap || initialMaps[0])}
                 onToggle={toggle}
                 onNodeClick={handleNodeClick}
+                cellSize={80}
                 selectedNodeKey={selectedNodeKey}
                 start={
                   currentMap?.start
@@ -495,6 +561,19 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 menuOpen={menuOpen}
                 setMenuOpen={setMenuOpen}
               />
+
+              {/* 隐藏/显示识别节点 */}
+              {(autoFilledKeys.size > 0 || Object.keys(hiddenAutoFilled).length > 0) && (
+                <button
+                  type="button"
+                  className="text-sm px-3 py-1 border border-mid-gray text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
+                  onClick={toggleAutoFilledVisibility}
+                >
+                  {autoFilledKeys.size > 0 ? "隐藏自动识别的节点" : "显示自动识别的节点"}
+                </button>
+              )}
+
+              {/* 基底笔记 */}
               <div className="w-full p-2 bg-black-gray-70 rounded-md">
                 {selectedMapId}
                 {currentMap?.notes && ": " + currentMap?.notes}

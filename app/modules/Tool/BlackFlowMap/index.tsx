@@ -16,6 +16,16 @@ import { intToRoman } from "~/utils/tools";
 import { ChevronIcon } from "~/components/Icons";
 import type { Route } from "./+types/index";
 
+// 截图识别功能默认隐藏，通过这个 localStorage key 记住是否已手动开启。
+const SHOW_RECOGNIZER_KEY = "show-map-recognizer";
+
+declare global {
+  interface Window {
+    enableMapRecognizer?: () => void;
+    disableMapRecognizer?: () => void;
+  }
+}
+
 // 该地图渲染依赖大量动态 DOM 节点（节点网格、选项列表），且切换区域时变动量很大；
 // 浏览器翻译插件等外部脚本可能在此时抢改 DOM 引发 removeChild 报错。
 // 用局部边界兜住，避免整站被带崩到 root.tsx 的全局错误页。
@@ -88,8 +98,22 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showZoneNotes, setShowZoneNotes] = useState(false);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
-  // 截图识别功能还在打磨阶段，只在本地开发环境显示，不接普通用户能看到的入口
-  const showScreenshotRecognizer = import.meta.env.DEV;
+  const [showScreenshotRecognizer, setShowScreenshotRecognizer] = useState(false);
+
+  // 截图识别功能还在打磨阶段，默认对所有用户隐藏；开发/内部想临时体验时，
+  // 在浏览器控制台敲 enableMapRecognizer() 即可（会记住选择，刷新也生效），
+  // disableMapRecognizer() 关掉。不接普通用户能看到的入口。
+  useEffect(() => {
+    setShowScreenshotRecognizer(window.localStorage.getItem(SHOW_RECOGNIZER_KEY) === "1");
+    window.enableMapRecognizer = () => {
+      window.localStorage.setItem(SHOW_RECOGNIZER_KEY, "1");
+      window.location.reload();
+    };
+    window.disableMapRecognizer = () => {
+      window.localStorage.removeItem(SHOW_RECOGNIZER_KEY);
+      window.location.reload();
+    };
+  }, []);
 
   const visibleOptions = nodeOptions.filter(
     (option) =>

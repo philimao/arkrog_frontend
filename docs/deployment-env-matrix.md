@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-18
+last-verified: 2026-08-05
 sources:
   - ../arkrog_backend/package.json
   - ../arkrog_backend/pm2.config.json
@@ -13,6 +13,9 @@ sources:
   - ../arkrog_backend/services/llm/config.ts
   - ../arkrog_backend/storage/sts.js
   - ../arkrog_backend/storage/cos.js
+  - ../arkrog_backend/routers/mapRecognition.ts
+  - ../arkrog_backend/utils/tencentApi.ts
+  - ../arkrog_backend/middleware/rateLimit.ts
   - ../arkrog_backend/util-scripts/updateGameData.ts
   - vite.config.ts
   - app/utils/tools.ts
@@ -24,19 +27,26 @@ sources:
 
 > ⚠️ 安全约定：本文只出现环境变量**名**，严禁把 `.env` 实际值（连接串、密钥）写入文档或提交记录。
 
-## 1. 站点矩阵（核实于 2026-07-13）
+## 1. 站点矩阵（核实于 2026-08-05）
+
+> 2026-08-03 服务器完成迁移，全部内容收敛到 `/arkrog` 下。**旧的 `/var/www/*` 与 `/home/ubuntu/arkrog_backend` 布局已作废**，本节曾按旧布局记载（核实于 2026-07-13），现更新。日常运维以服务器上的 `/arkrog/README.md` 为准。
 
 | | prod | dev |
 |---|---|---|
 | 域名 | `arkrog.com`（含 `*.arkrog.com` 兜底） | `dev.arkrog.com` |
-| 前端静态根 | `/var/www/arkrog/client` | `/var/www/arkrog-dev/client` |
+| 前端静态根（nginx `root`） | `/arkrog/prod/frontend/current` | `/arkrog/dev/frontend/current` |
+| 前端产物实体 | `current` 是软链，指向 `frontend/releases/<时间戳>/`，回滚即改软链 | 同左 |
 | 后端 pm2 进程 | `arkrog`，fork 单实例 | `arkrog-dev`，cluster ×2 |
-| 后端 cwd | `/home/ubuntu/arkrog_backend` | `/home/ubuntu/temp/arkrog_backend` |
+| 后端 cwd | `/arkrog/prod/backend` | `/arkrog/dev/backend` |
 | 端口（`.env` 的 `PORT`） | 5174 | 5175 |
-| `NODE_ENV` | production | **production**（不是 development） |
-| 部署分支 / 提交 | `dev_tournament` @ `65961b7`（2026-07-18） | `dev_tournament` @ `398672a`（2026-07-18 核实） |
+| `NODE_ENV` | production | **production**（不是 development）——由 pm2 在进程内注入（来自 `dump.pm2`），`/proc/<pid>/environ` 里看不到，别据此误判 |
+| 部署分支 / 提交（核实于 2026-08-05） | 后端 `dev_tournament` @ `c82ca59` | 后端 `dev_tournament` @ `10eb7b6`；前端 `teresa-dev` @ `f869aae` |
 | Redis 前缀（`REDIS_PREFIX`） | 未配置 → 默认 `arkrog` | `arkrog-dev` |
 | Mongo | **同一台 localhost mongod、同一个 `arkrog` 库**（见第 4 节） | 同左 |
+
+部署一律通过 `/arkrog/bin/` 下的脚本，不要手动改文件或直接调 pm2：`sudo -u arkrog /arkrog/bin/deploy-frontend.sh <env> --from-release`（前端，产物由 GitHub Actions 发布到固定 tag `dist-latest`）、`sudo -u arkrog /arkrog/bin/deploy-backend.sh <env>`（后端，会 pm2 stop → `git pull --ff-only` → `yarn install --frozen-lockfile` → 起进程 → 轮询 `/app/banners` 健康检查）。
+
+> ⚠️ **不要在服务器上构建前端**。该机器 2 核 1.7GB 内存，Vite 构建峰值过 1GB 会触发 OOM killer，而它优先杀的正是 mongod / redis / node。
 
 ## 2. 后端进程与入口
 
@@ -106,7 +116,10 @@ dotenv 加载顺序（`app.ts`）：`.env` → `.env.${NODE_ENV}`，`override: t
 | `REDIS_PREFIX` | `database/redis.js`（默认 `arkrog`）、`services/bilibili/cache.ts`、`updateGameData.ts` | 仅 dev 的 `.env.production`（`arkrog-dev`） | prod/dev Redis 隔离的唯一机制 |
 | `DATA_PATH` | `utils/gamedata/shared.js`、`updateGameData.ts` | `.env`（`~` 开头）+ `.env.production`（绝对路径） | **层叠顺序 load-bearing**：Node 不展开 `~`，靠 `.env.production` 的绝对路径覆盖才可用 |
 | `ACTIVE_CHARS` | `utils/gamedata/buildCharacterRawBundle.js` | `.env` | |
-| `SECRET_ID` / `SECRET_KEY` / `BUCKET` | `storage/sts.js`、`storage/cos.js`、`utils/appData/db.js` | `.env.production` | 腾讯云 COS |
+| `SECRET_ID` / `SECRET_KEY` / `BUCKET` | `storage/sts.js`、`storage/cos.js`、`utils/appData/db.js`、`utils/tencentApi.ts` 的 `callTencentApi` | `.env.production` | 腾讯云 COS 与云 API 共用同一对密钥；`BUCKET` 仅 COS 用。该密钥需具备 `ocr:GeneralBasicOCR` 权限，否则地图识别返回 502 |
+| `OCR_ENDPOINT_HOST` | `routers/mapRecognition.ts`（默认 `ocr.tencentcloudapi.com`） | dev `.env` 已配 | 生产应设 `ocr.internal.tencentcloudapi.com`（内网端点，解析到 169.254.1.10，不占公网带宽）。**该域名只在腾讯云 VPC 内解析**，本地开发/CI 必须留默认公网域名。换端点由代码走 TC3 签名的 `host` 参数完成，不是只改 URL |
+| `OCR_REGION` | `routers/mapRecognition.ts`（默认 `ap-guangzhou`） | dev `.env` 已配 | 服务器在 ap-beijing，生产应设 `ap-beijing` |
+| `OCR_MONTHLY_QUOTA` | `routers/mapRecognition.ts`（默认 900） | 未配置，用默认值 | 全局月度调用硬上限，保护腾讯云 1000 次/月免费额度；超限接口返回 429。计数在 Redis，键 `rl:ocr:quota:{yyyyMM}` |
 | `DASHSCOPE_API_KEY` | `services/llm/config.ts`、`routers/tournament.js` | `.env` | 百炼 LLM |
 | `LLM_BASE_URL` / `LLM_DEFAULT_MODEL` / `LLM_TIMEOUT` | `services/llm/config.ts` 的 `config` / `getEnvConfig` | 仅 `LLM_DEFAULT_MODEL` | 服务器 `.env` 里的 `DASHSCOPE_BASE_URL`、`DASHSCOPE_TIMEOUT` 两键**无任何代码读取**（死键，代码读的是 `LLM_` 前缀） |
 | `YoutubeToken` | `utils/record.js` 的 `parseYoutubeURL`（视频 + 频道两次 API 调用） | **两环境均未配置** | 请求 URL 拼出 `key=undefined` → YouTube 解析必走失败分支 → YouTube 链接的记录提交失败。详见[提交表单与外链解析](../app/modules/RelicFree/docs/05-submit-form-and-links.md) |
@@ -136,22 +149,33 @@ dotenv 加载顺序（`app.ts`）：`.env` → `.env.${NODE_ENV}`，`override: t
 
 ## 7. 部署流程与工作树滞后
 
+> 以下为 2026-08-03 迁移后的流程（核实于 2026-08-05）。手动 scp / 手调 pm2 的老办法已作废，一律走 `/arkrog/bin/` 脚本。
+
 ### 前端
 
-`pnpm build`（SPA，`ssr: false`）只产出 `build/client/`；打包 scp 后解压进 `/var/www/{arkrog,arkrog-dev}/client`，**无需重启任何进程**。旧目录保留 `client.bak.<时间戳>` 作回滚。
+`pnpm build`（SPA，`ssr: false`）产出 `build/client/`。**推荐路径是零上传**：push 到 `teresa-dev` 触发 GitHub Actions 的 build-release 工作流（约 2–3 分钟），产物以固定资产名发布到 pre-release tag `dist-latest`，然后在服务器：
+
+```bash
+sudo -u arkrog /arkrog/bin/deploy-frontend.sh dev --from-release
+# dev 验证无误后，把同一份产物提升到 prod（纯本地复制，不重新下载）
+sudo -u arkrog /arkrog/bin/deploy-frontend.sh prod --from-dir /arkrog/dev/frontend/current
+```
+
+脚本会校验 sha256（跨境链路可能截断，校验不过直接拒绝部署）、写入新的 `releases/<时间戳>/` 并切换 `current` 软链，**无需重启任何进程**；旧 release 保留若干份作回滚。备选路径（rsync 增量上传、打包上传）见服务器 `/arkrog/README.md`。
 
 ### 后端
 
+```bash
+sudo -u arkrog /arkrog/bin/deploy-backend.sh dev     # 或 prod；加 --dry-run 只做校验
 ```
-pm2 stop <进程>        # 必须先停：tsx watch 热重载会用旧依赖跑新代码
-git pull / git checkout <分支>
-yarn install --production=false   # tsx 是 devDependency，必装
-pm2 restart <进程> && pm2 save
-```
+
+脚本内部：校验 `dev:tsx` 脚本仍在（它是 pm2 的启动命令，删了下次 restart 直接挂）→ `pm2 stop`（必须先停，tsx watch 热重载会用旧依赖跑新代码）→ `git pull --ff-only` → `yarn install --production=false --frozen-lockfile`（tsx 是 devDependency，必装）→ 起进程 → 轮询 `/app/banners` 直到返 200，失败则打日志并以非 0 退出。
+
+> 后端安装用的是 **yarn**（`yarn.lock`），与前端仓库的 pnpm 不同，别混。
 
 ### ⚠️ 工作树不会自动更新
 
-服务器不自动拉代码。生产后端已于 2026-07-18 更新至 `65961b7`，包含 `/record` 服务端守卫三连修复（`4015ad6` / `15e6de6` / `6fe4525`）、数据缓存写路径修复（`790afd6`）、rogue_6 适配（`c43f858`）、Linux 关卡路径大小写修复（`46be23a`）与生产 dotenv 层叠修复（`65961b7`）；dev 后端同日核实仍为 `398672a`。在文档或排障中引用"后端行为"时，仍须区分 prod/dev 与本地 HEAD。
+服务器不自动拉代码，prod 与 dev 的提交常不同步（当前状态见第 1 节表格）。在文档或排障中引用"后端行为"时，须区分 prod / dev 与本地 HEAD。
 
 部署含缓存修复的版本后，还需按[无藏运维手册](../app/modules/RelicFree/docs/07-ops-runbook.md)回填：L4 管理员 `POST /admin/calculate-stage-preview` 重算 stage-preview，再跑 `util-scripts/updateGameData.ts` 重建 stage-enemies。
 

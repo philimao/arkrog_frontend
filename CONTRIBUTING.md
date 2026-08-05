@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-08-05
 sources:
   - package.json
   - README.md
@@ -78,6 +78,9 @@ sources:
 | 改 `app/types/constant.ts` 的 `StageTypes`/`StageLevels`/`topicMaxLevels` | 更新[无藏模块 03](app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md) + 核对[无藏 new-topic-checklist](app/modules/RelicFree/docs/new-topic-checklist.md) + 重跑 `pnpm docs:gen`（刷新 `hardcode-snapshot.md`） |
 | 改 `arkrog_backend/utils/appData/stagePreview.js`（增量/全量重算、面包屑生成） | 更新[无藏模块 06](app/modules/RelicFree/docs/06-data-pipeline.md) |
 | 改 `app/components/Character/Enemy/EnemyAvatar.tsx` 的 `preset`/`enemyNameTransform`，或增删无藏范围内任何 `_get`/`_post` 调用点 | 重跑 `pnpm docs:gen`（刷新 `hardcode-snapshot.md` / `api-endpoints.md`） |
+| 改 `app/modules/Tool/BlackFlowMap/recognition/` 任一模块（压缩参数、词表、层名判定、网格标定、打分权重、可信度阈值） | 更新[黑流模块 01](app/modules/Tool/BlackFlowMap/docs/01-screenshot-recognition.md)，尤其「关键不变量」与「实测基线」两节；改判据/阈值须说明依据的实测数据 |
+| 改 `arkrog_backend/routers/mapRecognition.ts`、`utils/tencentApi.ts`、`middleware/rateLimit.ts`（接口契约、限流额度、OCR 端点） | 更新[黑流模块 01](app/modules/Tool/BlackFlowMap/docs/01-screenshot-recognition.md) 第三节 + [deployment-env-matrix.md](docs/deployment-env-matrix.md) 的 `.env` 键矩阵 |
+| 改 `app/modules/Tool/BlackFlowMap/mapData.tsx` 的 `initialMaps`（地图拓扑） | 它是地图拓扑的**唯一数据源**，识别与渲染共用；**不要另建副本**（后端曾有一份手抄的 `ZONE_MAPS`，已因漂移删除，见 [ADR-0001](app/modules/Tool/BlackFlowMap/docs/adr/0001-cloud-ocr-frontend-inference.md)） |
 
 各模块 `docs/generated/` 目录（`app/modules/Tool/DamageCalculator/docs/generated/` 三份 + `app/modules/RelicFree/docs/generated/` 三份）是 `pnpm docs:gen` 的产物，**禁止手改**——手改会在下次生成时被覆盖，且生成物与源码的一致性是 CI 校验目标（现状与目标形态见 [docs/doc-generation.md](docs/doc-generation.md)）。
 
@@ -115,6 +118,7 @@ sources:
 |---|---|
 | `app/modules/Tool/DamageCalculator/docs/` | 伤害计算器全部正文文档（编号 01–10、专题清单、`adr/`、`generated/`） |
 | `app/modules/RelicFree/docs/` | 无藏收录全部正文文档（编号 01–07、专题清单、`adr/`、`generated/`） |
+| `app/modules/Tool/BlackFlowMap/docs/` | 黑流树海地图工具正文文档（编号 01–、`adr/`；无 `generated/`，该模块未接入 `docs:gen`） |
 | `docs/` | 全仓库索引（`README.md`）、术语表（`glossary.md`）、跨模块/跨仓库流程（`data-pipeline.md`、`auth-and-permissions.md`、`deployment-env-matrix.md`）、仓库级工程说明（`testing.md`、`doc-generation.md`） |
 | 模块根 `README.md`（如 `app/modules/RelicFree/README.md`）、`calculator/charImpl/README.md`、`test/DamageCalculator/README.md`、`app/components/RecordCard/README.md`、`app/modules/RecordDisplay/README.md` | 3–5 行指针文件，只放链接，防止双源漂移 |
 

@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-13
+last-verified: 2026-08-05
 sources:
   - docs/glossary.md
   - docs/data-pipeline.md
@@ -16,6 +16,7 @@ sources:
   - CLAUDE.md
   - app/modules/Tool/DamageCalculator/docs/README.md
   - app/modules/RelicFree/docs/README.md
+  - app/modules/Tool/BlackFlowMap/docs/README.md
   - app/docs/RouteGuard使用指南.md
   - app/hooks/useEditLock.md
   - scripts/docs/5.17 赛事Data修改.md
@@ -107,6 +108,14 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | [.../docs/generated/stage-filter-rules.md](../app/modules/RelicFree/docs/generated/stage-filter-rules.md) | navOfZone 筛选规则表 | 生成物 |
 | [.../docs/generated/hardcode-snapshot.md](../app/modules/RelicFree/docs/generated/hardcode-snapshot.md) | 版本敏感字面量快照 | 生成物 |
 
+### 黑流树海地图工具模块正文（`app/modules/Tool/BlackFlowMap/docs/`）
+
+| 路径 | 主题 | 状态 |
+|---|---|---|
+| [.../docs/README.md](../app/modules/Tool/BlackFlowMap/docs/README.md) | 模块文档索引 | 已验证 |
+| [.../docs/01-screenshot-recognition.md](../app/modules/Tool/BlackFlowMap/docs/01-screenshot-recognition.md) | 截图识别：一次云 OCR 同时判层数与基底，全部推理在前端 | 已验证 |
+| [.../docs/adr/0001-cloud-ocr-frontend-inference.md](../app/modules/Tool/BlackFlowMap/docs/adr/0001-cloud-ocr-frontend-inference.md) | ADR：云 OCR + 前端推理，后端只做签名转发 | 已验证 |
+
 ### 存量文档
 
 | 路径 | 主题 | 状态 |
@@ -131,6 +140,7 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | 排查无藏记录/预览数据不更新 | [无藏模块 07 运维手册](../app/modules/RelicFree/docs/07-ops-runbook.md) → [data-pipeline.md](data-pipeline.md) 文首勘误警示块 |
 | 改无藏关卡筛选/收录范围 | [无藏模块 03](../app/modules/RelicFree/docs/03-stage-taxonomy-and-selector.md)（注意跨仓库双份表同步义务） |
 | 无藏提交表单/链接解析改动 | [无藏模块 05](../app/modules/RelicFree/docs/05-submit-form-and-links.md) |
+| 改地图截图识别（OCR/网格标定/基底匹配/限流） | [黑流模块 01](../app/modules/Tool/BlackFlowMap/docs/01-screenshot-recognition.md)「关键不变量」一节 → [ADR-0001](../app/modules/Tool/BlackFlowMap/docs/adr/0001-cloud-ocr-frontend-inference.md) |
 
 ## 三、Onboarding 阅读顺序
 

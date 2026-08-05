@@ -1,8 +1,8 @@
 /**
  * 网格标定：从「已识别节点的像素坐标」反推出整个格点阵列。
  *
- * 地图节点严格落在 rows × cols 的格点上，所以只要认出足够多的节点，没认出来的
- * 位置也是确定的 —— 抢救识别就是靠这个把 ROI 算出来的（而不是去「找」漏检的节点）。
+ * 地图节点严格落在 rows × cols 的格点上，所以只要认出足够多的节点，整个阵列就
+ * 完全确定 —— 包括没认出来的那些位置，它们的格号同样算得出来。
  */
 import type { Axis } from "./types";
 
@@ -57,9 +57,4 @@ export function fitAxis(values: number[], maxClusters: number): Axis | null {
 export function snapToAxis(value: number, axis: Axis | null): number {
   if (!axis) return 0;
   return Math.round((value - axis.firstCenter) / axis.unitPitch);
-}
-
-/** 由格号反推像素中心，抢救裁图用 */
-export function axisToPixel(index: number, axis: Axis): number {
-  return axis.firstCenter + index * axis.unitPitch;
 }

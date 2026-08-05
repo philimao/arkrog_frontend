@@ -283,7 +283,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           <ScreenshotRecognizer
             zones={zoneOfRogue}
             currentZoneId={currentZoneId}
-            onMatched={(zone, mapId, confidentNodes) => {
+            onMatched={(zone, mapId, markableNodes) => {
               const matched = initialMaps.find((m) => m.id === mapId);
               if (!matched) return;
               // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
@@ -293,7 +293,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               setSelectedMapId(mapId);
               // 把识别出来、有把握的节点自动标记上，代替用户手动一个个点选
               const nextMarkedNodes: Record<string, string> = {};
-              for (const n of confidentNodes) {
+              for (const n of markableNodes) {
                 const option = nodeOptions.find((opt) => opt.name === n.label);
                 if (option) nextMarkedNodes[`${n.row},${n.col}`] = option.id;
               }

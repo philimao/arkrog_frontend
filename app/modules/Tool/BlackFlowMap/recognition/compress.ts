@@ -14,8 +14,8 @@ export interface CompressedScreenshot {
   /** 上传给后端代理的 JPEG */
   blob: Blob;
   /**
-   * 压缩后的画布。空白过路点检测和抢救裁图都复用它 —— 必须与送去 OCR 的是
-   * 同一张图，否则 OCR 返回的坐标跟画布对不上。
+   * 压缩后的画布，供空白过路点检测复用 —— 必须与送去 OCR 的是同一张图，
+   * 否则 OCR 返回的坐标跟画布对不上。
    */
   canvas: HTMLCanvasElement;
 }

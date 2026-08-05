@@ -3,6 +3,7 @@ import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useNodeGrid } from "./useNodeGrid";
 import { NodeMapCanvas } from "./mapCanvas";
+import { ScreenshotRecognizer } from "./ScreenshotRecognizer";
 import {
   toGridState,
   initialMaps,
@@ -86,9 +87,14 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showZoneNotes, setShowZoneNotes] = useState(false);
+  const [showBaseMaps, setShowBaseMaps] = useState(true);
+  // 截图识别功能还在打磨阶段，只在本地开发环境显示，不接普通用户能看到的入口
+  const showScreenshotRecognizer = import.meta.env.DEV;
 
   const visibleOptions = nodeOptions.filter(
-    (option) => option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min).length > 0,
+    (option) =>
+      option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min)
+        .length > 0,
   );
 
   const handleNodeClick = (row: number, col: number) => {
@@ -104,7 +110,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
     const step = option.steps.find((s) => s.zone === currentZoneId);
     setSelectedOptionId(option.id);
-    setHighlightRange((step && step.min && step.max) ? { min: step.min, max: step.max } : null);
+    setHighlightRange(
+      step && step.min && step.max ? { min: step.min, max: step.max } : null,
+    );
   };
 
   const handleMarkNodeAt = (row: number, col: number, optionId: string) => {
@@ -172,9 +180,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       const disabled = optionFull; // || typeFull;
       const note = optionFull
         ? `已达${option.name}标记上限`
-        // : typeFull
-        //   ? `已达到${option.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
-          : "";
+        : // : typeFull
+          //   ? `已达到${option.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+          "";
 
       return (
         <div
@@ -218,7 +226,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   return (
     <div className="relative">
       {/* 区域选择 */}
-      <div className="mb-4 mt-4 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+      <div className="mb-4 mt-2 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {zoneOfRogue.map((zone, index) => (
           <div
             key={zone.id}
@@ -238,6 +246,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               setMenuOpen(false);
               load(toGridState(nextMap || initialMaps[0]));
               setShowZoneNotes(false);
+              setShowBaseMaps(true);
             }}
           >
             {intToRoman(index + 1)} {zone.name}
@@ -245,70 +254,125 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
         ))}
       </div>
 
+      <div className="mb-4">
+        {showScreenshotRecognizer && (
+          <ScreenshotRecognizer
+            key={currentZoneId}
+            zone={currentZoneId}
+            zoneLabel={(() => {
+              const index = zoneOfRogue.findIndex(
+                (z) => z.id === currentZoneId,
+              );
+              const zoneName = zoneOfRogue.find(
+                (z) => z.id === currentZoneId,
+              )?.name;
+              return index >= 0 && zoneName
+                ? `${intToRoman(index + 1)} ${zoneName}`
+                : currentZoneId;
+            })()}
+            onMatched={(mapId, confidentNodes) => {
+              const matched = initialMaps.find((m) => m.id === mapId);
+              if (!matched) return;
+              setSelectedMapId(mapId);
+              // 把识别出来、有把握的节点自动标记上，代替用户手动一个个点选
+              const nextMarkedNodes: Record<string, string> = {};
+              for (const n of confidentNodes) {
+                const option = nodeOptions.find((opt) => opt.name === n.label);
+                if (option) nextMarkedNodes[`${n.row},${n.col}`] = option.id;
+              }
+              setMarkedNodes(nextMarkedNodes);
+              setSelectedOptionId("");
+              setHighlightRange(null);
+              setSelectedNode(null);
+              setMenuOpen(false);
+              load(toGridState(matched));
+            }}
+          />
+        )}
+      </div>
+
       <div>
         {/* 基底选择 */}
         <div className="mb-8">
-          <h3 className="font-bold text-xl mb-2">基底（暂不支持追忆）</h3>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 grow">
-            {initialMaps
-              .filter((m) => m.zone === currentZoneId)
-              .map((m) => {
-                const isSelected = selectedMapId === m.id;
-                return (
-                  <div
-                    key={m.id}
-                    className={`p-2 bg-black-gray border-2 ${isSelected ? "border-ak-blue" : "border-transparent"} cursor-pointer`}
-                    onClick={() => {
-                      setSelectedMapId(m.id);
-                      setMarkedNodes({});
-                      setSelectedOptionId("");
-                      setHighlightRange(null);
-                      setSelectedNode(null);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    <NodeMapCanvas
-                      state={toGridState(m)}
-                      onToggle={() => {}}
-                      start={
-                        m?.start ? { row: m.start[0], col: m.start[1] } : null
-                      }
-                      ends={
-                        m?.ends
-                          ? m.ends.map((en) => ({ row: en[0], col: en[1] }))
-                          : null
-                      }
-                      battleEnd={
-                        m?.battleEnd
-                          ? { row: m.battleEnd[0], col: m.battleEnd[1] }
-                          : null
-                      }
-                      knownBattles={
-                        m?.knownBattles
-                          ? m.knownBattles.map((b) => ({
-                              row: b[0],
-                              col: b[1],
-                            }))
-                          : null
-                      }
-                      knownShops={
-                        m?.knownShops
-                          ? m.knownShops.map((s) => ({ row: s[0], col: s[1] }))
-                          : null
-                      }
-                      cellSize={20}
-                      zone={m.zone}
-                      readOnly
-                    />
+          <button
+            type="button"
+            className="w-full flex items-center justify-between mb-2"
+            onClick={() => setShowBaseMaps((prev) => !prev)}
+          >
+            <span className="font-bold text-xl">基底（暂不支持追忆）</span>
+            <div className="flex gap-1 items-center">
+              {showBaseMaps ? "收起" : "展开"}
+              <ChevronIcon
+                direction={showBaseMaps ? "up" : "down"}
+                className="w-4 h-4 text-white"
+              />
+            </div>
+          </button>
+          {showBaseMaps && (
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 grow">
+              {initialMaps
+                .filter((m) => m.zone === currentZoneId)
+                .map((m) => {
+                  const isSelected = selectedMapId === m.id;
+                  return (
                     <div
-                      className={`font-bold text-center ${isSelected ? "text-ak-blue" : "text-white"}`}
+                      key={m.id}
+                      className={`p-2 bg-black-gray border-2 ${isSelected ? "border-ak-blue" : "border-transparent"} cursor-pointer`}
+                      onClick={() => {
+                        setSelectedMapId(m.id);
+                        setMarkedNodes({});
+                        setSelectedOptionId("");
+                        setHighlightRange(null);
+                        setSelectedNode(null);
+                        setMenuOpen(false);
+                      }}
                     >
-                      {m.id}
+                      <NodeMapCanvas
+                        state={toGridState(m)}
+                        onToggle={() => {}}
+                        start={
+                          m?.start ? { row: m.start[0], col: m.start[1] } : null
+                        }
+                        ends={
+                          m?.ends
+                            ? m.ends.map((en) => ({ row: en[0], col: en[1] }))
+                            : null
+                        }
+                        battleEnd={
+                          m?.battleEnd
+                            ? { row: m.battleEnd[0], col: m.battleEnd[1] }
+                            : null
+                        }
+                        knownBattles={
+                          m?.knownBattles
+                            ? m.knownBattles.map((b) => ({
+                                row: b[0],
+                                col: b[1],
+                              }))
+                            : null
+                        }
+                        knownShops={
+                          m?.knownShops
+                            ? m.knownShops.map((s) => ({
+                                row: s[0],
+                                col: s[1],
+                              }))
+                            : null
+                        }
+                        cellSize={20}
+                        zone={m.zone}
+                        readOnly
+                      />
+                      <div
+                        className={`font-bold text-center ${isSelected ? "text-ak-blue" : "text-white"}`}
+                      >
+                        {m.id}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-          </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
 
         {/* 大地图 */}
@@ -340,7 +404,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                     src={`/images/map/${currentZoneId}.png`}
                   />
                   <ChevronIcon
-                    direction={showZoneNotes ? "down" : "up"}
+                    direction={showZoneNotes ? "up" : "down"}
                     className="w-3 h-3 text-white"
                   />
                 </button>
@@ -352,6 +416,15 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   </ul>
                 )}
               </div>
+              {Object.keys(markedNodes).length > 0 && (
+                <button
+                  type="button"
+                  className="text-sm text-ak-red"
+                  onClick={() => setMarkedNodes({})}
+                >
+                  清除已选节点
+                </button>
+              )}
               <NodeMapCanvas
                 state={toGridState(currentMap || initialMaps[0])}
                 onToggle={toggle}

@@ -433,15 +433,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   </ul>
                 )}
               </div>
-              {Object.keys(markedNodes).length > 0 && (
-                <button
-                  type="button"
-                  className="text-sm text-ak-red"
-                  onClick={() => setMarkedNodes({})}
-                >
-                  清除已选节点
-                </button>
-              )}
               <NodeMapCanvas
                 state={toGridState(currentMap || initialMaps[0])}
                 onToggle={toggle}

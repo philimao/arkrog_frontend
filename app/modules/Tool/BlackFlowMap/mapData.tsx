@@ -115,7 +115,7 @@ export const nodeOptions: nodeOption[] = [
     name: "安全的角落",
     steps: [
       { zone: "zone_2", min: 3, max: 5, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
+      { zone: "zone_3", min: 3, max: 6, maxAllowed: 2 },
       { zone: "zone_4", min: 2, max: 14, maxAllowed: 2 },
       { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
     ],

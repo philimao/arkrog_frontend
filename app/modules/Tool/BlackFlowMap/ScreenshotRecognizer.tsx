@@ -1,11 +1,15 @@
 import { useCallback, useRef, useState } from "react";
 import { ChevronIcon } from "~/components/Icons";
 import { NodeMapCanvas } from "./mapCanvas";
-import { initialMaps, toGridState } from "./mapData";
-import { recognizeMap, confidenceOf } from "./recognition/recognize";
-import { ZoneUndetectedError, NoNodeDetectedError } from "./recognition/recognize";
+import { initialMaps, toGridState, type MapShorthand } from "./mapData";
+import {
+  recognizeMap,
+  toMarkableNodes,
+  ZoneUndetectedError,
+  NoNodeDetectedError,
+  type MarkableNode,
+} from "./recognition/recognize";
 import { OcrRequestError } from "./recognition/ocrClient";
-import { ANCHOR_LABELS } from "./recognition/vocab";
 import type { ConfidenceTone, RecognizeResult } from "./recognition/types";
 import type { ZoneData } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
@@ -17,29 +21,37 @@ const toneClass: Record<ConfidenceTone, string> = {
   none: "text-gray-400 border-gray-400/40 bg-gray-400/10",
 };
 
-export interface ConfidentNode {
-  row: number;
-  col: number;
-  label: string;
-}
-
 interface ScreenshotRecognizerProps {
   /** 该肉鸽主题的层列表，顺序即层序；层名用于从截图判定层数 */
   zones: ZoneData[];
   /** 层数识别失败时的兜底：用户当前手选的层 */
   currentZoneId: string;
-  onMatched: (zone: string, mapId: string, confidentNodes: ConfidentNode[]) => void;
+  onMatched: (zone: string, mapId: string, nodes: MarkableNode[]) => void;
+}
+
+function MapPreview({ map, cellSize = 22 }: { map: MapShorthand; cellSize?: number }) {
+  return (
+    <NodeMapCanvas
+      state={toGridState(map)}
+      onToggle={() => {}}
+      start={map.start ? { row: map.start[0], col: map.start[1] } : null}
+      ends={map.ends ? map.ends.map((e) => ({ row: e[0], col: e[1] })) : null}
+      battleEnd={map.battleEnd ? { row: map.battleEnd[0], col: map.battleEnd[1] } : null}
+      knownBattles={map.knownBattles ? map.knownBattles.map((b) => ({ row: b[0], col: b[1] })) : null}
+      knownShops={map.knownShops ? map.knownShops.map((s) => ({ row: s[0], col: s[1] })) : null}
+      cellSize={cellSize}
+      zone={map.zone}
+      readOnly
+    />
+  );
 }
 
 /**
- * 自动标记节点的准确率还不够（整体基底匹配 96.3%，但单个节点标签的正确率未单独
- * 验证），暂时关掉——代码保留，之后验证过再打开。关闭后只切层/切地图，不标节点。
- */
-const AUTO_MARK_NODES_ENABLED = false;
-
-/**
- * 截图识别：上传游戏内地图截图，**一次云 OCR 调用同时判出层数与基底**，
- * 命中后回调 onMatched 让外层切过去，方便用户跟自己的截图对照。
+ * 截图识别：上传游戏内地图截图，**一次云 OCR 调用同时判出层数与基底**。
+ *
+ * 可信度为「高」时直接切过去并自动填入节点（实测该档基底正确率 100%）；
+ * 中/低档则展示 Top-2 候选让用户二选一（实测判错时正确答案 100% 排在前二），
+ * 选中后不立即收起，允许改选，由用户点确认才关闭。
  *
  * 全部推理在前端完成，后端只做 OCR 签名转发。本组件默认不渲染，由外层通过
  * localStorage 开关控制。
@@ -54,6 +66,10 @@ export function ScreenshotRecognizer({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RecognizeResult | null>(null);
+  /** 用户从候选里挑中的下标；null 表示还没挑过（此时展示的是第一名） */
+  const [pickedIndex, setPickedIndex] = useState<number | null>(null);
+  /** 用户已确认选择，收起候选区 */
+  const [confirmed, setConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const runRecognition = useCallback(
@@ -61,6 +77,8 @@ export function ScreenshotRecognizer({
       setIsLoading(true);
       setError(null);
       setResult(null);
+      setPickedIndex(null);
+      setConfirmed(false);
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
@@ -71,21 +89,20 @@ export function ScreenshotRecognizer({
         const data = await recognizeMap(file, zones, { fallbackZone: currentZoneId });
         setResult(data);
 
-        // 只把「有把握」的节点自动标记上：坐标没经过修正、不是空白点、也不是
-        // 结构性锚点（锚点在地图上由 ends/battleEnd 单独画出，不能当可标记节点）
-        const confidentNodes: ConfidentNode[] = AUTO_MARK_NODES_ENABLED
-          ? data.correctedNodes
-              .filter(
-                (n): n is typeof n & { label: string } =>
-                  !!n.label && !n.corrected && !n.unresolved && !ANCHOR_LABELS[n.label],
-              )
-              .map((n) => ({ row: n.row, col: n.col, label: n.label }))
-          : [];
-        onMatched(data.zone, data.mapId, confidentNodes);
+        if (data.confidence.tone === "high") {
+          // 高可信度：直接切过去并把节点也填上
+          onMatched(data.zone, data.mapId, toMarkableNodes(data.correctedNodes));
+        } else {
+          // 中/低：先把地图切到第一名方便对照，但不替用户填节点 ——
+          // 等他从候选里明确选一个，再填那个候选对应的那套
+          onMatched(data.zone, data.mapId, []);
+        }
       } catch (err) {
-        if (err instanceof OcrRequestError && err.status === 429) {
-          setError(err.message);
-        } else if (err instanceof ZoneUndetectedError || err instanceof NoNodeDetectedError) {
+        if (
+          err instanceof OcrRequestError ||
+          err instanceof ZoneUndetectedError ||
+          err instanceof NoNodeDetectedError
+        ) {
           setError(err.message);
         } else {
           setError(err instanceof Error ? err.message : String(err));
@@ -95,6 +112,17 @@ export function ScreenshotRecognizer({
       }
     },
     [zones, currentZoneId, onMatched],
+  );
+
+  const pickCandidate = useCallback(
+    (index: number) => {
+      if (!result) return;
+      const candidate = result.topCandidates[index];
+      if (!candidate) return;
+      setPickedIndex(index);
+      onMatched(result.zone, candidate.mapId, toMarkableNodes(candidate.correctedNodes));
+    },
+    [result, onMatched],
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,10 +137,14 @@ export function ScreenshotRecognizer({
   };
 
   const best = result?.best;
-  const bestMap = best ? initialMaps.find((m) => m.id === best.mapId) : undefined;
+  const appliedMapId =
+    result && pickedIndex !== null ? result.topCandidates[pickedIndex]?.mapId : result?.mapId;
+  const appliedMap = appliedMapId ? initialMaps.find((m) => m.id === appliedMapId) : undefined;
   const zoneIndex = result ? zones.findIndex((z) => z.id === result.zone) : -1;
   const zoneLabel =
     zoneIndex >= 0 ? `${intToRoman(zoneIndex + 1)} ${zones[zoneIndex].name}` : result?.zone;
+  const showCandidates =
+    !!result && result.confidence.tone !== "high" && result.topCandidates.length > 1 && !confirmed;
 
   return (
     <div className="mb-4 border border-mid-gray rounded-md bg-black-gray-70">
@@ -170,66 +202,86 @@ export function ScreenshotRecognizer({
 
           {result && best && !isLoading && (
             <div className="space-y-2">
+              {result.lowDensity && (
+                <div className="text-sm text-yellow-400 py-2 px-3 border border-yellow-400/30 rounded bg-yellow-400/10">
+                  截图信息不足，请截取完整地图后重试 —— 当前只识别到{" "}
+                  {result.stats.labels} 个节点，覆盖率偏低，结果很可能不准。
+                </div>
+              )}
+
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-sm px-2 py-0.5 rounded border text-ak-blue border-ak-blue/40 bg-ak-blue/10">
                   {zoneLabel}
                 </span>
-                <span className="text-lg font-bold text-ak-blue">{best.mapId}</span>
-                {(() => {
-                  const c = confidenceOf(
-                    result.hasAnchor,
-                    best.outOfBounds,
-                    result.marginRatio,
-                    best.anchorScore === best.anchorTotal,
-                  );
-                  return (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded border ${toneClass[c.tone]}`}
-                    >
-                      可信度：{c.text}
-                    </span>
-                  );
-                })()}
+                <span className="text-lg font-bold text-ak-blue">{appliedMapId}</span>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded border ${toneClass[result.confidence.tone]}`}
+                >
+                  可信度：{result.confidence.text}
+                </span>
                 <div className="text-sm text-light-gray">
-                  已自动切换，可直接跟截图对照。若识别不正确，请手动选择层数与基底。
+                  {result.confidence.tone === "high"
+                    ? "已自动切换并填入节点，可直接跟截图对照。"
+                    : showCandidates
+                      ? "识别存在歧义，请从下方候选中确认是哪一张。"
+                      : "已切换，可直接跟截图对照。若不正确请手动选择。"}
                 </div>
               </div>
 
-              {bestMap && (
-                <div className="p-2 bg-black-gray w-fit">
-                  <NodeMapCanvas
-                    state={toGridState(bestMap)}
-                    onToggle={() => {}}
-                    start={
-                      bestMap.start
-                        ? { row: bestMap.start[0], col: bestMap.start[1] }
-                        : null
-                    }
-                    ends={
-                      bestMap.ends
-                        ? bestMap.ends.map((en) => ({ row: en[0], col: en[1] }))
-                        : null
-                    }
-                    battleEnd={
-                      bestMap.battleEnd
-                        ? { row: bestMap.battleEnd[0], col: bestMap.battleEnd[1] }
-                        : null
-                    }
-                    knownBattles={
-                      bestMap.knownBattles
-                        ? bestMap.knownBattles.map((b) => ({ row: b[0], col: b[1] }))
-                        : null
-                    }
-                    knownShops={
-                      bestMap.knownShops
-                        ? bestMap.knownShops.map((s) => ({ row: s[0], col: s[1] }))
-                        : null
-                    }
-                    cellSize={26}
-                    zone={bestMap.zone}
-                    readOnly
-                  />
+              {showCandidates ? (
+                <div className="space-y-2 border border-yellow-400/30 rounded p-2 bg-yellow-400/5">
+                  <div className="text-xs text-light-gray">
+                    实测识别有歧义时，正确答案几乎总在这两个里。点选后会填入对应的节点信息，
+                    可以反复切换对照，确认无误再关闭。
+                  </div>
+                  <div className="flex gap-3 flex-wrap">
+                    {result.topCandidates.map((candidate, index) => {
+                      const map = initialMaps.find((m) => m.id === candidate.mapId);
+                      if (!map) return null;
+                      const active = pickedIndex === index;
+                      return (
+                        <div
+                          key={candidate.mapId}
+                          role="button"
+                          onClick={() => pickCandidate(index)}
+                          className={`p-2 cursor-pointer border-2 rounded ${
+                            active
+                              ? "border-ak-blue bg-ak-blue/10"
+                              : "border-transparent bg-black-gray hover:border-mid-gray"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-ak-blue">{candidate.mapId}</span>
+                            {index === 0 && (
+                              <span className="text-xs text-light-gray">最高分</span>
+                            )}
+                            {index > 0 && (
+                              <span className="text-xs text-light-gray">
+                                落后 {(candidate.gapToBest * 100).toFixed(2)}%
+                              </span>
+                            )}
+                            {active && <span className="text-xs text-ak-blue">已选用</span>}
+                          </div>
+                          <MapPreview map={map} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm px-3 py-1 border border-ak-blue text-ak-blue rounded hover:bg-ak-blue/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled={pickedIndex === null}
+                    onClick={() => setConfirmed(true)}
+                  >
+                    {pickedIndex === null ? "请先选择一个候选" : "确认，关闭候选"}
+                  </button>
                 </div>
+              ) : (
+                appliedMap && (
+                  <div className="p-2 bg-black-gray w-fit">
+                    <MapPreview map={appliedMap} cellSize={26} />
+                  </div>
+                )
               )}
 
               {import.meta.env.DEV && (

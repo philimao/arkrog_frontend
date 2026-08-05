@@ -57,16 +57,43 @@ export interface CorrectedNode {
 
 export type ConfidenceTone = "high" | "medium" | "low" | "none";
 
+export interface Confidence {
+  text: string;
+  tone: ConfidenceTone;
+}
+
+/**
+ * 去重到「每张基底只留最好 offset」之后的候选，供低/中可信度时让用户二选一。
+ *
+ * 实测 82 张样张：判错的 3 张里，正确答案**全部排第 2**，且该结论与打分权重
+ * 无关（扫过 outOfBounds 惩罚系数 0~1000，Top-2 命中率恒为 100%）。所以展示
+ * 前两名比调参更值得做。
+ */
+export interface RankedCandidate {
+  mapId: string;
+  offset: { dr: number; dc: number };
+  score: number;
+  /** 相对第一名落后的比例；第一名为 0 */
+  gapToBest: number;
+  /** 按该候选自己的 offset 修正后的节点，选中它时用这一套填入 */
+  correctedNodes: CorrectedNode[];
+}
+
 export interface RecognizeResult {
   zone: string;
   mapId: string;
   /** best 与「最高分的、地图不同的候选」的分差占比，反映本次匹配有无歧义 */
   marginRatio: number | null;
   hasAnchor: boolean;
+  confidence: Confidence;
   candidates: MatchCandidate[];
+  /** 每张基底只留最好 offset，按分数降序，最多 3 项 */
+  topCandidates: RankedCandidate[];
   best: MatchCandidate;
   gridNodes: GridNode[];
   correctedNodes: CorrectedNode[];
+  /** 网格填充密度过低 —— 截图很可能没覆盖完整地图，识别结果不可靠 */
+  lowDensity: boolean;
   /** 诊断用：检出的文字节点数与空白过路点数 */
   stats: { labels: number; blanks: number; occupiedRatio: number };
 }

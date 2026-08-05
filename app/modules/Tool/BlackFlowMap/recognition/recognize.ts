@@ -10,16 +10,29 @@ import { detectZone } from "./detectZone";
 import { matchVocab, fuzzySubstringMatch, ANCHOR_LABELS } from "./vocab";
 import { fitAxis, snapToAxis } from "./grid";
 import { detectBlankNodes } from "./blankNodes";
-import { matchCandidates, correctNodes, computeMarginRatio } from "./matchMap";
+import { matchCandidates, correctNodes, computeMarginRatio, rank } from "./matchMap";
 import { initialMaps } from "../mapData";
 import type { ZoneData } from "~/types/gameData";
 import type {
-  ConfidenceTone,
+  Confidence,
+  CorrectedNode,
   GridNode,
   NodeLabel,
   OcrItem,
+  RankedCandidate,
   RecognizeResult,
 } from "./types";
+
+/**
+ * 网格填充密度低于此值，判定为「截图没覆盖完整地图」。
+ *
+ * 阈值 0.35 是实测校准的：正常图密度普遍 50%~80%，明显有问题的图能低到 18%。
+ * 实测低于该线的图基底正确率 80%，高于的 97.4%。
+ */
+const LOW_DENSITY_THRESHOLD = 0.35;
+
+/** 低/中可信度时给用户看几个候选 */
+const TOP_CANDIDATE_COUNT = 2;
 
 export class ZoneUndetectedError extends Error {
   constructor() {
@@ -66,12 +79,37 @@ export function confidenceOf(
   outOfBounds: number,
   marginRatio: number | null,
   anchorFull: boolean,
-): { text: string; tone: ConfidenceTone } {
+): Confidence {
   if (!hasAnchor) return { text: "无法确认（未检测到锚点）", tone: "none" };
   if (!anchorFull || marginRatio === null) return { text: "低", tone: "low" };
   if (outOfBounds === 0 && marginRatio >= 0.02) return { text: "高", tone: "high" };
   if (outOfBounds <= 1 && marginRatio >= 0.005) return { text: "中", tone: "medium" };
   return { text: "低", tone: "low" };
+}
+
+export interface MarkableNode {
+  row: number;
+  col: number;
+  label: string;
+}
+
+/**
+ * 从修正后的节点里挑出可以自动标记的。
+ *
+ * 只要「坐标没经过修正、也不是无解点」的：修正过的说明网格聚类在这个点上有偏差，
+ * 不该替用户悄悄标上去。结构性锚点（险路尽头/险路恶敌）在地图上由 ends/battleEnd
+ * 单独绘制，不是可标记节点类型，也排除。
+ *
+ * 实测 82 张样张：1336 个非锚点节点里 1324 个（99.1%）通过该过滤，同格冲突 0 处，
+ * 地图数据里的固定作战位 37/37 全部标对。
+ */
+export function toMarkableNodes(nodes: CorrectedNode[]): MarkableNode[] {
+  return nodes
+    .filter(
+      (n): n is CorrectedNode & { label: string } =>
+        !!n.label && !n.corrected && !n.unresolved && !ANCHOR_LABELS[n.label],
+    )
+    .map((n) => ({ row: n.row, col: n.col, label: n.label }));
 }
 
 export interface RecognizeOptions {
@@ -147,6 +185,28 @@ export async function recognizeMap(
   const bestMap = candidates.find((c) => c.id === best.mapId)!;
   const marginRatio = computeMarginRatio(results, totalDetectedAnchors);
 
+  // 同一张基底在相邻 offset 下往往占据榜单前几名（同一答案的近似平移），
+  // 对用户没有意义，所以按 mapId 去重后再取前 N 张不同的基底。
+  const bestScore = rank(best, totalDetectedAnchors);
+  const topCandidates: RankedCandidate[] = [];
+  const seenMaps = new Set<string>();
+  for (const r of results) {
+    if (seenMaps.has(r.mapId)) continue;
+    seenMaps.add(r.mapId);
+    const map = candidates.find((c) => c.id === r.mapId);
+    if (!map) continue;
+    const score = rank(r, totalDetectedAnchors);
+    topCandidates.push({
+      mapId: r.mapId,
+      offset: r.offset,
+      score,
+      gapToBest: bestScore > 0 ? (bestScore - score) / bestScore : 0,
+      // 每个候选按自己的 offset 修正 —— 选中它时要填入的是这一套节点
+      correctedNodes: correctNodes(gridNodes, map, r.offset),
+    });
+    if (topCandidates.length >= TOP_CANDIDATE_COUNT) break;
+  }
+
   // 网格填充密度，用于提示用户「这张图可能没识别全」
   const rows = gridNodes.map((n) => n.row);
   const cols = gridNodes.map((n) => n.col);
@@ -162,10 +222,18 @@ export async function recognizeMap(
     mapId: best.mapId,
     marginRatio,
     hasAnchor: totalDetectedAnchors > 0,
+    confidence: confidenceOf(
+      totalDetectedAnchors > 0,
+      best.outOfBounds,
+      marginRatio,
+      best.anchorScore === best.anchorTotal,
+    ),
     candidates: results,
+    topCandidates,
     best,
     gridNodes,
     correctedNodes: correctNodes(gridNodes, bestMap, best.offset),
+    lowDensity: occupiedRatio < LOW_DENSITY_THRESHOLD,
     stats: { labels: labels.length, blanks: blanks.length, occupiedRatio },
   };
 }

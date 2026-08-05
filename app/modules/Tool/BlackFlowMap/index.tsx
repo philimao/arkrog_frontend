@@ -281,22 +281,15 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       <div className="mb-4">
         {showScreenshotRecognizer && (
           <ScreenshotRecognizer
-            key={currentZoneId}
-            zone={currentZoneId}
-            zoneLabel={(() => {
-              const index = zoneOfRogue.findIndex(
-                (z) => z.id === currentZoneId,
-              );
-              const zoneName = zoneOfRogue.find(
-                (z) => z.id === currentZoneId,
-              )?.name;
-              return index >= 0 && zoneName
-                ? `${intToRoman(index + 1)} ${zoneName}`
-                : currentZoneId;
-            })()}
-            onMatched={(mapId, confidentNodes) => {
+            zones={zoneOfRogue}
+            currentZoneId={currentZoneId}
+            onMatched={(zone, mapId, confidentNodes) => {
               const matched = initialMaps.find((m) => m.id === mapId);
               if (!matched) return;
+              // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
+              setCurrentZoneId(zone);
+              setShowZoneNotes(false);
+              setShowBaseMaps(true);
               setSelectedMapId(mapId);
               // 把识别出来、有把握的节点自动标记上，代替用户手动一个个点选
               const nextMarkedNodes: Record<string, string> = {};

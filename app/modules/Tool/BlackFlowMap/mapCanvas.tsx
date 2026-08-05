@@ -1,6 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import type { GridState, Coord } from "./types";
-import { getConnectedNeighbors, nodeId, getOptionsForNodeDistance } from "./gridUtils";
+import {
+  getConnectedNeighbors,
+  nodeId,
+  getOptionsForNodeDistance,
+} from "./gridUtils";
 import { CloseIcon } from "@mantine/core";
 import { nodeOptions, nodeTypeLimits } from "./mapData";
 
@@ -22,7 +26,11 @@ function NodeLabel({
       y={y}
       textAnchor="middle"
       className="pointer-events-none select-none fill-white text-[10px]"
-      style={{ paintOrder: "stroke", stroke: "rgba(0,0,0,0.75)", strokeWidth: 3 }}
+      style={{
+        paintOrder: "stroke",
+        stroke: "rgba(0,0,0,0.75)",
+        strokeWidth: 3,
+      }}
     >
       {children}
     </text>
@@ -542,9 +550,9 @@ export function NodeMapCanvas({
             const disabled = isOptionLimitReached; // || isTypeLimitReached;
             const disabledNote = isOptionLimitReached
               ? `已达${opt.name}标记上限`
-              // : isTypeLimitReached
-              //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
-                : "";
+              : // : isTypeLimitReached
+                //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+                "";
 
             return (
               <button

@@ -26,7 +26,9 @@ export async function compressScreenshot(
   quality: number = JPEG_QUALITY,
 ): Promise<CompressedScreenshot> {
   // createImageBitmap 会按 EXIF 方向解码，省得手动处理手机截图的旋转
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const bitmap = await createImageBitmap(file, {
+    imageOrientation: "from-image",
+  });
   try {
     const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
     const width = Math.max(1, Math.round(bitmap.width * scale));

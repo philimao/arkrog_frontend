@@ -3,12 +3,20 @@
  */
 import { ANCHOR_LABELS } from "./vocab";
 import type { MapShorthand } from "../mapData";
-import type { CorrectedNode, GridNode, MatchCandidate, ScoreResult } from "./types";
+import type {
+  CorrectedNode,
+  GridNode,
+  MatchCandidate,
+  ScoreResult,
+} from "./types";
 
 /** 候选地图上真实存在的格子（由 edges 的端点构成） */
 function cellSetOf(candidate: MapShorthand): Set<string> {
   return new Set(
-    candidate.edges.flatMap(([r1, c1, r2, c2]) => [`${r1},${c1}`, `${r2},${c2}`]),
+    candidate.edges.flatMap(([r1, c1, r2, c2]) => [
+      `${r1},${c1}`,
+      `${r2},${c2}`,
+    ]),
   );
 }
 
@@ -39,7 +47,8 @@ export function scoreOffset(
     const anchorType = n.label ? ANCHOR_LABELS[n.label] : undefined;
     if (anchorType === "end") {
       anchorTotal += 1;
-      if ((candidate.ends ?? []).some(([r, c]) => r === ar && c === ac)) anchorScore += 1;
+      if ((candidate.ends ?? []).some(([r, c]) => r === ar && c === ac))
+        anchorScore += 1;
     } else if (anchorType === "battleEnd") {
       anchorTotal += 1;
       if (candidate.battleEnd?.[0] === ar && candidate.battleEnd?.[1] === ac) {
@@ -52,7 +61,9 @@ export function scoreOffset(
   }
 
   const edgeSet = new Set(
-    candidate.edges.map(([r1, c1, r2, c2]) => edgeKey(`${r1},${c1}`, `${r2},${c2}`)),
+    candidate.edges.map(([r1, c1, r2, c2]) =>
+      edgeKey(`${r1},${c1}`, `${r2},${c2}`),
+    ),
   );
   let edgeHits = 0;
   let edgeTotal = 0;
@@ -60,7 +71,8 @@ export function scoreOffset(
     for (let j = i + 1; j < nodes.length; j++) {
       const dRow = Math.abs(nodes[i].row - nodes[j].row);
       const dCol = Math.abs(nodes[i].col - nodes[j].col);
-      const isGridAdjacent = (dRow === 1 && dCol === 0) || (dRow === 0 && dCol === 1);
+      const isGridAdjacent =
+        (dRow === 1 && dCol === 0) || (dRow === 0 && dCol === 1);
       if (!isGridAdjacent) continue;
       edgeTotal += 1;
       const key = edgeKey(
@@ -71,7 +83,15 @@ export function scoreOffset(
     }
   }
 
-  return { anchorScore, anchorTotal, cellHits, cellTotal, edgeHits, edgeTotal, outOfBounds };
+  return {
+    anchorScore,
+    anchorTotal,
+    cellHits,
+    cellTotal,
+    edgeHits,
+    edgeTotal,
+    outOfBounds,
+  };
 }
 
 /**
@@ -82,7 +102,8 @@ export function scoreOffset(
  * anchorTotal 会同步减少，导致「只解释对一半锚点」的候选反而拿到 100% 命中率。
  */
 export function rank(r: ScoreResult, totalDetectedAnchors: number): number {
-  const anchorRate = totalDetectedAnchors > 0 ? r.anchorScore / totalDetectedAnchors : 0;
+  const anchorRate =
+    totalDetectedAnchors > 0 ? r.anchorScore / totalDetectedAnchors : 0;
   const edgeRate = r.edgeTotal > 0 ? r.edgeHits / r.edgeTotal : 1;
   const cellRate = r.cellTotal > 0 ? r.cellHits / r.cellTotal : 1;
   return (
@@ -127,8 +148,15 @@ export function correctNodes(
         }
       }
     }
-    if (best) return { row: best.row, col: best.col, label: n.label, corrected: true };
-    return { row: ar, col: ac, label: n.label, corrected: false, unresolved: true };
+    if (best)
+      return { row: best.row, col: best.col, label: n.label, corrected: true };
+    return {
+      row: ar,
+      col: ac,
+      label: n.label,
+      corrected: false,
+      unresolved: true,
+    };
   });
 }
 
@@ -150,7 +178,8 @@ export function matchCandidates(
           : candidate.battleEnd
             ? [{ r: candidate.battleEnd[0], c: candidate.battleEnd[1] }]
             : [];
-      for (const ca of candAnchors) offsets.add(`${ca.r - a.row},${ca.c - a.col}`);
+      for (const ca of candAnchors)
+        offsets.add(`${ca.r - a.row},${ca.c - a.col}`);
     }
     // 一个锚点都没有时没法反推偏移，退化成穷举全部合法平移量，纯靠连线/格子命中打分
     if (offsets.size === 0) {
@@ -170,10 +199,11 @@ export function matchCandidates(
     }
   }
 
-  const totalDetectedAnchors = new Set(
-    anchors.map((n) => `${n.row},${n.col}`),
-  ).size;
-  results.sort((a, b) => rank(b, totalDetectedAnchors) - rank(a, totalDetectedAnchors));
+  const totalDetectedAnchors = new Set(anchors.map((n) => `${n.row},${n.col}`))
+    .size;
+  results.sort(
+    (a, b) => rank(b, totalDetectedAnchors) - rank(a, totalDetectedAnchors),
+  );
   return { results, totalDetectedAnchors };
 }
 

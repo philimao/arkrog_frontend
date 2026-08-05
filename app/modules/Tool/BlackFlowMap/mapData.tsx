@@ -208,9 +208,7 @@ export const nodeOptions: nodeOption[] = [
   {
     id: "story",
     name: "命运所指",
-    steps: [
-      { zone: "zone_5", maxAllowed: 3 },
-    ],
+    steps: [{ zone: "zone_5", maxAllowed: 3 }],
     type: "other",
   },
   {
@@ -555,7 +553,7 @@ export const initialMaps: MapShorthand[] = [
       [2, 1, 3, 1],
       [1, 2, 2, 2],
       [2, 2, 3, 2],
-      [0, 2, 1, 2]
+      [0, 2, 1, 2],
     ],
     knownBattles: [[0, 3]],
     notes:
@@ -784,7 +782,7 @@ export const initialMaps: MapShorthand[] = [
       [1, 6, 2, 6],
       [3, 4, 4, 4],
       [1, 2, 2, 2],
-      [2, 6, 3, 6]
+      [2, 6, 3, 6],
     ],
   },
   {
@@ -907,7 +905,7 @@ export const initialMaps: MapShorthand[] = [
       [2, 3, 3, 3],
       [2, 6, 3, 6],
       [3, 2, 4, 2],
-      [3, 0, 4, 0]
+      [3, 0, 4, 0],
     ],
     notes: "该基底下步长集中，容易正常生成，极端情况少见",
   },
@@ -994,7 +992,7 @@ export const initialMaps: MapShorthand[] = [
       [3, 6, 4, 6],
       [2, 5, 2, 6],
       [3, 5, 3, 6],
-      [1, 3, 2, 3]
+      [1, 3, 2, 3],
     ],
     notes: "该基底下步长集中，容易正常生成，极端情况少见",
   },
@@ -1128,7 +1126,7 @@ export const initialMaps: MapShorthand[] = [
       [2, 5, 2, 6],
       [2, 6, 3, 6],
       [0, 4, 1, 4],
-      [0, 3, 1, 3]
+      [0, 3, 1, 3],
     ],
   },
   {
@@ -1171,7 +1169,7 @@ export const initialMaps: MapShorthand[] = [
       [3, 0, 4, 0],
       [2, 4, 3, 4],
       [2, 4, 2, 5],
-      [3, 3, 4, 3]
+      [3, 3, 4, 3],
     ],
   },
   {
@@ -1785,7 +1783,7 @@ export const initialMaps: MapShorthand[] = [
       [3, 9, 4, 9],
       [3, 5, 4, 5],
       [4, 6, 4, 7],
-      [1, 5, 2, 5]
+      [1, 5, 2, 5],
     ],
   },
   {

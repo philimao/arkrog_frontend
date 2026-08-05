@@ -27,8 +27,9 @@ function matchByName(items: OcrItem[], zones: ZoneData[]): string | null {
     if (!hit) continue;
     // fuzzySubstringMatch 只回命中的词，这里再算一次距离用于挑全局最优
     const dist = Math.min(
-      ...Array.from({ length: Math.max(1, item.t.length - hit.length + 1) }, (_, i) =>
-        editDistance(item.t.slice(i, i + hit.length), hit),
+      ...Array.from(
+        { length: Math.max(1, item.t.length - hit.length + 1) },
+        (_, i) => editDistance(item.t.slice(i, i + hit.length), hit),
       ),
     );
     if (dist < bestDist) {

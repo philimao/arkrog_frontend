@@ -88,7 +88,11 @@ export function getNodeDistanceMap(state: GridState, start: Coord | null) {
     const currentKey = nodeId(current.row, current.col);
     const currentDistance = distances.get(currentKey)!;
 
-    for (const neighbor of getConnectedNeighbors(state, current.row, current.col)) {
+    for (const neighbor of getConnectedNeighbors(
+      state,
+      current.row,
+      current.col,
+    )) {
       const neighborKey = nodeId(neighbor.row, neighbor.col);
       if (distances.has(neighborKey)) continue;
       distances.set(neighborKey, currentDistance + 1);
@@ -119,7 +123,8 @@ export function getOptionsForNodeDistance({
   if (distance === undefined) return [];
 
   return options.filter((option) => {
-    if (["未知的凶戾", "未知的诡秘", "命运所指"].includes(option.name)) return true;
+    if (["未知的凶戾", "未知的诡秘", "命运所指"].includes(option.name))
+      return true;
     const optionMeta = nodeOptions.find((entry) => entry.id === option.id);
     const step = optionMeta?.steps.find((entry) => entry.zone === zone);
     return (

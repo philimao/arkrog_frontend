@@ -10,7 +10,12 @@ import { detectZone } from "./detectZone";
 import { matchVocab, fuzzySubstringMatch, ANCHOR_LABELS } from "./vocab";
 import { fitAxis, snapToAxis } from "./grid";
 import { detectBlankNodes } from "./blankNodes";
-import { matchCandidates, correctNodes, computeMarginRatio, rank } from "./matchMap";
+import {
+  matchCandidates,
+  correctNodes,
+  computeMarginRatio,
+  rank,
+} from "./matchMap";
 import { initialMaps } from "../mapData";
 import type { ZoneData } from "~/types/gameData";
 import type {
@@ -82,8 +87,10 @@ export function confidenceOf(
 ): Confidence {
   if (!hasAnchor) return { text: "无法确认（未检测到锚点）", tone: "none" };
   if (!anchorFull || marginRatio === null) return { text: "低", tone: "low" };
-  if (outOfBounds === 0 && marginRatio >= 0.02) return { text: "高", tone: "high" };
-  if (outOfBounds <= 1 && marginRatio >= 0.005) return { text: "中", tone: "medium" };
+  if (outOfBounds === 0 && marginRatio >= 0.02)
+    return { text: "高", tone: "high" };
+  if (outOfBounds <= 1 && marginRatio >= 0.005)
+    return { text: "中", tone: "medium" };
   return { text: "低", tone: "low" };
 }
 
@@ -131,7 +138,10 @@ export async function recognizeMap(
   const labels = toNodeLabels(items);
   if (!labels.length) throw new NoNodeDetectedError();
 
-  const medianCharWidth = median(labels.map((l) => l.charWidth), 20);
+  const medianCharWidth = median(
+    labels.map((l) => l.charWidth),
+    20,
+  );
 
   // 空白过路点：限定在「文字节点包围盒 + 余量」内检测，天然排除顶栏/底栏 UI 图标。
   // X/Y 余量必须分开算 —— 很宽的地图 spreadX 远大于 spreadY，用同一个余量会让
@@ -155,7 +165,9 @@ export async function recognizeMap(
   // 节点图标常带小装饰标记，跟真正的空白过路点长得像但其实属于同一个节点
   const minDistFromLabel = medianCharWidth * 3;
   const blanks = rawBlobs.filter((b) =>
-    labels.every((n) => Math.hypot(n.cx - b.cx, n.cy - b.cy) > minDistFromLabel),
+    labels.every(
+      (n) => Math.hypot(n.cx - b.cx, n.cy - b.cy) > minDistFromLabel,
+    ),
   );
 
   const candidates = initialMaps.filter((m) => m.zone === zone);
@@ -178,7 +190,10 @@ export async function recognizeMap(
     })),
   ];
 
-  const { results, totalDetectedAnchors } = matchCandidates(gridNodes, candidates);
+  const { results, totalDetectedAnchors } = matchCandidates(
+    gridNodes,
+    candidates,
+  );
   const best = results[0];
   if (!best) throw new NoNodeDetectedError();
 

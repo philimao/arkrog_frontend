@@ -101,18 +101,23 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   // 隐藏自动填入节点时，把它们暂存在这——跟 markedNodes 分开放，这样"恢复"
   // 才知道要填回哪些格子、填回什么选项。key 存在于这里就代表"当前处于隐藏
   // 状态、还没被恢复也没被用户碰过"。
-  const [hiddenAutoFilled, setHiddenAutoFilled] = useState<Record<string, string>>({});
+  const [hiddenAutoFilled, setHiddenAutoFilled] = useState<
+    Record<string, string>
+  >({});
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showZoneNotes, setShowZoneNotes] = useState(false);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
-  const [showScreenshotRecognizer, setShowScreenshotRecognizer] = useState(false);
+  const [showScreenshotRecognizer, setShowScreenshotRecognizer] =
+    useState(false);
 
   // 截图识别功能还在打磨阶段，默认对所有用户隐藏；开发/内部想临时体验时，
   // 在浏览器控制台敲 enableMapRecognizer() 即可（会记住选择，刷新也生效），
   // disableMapRecognizer() 关掉。不接普通用户能看到的入口。
   useEffect(() => {
-    setShowScreenshotRecognizer(window.localStorage.getItem(SHOW_RECOGNIZER_KEY) === "1");
+    setShowScreenshotRecognizer(
+      window.localStorage.getItem(SHOW_RECOGNIZER_KEY) === "1",
+    );
     window.enableMapRecognizer = () => {
       window.localStorage.setItem(SHOW_RECOGNIZER_KEY, "1");
       window.location.reload();
@@ -334,7 +339,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           </div>
         ))}
       </div>
- 
+
       {/* 识图工具 */}
       <div className="mb-4">
         {showScreenshotRecognizer && (
@@ -563,13 +568,16 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               />
 
               {/* 隐藏/显示识别节点 */}
-              {(autoFilledKeys.size > 0 || Object.keys(hiddenAutoFilled).length > 0) && (
+              {(autoFilledKeys.size > 0 ||
+                Object.keys(hiddenAutoFilled).length > 0) && (
                 <button
                   type="button"
                   className="text-sm px-3 py-1 border border-mid-gray text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
                   onClick={toggleAutoFilledVisibility}
                 >
-                  {autoFilledKeys.size > 0 ? "隐藏自动识别的节点" : "显示自动识别的节点"}
+                  {autoFilledKeys.size > 0
+                    ? "隐藏自动识别的节点"
+                    : "显示自动识别的节点"}
                 </button>
               )}
 

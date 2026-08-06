@@ -606,8 +606,8 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   )}
                   <span>
                     {autoFilledKeys.size > 0
-                      ? "隐藏识别节点"
-                      : "显示识别节点"}
+                      ? "显示识别节点"
+                      : "隐藏识别节点"}
                   </span>
                 </button>
               )}

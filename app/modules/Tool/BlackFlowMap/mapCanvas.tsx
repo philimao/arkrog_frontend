@@ -575,7 +575,7 @@ export function NodeMapCanvas({
                 <div className="flex flex-col">
                   <span>{opt.name}</span>
                   {disabledNote ? (
-                    <span className="text-xs text-white/60">
+                    <span className="text-xs text-white/60 pr-1 pb-0.5">
                       {disabledNote}
                     </span>
                   ) : null}

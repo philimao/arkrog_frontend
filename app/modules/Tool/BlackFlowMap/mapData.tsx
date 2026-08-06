@@ -179,7 +179,7 @@ export const nodeOptions: nodeOption[] = [
     name: "误入奇境",
     steps: [
       { zone: "zone_3", min: 5, max: 8, maxAllowed: 1 },
-      { zone: "zone_4", min: 5, max: 8, maxAllowed: 1 },
+      { zone: "zone_4", min: 5, max: 9, maxAllowed: 1 },
       { zone: "zone_5", min: 3, max: 8, maxAllowed: 1 },
     ],
     type: "other",

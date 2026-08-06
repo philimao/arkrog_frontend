@@ -262,7 +262,7 @@ export function ScreenshotRecognizer({
                 <img
                   src={previewUrl}
                   alt="预览"
-                  className="max-h-52 lg:max-h-[480px] w-full rounded object-contain"
+                  className="max-h-52 lg:max-h-[280px] w-full rounded object-contain"
                 />
               ) : (
                 <div className="text-sm text-light-gray">

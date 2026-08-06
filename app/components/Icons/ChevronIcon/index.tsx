@@ -21,7 +21,7 @@ function getTransform(dir: Direction) {
 }
 
 export const ChevronIcon: React.FC<ChevronProps> = ({ direction = 'up', ...rest }) => (
-  <Svg style={{ transform: getTransform(direction) }} viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" {...rest}>
+  <Svg style={{ transform: getTransform(direction), transition: 'transform 0.2s ease' }} viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" {...rest}>
     <path d="M106.666667 659.2L172.8 725.333333 512 386.133333 851.2 725.333333l66.133333-66.133333L512 256z"></path>
   </Svg>
 );

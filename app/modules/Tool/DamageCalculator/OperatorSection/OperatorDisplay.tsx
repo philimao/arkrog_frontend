@@ -440,16 +440,6 @@ const StyledSkillDisplay = styled.div`
   }
 `;
 
-const StyledChevron = styled.svg<{ $rotate: boolean }>`
-  flex-shrink: 0;
-  margin-left: auto;
-  margin-right: 0.5rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  transform: rotate(${({ $rotate }) => ($rotate ? "180deg" : "0deg")});
-  transition: transform 0.3s ease-in-out;
-`;
-
 const ButtonWrapper = ({ children, onPress }: { children: React.ReactNode; onPress: () => void }) => {
   return (
     <Button
@@ -493,10 +483,7 @@ function SkillDisplay({ skill }: { skill: SkillLevelData }) {
             </div>
           </div>
         </div>
-        <StyledChevron $rotate={isOpen}>
-          <ChevronIcon />
-        </StyledChevron>
-        
+        <ChevronIcon width={16} height={16} className="flex-shrink-0 ml-auto mr-4" direction={isOpen ? "down" : "up"} />
       </ButtonWrapper>
       {isOpen && (
         <div className="skill-description">{parseBlackboardDescription(skill.description!, skill.blackboard)}</div>
@@ -566,9 +553,7 @@ function UniEquipDisplay({
             </div>
           </div>
         </div>
-        <StyledChevron $rotate={isOpen}>
-          <ChevronIcon />
-        </StyledChevron>
+        <ChevronIcon width={16} height={16} className="flex-shrink-0 ml-auto mr-4" direction={isOpen ? "down" : "up"} />
       </ButtonWrapper>
       {isOpen && (
         <div className="uni-equip-description">

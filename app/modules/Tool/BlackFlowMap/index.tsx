@@ -391,7 +391,11 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               />
             </div>
           </button>
-          {showBaseMaps && (
+          <div
+            className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+            style={{ gridTemplateRows: showBaseMaps ? "1fr" : "0fr" }}
+          >
+            <div className="overflow-hidden">
             <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 grow">
               {initialMaps
                 .filter((m) => m.zone === currentZoneId)
@@ -457,7 +461,8 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   );
                 })}
             </div>
-          )}
+            </div>
+          </div>
         </div>
 
         {/* 大地图 */}

@@ -502,7 +502,7 @@ export function NodeMapCanvas({
       </svg>
       {menuOpen && menuPos && menuNode ? (
         <div
-          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[180px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black/95 p-2 text-white"
+          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[180px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black-gray p-2 text-white"
           style={{
             left: menuPos.left,
             top: menuPos.top,

@@ -13,7 +13,7 @@ import {
 } from "./mapData";
 import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
-import { ChevronIcon } from "~/components/Icons";
+import { ChevronIcon, EyeClosedIcon, EyeOpenIcon } from "~/components/Icons";
 import type { Route } from "./+types/index";
 
 // 截图识别功能默认隐藏，通过这个 localStorage key 记住是否已手动开启。
@@ -108,6 +108,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showZoneNotes, setShowZoneNotes] = useState(false);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
+  const [showNodeOptions, setShowNodeOptions] = useState(true);
   const [showScreenshotRecognizer, setShowScreenshotRecognizer] =
     useState(false);
 
@@ -468,15 +469,38 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           }}
         >
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* 节点选择 */}
-            <div className="bg-black-gray-70 rounded-md p-2 lg:w-[324px] lg:min-w-[324px]">
-              <div className="grid w-full gap-2 grid-cols-2 sm:grid-cols-4 lg:grid-cols-2">
-                {renderNodeOptions()}
+            {/* 预览节点 */}
+            {showNodeOptions && (
+              <div className="relative bg-black-gray-70 rounded-md p-2 lg:w-[324px] lg:min-w-[324px]">
+                <button
+                  type="button"
+                  className="absolute z-10 top-1 right-1 w-8 h-8 shrink-0 flex items-center justify-center text-light-gray"
+                  onClick={() => setShowNodeOptions(false)}
+                  aria-label="收起预览节点"
+                >
+                  <ChevronIcon direction="left" className="hidden lg:block w-4 h-4" />
+                  <ChevronIcon direction="up" className="lg:hidden w-4 h-4" />
+                </button>
+                <div className="mb-2 pr-10">预览节点</div>
+                <div className="grid w-full gap-2 grid-cols-2 sm:grid-cols-4 lg:grid-cols-2">
+                  {renderNodeOptions()}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 地图 */}
             <div className="flex flex-col w-full items-center relative gap-4">
+              {!showNodeOptions && (
+                <button
+                  type="button"
+                  className="absolute z-10 top-1 right-2 lg:right-auto lg:left-1 w-8 h-8 shrink-0 rounded-md bg-black-gray-70 border border-mid-gray flex items-center justify-center"
+                  onClick={() => setShowNodeOptions(true)}
+                  aria-label="展开预览节点"
+                >
+                  <ChevronIcon direction="right" className="hidden lg:block w-4 h-4" />
+                  <ChevronIcon direction="down" className="lg:hidden w-4 h-4" />
+                </button>
+              )}
               <div className="relative">
                 {/* 当前区域笔记 */}
                 <button
@@ -572,12 +596,19 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 Object.keys(hiddenAutoFilled).length > 0) && (
                 <button
                   type="button"
-                  className="text-sm px-3 py-1 border border-mid-gray text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
+                  className="self-start flex items-center gap-1 text-sm px-3 py-1 text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
                   onClick={toggleAutoFilledVisibility}
                 >
-                  {autoFilledKeys.size > 0
-                    ? "隐藏自动识别的节点"
-                    : "显示自动识别的节点"}
+                  {autoFilledKeys.size > 0 ? (
+                    <EyeOpenIcon className="w-4 h-4" />
+                  ) : (
+                    <EyeClosedIcon className="w-4 h-4" />
+                  )}
+                  <span>
+                    {autoFilledKeys.size > 0
+                      ? "隐藏识别节点"
+                      : "显示识别节点"}
+                  </span>
                 </button>
               )}
 

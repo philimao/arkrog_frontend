@@ -223,6 +223,12 @@ export const nodeOptions: nodeOption[] = [
     steps: [],
     type: "other",
   },
+  {
+    id: "empty",
+    name: "林间空地",
+    steps: [],
+    type: "other",
+  },
 ];
 
 interface nodeTypeLimit {

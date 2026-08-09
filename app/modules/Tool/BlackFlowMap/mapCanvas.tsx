@@ -54,10 +54,13 @@ interface NodeMapCanvasProps {
   highlightRange?: { min: number; max: number } | null;
   highlightOptionId?: string | null;
   markedNodes?: Record<string, string>;
+  detectedNodes?: Record<string, string>;
+  hiddenKeys?: Set<string>;
   selectedNodeKey?: string | null;
   options?: { id: string; name: string }[];
   highlightOptionType?: string | null;
   onMarkNode?: (row: number, col: number, optionId: string) => void;
+  onRevertNode?: (row: number, col: number) => void;
   menuOpen?: boolean;
   setMenuOpen?: (open: boolean) => void;
   knownBattles?: Coord[] | null;
@@ -79,8 +82,11 @@ export function NodeMapCanvas({
   highlightOptionId = null,
   highlightOptionType = null,
   markedNodes = {},
+  detectedNodes = {},
+  hiddenKeys,
   options = [],
   onMarkNode,
+  onRevertNode,
   menuOpen = false,
   setMenuOpen,
   knownBattles = null,
@@ -134,6 +140,37 @@ export function NodeMapCanvas({
 
     return { optionCounts, typeCounts };
   }, [markedNodes, optionMap, knownBattles?.length, knownShops?.length]);
+
+  // 已达标记上限、点了也没用的选项排到菜单最下面，可选的留在前面方便点。
+  // 这格地图上正显示成什么，就不再把那个选项摆出来选——以显示为准：藏起来的
+  // 自动识别、"林间空地"看起来都跟没标一样，这两种情况不排除任何选项
+  const sortedMenuOptions = useMemo(() => {
+    const currentKey = menuNode ? nodeId(menuNode.row, menuNode.col) : null;
+    const currentMark = currentKey ? markedNodes[currentKey] : undefined;
+    const currentDisplayedOptionId =
+      currentMark && currentMark !== "empty" && !hiddenKeys?.has(currentKey!)
+        ? currentMark
+        : undefined;
+    const isDisabled = (opt: { id: string }) => {
+      const option = optionMap.get(opt.id);
+      const perOptionLimit = option
+        ? option.steps.find((step) => step.zone === zone)?.maxAllowed
+        : undefined;
+      const optionCount = optionCounts.get(opt.id) || 0;
+      return perOptionLimit !== undefined && optionCount >= perOptionLimit;
+    };
+    return visibleMenuOptions
+      .filter((opt) => opt.id !== currentDisplayedOptionId)
+      .sort((a, b) => Number(isDisabled(a)) - Number(isDisabled(b)));
+  }, [
+    visibleMenuOptions,
+    optionMap,
+    optionCounts,
+    zone,
+    menuNode,
+    markedNodes,
+    hiddenKeys,
+  ]);
 
   const currentTypeLimit = useCallback(
     (type: string) => {
@@ -261,7 +298,13 @@ export function NodeMapCanvas({
   for (let r = 0; r < state.rows; r++) {
     for (let c = 0; c < state.cols; c++) {
       const nodeKey = nodeId(r, c);
-      const isMarked = Boolean(markedNodes[nodeKey]);
+      // "empty"（林间空地）就是要长得跟真的没标记一样，只是个显式选择；
+      // hiddenKeys 里的格子同理——纯视觉降级，底下的 markedNodes 数据没变，
+      // 所有计数、上限判断都还是照 markedNodes 走，不受这两种情况影响
+      const isMarked =
+        Boolean(markedNodes[nodeKey]) &&
+        markedNodes[nodeKey] !== "empty" &&
+        !hiddenKeys?.has(nodeKey);
       const isHighlighted = highlightedNodeIds.has(nodeKey);
       const isStart = start && start.row === r && start.col === c;
       const isEnd = ends?.some((end) => end.row === r && end.col === c);
@@ -502,7 +545,7 @@ export function NodeMapCanvas({
       </svg>
       {menuOpen && menuPos && menuNode ? (
         <div
-          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[180px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black-gray p-2 text-white"
+          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[160px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black-gray p-2 text-white"
           style={{
             left: menuPos.left,
             top: menuPos.top,
@@ -516,27 +559,57 @@ export function NodeMapCanvas({
           {(() => {
             const currentKey = nodeId(menuNode.row, menuNode.col);
             const currentMark = markedNodes[currentKey];
+            const detectedMark = detectedNodes[currentKey];
+            // 只有"这格自动识别过，且用户手改成了别的"才给"移除标记"——它现在
+            // 撤销的是用户的手改，不是把格子清空
+            const canRevert =
+              detectedMark !== undefined &&
+              currentMark !== undefined &&
+              currentMark !== detectedMark;
+            // "林间空地"代替了旧版"移除标记"清空节点那一半的作用：只要这格有
+            // 标记（自动或手动）就能选，选了它本身也算一次手动标记
+            const showBlank = Boolean(currentMark) && currentMark !== "empty";
             return (
-              currentMark && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen && setMenuOpen(false);
-                    if (typeof onMarkNode === "function") {
-                      onMarkNode(menuNode.row, menuNode.col, "");
-                    }
-                  }}
-                  className="flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
-                >
-                  <div>
-                    <CloseIcon width={24} height={24} />
-                  </div>
-                  <span>移除标记</span>
-                </button>
-              )
+              <>
+                {canRevert && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen && setMenuOpen(false);
+                      if (typeof onRevertNode === "function") {
+                        onRevertNode(menuNode.row, menuNode.col);
+                      }
+                    }}
+                    className="flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
+                  >
+                    <div>
+                      <CloseIcon width={24} height={24} />
+                    </div>
+                    <span>移除标记</span>
+                  </button>
+                )}
+                {showBlank && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen && setMenuOpen(false);
+                      if (typeof onMarkNode === "function") {
+                        onMarkNode(menuNode.row, menuNode.col, "empty");
+                      }
+                    }}
+                    className="gap-2 flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
+                  >
+                    <img
+                      src="/images/map/empty.webp"
+                      className="w-4 h-4 aspect-square"
+                    />
+                    <span>林间空地</span>
+                  </button>
+                )}
+              </>
             );
           })()}
-          {visibleMenuOptions.map((opt) => {
+          {sortedMenuOptions.map((opt) => {
             const option = optionMap.get(opt.id);
             const perOptionLimit = option
               ? option.steps.find((step) => step.zone === zone)?.maxAllowed
@@ -549,7 +622,7 @@ export function NodeMapCanvas({
             // const isTypeLimitReached = typeCount >= typeLimit;
             const disabled = isOptionLimitReached; // || isTypeLimitReached;
             const disabledNote = isOptionLimitReached
-              ? `已达${opt.name}标记上限`
+              ? `已达标记上限`
               : // : isTypeLimitReached
                 //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
                 "";

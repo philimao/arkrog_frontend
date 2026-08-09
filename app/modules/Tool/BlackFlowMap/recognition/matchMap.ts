@@ -117,6 +117,18 @@ export function rank(r: ScoreResult, totalDetectedAnchors: number): number {
 }
 
 /**
+ * 候选自身的匹配质量，供 UI 展示为百分比（如 92%）。
+ *
+ * 用格子命中率与连线命中率的均值，而非 rank() 的排序分 —— 排序分掺了越界惩罚等
+ * 只在候选间比较时才有意义的项，数值本身不能直接读作"这张图有多像"。
+ */
+export function matchPercentOf(r: ScoreResult): number {
+  const cellRate = r.cellTotal > 0 ? r.cellHits / r.cellTotal : 1;
+  const edgeRate = r.edgeTotal > 0 ? r.edgeHits / r.edgeTotal : 1;
+  return Math.round(((cellRate + edgeRate) / 2) * 100);
+}
+
+/**
  * 已确定是哪张候选地图后，候选的 edges 就是真值：检测节点加偏移后若不落在真实
  * 存在的格子上，大概率是网格聚类的局部误差（不是选错图，是这个点自己偏了一格），
  * 吸附到附近最近的合法格子。

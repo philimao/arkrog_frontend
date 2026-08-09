@@ -15,6 +15,7 @@ import {
   correctNodes,
   computeMarginRatio,
   rank,
+  matchPercentOf,
 } from "./matchMap";
 import { initialMaps } from "../mapData";
 import type { ZoneData } from "~/types/gameData";
@@ -216,6 +217,7 @@ export async function recognizeMap(
       offset: r.offset,
       score,
       gapToBest: bestScore > 0 ? (bestScore - score) / bestScore : 0,
+      matchPercent: matchPercentOf(r),
       // 每个候选按自己的 offset 修正 —— 选中它时要填入的是这一套节点
       correctedNodes: correctNodes(gridNodes, map, r.offset),
     });

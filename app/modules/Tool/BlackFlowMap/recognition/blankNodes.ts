@@ -62,7 +62,9 @@ export function detectBlankNodes(
     const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
     const saturation = Math.max(r, g, b) - Math.min(r, g, b);
     mask[i] =
-      luminance > BRIGHTNESS_THRESHOLD && saturation < SATURATION_THRESHOLD ? 1 : 0;
+      luminance > BRIGHTNESS_THRESHOLD && saturation < SATURATION_THRESHOLD
+        ? 1
+        : 0;
   }
 
   const visited = new Uint8Array(roiW * roiH);

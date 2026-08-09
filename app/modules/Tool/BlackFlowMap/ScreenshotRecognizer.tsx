@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckIcon, ChevronIcon } from "~/components/Icons";
-import { NodeMapCanvas } from "./mapCanvas";
-import { initialMaps, toGridState, type MapShorthand } from "./mapData";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import { Modal, ModalBody, ModalContent } from "@heroui/react";
+import { ImageUploadIcon } from "~/components/Icons";
 import {
   recognizeMap,
   toMarkableNodes,
@@ -14,27 +20,32 @@ import type { ConfidenceTone, RecognizeResult } from "./recognition/types";
 import type { ZoneData } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
 
+/** 焦点在输入框/可编辑元素里时不要抢它的粘贴，用户可能是在粘贴文字 */
+function shouldIgnorePasteTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName.toLowerCase();
+  if (tag === "input" || tag === "textarea") return true;
+  return target.isContentEditable;
+}
+
 const toneClass: Record<ConfidenceTone, string> = {
-  high: "text-green-400 border-green-400/40 bg-green-400/10",
-  medium: "text-yellow-400 border-yellow-400/40 bg-yellow-400/10",
-  low: "text-red-400 border-red-400/40 bg-red-400/10",
-  none: "text-gray-400 border-gray-400/40 bg-gray-400/10",
+  high: "text-[#26CA1D]",
+  medium: "text-[#ee981f]",
+  low: "text-ak-red",
+  none: "text-light-mid-gray",
 };
 
-// NodeMapCanvas 是按 cellSize（像素/格）算出固定宽度上限的 SVG，不是纯靠容器
-// 撑开的响应式布局——同一个 cellSize 在大屏并排、小屏堆叠这两种场景下没法
-// 都合适：并排时想让它长得跟截图差不多高，堆叠时又想让它别占太多纵向空间。
-// 一个数值满足不了两头，所以这里跟着断点切换 cellSize 本身。
-function useIsLgScreen() {
-  const [isLg, setIsLg] = useState(false);
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 1024px)");
-    setIsLg(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsLg(e.matches);
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-  return isLg;
+/** 候选自身匹配度（百分比）的高中低分档，用于给数值上色 —— 与整体可信度档位无关 */
+export function percentTone(percent: number): ConfidenceTone {
+  if (percent >= 85) return "high";
+  if (percent >= 70) return "medium";
+  return "low";
+}
+
+/** 供外层（基底缩略图网格）标记识别候选用的精简信息 */
+export interface RecognitionCandidateInfo {
+  mapId: string;
+  matchPercent: number;
 }
 
 interface ScreenshotRecognizerProps {
@@ -43,41 +54,30 @@ interface ScreenshotRecognizerProps {
   /** 层数识别失败时的兜底：用户当前手选的层 */
   currentZoneId: string;
   onMatched: (zone: string, mapId: string, nodes: MarkableNode[]) => void;
-  /** 用户选了"没有正确地图，取消"：之前挑候选时自动填过的节点也要一并清掉 */
-  onCancel: () => void;
+  /**
+   * 用户选了"没有正确地图，取消"：之前自动填过的节点都要清掉。onNodesDetected
+   * 给每个候选各自都预填过一份，不只是当前展示的那个，所以把这次识别涉及到的
+   * 全部候选 mapId 都带出去，外层才能对着每一个都清干净
+   */
+  onCancel: (candidateMapIds: string[]) => void;
+  /**
+   * 本次识别结果（区域 + 候选列表，按分数降序）变化时通知外层，供"区域选择"和
+   * 基底缩略图网格画标记；null 表示当前没有识别结果
+   */
+  onCandidatesChange: (
+    result: { zone: string; candidates: RecognitionCandidateInfo[] } | null,
+  ) => void;
+  /**
+   * 每个候选各自识别出的节点，在结果一出来时就为所有候选（不只是当前展示的
+   * 那个）各自预填一份——这样有歧义、用户还没点候选列表时，只要手动切到某个
+   * 候选对应的基底，也能直接看到识别结果，不用非得先点这边的候选按钮
+   */
+  onNodesDetected: (mapId: string, nodes: MarkableNode[]) => void;
 }
 
-function MapPreview({
-  map,
-  cellSize = 22,
-}: {
-  map: MapShorthand;
-  cellSize?: number;
-}) {
-  return (
-    <NodeMapCanvas
-      state={toGridState(map)}
-      onToggle={() => {}}
-      start={map.start ? { row: map.start[0], col: map.start[1] } : null}
-      ends={map.ends ? map.ends.map((e) => ({ row: e[0], col: e[1] })) : null}
-      battleEnd={
-        map.battleEnd ? { row: map.battleEnd[0], col: map.battleEnd[1] } : null
-      }
-      knownBattles={
-        map.knownBattles
-          ? map.knownBattles.map((b) => ({ row: b[0], col: b[1] }))
-          : null
-      }
-      knownShops={
-        map.knownShops
-          ? map.knownShops.map((s) => ({ row: s[0], col: s[1] }))
-          : null
-      }
-      cellSize={cellSize}
-      zone={map.zone}
-      readOnly
-    />
-  );
+/** 供外层在决定好"清除图片"到底要不要清（可能中间弹窗问用户）之后，回头真正清掉这边的预览状态 */
+export interface ScreenshotRecognizerHandle {
+  resetPreview: () => void;
 }
 
 /**
@@ -90,30 +90,58 @@ function MapPreview({
  * 全部推理在前端完成，后端只做 OCR 签名转发。本组件默认不渲染，由外层通过
  * localStorage 开关控制。
  */
-export function ScreenshotRecognizer({
-  zones,
-  currentZoneId,
-  onMatched,
-  onCancel,
-}: ScreenshotRecognizerProps) {
-  const isLgScreen = useIsLgScreen();
-  const [expanded, setExpanded] = useState(true);
+export const ScreenshotRecognizer = forwardRef<
+  ScreenshotRecognizerHandle,
+  ScreenshotRecognizerProps
+>(function ScreenshotRecognizer(
+  {
+    zones,
+    currentZoneId,
+    onMatched,
+    onCancel,
+    onCandidatesChange,
+    onNodesDetected,
+  },
+  ref,
+) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showSample, setShowSample] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RecognizeResult | null>(null);
-  /** 用户从候选里挑中的下标；null 表示还没挑过（此时展示的是第一名） */
-  const [pickedIndex, setPickedIndex] = useState<number | null>(null);
   /** 用户已确认选择，收起候选区 */
   const [confirmed, setConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 候选列表变了就通知外层，让基底缩略图网格画标记；result 置空（新一轮识别开始/取消）时一并清空。
+  // 只有 showCandidates 判定为"有歧义"时才把全部候选传出去（网格才会画 1/2 序号）——
+  // 高可信度/已确认时哪怕 topCandidates 底层仍留着 2 条，UI 上也只认第一名，网格也只该标那一个
+  useEffect(() => {
+    if (!result) {
+      onCandidatesChange(null);
+      return;
+    }
+    const ambiguous =
+      result.confidence.tone !== "high" &&
+      result.topCandidates.length > 1 &&
+      !confirmed;
+    const candidates = ambiguous
+      ? result.topCandidates
+      : result.topCandidates.slice(0, 1);
+    onCandidatesChange({
+      zone: result.zone,
+      candidates: candidates.map((c) => ({
+        mapId: c.mapId,
+        matchPercent: c.matchPercent,
+      })),
+    });
+  }, [result, confirmed, onCandidatesChange]);
 
   const runRecognition = useCallback(
     async (file: File) => {
       setIsLoading(true);
       setError(null);
       setResult(null);
-      setPickedIndex(null);
       setConfirmed(false);
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl((prev) => {
@@ -127,18 +155,20 @@ export function ScreenshotRecognizer({
         });
         setResult(data);
 
-        if (data.confidence.tone === "high") {
-          // 高可信度：直接切过去并把节点也填上
-          onMatched(
-            data.zone,
-            data.mapId,
-            toMarkableNodes(data.correctedNodes),
+        // 有歧义时，非第一名的候选先各自预填一份，用户不管是从下面的候选列表
+        // 点，还是直接去"基底"缩略图网格里手动切换，看到的都已经是识别结果。
+        // 第一名不在这里填——马上就要 onMatched 切过去，那边会先检查这个基底
+        // 是不是已经有用户自己填的节点，需要的话弹窗问"覆盖"还是"合并"，这里
+        // 抢先填了那个判断就没意义了
+        for (const candidate of data.topCandidates) {
+          if (candidate.mapId === data.mapId) continue;
+          onNodesDetected(
+            candidate.mapId,
+            toMarkableNodes(candidate.correctedNodes),
           );
-        } else {
-          // 中/低：先把地图切到第一名方便对照，但不替用户填节点 ——
-          // 等他从候选里明确选一个，再填那个候选对应的那套
-          onMatched(data.zone, data.mapId, []);
         }
+        // 切到第一名方便对照；节点交给 onMatched 决定怎么落
+        onMatched(data.zone, data.mapId, toMarkableNodes(data.correctedNodes));
       } catch (err) {
         if (
           err instanceof OcrRequestError ||
@@ -153,7 +183,7 @@ export function ScreenshotRecognizer({
         setIsLoading(false);
       }
     },
-    [zones, currentZoneId, onMatched],
+    [zones, currentZoneId, onMatched, onNodesDetected],
   );
 
   const pickCandidate = useCallback(
@@ -161,7 +191,6 @@ export function ScreenshotRecognizer({
       if (!result) return;
       const candidate = result.topCandidates[index];
       if (!candidate) return;
-      setPickedIndex(index);
       onMatched(
         result.zone,
         candidate.mapId,
@@ -171,17 +200,27 @@ export function ScreenshotRecognizer({
     [result, onMatched],
   );
 
-  // 候选里没有一个是对的：撤回这次识别的展示状态，让用户自己回去手动选基底。
-  // 地图之前为了方便对照已经被切过去了，用户接下来手动选基底本来就会覆盖掉，
-  // 无需额外撤销；但如果之前挑过某个候选，那个候选自动填的节点还留在地图上，
-  // 得靠 onCancel 让外层把这些自动填入的节点也清掉
-  const cancelRecognition = useCallback(() => {
+  // "清除图片"按下去：地图那边可能有冲突要弹窗问用户，所以这里不能立刻清自己
+  // 的预览状态——只是把候选 mapId 报给外层。外层决定"确实要清"了（可能没有
+  // 冲突直接清，可能是用户在弹窗里选完了）才会通过 ref 调 resetPreview 真正清掉；
+  // 用户如果在弹窗里选了"关闭"，这边的截图预览原样保留
+  const requestClear = useCallback(() => {
+    onCancel(result?.topCandidates.map((c) => c.mapId) ?? []);
+  }, [onCancel, result]);
+
+  // 真正回到最开始没上传过的状态，供外层通过 ref 调用
+  const resetPreview = useCallback(() => {
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
     setResult(null);
     setError(null);
-    setPickedIndex(null);
     setConfirmed(false);
-    onCancel();
-  }, [onCancel]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, []);
+
+  useImperativeHandle(ref, () => ({ resetPreview }), [resetPreview]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -194,14 +233,25 @@ export function ScreenshotRecognizer({
     if (file) void runRecognition(file);
   };
 
+  // 剪贴板里粘贴一张图就直接开始识别，不用先存文件再手动选。全局监听而不是绑在
+  // 上传框上——用户复制截图后未必会先点一下那个框，全局粘贴对用户来说更顺手
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      if (isLoading) return;
+      if (shouldIgnorePasteTarget(event.target)) return;
+      const items = Array.from(event.clipboardData?.items || []);
+      const imageItem = items.find((item) => item.type.startsWith("image/"));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      event.preventDefault();
+      void runRecognition(file);
+    };
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [isLoading, runRecognition]);
+
   const best = result?.best;
-  const appliedMapId =
-    result && pickedIndex !== null
-      ? result.topCandidates[pickedIndex]?.mapId
-      : result?.mapId;
-  const appliedMap = appliedMapId
-    ? initialMaps.find((m) => m.id === appliedMapId)
-    : undefined;
   const zoneIndex = result ? zones.findIndex((z) => z.id === result.zone) : -1;
   const zoneLabel =
     zoneIndex >= 0
@@ -212,214 +262,154 @@ export function ScreenshotRecognizer({
     result.confidence.tone !== "high" &&
     result.topCandidates.length > 1 &&
     !confirmed;
-  // 识别中/出错/出结果都占同一个"结果区"的位置，布局不会在这几个状态之间跳动——
-  // 识别中先占好位置，结果出来后原地替换成结果内容
-  const showSideBySide =
-    isLoading || !!error || (!!result && !!best && !isLoading);
 
   return (
-    <div className="mb-4 border border-mid-gray rounded-md bg-black-gray-70">
-      <button
-        type="button"
-        className="w-full flex items-center justify-between px-3 py-2 text-sm text-ak-blue"
-        onClick={() => setExpanded((prev) => !prev)}
+    <div className="flex flex-col lg:flex-row gap-8">
+      {/* 上传截图 */}
+      <div
+        className="w-full lg:w-2/3 flex-shrink-0"
+        onDrop={handleDrop}
+        onDragOver={(e) => e.preventDefault()}
       >
-        <div>
-          截图识别地图（实验性）
-          <span className="text-xs text-light-gray">
-            此功能仍在开发中，结果仅供参考
-          </span>
-        </div>
-        <div className="flex gap-1 items-center">
-          {expanded ? "收起" : "展开"}
-          <ChevronIcon direction={expanded ? "up" : "down"} />
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="px-3 pb-3 space-y-3">
-          <div
-            className={`flex flex-col gap-3 ${
-              showSideBySide ? "lg:flex-row lg:items-start" : ""
-            }`}
-          >
-            <div
-              className={`border-2 border-dashed border-mid-gray rounded-md p-4 text-center cursor-pointer hover:border-ak-blue transition-colors ${
-                showSideBySide ? "lg:w-[480px] lg:shrink-0" : "w-full"
-              }`}
-              onClick={() => fileInputRef.current?.click()}
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="预览"
-                  className="max-h-52 lg:max-h-[280px] w-full rounded object-contain"
-                />
-              ) : (
-                <div className="text-sm text-light-gray">
-                  点击选择地图截图，或拖拽到此处
-                </div>
-              )}
-            </div>
-
-            {showSideBySide && (
-              <div className="flex-1 min-w-0 flex flex-col gap-2">
-                {isLoading && (
-                  <div className="text-center text-light-gray py-2">
-                    识别中……
-                  </div>
-                )}
-
-                {error && (
-                  <div className="text-center text-sm text-red-400 py-2 border border-red-400/30 rounded bg-red-400/10">
-                    {error}
-                  </div>
-                )}
-
-                {result && best && !isLoading && (
-                  <>
-                    {result.lowDensity && (
-                      <div className="text-sm text-yellow-400 py-2 px-3 border border-yellow-400/30 rounded bg-yellow-400/10">
-                        截图信息不足，请截取完整地图后重试 —— 当前只识别到{" "}
-                        {result.stats.labels}{" "}
-                        个节点，覆盖率偏低，结果很可能不准。
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-3 flex-wrap">
-                      {/* <span className="bg-black-gray-70 px-1 text-sm text-white">{zoneLabel}</span> */}
-                      <span className="text-lg font-bold text-ak-blue">
-                        {zoneLabel} · {appliedMapId}
-                      </span>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded border ${toneClass[result.confidence.tone]}`}
-                      >
-                        可信度：{result.confidence.text}
-                      </span>
-                      <div className="text-sm text-light-gray">
-                        {result.confidence.tone === "high"
-                          ? "已自动切换并填入节点，可直接跟截图对照。"
-                          : showCandidates
-                            ? "检测到两个可能结果，请从下方选择确认。"
-                            : "已切换并填入节点，可直接跟截图对照。若不正确请手动选择。"}
-                      </div>
-                    </div>
-
-                    {showCandidates ? (
-                      <div className="space-y-4 border border-mid-gray rounded p-2">
-                        <div className="text-sm text-light-gray">
-                          可以反复切换对照，确认无误再关闭。
-                        </div>
-                        <div className="grid grid-cols-[repeat(2,minmax(0,220px))] gap-3">
-                          {result.topCandidates.map((candidate, index) => {
-                            const map = initialMaps.find(
-                              (m) => m.id === candidate.mapId,
-                            );
-                            if (!map) return null;
-                            const active = pickedIndex === index;
-                            return (
-                              <div
-                                key={candidate.mapId}
-                                role="button"
-                                onClick={() => pickCandidate(index)}
-                                className={`relative min-w-0 p-2 bg-black-gray cursor-pointer border rounded ${
-                                  active
-                                    ? "border-ak-blue"
-                                    : "border-transparent hover:border-mid-gray"
-                                }`}
-                              >
-                                {active && (
-                                  <CheckIcon className="absolute top-2 right-2 text-ak-blue" />
-                                )}
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span
-                                    className={`font-bold ${active ? "text-ak-blue" : ""}`}
-                                  >
-                                    {candidate.mapId}
-                                  </span>
-                                  {index === 0 && (
-                                    <span className="text-xs text-light-gray">
-                                      推荐
-                                    </span>
-                                  )}
-                                </div>
-                                <MapPreview map={map} />
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="flex gap-4">
-                          <button
-                            type="button"
-                            className="text-sm px-3 py-1 border border-ak-blue text-ak-blue rounded hover:bg-ak-blue/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                            disabled={pickedIndex === null}
-                            onClick={() => setConfirmed(true)}
-                          >
-                            {pickedIndex === null
-                              ? "请选择一个地图"
-                              : "确认，关闭候选"}
-                          </button>
-                          <button
-                            type="button"
-                            className="text-sm px-3 py-1 border border-mid-gray text-mid-gray rounded hover:border-light-gray hover:text-light-gray"
-                            onClick={cancelRecognition}
-                          >
-                            没有正确地图，取消
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      appliedMap && (
-                        <div className="p-2 bg-black-gray w-fit flex items-center justify-center">
-                          <MapPreview map={appliedMap} cellSize={28} />
-                        </div>
-                      )
-                    )}
-
-                    {/* {import.meta.env.DEV && (
-                    <div className="pt-2 border-t border-mid-gray/50">
-                      <div className="text-xs text-light-gray mb-1">
-                        [DEV ONLY] 文字节点 {result.stats.labels} / 空白点{" "}
-                        {result.stats.blanks} / 密度{" "}
-                        {(result.stats.occupiedRatio * 100).toFixed(0)}% / margin{" "}
-                        {result.marginRatio === null
-                          ? "null"
-                          : `${(result.marginRatio * 100).toFixed(2)}%`}
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {result.correctedNodes
-                          .filter((n) => !n.corrected && !n.unresolved)
-                          .map((n) => (
-                            <span
-                              key={`${n.row},${n.col}`}
-                              className={`text-xs px-1.5 py-0.5 rounded border ${
-                                n.label
-                                  ? "text-gray-300 border-gray-400/40 bg-gray-400/10"
-                                  : "text-gray-500 border-gray-600/40 bg-gray-600/10"
-                              }`}
-                            >
-                              ({n.row},{n.col}) {n.label ?? "(空白)"}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-                  )} */}
-                  </>
-                )}
-              </div>
-            )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        {previewUrl ? (
+          <div className="w-full flex justify-center bg-black-gray-70">
+            <img
+              src={previewUrl}
+              alt="预览"
+              className="max-h-[calc(100vh*2/3)] object-contain"
+            />
           </div>
+        ) : (
+          <div className="bg-black-gray w-full p-8 flex flex-col items-center gap-4">
+            <ImageUploadIcon width={48} height={48} />
+            <div className="text-md text-light-mid-gray">
+              点击上传或者拖动/粘贴图片至此区域
+            </div>
+            <button
+              className="bg-ak-blue font-bold text-xl text-black px-12 py-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              上传图片
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 截图结果 */}
+      <div className="flex flex-col justify-between grow gap-3">
+        <div className="flex flex-col gap-2">
+          {!previewUrl && (
+            <p className="text-md">
+              请使用<span className="text-ak-red">地图界面完整截图</span>
+              进行识别
+              <span
+                className="text-ak-blue underline cursor-pointer"
+                onClick={() => setShowSample(true)}
+              >
+                （示例）
+              </span>
+              ，图片的尺寸、清晰度与遮挡情况会极大地影响识别结果。推荐在进入区域时截图以增加识图准确性。
+            </p>
+          )}
+
+          {isLoading && <p className="font-bold text-2xl">识别中……</p>}
+
+          {error && (
+            <>
+              <p className="font-bold text-2xl">未识别</p>
+              <p className="text-md text-ak-red">{error}</p>
+              <p className="text-light-mid-gray">
+                请手动选择基底或重新上传截图
+              </p>
+            </>
+          )}
+
+          {result && best && !isLoading && (
+            <div className="space-y-3">
+              <div className="flex flex-col gap-3">
+                {(showCandidates
+                  ? result.topCandidates
+                  : result.topCandidates.slice(0, 1)
+                ).map((candidate, index) => (
+                  <button
+                    key={candidate.mapId}
+                    type="button"
+                    onClick={() => pickCandidate(index)}
+                    className="flex items-center justify-between gap-3 rounded text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      {showCandidates && (
+                        <span className="text-ak-blue">{index + 1} </span>
+                      )}
+                      <span className="font-bold text-2xl">
+                        {zoneLabel} · {candidate.mapId}
+                      </span>
+                    </div>
+                    <span
+                      className={toneClass[percentTone(candidate.matchPercent)]}
+                    >
+                      {candidate.matchPercent}%
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm text-light-gray">
+                {showCandidates ? (
+                  <>
+                    检测到{" "}
+                    <span className="text-ak-blue">
+                      {result.topCandidates.length}
+                    </span>{" "}
+                    个可能结果，请人工对照选择。
+                  </>
+                ) : (
+                  "已自动切换并填入节点，可直接跟截图对照。"
+                )}
+              </p>
+            </div>
+          )}
         </div>
-      )}
+
+        {(previewUrl || error || result) && (
+          <div className="flex gap-4">
+            <button
+              className="bg-ak-blue font-bold text-black px-8 py-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              重新上传
+            </button>
+            <button
+              className="bg-light-mid-gray font-bold text-black px-8 py-2"
+              onClick={requestClear}
+            >
+              清除图片
+            </button>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        size="3xl"
+        isOpen={showSample}
+        onClose={() => setShowSample(false)}
+      >
+        <ModalContent>
+          <ModalBody className="p-0">
+            <img
+              src="/images/map/map-sample.webp"
+              alt="截图示例"
+              className="w-full max-h-[70vh] object-contain rounded border border-default-200"
+            />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </div>
   );
-}
+});

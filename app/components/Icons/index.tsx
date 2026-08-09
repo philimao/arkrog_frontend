@@ -26,3 +26,4 @@ export * from "./AddIcon";
 export * from "./CheckIcon";
 export * from "./TeamIcon";
 export * from "./EditIcon";
+export * from "./ImageUploadIcon";

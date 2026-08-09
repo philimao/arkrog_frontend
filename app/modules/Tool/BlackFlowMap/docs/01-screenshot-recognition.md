@@ -44,17 +44,17 @@ sources:
 
 ## 二、前端模块职责
 
-| 文件 | 职责 |
-|---|---|
-| `recognition/compress.ts` | canvas 压缩。返回 `{ blob, canvas }`，canvas 供后续像素运算复用 |
-| `recognition/ocrClient.ts` | 调后端代理。`OcrRequestError` 带 HTTP 状态码（429 = 限流） |
-| `recognition/vocab.ts` | 节点词表、编辑距离、`matchVocab`、`fuzzySubstringMatch`、`ANCHOR_LABELS` |
-| `recognition/detectZone.ts` | 层名 → zone；兜底链：层名 → 罗马数字 `(I)`~`(V)` → 返回 null 由 UI 让用户手选 |
-| `recognition/grid.ts` | `fitAxis` / `snapToAxis` |
-| `recognition/blankNodes.ts` | 空白过路点（白圈黑点、无文字的节点）像素检测 |
-| `recognition/matchMap.ts` | `scoreOffset` / `rank` / `correctNodes` / `matchCandidates` / `computeMarginRatio` |
-| `recognition/recognize.ts` | 主流程编排 + `confidenceOf` + `toMarkableNodes` |
-| `ScreenshotRecognizer.tsx` | UI 与三档呈现行为 |
+| 文件                        | 职责                                                                               |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| `recognition/compress.ts`   | canvas 压缩。返回 `{ blob, canvas }`，canvas 供后续像素运算复用                    |
+| `recognition/ocrClient.ts`  | 调后端代理。`OcrRequestError` 带 HTTP 状态码（429 = 限流）                         |
+| `recognition/vocab.ts`      | 节点词表、编辑距离、`matchVocab`、`fuzzySubstringMatch`、`ANCHOR_LABELS`           |
+| `recognition/detectZone.ts` | 层名 → zone；兜底链：层名 → 罗马数字 `(I)`~`(V)` → 返回 null 由 UI 让用户手选      |
+| `recognition/grid.ts`       | `fitAxis` / `snapToAxis`                                                           |
+| `recognition/blankNodes.ts` | 空白过路点（白圈黑点、无文字的节点）像素检测                                       |
+| `recognition/matchMap.ts`   | `scoreOffset` / `rank` / `correctNodes` / `matchCandidates` / `computeMarginRatio` |
+| `recognition/recognize.ts`  | 主流程编排 + `confidenceOf` + `toMarkableNodes`                                    |
+| `ScreenshotRecognizer.tsx`  | UI 与三档呈现行为                                                                  |
 
 候选基底直接从 `mapData.tsx` 的 `initialMaps` 按 `zone` 字段筛——`initialMaps` 每项已含 `rows`/`cols`/`start`/`ends`/`battleEnd`/`edges`，就是匹配算法需要的全部字段。**不存在第二份地图拓扑数据。**
 
@@ -75,10 +75,10 @@ Body: JPEG 二进制，≤ 400KB
 
 **限流**（`middleware/rateLimit.ts`，Redis 固定窗口）：
 
-| 主体 | 每分钟 | 每天 |
-|---|---|---|
-| 匿名（按 IP） | 2 | 10 |
-| 已登录（按 userId） | 5 | 100 |
+| 主体                | 每分钟 | 每天 |
+| ------------------- | ------ | ---- |
+| 匿名（按 IP）       | 2      | 10   |
+| 已登录（按 userId） | 5      | 100  |
 
 外加全局月度硬上限 `OCR_MONTHLY_QUOTA`（默认 900，保护腾讯云 1000 次/月免费额度）。
 
@@ -86,12 +86,12 @@ Body: JPEG 二进制，≤ 400KB
 
 按 `confidenceOf()` 的分档分流，依据是实测的分档正确率：
 
-| 可信度 | 判据 | 实测基底正确率 | 行为 |
-|---|---|---|---|
-| 高 | 越界 = 0 且 margin ≥ 2% | **100%**（51 张） | 切层切图 + **自动填入节点** |
-| 中 | 越界 ≤ 1 且 margin ≥ 0.5% | 92.3%（13 张） | 切图但不填节点，展示 Top-2 候选 |
-| 低 | 其余 | 88.9%（18 张） | 同上 |
-| 无法确认 | 未检出任何锚点 | — | 同上 |
+| 可信度   | 判据                      | 实测基底正确率    | 行为                            |
+| -------- | ------------------------- | ----------------- | ------------------------------- |
+| 高       | 越界 = 0 且 margin ≥ 2%   | **100%**（51 张） | 切层切图 + **自动填入节点**     |
+| 中       | 越界 ≤ 1 且 margin ≥ 0.5% | 92.3%（13 张）    | 切图但不填节点，展示 Top-2 候选 |
+| 低       | 其余                      | 88.9%（18 张）    | 同上                            |
+| 无法确认 | 未检出任何锚点            | —                 | 同上                            |
 
 `marginRatio = (best 得分 − 最高分的「不同基底」候选得分) / best 得分`，衡量的是**本次匹配有没有歧义**，不是识别有多准。
 
@@ -119,15 +119,15 @@ Body: JPEG 二进制，≤ 400KB
 
 82 张真实样张（文件名自带 ground truth，如 `zone4_c_2.png` → zone_4 / 基底 4c）：
 
-| 指标 | 结果 |
-|---|---|
-| OCR 成功率 | 82/82 |
-| 层数识别 | **82/82 = 100%** |
-| 基底识别（单次调用，无抢救 pass） | **79/82 = 96.3%** |
-| Top-2 命中 | **82/82 = 100%** —— 判错的 3 张正确答案全排第 2 |
-| 压缩 1600px + q85 | 检出与原图零损失，上传 220~280KB（原图最大 8.78MB） |
-| 单次耗时 | 压缩后 0.6~1.6s |
-| 每图节点检出 | 平均 17.8 |
+| 指标                              | 结果                                                |
+| --------------------------------- | --------------------------------------------------- |
+| OCR 成功率                        | 82/82                                               |
+| 层数识别                          | **82/82 = 100%**                                    |
+| 基底识别（单次调用，无抢救 pass） | **79/82 = 96.3%**                                   |
+| Top-2 命中                        | **82/82 = 100%** —— 判错的 3 张正确答案全排第 2     |
+| 压缩 1600px + q85                 | 检出与原图零损失，上传 220~280KB（原图最大 8.78MB） |
+| 单次耗时                          | 压缩后 0.6~1.6s                                     |
+| 每图节点检出                      | 平均 17.8                                           |
 
 判错的 3 张：`zone2_b_2`→2d（margin 0.10%）、`zone5_a_3`→5h（margin 0.21%，密度仅 22%）、`zone5_i_2`→5f（margin 0.68%）。**三张的可信度分档都不是「高」**，即系统不会自信地给出错误答案。
 

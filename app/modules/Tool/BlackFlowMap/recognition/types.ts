@@ -75,6 +75,8 @@ export interface RankedCandidate {
   score: number;
   /** 相对第一名落后的比例；第一名为 0 */
   gapToBest: number;
+  /** 该候选自身的匹配质量（格子命中率与连线命中率的均值），供 UI 展示为百分比 */
+  matchPercent: number;
   /** 按该候选自己的 offset 修正后的节点，选中它时用这一套填入 */
   correctedNodes: CorrectedNode[];
 }

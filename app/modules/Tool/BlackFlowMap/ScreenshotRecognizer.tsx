@@ -9,6 +9,11 @@ import {
 import { Modal, ModalBody, ModalContent } from "@heroui/react";
 import { ImageUploadIcon } from "~/components/Icons";
 import {
+  FloatingPreview,
+  type FloatingPreviewPos,
+  type FloatingPreviewSize,
+} from "./FloatingPreview";
+import {
   recognizeMap,
   toMarkableNodes,
   ZoneUndetectedError,
@@ -19,6 +24,19 @@ import { OcrRequestError } from "./recognition/ocrClient";
 import type { ConfidenceTone, RecognizeResult } from "./recognition/types";
 import type { ZoneData } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
+
+// 截图浮窗只在大屏幕上出现
+function useIsLgScreen() {
+  const [isLg, setIsLg] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsLg(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsLg(e.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  return isLg;
+}
 
 /** 焦点在输入框/可编辑元素里时不要抢它的粘贴，用户可能是在粘贴文字 */
 function shouldIgnorePasteTarget(target: EventTarget | null): boolean {
@@ -104,6 +122,7 @@ export const ScreenshotRecognizer = forwardRef<
   },
   ref,
 ) {
+  const isLgScreen = useIsLgScreen();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showSample, setShowSample] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -112,6 +131,38 @@ export const ScreenshotRecognizer = forwardRef<
   /** 用户已确认选择，收起候选区 */
   const [confirmed, setConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  // 主预览区是不是整个滚出了可视范围——是的话才浮一个小窗出来，主预览只要有
+  // 一部分重新可见，浮窗就该消失（但"最小化"状态不消失，见下面 previewMinimized）
+  const [previewOutOfView, setPreviewOutOfView] = useState(false);
+  // 浮窗的最小化/位置/尺寸都跟随截图，不跟随挂载/卸载走——单纯滚动导致浮窗
+  // 反复出现/消失不该把它们带回默认状态。pos/size 为 null 表示这张截图还没被
+  // 摆放过，交给 FloatingPreview 在图片首次加载完时按长宽比自动定一次
+  const [previewMinimized, setPreviewMinimized] = useState(false);
+  const [previewPos, setPreviewPos] = useState<FloatingPreviewPos | null>(
+    null,
+  );
+  const [previewSize, setPreviewSize] = useState<FloatingPreviewSize | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setPreviewMinimized(false);
+    setPreviewPos(null);
+    setPreviewSize(null);
+    if (!previewUrl) {
+      setPreviewOutOfView(false);
+      return;
+    }
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setPreviewOutOfView(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [previewUrl]);
 
   // 候选列表变了就通知外层，让基底缩略图网格画标记；result 置空（新一轮识别开始/取消）时一并清空。
   // 只有 showCandidates 判定为"有歧义"时才把全部候选传出去（网格才会画 1/2 序号）——
@@ -279,7 +330,10 @@ export const ScreenshotRecognizer = forwardRef<
           onChange={handleFileChange}
         />
         {previewUrl ? (
-          <div className="w-full flex justify-center bg-black-gray-70">
+          <div
+            ref={previewContainerRef}
+            className="w-full flex justify-center bg-black-gray-70"
+          >
             <img
               src={previewUrl}
               alt="预览"
@@ -410,6 +464,18 @@ export const ScreenshotRecognizer = forwardRef<
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      {isLgScreen && previewUrl && previewOutOfView && (
+        <FloatingPreview
+          previewUrl={previewUrl}
+          minimized={previewMinimized}
+          onMinimizedChange={setPreviewMinimized}
+          pos={previewPos}
+          onPosChange={setPreviewPos}
+          size={previewSize}
+          onSizeChange={setPreviewSize}
+        />
+      )}
     </div>
   );
 });

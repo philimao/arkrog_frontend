@@ -600,6 +600,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                     const isCandidate = candidateIndex >= 0;
                     const ambiguous =
                       (recognitionCandidates?.candidates.length ?? 0) > 1;
+                    const hasUserEdits = hasUserMarkedNodes(m.id);
                     return (
                       <div
                         key={m.id}
@@ -629,6 +630,17 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                               )}
                             </div>
                           </>
+                        )}
+                        {hasUserEdits && (
+                          <div
+                            className="absolute top-0 right-0 z-10 w-7 h-7"
+                            style={{
+                              backgroundColor: "#FADD00",
+                              clipPath: isCandidate
+                                ? "polygon(0 0, 100% 100%, 21.4% 100%, 10.7% 97.1%, 2.9% 89.3%, 0 78.6%)"
+                                : "polygon(100% 0, 100% 100%, 0 0)",
+                            }}
+                          />
                         )}
                         <NodeMapCanvas
                           state={toGridState(m)}
@@ -889,14 +901,14 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       >
         <ModalContent>
           <ModalBody>
-            <p className="p-4 text-center text-xl font-bold">
+            <p className="p-4 text-center text-2xl font-bold">
               检测到基底存在已填写的节点
             </p>
           </ModalBody>
           <ModalFooter className="justify-center gap-4">
             <button
               type="button"
-              className="bg-ak-dark-red px-6 py-2 font-bold text-white"
+              className="bg-ak-dark-red px-12 py-2 text-white"
               onClick={() => {
                 if (!pendingMerge) return;
                 applyDetectedNodes(
@@ -907,11 +919,11 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 setPendingMerge(null);
               }}
             >
-              覆盖
+              覆 盖
             </button>
             <button
               type="button"
-              className="bg-ak-blue px-6 py-2 font-bold text-black"
+              className="bg-ak-deep-blue px-12 py-2 text-white"
               onClick={() => {
                 if (!pendingMerge) return;
                 applyDetectedNodes(
@@ -922,7 +934,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 setPendingMerge(null);
               }}
             >
-              合并
+              合 并
             </button>
           </ModalFooter>
         </ModalContent>

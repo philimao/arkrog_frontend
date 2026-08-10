@@ -53,7 +53,9 @@ const toneClass: Record<ConfidenceTone, string> = {
   none: "text-light-mid-gray",
 };
 
-function isAmbiguous(result: Pick<RecognizeResult, "confidence" | "topCandidates">): boolean {
+function isAmbiguous(
+  result: Pick<RecognizeResult, "confidence" | "topCandidates">,
+): boolean {
   return result.confidence.tone !== "high" && result.topCandidates.length > 1;
 }
 
@@ -110,12 +112,14 @@ export interface ScreenshotRecognizerHandle {
 /**
  * 截图识别：上传游戏内地图截图，**一次云 OCR 调用同时判出层数与基底**。
  *
- * 可信度为「高」时直接切过去并自动填入节点（实测该档基底正确率 100%）；
- * 中/低档则展示 Top-2 候选让用户二选一（实测判错时正确答案 100% 排在前二），
- * 选中后不立即收起，允许改选，由用户点确认才关闭。
+ * 识别成功后不分可信度档位，一律切过去并自动填入节点；可信度只决定要不要展示
+ * 候选列表（见 isAmbiguous）。中/低档基底正确率分别是 92.3% / 88.9%，选错时那
+ * 一批节点会整体错位——靠的是外层"识别填入可辨识、可隐藏、可撤销"加上把 Top-2
+ * 候选摆到用户眼前来兜底（实测判错时正确答案 100% 排在前二），而不是靠不填。
  *
- * 全部推理在前端完成，后端只做 OCR 签名转发。本组件默认不渲染，由外层通过
- * localStorage 开关控制。
+ * 全部推理在前端完成，后端只做 OCR 签名转发。
+ *
+ * 完整行为与关键不变量见 docs/01-screenshot-recognition.md。
  */
 export const ScreenshotRecognizer = forwardRef<
   ScreenshotRecognizerHandle,
@@ -149,9 +153,7 @@ export const ScreenshotRecognizer = forwardRef<
   // 反复出现/消失不该把它们带回默认状态。pos/size 为 null 表示这张截图还没被
   // 摆放过，交给 FloatingPreview 在图片首次加载完时按长宽比自动定一次
   const [previewMinimized, setPreviewMinimized] = useState(false);
-  const [previewPos, setPreviewPos] = useState<FloatingPreviewPos | null>(
-    null,
-  );
+  const [previewPos, setPreviewPos] = useState<FloatingPreviewPos | null>(null);
   const [previewSize, setPreviewSize] = useState<FloatingPreviewSize | null>(
     null,
   );
@@ -473,17 +475,20 @@ export const ScreenshotRecognizer = forwardRef<
         </ModalContent>
       </Modal>
 
-      {isLgScreen && previewUrl && previewOutOfView && !suppressFloatingPreview && (
-        <FloatingPreview
-          previewUrl={previewUrl}
-          minimized={previewMinimized}
-          onMinimizedChange={setPreviewMinimized}
-          pos={previewPos}
-          onPosChange={setPreviewPos}
-          size={previewSize}
-          onSizeChange={setPreviewSize}
-        />
-      )}
+      {isLgScreen &&
+        previewUrl &&
+        previewOutOfView &&
+        !suppressFloatingPreview && (
+          <FloatingPreview
+            previewUrl={previewUrl}
+            minimized={previewMinimized}
+            onMinimizedChange={setPreviewMinimized}
+            pos={previewPos}
+            onPosChange={setPreviewPos}
+            size={previewSize}
+            onSizeChange={setPreviewSize}
+          />
+        )}
     </div>
   );
 });

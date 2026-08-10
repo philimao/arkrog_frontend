@@ -1,8 +1,10 @@
 ---
-last-verified: 2026-08-05
+last-verified: 2026-08-10
 sources:
   - app/modules/Tool/BlackFlowMap/ScreenshotRecognizer.tsx
+  - app/modules/Tool/BlackFlowMap/FloatingPreview.tsx
   - app/modules/Tool/BlackFlowMap/index.tsx
+  - app/modules/Tool/BlackFlowMap/mapCanvas.tsx
   - app/modules/Tool/BlackFlowMap/mapData.tsx
   - app/modules/Tool/BlackFlowMap/recognition/recognize.ts
   - app/modules/Tool/BlackFlowMap/recognition/compress.ts
@@ -19,9 +21,9 @@ sources:
 
 # 截图识别地图
 
-用户上传一张游戏内地图截图，**一次云 OCR 调用同时判出层数（zone）与基底（mapId）**，命中后自动切过去。全部推理在前端完成，后端只做 OCR 签名转发。
+用户上传一张游戏内地图截图，**一次云 OCR 调用同时判出层数（zone）与基底（mapId）**，命中后自动切过去并把识别到的节点填进去。全部推理在前端完成，后端只做 OCR 签名转发。
 
-功能默认对所有用户隐藏，控制台执行 `enableMapRecognizer()` 开启（写 localStorage `show-map-recognizer`），`disableMapRecognizer()` 关闭。入口在 `index.tsx`。
+功能对所有用户默认可见（2026-08-10 起；此前需在控制台执行 `enableMapRecognizer()` 开启，该 localStorage 开关已移除）。区块自身可收起/展开。
 
 ## 一、数据流
 
@@ -42,19 +44,21 @@ sources:
 
 后端**不接收 zone 参数**——层数由前端自行判定。后端也不解码图片、不做像素运算、不做匹配。
 
-## 二、前端模块职责
+## 二、模块职责
 
-| 文件                        | 职责                                                                               |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| `recognition/compress.ts`   | canvas 压缩。返回 `{ blob, canvas }`，canvas 供后续像素运算复用                    |
-| `recognition/ocrClient.ts`  | 调后端代理。`OcrRequestError` 带 HTTP 状态码（429 = 限流）                         |
-| `recognition/vocab.ts`      | 节点词表、编辑距离、`matchVocab`、`fuzzySubstringMatch`、`ANCHOR_LABELS`           |
-| `recognition/detectZone.ts` | 层名 → zone；兜底链：层名 → 罗马数字 `(I)`~`(V)` → 返回 null 由 UI 让用户手选      |
-| `recognition/grid.ts`       | `fitAxis` / `snapToAxis`                                                           |
-| `recognition/blankNodes.ts` | 空白过路点（白圈黑点、无文字的节点）像素检测                                       |
-| `recognition/matchMap.ts`   | `scoreOffset` / `rank` / `correctNodes` / `matchCandidates` / `computeMarginRatio` |
-| `recognition/recognize.ts`  | 主流程编排 + `confidenceOf` + `toMarkableNodes`                                    |
-| `ScreenshotRecognizer.tsx`  | UI 与三档呈现行为                                                                  |
+| 文件                        | 职责                                                                                                  |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `recognition/compress.ts`   | canvas 压缩。返回 `{ blob, canvas }`，canvas 供后续像素运算复用                                       |
+| `recognition/ocrClient.ts`  | 调后端代理。`OcrRequestError` 带 HTTP 状态码（429 = 限流）                                            |
+| `recognition/vocab.ts`      | 节点词表、编辑距离、`matchVocab`、`fuzzySubstringMatch`、`ANCHOR_LABELS`                              |
+| `recognition/detectZone.ts` | 层名 → zone；兜底链：层名 → 罗马数字 `(I)`~`(V)` → 返回 null 由 UI 让用户手选                         |
+| `recognition/grid.ts`       | `fitAxis` / `snapToAxis`                                                                              |
+| `recognition/blankNodes.ts` | 空白过路点（白圈黑点、无文字的节点）像素检测                                                          |
+| `recognition/matchMap.ts`   | `scoreOffset` / `rank` / `matchPercentOf` / `correctNodes` / `matchCandidates` / `computeMarginRatio` |
+| `recognition/recognize.ts`  | 主流程编排 + `confidenceOf` + `toMarkableNodes`                                                       |
+| `ScreenshotRecognizer.tsx`  | 上传交互（点击/拖拽/粘贴）、识别结果展示、候选列表                                                    |
+| `FloatingPreview.tsx`       | 主预览滚出视野时浮出的截图小窗，可拖动/缩放/最小化                                                    |
+| `index.tsx`                 | 节点标记的落盘与冲突处理、基底/区域上的识别标记、覆盖合并弹窗                                         |
 
 候选基底直接从 `mapData.tsx` 的 `initialMaps` 按 `zone` 字段筛——`initialMaps` 每项已含 `rows`/`cols`/`start`/`ends`/`battleEnd`/`edges`，就是匹配算法需要的全部字段。**不存在第二份地图拓扑数据。**
 
@@ -82,24 +86,58 @@ Body: JPEG 二进制，≤ 400KB
 
 外加全局月度硬上限 `OCR_MONTHLY_QUOTA`（默认 900，保护腾讯云 1000 次/月免费额度）。
 
-## 四、结果呈现的三档行为
+## 四、结果呈现
 
-按 `confidenceOf()` 的分档分流，依据是实测的分档正确率：
+### 4.1 无条件自动填入
 
-| 可信度   | 判据                      | 实测基底正确率    | 行为                            |
-| -------- | ------------------------- | ----------------- | ------------------------------- |
-| 高       | 越界 = 0 且 margin ≥ 2%   | **100%**（51 张） | 切层切图 + **自动填入节点**     |
-| 中       | 越界 ≤ 1 且 margin ≥ 0.5% | 92.3%（13 张）    | 切图但不填节点，展示 Top-2 候选 |
-| 低       | 其余                      | 88.9%（18 张）    | 同上                            |
-| 无法确认 | 未检出任何锚点            | —                 | 同上                            |
+识别成功后**不分可信度档位，一律切层切图并填入节点**。可信度只决定「要不要展示候选列表」：
 
-`marginRatio = (best 得分 − 最高分的「不同基底」候选得分) / best 得分`，衡量的是**本次匹配有没有歧义**，不是识别有多准。
+```ts
+function isAmbiguous(result) {
+  return result.confidence.tone !== "high" && result.topCandidates.length > 1;
+}
+```
 
-**Top-2 候选的交互**：用户点选后填入**该候选自己那套** `correctedNodes`（不同 offset 对应不同节点位置，不是共用第一名的），候选区保持展开允许反复切换对照，点「确认」才收起。
+> ⚠️ **这是有意的取舍，代价要知道**：中档基底正确率 92.3%、低档 88.9%（实测，见第六节）。**基底一旦选错，那一批自动填入的节点会整体错位**（平均约 16 个）。设计上不靠"没把握就不填"来防错，而是靠下面 4.2 的可辨识 + 可撤销机制，加上把 Top-2 候选摆到用户眼前。
+>
+> 早期版本曾把自动填入限制在「高」档（该档实测正确率 100%），2026-08 改为现在的形态。若要改回门槛，判据在 `ScreenshotRecognizer.tsx` 调 `onMatched` 处。
 
-自动填入的节点由 `toMarkableNodes()` 挑选：只要坐标未经修正、非无解点、非结构性锚点的。用户可用侧边栏「清除已选节点」撤销。
+### 4.2 节点标记的两层模型
 
-**低密度提示**：网格填充密度 < 0.35 时顶部黄条提示「截图信息不足，请截取完整地图」。
+`index.tsx` 对每个基底各存两份（都是 `ByMap` 版本，**切基底不丢**）：
+
+| 状态                        | 含义                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| `markedNodesByMap[mapId]`   | 最终展示的标记，用户手改会写这里                             |
+| `detectedNodesByMap[mapId]` | **本次识别产出的基线**，只记"这次识别出了什么"，不掺用户手改 |
+
+由二者推出的派生量：
+
+- `autoFilledKeys` = 两份取值相同的格子 → 即"这格是自动填的"，可一键隐藏（`autoFilledHiddenByMap`，纯展示，不删数据）
+- `hasUserMarkedNodes(mapId)` = 存在 `marked[key] !== detected[key]` 的格子 → 即"这个基底上有用户自己的东西"
+
+### 4.3 覆盖 / 合并
+
+识别结果要落到一个**已经有用户手填节点**的基底上时，弹窗强制二选一：
+
+- **合并**（`applyDetectedNodes` 的默认 mode）：用户层压在识别层之上，用户手动标过的格子不被识别结果盖掉
+- **覆盖**：不管原来是什么，一律换成这次识别的结果
+
+### 4.4 候选的静默预填
+
+识别结果一出来，**所有候选（不只第一名）各自的节点都会预填一份**，这样用户直接点基底缩略图切过去也能立刻看到识别结果，不必非得先点候选按钮。
+
+但预填不能替用户做冲突决定：若某候选基底本身已有用户手填节点，预填会被推迟到 `pendingCandidateDetections`，等用户**真的切过去**时再弹跟主结果一样的覆盖/合并弹窗。
+
+用户选「没有正确地图，取消」时，`onCancel` 会带出本次涉及的**全部**候选 mapId，外层逐个清干净——否则静默预填过的那些基底会留下孤儿标记。
+
+### 4.5 其它呈现
+
+- **匹配度百分比**：候选列表与基底缩略图上显示 `matchPercentOf()`（格子命中率与连线命中率的均值），按 85/70 分档上色（`percentTone`）。**刻意不用 `rank()` 的排序分**——那里掺了越界惩罚等只在候选间比较才有意义的项，数值本身不能读作"这张图有多像"。
+- **区域选择条与基底缩略图**上会画出本次识别的候选标记；这份状态跟着识别结果走，切区域/切基底都不清，只有「清除图片」才清。
+- **基底缩略图的黄色角标**标记用户改过的基底。
+- **低密度提示**：网格填充密度 < 0.35 时提示「截图信息不足，请截取完整地图」。
+- **截图浮窗**：主预览完全滚出可视范围时浮出小窗继续展示截图，可拖动/缩放/最小化；主预览重新进入视野即消失。覆盖/合并弹窗打开期间用 `suppressFloatingPreview` 压住，不跟弹窗抢注意力。
 
 ## 五、关键不变量（改动前必读）
 
@@ -113,11 +151,13 @@ Body: JPEG 二进制，≤ 400KB
 
 **`rank()` 里 anchorRate 的分母是「本图总共检测到几个锚点」**，不是各候选自己的 `anchorTotal`——否则某候选的偏移让一个真实锚点越界时，它的 `anchorTotal` 会同步减少，导致「只解释对一半锚点」的候选反而拿到 100% 命中率。
 
-**后端换 OCR 端点必须走 `callTencentApi` 的 `host` 参数。** TC3 签名的规范请求串包含 `host:` 头，只改最终请求 URL 会导致签名校验失败。生产用内网端点 `ocr.internal.tencentcloudapi.com`（解析到 169.254.1.10，不占公网带宽），该域名只在腾讯云 VPC 内解析，故默认值必须是公网域名。
+**`detectedNodesByMap` 是识别基线，不要拿它跟用户手改合并后再写回。** 4.2 的两个派生量（哪些是自动填的、这个基底有没有用户的东西）全靠"识别基线保持纯净"才成立；一旦把用户手改混进去，隐藏功能和覆盖/合并弹窗都会失准。
+
+**后端换 OCR 端点必须走 `callTencentApi` 的 `host` 参数。** TC3 的规范请求串包含 `host:` 头，只改最终请求的 URL 会导致签名校验失败。生产用内网端点 `ocr.internal.tencentcloudapi.com`（解析到 169.254.1.10，不占公网带宽），该域名只在腾讯云 VPC 内解析，故默认值必须是公网域名。
 
 ## 六、实测基线
 
-82 张真实样张（文件名自带 ground truth，如 `zone4_c_2.png` → zone_4 / 基底 4c）：
+82 张真实样张（文件名自带 ground truth，如 `zone4_c_2.png` → zone_4 / 基底 4c），核实于 2026-08-05：
 
 | 指标                              | 结果                                                |
 | --------------------------------- | --------------------------------------------------- |
@@ -129,7 +169,11 @@ Body: JPEG 二进制，≤ 400KB
 | 单次耗时                          | 压缩后 0.6~1.6s                                     |
 | 每图节点检出                      | 平均 17.8                                           |
 
-判错的 3 张：`zone2_b_2`→2d（margin 0.10%）、`zone5_a_3`→5h（margin 0.21%，密度仅 22%）、`zone5_i_2`→5f（margin 0.68%）。**三张的可信度分档都不是「高」**，即系统不会自信地给出错误答案。
+分档正确率：**高 100%（51 张）/ 中 92.3%（13 张）/ 低 88.9%（18 张）**。判错的 3 张 margin 分别是 0.10% / 0.21% / 0.68%，**没有一张落在「高」档**——即系统不会自信地给出错误答案。
+
+自动填入的节点质量：非锚点节点里 99.1% 通过 `toMarkableNodes` 的过滤，同格冲突 0 处，地图数据里的固定作战位 37/37 全部标对。
+
+> 上述数字对应 2026-08-05 的算法状态。此后 `recognition/` 只增加了展示用的 `matchPercentOf()`，打分权重、可信度阈值与全部不变量均未改动，故基线仍然有效。
 
 ## 七、有意不做的事
 

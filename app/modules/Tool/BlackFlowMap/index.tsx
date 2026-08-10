@@ -23,9 +23,6 @@ import { ChevronIcon, EyeClosedIcon, EyeOpenIcon } from "~/components/Icons";
 import type { Route } from "./+types/index";
 import { StyledDivider } from "~/modules/Tournament/components/Shared";
 
-// 截图识别功能默认隐藏，通过这个 localStorage key 记住是否已手动开启。
-const SHOW_RECOGNIZER_KEY = "show-map-recognizer";
-
 // 稳定的空 Set 引用，避免"当前基底还没有任何自动填入记录"这种情况下每次渲染都 new 一个新对象
 const EMPTY_KEY_SET: Set<string> = new Set();
 
@@ -42,13 +39,6 @@ function useIsLgScreen() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
   return isLg;
-}
-
-declare global {
-  interface Window {
-    enableMapRecognizer?: () => void;
-    disableMapRecognizer?: () => void;
-  }
 }
 
 // 该地图渲染依赖大量动态 DOM 节点（节点网格、选项列表），且切换区域时变动量很大；
@@ -159,8 +149,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [showZoneNotes, setShowZoneNotes] = useState(false);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
   const [showNodeOptions, setShowNodeOptions] = useState(true);
-  const [showScreenshotRecognizer, setShowScreenshotRecognizer] =
-    useState(false);
   // 识图工具区块自身的收起/展开，跟下面"基底"缩略图网格的 showBaseMaps 是两回事
   const [showRecognizerPanel, setShowRecognizerPanel] = useState(true);
   // 本次截图识别的结果（区域 + 候选基底，按分数降序），供上面"区域选择"和下面
@@ -183,23 +171,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [pendingCandidateDetections, setPendingCandidateDetections] = useState<
     Record<string, MarkableNode[]>
   >({});
-  // 截图识别功能还在打磨阶段，默认对所有用户隐藏；开发/内部想临时体验时，
-  // 在浏览器控制台敲 enableMapRecognizer() 即可（会记住选择，刷新也生效），
-  // disableMapRecognizer() 关掉。不接普通用户能看到的入口。
-  useEffect(() => {
-    setShowScreenshotRecognizer(
-      window.localStorage.getItem(SHOW_RECOGNIZER_KEY) === "1",
-    );
-    window.enableMapRecognizer = () => {
-      window.localStorage.setItem(SHOW_RECOGNIZER_KEY, "1");
-      window.location.reload();
-    };
-    window.disableMapRecognizer = () => {
-      window.localStorage.removeItem(SHOW_RECOGNIZER_KEY);
-      window.location.reload();
-    };
-  }, []);
-
   const visibleOptions = nodeOptions.filter(
     (option) =>
       option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min)
@@ -493,72 +464,70 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       </div>
 
       {/* 识图工具 */}
-      {showScreenshotRecognizer && (
-        <div className="mb-16">
-          <div className="flex justify-between items-end">
-            <div className="flex items-end flex-wrap">
-              <h3 className="font-bold text-2xl">
-                截图识别地图<span className="text-lg">（实验性）</span>
-              </h3>
-              <p className="text-sm text-light-mid-gray">
-                此功能仍在开发中，结果仅供参考
-              </p>
-            </div>
-
-            <button
-              className="flex flex-shrink-0 gap-1 items-center text-ak-blue"
-              onClick={() => setShowRecognizerPanel((prev) => !prev)}
-            >
-              {showRecognizerPanel ? "收起" : "展开"}
-              <ChevronIcon
-                direction={showRecognizerPanel ? "up" : "down"}
-                className="w-4 h-4 text-ak-blue"
-              />
-            </button>
+      <div className="mb-16">
+        <div className="flex justify-between items-end">
+          <div className="flex items-end flex-wrap">
+            <h3 className="font-bold text-2xl">
+              截图识别地图<span className="text-lg">（实验性）</span>
+            </h3>
+            <p className="text-sm text-light-mid-gray">
+              此功能仍在开发中，结果仅供参考
+            </p>
           </div>
-          <StyledDivider />
-          <div
-            className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-            style={{ gridTemplateRows: showRecognizerPanel ? "1fr" : "0fr" }}
+
+          <button
+            className="flex flex-shrink-0 gap-1 items-center text-ak-blue"
+            onClick={() => setShowRecognizerPanel((prev) => !prev)}
           >
-            <div className="overflow-hidden">
-              <ScreenshotRecognizer
-                ref={recognizerRef}
-                zones={zoneOfRogue}
-                currentZoneId={currentZoneId}
-                onCandidatesChange={setRecognitionCandidates}
-                onNodesDetected={applyOrDeferDetectedNodes}
-                suppressFloatingPreview={!!pendingMerge}
-                onMatched={(zone, mapId, markableNodes) => {
-                  const matched = initialMaps.find((m) => m.id === mapId);
-                  if (!matched) return;
-                  // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
-                  setCurrentZoneId(zone);
-                  setShowZoneNotes(false);
-                  setSelectedMapId(mapId);
-                  // 无论是刚上传完新截图，还是点了候选结果按钮，都要让用户看到
-                  // 切去的是哪个基底——手机端"基底"区块可能是收起的，这里强制展开
-                  setShowBaseMaps(true);
-                  // 这个基底本来就有用户自己填的节点：先别落盘，弹窗让用户在
-                  // "覆盖"和"合并"里选一个，选完才真正应用识别结果
-                  if (hasUserMarkedNodes(mapId)) {
-                    setPendingMerge({ mapId, markableNodes });
-                  } else {
-                    applyDetectedNodes(mapId, markableNodes);
-                  }
-                  resetSelection();
-                  load(toGridState(matched));
-                  baseMapsSectionRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }}
-                onCancel={handleClearPreview}
-              />
-            </div>
+            {showRecognizerPanel ? "收起" : "展开"}
+            <ChevronIcon
+              direction={showRecognizerPanel ? "up" : "down"}
+              className="w-4 h-4 text-ak-blue"
+            />
+          </button>
+        </div>
+        <StyledDivider />
+        <div
+          className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+          style={{ gridTemplateRows: showRecognizerPanel ? "1fr" : "0fr" }}
+        >
+          <div className="overflow-hidden">
+            <ScreenshotRecognizer
+              ref={recognizerRef}
+              zones={zoneOfRogue}
+              currentZoneId={currentZoneId}
+              onCandidatesChange={setRecognitionCandidates}
+              onNodesDetected={applyOrDeferDetectedNodes}
+              suppressFloatingPreview={!!pendingMerge}
+              onMatched={(zone, mapId, markableNodes) => {
+                const matched = initialMaps.find((m) => m.id === mapId);
+                if (!matched) return;
+                // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
+                setCurrentZoneId(zone);
+                setShowZoneNotes(false);
+                setSelectedMapId(mapId);
+                // 无论是刚上传完新截图，还是点了候选结果按钮，都要让用户看到
+                // 切去的是哪个基底——手机端"基底"区块可能是收起的，这里强制展开
+                setShowBaseMaps(true);
+                // 这个基底本来就有用户自己填的节点：先别落盘，弹窗让用户在
+                // "覆盖"和"合并"里选一个，选完才真正应用识别结果
+                if (hasUserMarkedNodes(mapId)) {
+                  setPendingMerge({ mapId, markableNodes });
+                } else {
+                  applyDetectedNodes(mapId, markableNodes);
+                }
+                resetSelection();
+                load(toGridState(matched));
+                baseMapsSectionRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }}
+              onCancel={handleClearPreview}
+            />
           </div>
         </div>
-      )}
+      </div>
 
       <div>
         {/* 基底选择 */}

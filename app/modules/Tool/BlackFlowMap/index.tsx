@@ -407,9 +407,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
             className="w-12 h-12 aspect-square"
           />
           <div className="flex flex-col justify-center">
-            <span>{option.name}</span>
+            <span className="text-sm lg:text-base">{option.name}</span>
             {note ? (
-              <span className="text-xs text-white/60 pb-[1px] pr-[2px]">
+              <span className="text-xs text-white/60 pb-[1px] lg:pr-[2px]">
                 {note}
               </span>
             ) : null}
@@ -680,7 +680,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
         </div>
         <StyledDivider />
         <div
-          className="grow p-4"
+          className="grow p-2 lg:p-4"
           style={{
             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, .4)), url('/images/map/rogue_6_map_${currentZoneId}.webp')`,
           }}

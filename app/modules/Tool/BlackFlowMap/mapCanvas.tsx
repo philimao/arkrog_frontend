@@ -560,12 +560,26 @@ export function NodeMapCanvas({
             const currentKey = nodeId(menuNode.row, menuNode.col);
             const currentMark = markedNodes[currentKey];
             const detectedMark = detectedNodes[currentKey];
-            // 只有"这格自动识别过，且用户手改成了别的"才给"移除标记"——它现在
-            // 撤销的是用户的手改，不是把格子清空
+            // 撤销要恢复的这个选项，需要先查看是不是已经顶到这层的上限了
+            const detectedMarkOption = detectedMark
+              ? optionMap.get(detectedMark)
+              : undefined;
+            const detectedMarkLimit = detectedMarkOption?.steps.find(
+              (step) => step.zone === zone,
+            )?.maxAllowed;
+            const detectedMarkCount = detectedMark
+              ? optionCounts.get(detectedMark) || 0
+              : 0;
+            const detectedMarkAtLimit =
+              detectedMarkLimit !== undefined &&
+              detectedMarkCount >= detectedMarkLimit;
+            // 只有"这格自动识别过，且用户手改成了别的，且改回去不会超上限"才给
+            // "移除标记"——它现在撤销的是用户的手改，不是把格子清空
             const canRevert =
               detectedMark !== undefined &&
               currentMark !== undefined &&
-              currentMark !== detectedMark;
+              currentMark !== detectedMark &&
+              !detectedMarkAtLimit;
             // "林间空地"代替了旧版"移除标记"清空节点那一半的作用：只要这格有
             // 标记（自动或手动）就能选，选了它本身也算一次手动标记
             const showBlank = Boolean(currentMark) && currentMark !== "empty";

@@ -53,6 +53,10 @@ const toneClass: Record<ConfidenceTone, string> = {
   none: "text-light-mid-gray",
 };
 
+function isAmbiguous(result: Pick<RecognizeResult, "confidence" | "topCandidates">): boolean {
+  return result.confidence.tone !== "high" && result.topCandidates.length > 1;
+}
+
 /** 候选自身匹配度（百分比）的高中低分档，用于给数值上色 —— 与整体可信度档位无关 */
 export function percentTone(percent: number): ConfidenceTone {
   if (percent >= 85) return "high";
@@ -91,6 +95,11 @@ interface ScreenshotRecognizerProps {
    * 候选对应的基底，也能直接看到识别结果，不用非得先点这边的候选按钮
    */
   onNodesDetected: (mapId: string, nodes: MarkableNode[]) => void;
+  /**
+   * 外层正在弹"检测到基底存在已填写的节点"强制选择框时，截图浮窗先别冒出来
+   * 抢注意力——等用户在那个弹窗里选完"覆盖"还是"合并"，浮窗才跟着一起出现
+   */
+  suppressFloatingPreview?: boolean;
 }
 
 /** 供外层在决定好"清除图片"到底要不要清（可能中间弹窗问用户）之后，回头真正清掉这边的预览状态 */
@@ -119,6 +128,7 @@ export const ScreenshotRecognizer = forwardRef<
     onCancel,
     onCandidatesChange,
     onNodesDetected,
+    suppressFloatingPreview,
   },
   ref,
 ) {
@@ -172,10 +182,7 @@ export const ScreenshotRecognizer = forwardRef<
       onCandidatesChange(null);
       return;
     }
-    const ambiguous =
-      result.confidence.tone !== "high" &&
-      result.topCandidates.length > 1 &&
-      !confirmed;
+    const ambiguous = isAmbiguous(result) && !confirmed;
     const candidates = ambiguous
       ? result.topCandidates
       : result.topCandidates.slice(0, 1);
@@ -206,12 +213,17 @@ export const ScreenshotRecognizer = forwardRef<
         });
         setResult(data);
 
-        // 有歧义时，非第一名的候选先各自预填一份，用户不管是从下面的候选列表
-        // 点，还是直接去"基底"缩略图网格里手动切换，看到的都已经是识别结果。
+        // 只有真的"有歧义"（跟候选区、基底网格角标同一套判断）才预填非第一名的
+        // 候选，用户不管是从下面的候选列表点，还是直接去"基底"缩略图网格里手动
+        // 切换，看到的都已经是识别结果。不然会出现候选区没显示第二名、角标也没
+        // 画，但那个基底其实已经被偷偷自动填过节点的数据和 UI 对不上的情况。
         // 第一名不在这里填——马上就要 onMatched 切过去，那边会先检查这个基底
         // 是不是已经有用户自己填的节点，需要的话弹窗问"覆盖"还是"合并"，这里
         // 抢先填了那个判断就没意义了
-        for (const candidate of data.topCandidates) {
+        const shownCandidates = isAmbiguous(data)
+          ? data.topCandidates
+          : data.topCandidates.slice(0, 1);
+        for (const candidate of shownCandidates) {
           if (candidate.mapId === data.mapId) continue;
           onNodesDetected(
             candidate.mapId,
@@ -308,11 +320,7 @@ export const ScreenshotRecognizer = forwardRef<
     zoneIndex >= 0
       ? `${intToRoman(zoneIndex + 1)} ${zones[zoneIndex].name}`
       : result?.zone;
-  const showCandidates =
-    !!result &&
-    result.confidence.tone !== "high" &&
-    result.topCandidates.length > 1 &&
-    !confirmed;
+  const showCandidates = !!result && isAmbiguous(result) && !confirmed;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
@@ -465,7 +473,7 @@ export const ScreenshotRecognizer = forwardRef<
         </ModalContent>
       </Modal>
 
-      {isLgScreen && previewUrl && previewOutOfView && (
+      {isLgScreen && previewUrl && previewOutOfView && !suppressFloatingPreview && (
         <FloatingPreview
           previewUrl={previewUrl}
           minimized={previewMinimized}

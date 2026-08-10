@@ -183,11 +183,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [pendingCandidateDetections, setPendingCandidateDetections] = useState<
     Record<string, MarkableNode[]>
   >({});
-  // "清除图片"时，如果当前正看着的基底同时有识别节点和用户自己填的节点，弹窗
-  // 让用户选"清除全部节点"还是"清除识别结果"——非空（存着待清理的 candidateMapIds）
-  // 表示弹窗正开着
-  const [pendingClear, setPendingClear] = useState<string[] | null>(null);
-
   // 截图识别功能还在打磨阶段，默认对所有用户隐藏；开发/内部想临时体验时，
   // 在浏览器控制台敲 enableMapRecognizer() 即可（会记住选择，刷新也生效），
   // disableMapRecognizer() 关掉。不接普通用户能看到的入口。
@@ -339,71 +334,15 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
     setMarkedNodes((prev) => ({ ...prev, [key]: detectedValue }));
   };
 
-  // 这个基底是不是同时存在"识别出来的"和"用户自己填的"节点——"清除图片"点下去
-  // 时如果当前正看着的基底属于这种情况，得先问清楚清哪种，不能替用户决定
-  const hasMixedNodes = (mapId: string) => {
-    const marked = markedNodesByMap[mapId] ?? {};
-    const detected = detectedNodesByMap[mapId] ?? {};
-    let hasAuto = false;
-    let hasUser = false;
-    for (const [key, value] of Object.entries(marked)) {
-      if (detected[key] === value) hasAuto = true;
-      else hasUser = true;
-    }
-    return hasAuto && hasUser;
-  };
-
-  // 供"没有正确地图，取消"用（"清除识别结果"）：只清掉还是自动识别值的那些
-  // 格子，用户自己填的保留。识别结果一出来就会给每个候选基底各自预填一份
-  // （见 applyDetectedNodes 调用处），所以取消时不能只清当前选中的这一个，要
-  // 按 mapId 清掉每个候选各自的自动填入
-  const clearAutoFilledNodesForMap = (mapId: string) => {
-    const detected = detectedNodesByMap[mapId] ?? {};
-    setMarkedNodesByMap((prev) => {
-      const marked = prev[mapId];
-      if (!marked) return prev;
-      const next = { ...marked };
-      let changed = false;
-      for (const [key, value] of Object.entries(detected)) {
-        if (next[key] === value) {
-          delete next[key];
-          changed = true;
-        }
-      }
-      return changed ? { ...prev, [mapId]: next } : prev;
-    });
-    setAutoFilledHiddenByMap((prev) => ({ ...prev, [mapId]: false }));
-    // 这次识别整个作废了，撤销手改用的基线也一并清掉，不然会有"从没确认过的
-    // 识别结果"留着让"移除标记"莫名冒出来
-    setDetectedNodesByMap((prev) => ({ ...prev, [mapId]: {} }));
-  };
-
-  // 供"清除图片"选了"清除全部节点"用：不管识别的还是用户自己填的，这个基底
-  // 一律清空
-  const clearAllNodesForMap = (mapId: string) => {
-    setMarkedNodesByMap((prev) => ({ ...prev, [mapId]: {} }));
-    setAutoFilledHiddenByMap((prev) => ({ ...prev, [mapId]: false }));
-    setDetectedNodesByMap((prev) => ({ ...prev, [mapId]: {} }));
-  };
-
-  // "清除图片"的收尾：candidateMapIds 里除了当前正看着的那个都用安全的"只清
-  // 识别结果"；当前这个按 clearAll 决定用哪种
-  const finishClearPreview = (candidateMapIds: string[], clearAll: boolean) => {
-    for (const mapId of candidateMapIds) {
-      if (clearAll && mapId === selectedMapId) {
-        clearAllNodesForMap(mapId);
-      } else {
-        clearAutoFilledNodesForMap(mapId);
-      }
-    }
+  // "清除图片"：只清掉截图预览本身，不碰地图上任何节点——不管是识别出来的
+  // 还是用户自己填的，一律保留
+  const handleClearPreview = (candidateMapIds: string[]) => {
     setPendingCandidateDetections((prev) => {
       const next = { ...prev };
       for (const mapId of candidateMapIds) delete next[mapId];
       return next;
     });
     setRecognitionCandidates(null);
-    setPendingClear(null);
-    // 现在才真正让识图组件清掉截图预览——之前一直等这边先决定好该怎么清
     recognizerRef.current?.resetPreview();
   };
 
@@ -589,6 +528,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 currentZoneId={currentZoneId}
                 onCandidatesChange={setRecognitionCandidates}
                 onNodesDetected={applyOrDeferDetectedNodes}
+                suppressFloatingPreview={!!pendingMerge}
                 onMatched={(zone, mapId, markableNodes) => {
                   const matched = initialMaps.find((m) => m.id === mapId);
                   if (!matched) return;
@@ -613,18 +553,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                     block: "start",
                   });
                 }}
-                onCancel={(candidateMapIds) => {
-                  // 当前正看着的基底如果识别节点和用户自己填的节点混在一起，
-                  // 得先问清楚清哪种，不能替用户决定
-                  if (
-                    candidateMapIds.includes(selectedMapId) &&
-                    hasMixedNodes(selectedMapId)
-                  ) {
-                    setPendingClear(candidateMapIds);
-                  } else {
-                    finishClearPreview(candidateMapIds, false);
-                  }
-                }}
+                onCancel={handleClearPreview}
               />
             </div>
           </div>
@@ -994,42 +923,6 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               }}
             >
               合并
-            </button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        size="md"
-        isOpen={!!pendingClear}
-        onClose={() => setPendingClear(null)}
-      >
-        <ModalContent>
-          <ModalBody>
-            <p className="p-4 text-center text-xl font-bold">
-              当前基底存在已填写节点
-            </p>
-          </ModalBody>
-          <ModalFooter className="justify-center gap-4">
-            <button
-              type="button"
-              className="bg-ak-dark-red px-6 py-2 font-bold text-white"
-              onClick={() => {
-                if (!pendingClear) return;
-                finishClearPreview(pendingClear, true);
-              }}
-            >
-              清除全部节点
-            </button>
-            <button
-              type="button"
-              className="bg-ak-blue px-6 py-2 font-bold text-black"
-              onClick={() => {
-                if (!pendingClear) return;
-                finishClearPreview(pendingClear, false);
-              }}
-            >
-              清除识别结果
             </button>
           </ModalFooter>
         </ModalContent>

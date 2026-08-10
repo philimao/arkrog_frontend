@@ -96,6 +96,8 @@ export interface RecognizeResult {
   correctedNodes: CorrectedNode[];
   /** 网格填充密度过低 —— 截图很可能没覆盖完整地图，识别结果不可靠 */
   lowDensity: boolean;
+  /** 后端本次实际使用的 OCR 策略（账号 × 接口），仅用于诊断 */
+  strategy?: { account: string; action: string };
   /** 诊断用：检出的文字节点数与空白过路点数 */
   stats: { labels: number; blanks: number; occupiedRatio: number };
 }

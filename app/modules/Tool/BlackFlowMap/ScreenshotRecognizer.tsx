@@ -141,6 +141,8 @@ export const ScreenshotRecognizer = forwardRef<
   const [showSample, setShowSample] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 免费额度整体用尽：等一分钟没用，要等到下个月，文案得跟普通失败区分开
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
   const [result, setResult] = useState<RecognizeResult | null>(null);
   /** 用户已确认选择，收起候选区 */
   const [confirmed, setConfirmed] = useState(false);
@@ -201,6 +203,7 @@ export const ScreenshotRecognizer = forwardRef<
     async (file: File) => {
       setIsLoading(true);
       setError(null);
+      setQuotaExhausted(false);
       setResult(null);
       setConfirmed(false);
       const objectUrl = URL.createObjectURL(file);
@@ -235,8 +238,10 @@ export const ScreenshotRecognizer = forwardRef<
         // 切到第一名方便对照；节点交给 onMatched 决定怎么落
         onMatched(data.zone, data.mapId, toMarkableNodes(data.correctedNodes));
       } catch (err) {
-        if (
-          err instanceof OcrRequestError ||
+        if (err instanceof OcrRequestError) {
+          setError(err.message);
+          setQuotaExhausted(err.exhausted);
+        } else if (
           err instanceof ZoneUndetectedError ||
           err instanceof NoNodeDetectedError
         ) {
@@ -387,10 +392,14 @@ export const ScreenshotRecognizer = forwardRef<
 
           {error && (
             <>
-              <p className="font-bold text-2xl">未识别</p>
+              <p className="font-bold text-2xl">
+                {quotaExhausted ? "识别服务暂停" : "未识别"}
+              </p>
               <p className="text-md text-ak-red">{error}</p>
               <p className="text-light-mid-gray">
-                请手动选择基底或重新上传截图
+                {quotaExhausted
+                  ? "重试不会有帮助，请直接手动选择层数与基底"
+                  : "请手动选择基底或重新上传截图"}
               </p>
             </>
           )}

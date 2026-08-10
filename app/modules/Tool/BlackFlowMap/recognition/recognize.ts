@@ -131,7 +131,7 @@ export async function recognizeMap(
   options: RecognizeOptions = {},
 ): Promise<RecognizeResult> {
   const { blob, canvas } = await compressScreenshot(file);
-  const items = await requestOcr(blob);
+  const { items, strategy } = await requestOcr(blob);
 
   const zone = detectZone(items, zones) ?? options.fallbackZone;
   if (!zone) throw new ZoneUndetectedError();
@@ -251,6 +251,7 @@ export async function recognizeMap(
     gridNodes,
     correctedNodes: correctNodes(gridNodes, bestMap, best.offset),
     lowDensity: occupiedRatio < LOW_DENSITY_THRESHOLD,
+    strategy,
     stats: { labels: labels.length, blanks: blanks.length, occupiedRatio },
   };
 }

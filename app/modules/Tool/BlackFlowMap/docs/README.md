@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-08-05
+last-verified: 2026-08-10
 sources:
   - app/modules/Tool/BlackFlowMap/index.tsx
   - app/modules/Tool/BlackFlowMap/mapData.tsx
@@ -23,6 +23,7 @@ sources:
 | 编号 | 决策 | 状态 |
 |---|---|---|
 | [0001](adr/0001-cloud-ocr-frontend-inference.md) | 截图识别改用云 OCR + 前端推理，后端只做签名转发 | 已接受 |
+| [0002](adr/0002-multi-account-multi-action-ocr-chain.md) | OCR 走多接口降级链，取消自设月度上限 | 已接受 |
 
 ## 尚无正文文档的部分
 

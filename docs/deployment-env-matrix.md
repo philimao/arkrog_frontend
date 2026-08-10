@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-08-05
+last-verified: 2026-08-10
 sources:
   - ../arkrog_backend/package.json
   - ../arkrog_backend/pm2.config.json
@@ -31,18 +31,18 @@ sources:
 
 > 2026-08-03 服务器完成迁移，全部内容收敛到 `/arkrog` 下。**旧的 `/var/www/*` 与 `/home/ubuntu/arkrog_backend` 布局已作废**，本节曾按旧布局记载（核实于 2026-07-13），现更新。日常运维以服务器上的 `/arkrog/README.md` 为准。
 
-| | prod | dev |
-|---|---|---|
-| 域名 | `arkrog.com`（含 `*.arkrog.com` 兜底） | `dev.arkrog.com` |
-| 前端静态根（nginx `root`） | `/arkrog/prod/frontend/current` | `/arkrog/dev/frontend/current` |
-| 前端产物实体 | `current` 是软链，指向 `frontend/releases/<时间戳>/`，回滚即改软链 | 同左 |
-| 后端 pm2 进程 | `arkrog`，fork 单实例 | `arkrog-dev`，cluster ×2 |
-| 后端 cwd | `/arkrog/prod/backend` | `/arkrog/dev/backend` |
-| 端口（`.env` 的 `PORT`） | 5174 | 5175 |
-| `NODE_ENV` | production | **production**（不是 development）——由 pm2 在进程内注入（来自 `dump.pm2`），`/proc/<pid>/environ` 里看不到，别据此误判 |
-| 部署分支 / 提交（核实于 2026-08-05） | 后端 `dev_tournament` @ `c82ca59` | 后端 `dev_tournament` @ `10eb7b6`；前端 `teresa-dev` @ `f869aae` |
-| Redis 前缀（`REDIS_PREFIX`） | 未配置 → 默认 `arkrog` | `arkrog-dev` |
-| Mongo | **同一台 localhost mongod、同一个 `arkrog` 库**（见第 4 节） | 同左 |
+|                                      | prod                                                               | dev                                                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 域名                                 | `arkrog.com`（含 `*.arkrog.com` 兜底）                             | `dev.arkrog.com`                                                                                                       |
+| 前端静态根（nginx `root`）           | `/arkrog/prod/frontend/current`                                    | `/arkrog/dev/frontend/current`                                                                                         |
+| 前端产物实体                         | `current` 是软链，指向 `frontend/releases/<时间戳>/`，回滚即改软链 | 同左                                                                                                                   |
+| 后端 pm2 进程                        | `arkrog`，fork 单实例                                              | `arkrog-dev`，cluster ×2                                                                                               |
+| 后端 cwd                             | `/arkrog/prod/backend`                                             | `/arkrog/dev/backend`                                                                                                  |
+| 端口（`.env` 的 `PORT`）             | 5174                                                               | 5175                                                                                                                   |
+| `NODE_ENV`                           | production                                                         | **production**（不是 development）——由 pm2 在进程内注入（来自 `dump.pm2`），`/proc/<pid>/environ` 里看不到，别据此误判 |
+| 部署分支 / 提交（核实于 2026-08-05） | 后端 `dev_tournament` @ `c82ca59`                                  | 后端 `dev_tournament` @ `10eb7b6`；前端 `teresa-dev` @ `f869aae`                                                       |
+| Redis 前缀（`REDIS_PREFIX`）         | 未配置 → 默认 `arkrog`                                             | `arkrog-dev`                                                                                                           |
+| Mongo                                | **同一台 localhost mongod、同一个 `arkrog` 库**（见第 4 节）       | 同左                                                                                                                   |
 
 部署一律通过 `/arkrog/bin/` 下的脚本，不要手动改文件或直接调 pm2：`sudo -u arkrog /arkrog/bin/deploy-frontend.sh <env> --from-release`（前端，产物由 GitHub Actions 发布到固定 tag `dist-latest`）、`sudo -u arkrog /arkrog/bin/deploy-backend.sh <env>`（后端，会 pm2 stop → `git pull --ff-only` → `yarn install --frozen-lockfile` → 起进程 → 轮询 `/app/banners` 健康检查）。
 
@@ -106,23 +106,23 @@ dotenv 加载顺序（`app.ts`）：`.env` → `.env.${NODE_ENV}`，`override: t
 
 下表"读取点"经全仓库 `process.env` grep 核实；"线上配置"为 2026-07-13 服务器 `.env` / `.env.production` 键名清单比对结果（只看键名，不看值）。
 
-| 键 | 读取点（路径 + 符号） | 线上配置 | 备注 |
-|---|---|---|---|
-| `PORT` | `app.ts`（默认 5174） | `.env`：prod 5174 / dev 5175 | nginx 反代目标即此端口 |
-| `NODE_ENV` | `app.ts`（默认 development）、`middleware/errorHandler.js`、`util-scripts/updateGameData.ts` | pm2 注入 + `.env.production` | 决定 dotenv 层叠与 updateGameData 连哪个库 |
-| `SESSION_SECRET` | `app.ts` 的 session 中间件 | `.env` | |
-| `MONGO_URI` / `MONGO_URI_PROD` | `database/mongo.js` 的 `connect`、`util-scripts/updateGameData.ts`、`syncDatabase.js` | `.env`，两键值相同 | 主服务恒走 `MONGO_URI`（第 4 节） |
-| `REDIS_URI` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD` | `database/redis.js` 的 `redisConnect`（默认 localhost:6379 / db 0） | `REDIS_PASSWORD` 在 `.env.production` | |
-| `REDIS_PREFIX` | `database/redis.js`（默认 `arkrog`）、`services/bilibili/cache.ts`、`updateGameData.ts` | 仅 dev 的 `.env.production`（`arkrog-dev`） | prod/dev Redis 隔离的唯一机制 |
-| `DATA_PATH` | `utils/gamedata/shared.js`、`updateGameData.ts` | `.env`（`~` 开头）+ `.env.production`（绝对路径） | **层叠顺序 load-bearing**：Node 不展开 `~`，靠 `.env.production` 的绝对路径覆盖才可用 |
-| `ACTIVE_CHARS` | `utils/gamedata/buildCharacterRawBundle.js` | `.env` | |
-| `SECRET_ID` / `SECRET_KEY` / `BUCKET` | `storage/sts.js`、`storage/cos.js`、`utils/appData/db.js`、`utils/tencentApi.ts` 的 `callTencentApi` | `.env.production` | 腾讯云 COS 与云 API 共用同一对密钥；`BUCKET` 仅 COS 用。该密钥需具备 `ocr:GeneralBasicOCR` 权限，否则地图识别返回 502 |
-| `OCR_ENDPOINT_HOST` | `routers/mapRecognition.ts`（默认 `ocr.tencentcloudapi.com`） | dev `.env` 已配 | 生产应设 `ocr.internal.tencentcloudapi.com`（内网端点，解析到 169.254.1.10，不占公网带宽）。**该域名只在腾讯云 VPC 内解析**，本地开发/CI 必须留默认公网域名。换端点由代码走 TC3 签名的 `host` 参数完成，不是只改 URL |
-| `OCR_REGION` | `routers/mapRecognition.ts`（默认 `ap-guangzhou`） | dev `.env` 已配 | 服务器在 ap-beijing，生产应设 `ap-beijing` |
-| `OCR_MONTHLY_QUOTA` | `routers/mapRecognition.ts`（默认 900） | 未配置，用默认值 | 全局月度调用硬上限，保护腾讯云 1000 次/月免费额度；超限接口返回 429。计数在 Redis，键 `rl:ocr:quota:{yyyyMM}` |
-| `DASHSCOPE_API_KEY` | `services/llm/config.ts`、`routers/tournament.js` | `.env` | 百炼 LLM |
-| `LLM_BASE_URL` / `LLM_DEFAULT_MODEL` / `LLM_TIMEOUT` | `services/llm/config.ts` 的 `config` / `getEnvConfig` | 仅 `LLM_DEFAULT_MODEL` | 服务器 `.env` 里的 `DASHSCOPE_BASE_URL`、`DASHSCOPE_TIMEOUT` 两键**无任何代码读取**（死键，代码读的是 `LLM_` 前缀） |
-| `YoutubeToken` | `utils/record.js` 的 `parseYoutubeURL`（视频 + 频道两次 API 调用） | **两环境均未配置** | 请求 URL 拼出 `key=undefined` → YouTube 解析必走失败分支 → YouTube 链接的记录提交失败。详见[提交表单与外链解析](../app/modules/RelicFree/docs/05-submit-form-and-links.md) |
+| 键                                                         | 读取点（路径 + 符号）                                                                                | 线上配置                                          | 备注                                                                                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                                                     | `app.ts`（默认 5174）                                                                                | `.env`：prod 5174 / dev 5175                      | nginx 反代目标即此端口                                                                                                                                                                                                                                                                                                                                                              |
+| `NODE_ENV`                                                 | `app.ts`（默认 development）、`middleware/errorHandler.js`、`util-scripts/updateGameData.ts`         | pm2 注入 + `.env.production`                      | 决定 dotenv 层叠与 updateGameData 连哪个库                                                                                                                                                                                                                                                                                                                                          |
+| `SESSION_SECRET`                                           | `app.ts` 的 session 中间件                                                                           | `.env`                                            |                                                                                                                                                                                                                                                                                                                                                                                     |
+| `MONGO_URI` / `MONGO_URI_PROD`                             | `database/mongo.js` 的 `connect`、`util-scripts/updateGameData.ts`、`syncDatabase.js`                | `.env`，两键值相同                                | 主服务恒走 `MONGO_URI`（第 4 节）                                                                                                                                                                                                                                                                                                                                                   |
+| `REDIS_URI` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD` | `database/redis.js` 的 `redisConnect`（默认 localhost:6379 / db 0）                                  | `REDIS_PASSWORD` 在 `.env.production`             |                                                                                                                                                                                                                                                                                                                                                                                     |
+| `REDIS_PREFIX`                                             | `database/redis.js`（默认 `arkrog`）、`services/bilibili/cache.ts`、`updateGameData.ts`              | 仅 dev 的 `.env.production`（`arkrog-dev`）       | prod/dev Redis 隔离的唯一机制                                                                                                                                                                                                                                                                                                                                                       |
+| `DATA_PATH`                                                | `utils/gamedata/shared.js`、`updateGameData.ts`                                                      | `.env`（`~` 开头）+ `.env.production`（绝对路径） | **层叠顺序 load-bearing**：Node 不展开 `~`，靠 `.env.production` 的绝对路径覆盖才可用                                                                                                                                                                                                                                                                                               |
+| `ACTIVE_CHARS`                                             | `utils/gamedata/buildCharacterRawBundle.js`                                                          | `.env`                                            |                                                                                                                                                                                                                                                                                                                                                                                     |
+| `SECRET_ID` / `SECRET_KEY` / `BUCKET`                      | `storage/sts.js`、`storage/cos.js`、`utils/appData/db.js`、`utils/tencentApi.ts` 的 `callTencentApi` | `.env.production`                                 | 腾讯云 COS 与云 API 共用同一对密钥；`BUCKET` 仅 COS 用。该密钥需具备 `ocr:GeneralBasicOCR` 权限，否则地图识别返回 502                                                                                                                                                                                                                                                               |
+| `OCR_ENDPOINT_HOST`                                        | `routers/mapRecognition.ts`（默认 `ocr.tencentcloudapi.com`）                                        | dev `.env` 已配                                   | 生产应设 `ocr.internal.tencentcloudapi.com`（内网端点，解析到 169.254.1.10，不占公网带宽）。**该域名只在腾讯云 VPC 内解析**，本地开发/CI 必须留默认公网域名。换端点由代码走 TC3 签名的 `host` 参数完成，不是只改 URL                                                                                                                                                                |
+| `OCR_REGION`                                               | `routers/mapRecognition.ts`（默认 `ap-guangzhou`）                                                   | dev `.env` 已配                                   | 服务器在 ap-beijing，生产应设 `ap-beijing`                                                                                                                                                                                                                                                                                                                                          |
+| `OCR_MONTHLY_QUOTA`                                        | `routers/mapRecognition.ts`（默认 **10000**）                                                        | 未配置，用默认值                                  | 全局月度调用硬上限，**是失控消费的兜底闸门而非免费额度护栏**——免费额度仅 1000 次/月，项目已接受超出后按量付费（0.15 元/次，1 万次以内档），上限 10000 对应最坏单月账单约 1350 元。超限后接口对所有人返回 429，直到自然月翻页（按 **UTC** 月份，即北京时间 1 号 08:00 重置）。计数键 `rl:ocr:quota:{yyyyMM}`，**已在 `app.ts` 启动清缓存中豁免**（`rl:` 前缀），否则每次部署都会归零 |
+| `DASHSCOPE_API_KEY`                                        | `services/llm/config.ts`、`routers/tournament.js`                                                    | `.env`                                            | 百炼 LLM                                                                                                                                                                                                                                                                                                                                                                            |
+| `LLM_BASE_URL` / `LLM_DEFAULT_MODEL` / `LLM_TIMEOUT`       | `services/llm/config.ts` 的 `config` / `getEnvConfig`                                                | 仅 `LLM_DEFAULT_MODEL`                            | 服务器 `.env` 里的 `DASHSCOPE_BASE_URL`、`DASHSCOPE_TIMEOUT` 两键**无任何代码读取**（死键，代码读的是 `LLM_` 前缀）                                                                                                                                                                                                                                                                 |
+| `YoutubeToken`                                             | `utils/record.js` 的 `parseYoutubeURL`（视频 + 频道两次 API 调用）                                   | **两环境均未配置**                                | 请求 URL 拼出 `key=undefined` → YouTube 解析必走失败分支 → YouTube 链接的记录提交失败。详见[提交表单与外链解析](../app/modules/RelicFree/docs/05-submit-form-and-links.md)                                                                                                                                                                                                          |
 
 上游数据仓库：`DATA_PATH` 指向的 `/home/ubuntu/ArknightsGameData` 是**浅克隆**（核实于 2026-07-13：`git rev-parse --is-shallow-repository` = true，按 `--depth=1` 方式维护）——它没有完整历史，更新走 `git pull`（或 `updateGameData --pull`），不要在服务器上对它做依赖历史的 git 操作。
 
@@ -130,14 +130,14 @@ dotenv 加载顺序（`app.ts`）：`.env` → `.env.${NODE_ENV}`，`override: t
 
 后端存在两个入口文件，**只有 `app.ts` 是活的**。差异清单（逐行比对本地 HEAD）：
 
-| 能力 | `app.ts` | `app.js` |
-|---|---|---|
-| B站用户信息缓存启动构建（`#services/bilibili` 的 `buildUserInfoCache`） | ✅ | ✗ |
-| 定时任务（`jobs/index.js` 的 `startJobs` / `stopJobs`） | ✅ | ✗ |
-| `/misc` 路由挂载（`routers/misc.ts`） | ✅ | ✗ |
-| `bodyParser.json` 10mb limit | ✅ | ✗（默认 100kb） |
-| `SIGINT` / `SIGTERM` 优雅关闭 | ✅ | ✗ |
-| `PORT` 做 `Number()` 归一 | ✅ | ✗ |
+| 能力                                                                    | `app.ts` | `app.js`        |
+| ----------------------------------------------------------------------- | -------- | --------------- |
+| B站用户信息缓存启动构建（`#services/bilibili` 的 `buildUserInfoCache`） | ✅       | ✗               |
+| 定时任务（`jobs/index.js` 的 `startJobs` / `stopJobs`）                 | ✅       | ✗               |
+| `/misc` 路由挂载（`routers/misc.ts`）                                   | ✅       | ✗               |
+| `bodyParser.json` 10mb limit                                            | ✅       | ✗（默认 100kb） |
+| `SIGINT` / `SIGTERM` 优雅关闭                                           | ✅       | ✗               |
+| `PORT` 做 `Number()` 归一                                               | ✅       | ✗               |
 
 **`app.js` 用 plain node 已经起不来**（`yarn dev` / `yarn prod` 均不可用），原因是它 import 的若干模块只有 `.ts` 实体，`node` 无法解析而 `tsx` 可以：
 

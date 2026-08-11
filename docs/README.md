@@ -47,6 +47,7 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | [../CLAUDE.md](../CLAUDE.md) | AI 协作导航：项目速述、高危约定、命令速查 | 已验证 |
 | [docs/damage-calculator-doc-plan.md](damage-calculator-doc-plan.md) | 伤害计算器 doc-as-code 落地计划 | 规划 |
 | [docs/relic-free-doc-plan.md](relic-free-doc-plan.md) | 无藏收录 doc-as-code 落地计划 | 规划 |
+| [docs/gamedata-auto-sync-plan.md](gamedata-auto-sync-plan.md) | 解包数据自动同步（cron）设计：水位/闸门/两遍执行的取舍 | 规划 |
 
 ### 伤害计算器模块正文（`app/modules/Tool/DamageCalculator/docs/`）
 
@@ -133,6 +134,7 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | 你要做的事 | 起点 → 后续 |
 |---|---|
 | 上游游戏数据更新（关卡/藏品/干员上架） | [data-pipeline.md](data-pipeline.md) → [模块 09](../app/modules/Tool/DamageCalculator/docs/09-fixtures-and-baselines.md) → [模块 10](../app/modules/Tool/DamageCalculator/docs/10-relic-buff-verification.md) |
+| 让上游数据更新自动化（cron） | [gamedata-auto-sync-plan.md](gamedata-auto-sync-plan.md)（规划中；现行手动流程仍看 [data-pipeline.md](data-pipeline.md) 第 3 节） |
 | 适配新藏品/通宝（含独立黑板注册判定） | [模块 03](../app/modules/Tool/DamageCalculator/docs/03-relic-adaptation-guide.md) → [模块 02](../app/modules/Tool/DamageCalculator/docs/02-buff-context-and-formulas.md) → [known-issues](../app/modules/Tool/DamageCalculator/docs/known-issues.md) |
 | 新增干员实现 | [模块 04](../app/modules/Tool/DamageCalculator/docs/04-char-impl-cookbook.md) |
 | 排查藏品「看似生效实际无效果」 | [模块 07](../app/modules/Tool/DamageCalculator/docs/07-debugging.md) |

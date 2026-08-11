@@ -1,5 +1,5 @@
 ---
-last-verified: 2026-07-18
+last-verified: 2026-08-11
 sources:
   - app/stores/gameDataStore.ts
   - app/stores/relicFreeStore.ts
@@ -180,7 +180,7 @@ npx tsx util-scripts/updateGameData.ts --skip-preview  # 跳过 stage-preview �
 | `DATA_PATH` | **必填**，解包仓库根目录 |
 | `MONGO_URI` | `NODE_ENV=development` 时必填 |
 | `MONGO_URI_PROD` | `NODE_ENV=production` 时必填 |
-| `REDIS_URI` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD` / `REDIS_PREFIX` | Redis 连接（默认 localhost:6379 db0 / 前缀 `arkrog`，前缀需与主服务一致） |
+| `REDIS_URI` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD` / `REDIS_PREFIX` | Redis 连接（默认 localhost:6379 db0 / 前缀 `arkrog`，前缀需与主服务一致）。**在 dev 目录执行时见下方警示块** |
 | `ACTIVE_CHARS` | 计算器干员白名单（见第 4 节，更新脚本本身不读它，但其 `warmUpCache` 触发的 `buildCharacterRawBundle` 会读） |
 
 ### 3.4 执行步骤与顺序约束
@@ -198,6 +198,23 @@ npx tsx util-scripts/updateGameData.ts --skip-preview  # 跳过 stage-preview �
 | 7 | `warmUpCache()` | 重新预热全部缓存；脚本与运行中的服务共享同一 Redis，**执行完即对线上生效** |
 
 每步有 `[n/7] ... done (耗时)` 日志；任何一步失败脚本以非零码退出并打印 `[ERROR]`。
+
+### 3.5 在服务器上执行：必须跑两遍（核实于 2026-08-11）
+
+线上 prod 与 dev 共用同一个 Mongo `arkrog` 库，只靠 `REDIS_PREFIX` 隔离缓存（机制见[部署与环境矩阵](deployment-env-matrix.md) 第 4 节）。因此**数据只需写一遍 Mongo，但缓存要刷两个前缀**，标准动作是两条命令：
+
+```bash
+cd /arkrog/prod/backend && yarn update-data:prod --yes                  # 走完七步，刷 arkrog:*
+cd /arkrog/dev/backend  && yarn update-data:prod --yes --skip-preview   # 只刷 arkrog-dev:*
+```
+
+第二遍加 `--skip-preview`：Mongo 的 `Data.stage-preview` 已被第一遍写好，这遍只为让 dev 前缀的缓存失效并预热，跳过全量重算省一半时间。两遍各约 2 分钟，主服务都无需重启。
+
+> ⚠️ **dev 那遍也必须用 `update-data:prod`。** `REDIS_PREFIX=arkrog-dev` 只写在 dev 后端的 `.env.production` 里，而 `yarn update-data` 是 `NODE_ENV=development`、不会加载该文件——前缀会回落成默认 `arkrog`，**清掉并预热的是生产缓存，dev 缓存反而一直是旧的**。注意 dev 主服务进程本身跑的是 `NODE_ENV=production`（pm2 注入），"在 dev 目录就该用 dev 环境"这个直觉在这里是错的。
+
+上游解包仓库在 **`/arkrog/shared/ArknightsGameData`**（prod/dev 共用一份，三份 `.env` 的 `DATA_PATH` 均指向它），是 `--depth=1` 浅克隆。手动更新时注意：若用 `git fetch --depth=1` 拉取，嫁接点会断开导致 `git merge --ff-only` 报 `refusing to merge unrelated histories`，需用 `git reset --hard FETCH_HEAD` 落地（该仓库是纯上游镜像、无本地提交，此语义安全）；脚本的 `--pull` 走的是普通 `git pull --ff-only`，不受此影响。服务器直连 GitHub 仅 23KB/s，走 mihomo 代理 `127.0.0.1:7890` 约 1.9MB/s。
+
+> 把这套动作自动化（cron + 变更水位 + 新主题闸门）的设计见[解包数据自动同步设计](gamedata-auto-sync-plan.md)，**规划中、尚未实施**；在它落地前，上游同步全靠人工执行本节命令。
 
 ## 4. 新干员上架
 

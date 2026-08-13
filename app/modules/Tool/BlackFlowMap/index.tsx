@@ -223,9 +223,12 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const hasUserMarkedNodes = (mapId: string) => {
     const prevMarked = markedNodesByMap[mapId] ?? {};
     const prevDetected = detectedNodesByMap[mapId] ?? {};
-    return Object.entries(prevMarked).some(
-      ([key, optionId]) => prevDetected[key] !== optionId,
-    );
+    return Object.entries(prevMarked).some(([key, optionId]) => {
+      if (optionId === "empty" && prevDetected[key] === undefined) {
+        return false;
+      }
+      return prevDetected[key] !== optionId;
+    });
   };
 
   // 把某个基底的识别结果套进它自己的标记里。mode: "merge"（默认）——用户层在

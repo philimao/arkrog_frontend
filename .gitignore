@@ -21,3 +21,6 @@ wasm/*
 test/DamageCalculator/reports/coverage-*.json
 .history
 yarn.lock
+
+# OCR 评测的中间产物（压缩图 + 像素 + OCR 结果，上百 MB）
+tmp/

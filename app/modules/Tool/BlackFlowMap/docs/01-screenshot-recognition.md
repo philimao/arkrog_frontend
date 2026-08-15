@@ -9,6 +9,7 @@ sources:
   - app/modules/Tool/BlackFlowMap/recognition/recognize.ts
   - app/modules/Tool/BlackFlowMap/recognition/compress.ts
   - app/modules/Tool/BlackFlowMap/recognition/ocrClient.ts
+  - app/modules/Tool/BlackFlowMap/recognition/shadowReport.ts
   - app/modules/Tool/BlackFlowMap/recognition/detectZone.ts
   - app/modules/Tool/BlackFlowMap/recognition/vocab.ts
   - app/modules/Tool/BlackFlowMap/recognition/grid.ts
@@ -16,6 +17,7 @@ sources:
   - app/modules/Tool/BlackFlowMap/recognition/matchMap.ts
   - arkrog_backend/routers/mapRecognition.ts
   - arkrog_backend/utils/tencentApi.ts
+  - arkrog_backend/utils/localOcr.ts
   - arkrog_backend/middleware/rateLimit.ts
 ---
 
@@ -55,7 +57,8 @@ sources:
 | `recognition/grid.ts`       | `fitAxis` / `snapToAxis`                                                                              |
 | `recognition/blankNodes.ts` | 空白过路点（白圈黑点、无文字的节点）像素检测                                                          |
 | `recognition/matchMap.ts`   | `scoreOffset` / `rank` / `matchPercentOf` / `correctNodes` / `matchCandidates` / `computeMarginRatio` |
-| `recognition/recognize.ts`  | 主流程编排 + `confidenceOf` + `toMarkableNodes`                                                       |
+| `recognition/recognize.ts`  | `inferFromItems`（**纯函数**：items + 画布 → 结论）+ 主流程编排 + `confidenceOf` + `toMarkableNodes`                                                       |
+| `recognition/shadowReport.ts` | 灰度对照上报（见 3.2），灰度结束即可整个删掉                                                          |
 | `ScreenshotRecognizer.tsx`  | 上传交互（点击/拖拽/粘贴）、识别结果展示、候选列表                                                    |
 | `FloatingPreview.tsx`       | 主预览滚出视野时浮出的截图小窗，可拖动/缩放/最小化                                                    |
 | `index.tsx`                 | 节点标记的落盘与冲突处理、基底/区域上的识别标记、覆盖合并弹窗                                         |
@@ -69,7 +72,8 @@ POST /map-recognition/ocr
 Content-Type: application/octet-stream
 Body: JPEG 二进制，≤ 400KB
 
-200  { code: 0, data: { items: [{ t, x, y, w, h }, ...], strategy: { account, action } } }
+200  { code: 0, data: { items: [{ t, x, y, w, h }, ...], strategy: { account, action }, ms } }
+     灰度期另有 data.shadow = { items, ms, action }（见 3.2）
 400  非 JPEG（按魔数 FF D8 FF 判） / 超过体积上限
 429  限流；或 exhausted:true 表示本月全部免费额度已用尽
 502  上游 OCR 失败（附 upstreamCode，不透传原始报错文本）
@@ -103,6 +107,14 @@ Redis 状态（都在 `rl:` 前缀下，**已被 `app.ts` 的启动清缓存豁�
 单次请求最多真打 3 次上游，防止一条链走到底把延迟拖爆。
 
 多账号可选：配置 `SECRET_ID_2` / `SECRET_KEY_2` 后链长翻倍，未配置时相关策略静默跳过，不影响功能。
+
+### 3.2 灰度：本地 OCR 影子并行
+
+自建的本地 OCR 服务（RapidOCR / PP-OCRv6_small，见 [ADR-0003](adr/0003-self-hosted-local-ocr.md)）正在灰度。配置 `OCR_SHADOW_ENDPOINT` 后，后端每次请求会与云端**并发**打一份本地识别，结果放在 `data.shadow` 里带回；**权威结果仍是云端的**，本地失败或超时一律吞掉。
+
+差异必须在前端比：两边的分歧不在 OCR 文本层面，而在跑完识别管线之后的结论。所以前端拿 `shadow.items` 用**同一张画布**再调一次 `inferFromItems`，把层数/基底/可信度档位的差异 POST 到 `/map-recognition/shadow-report` 聚合到 Redis 哈希 `rl:ocr:shadow:{月份}`。不上传图片，不带用户标识。
+
+因为是并发发出，总耗时只在「本地比云端慢」时才被拉长，上界由 `OCR_SHADOW_TIMEOUT_MS` 兜住。
 
 ## 四、结果呈现
 
@@ -198,4 +210,5 @@ function isAmbiguous(result) {
 ## 八、相关
 
 - 决策背景（为什么是云 OCR + 前端推理）：[adr/0001-cloud-ocr-frontend-inference.md](adr/0001-cloud-ocr-frontend-inference.md)
+- 为什么要自建本地 OCR：[adr/0003-self-hosted-local-ocr.md](adr/0003-self-hosted-local-ocr.md)
 - 部署与环境变量：[../../../../../docs/deployment-env-matrix.md](../../../../../docs/deployment-env-matrix.md)

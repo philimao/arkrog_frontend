@@ -29,16 +29,35 @@ export interface OcrStrategyInfo {
   action: string;
 }
 
+/**
+ * 灰度期后端并发跑的本地 OCR 结果（arkrec 上的自建服务）。只做对照，不参与
+ * 权威结论；灰度结束后后端不再下发这个字段，前端相关分支自然失效。
+ */
+export interface OcrShadow {
+  items: OcrItem[];
+  /** 本地服务自报的纯推理耗时（ms） */
+  ms: number;
+  action: string;
+}
+
 export interface OcrResult {
   items: OcrItem[];
   strategy?: OcrStrategyInfo;
+  /** 云端上游调用耗时（ms），与 shadow.ms 同口径 */
+  ms?: number;
+  shadow?: OcrShadow;
 }
 
 interface OcrResponseBody {
   code: number;
   message?: string;
   exhausted?: boolean;
-  data?: { items?: OcrItem[]; strategy?: OcrStrategyInfo };
+  data?: {
+    items?: OcrItem[];
+    strategy?: OcrStrategyInfo;
+    ms?: number;
+    shadow?: OcrShadow;
+  };
 }
 
 export async function requestOcr(blob: Blob): Promise<OcrResult> {
@@ -70,5 +89,10 @@ export async function requestOcr(blob: Blob): Promise<OcrResult> {
       json?.exhausted === true,
     );
   }
-  return { items: json.data?.items ?? [], strategy: json.data?.strategy };
+  return {
+    items: json.data?.items ?? [],
+    strategy: json.data?.strategy,
+    ms: json.data?.ms,
+    shadow: Array.isArray(json.data?.shadow?.items) ? json.data.shadow : undefined,
+  };
 }

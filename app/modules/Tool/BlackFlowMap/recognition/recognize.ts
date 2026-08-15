@@ -6,6 +6,7 @@
  */
 import { compressScreenshot } from "./compress";
 import { requestOcr } from "./ocrClient";
+import { postShadowReport } from "./shadowReport";
 import { detectZone } from "./detectZone";
 import { matchVocab, fuzzySubstringMatch, ANCHOR_LABELS } from "./vocab";
 import { fitAxis, snapToAxis } from "./grid";
@@ -125,14 +126,18 @@ export interface RecognizeOptions {
   fallbackZone?: string;
 }
 
-export async function recognizeMap(
-  file: File,
+/**
+ * 从一份 OCR 文本框推出结论。**纯函数、无网络**，因此可以拿同一张画布对两份
+ * 不同来源的 items（云端 / 本地）各跑一遍来做对照 —— 灰度期正是这么用的。
+ *
+ * @param canvas 与产出 `items` 的那张图必须是同一张，否则坐标系对不上
+ */
+export function inferFromItems(
+  items: OcrItem[],
+  canvas: HTMLCanvasElement,
   zones: ZoneData[],
   options: RecognizeOptions = {},
-): Promise<RecognizeResult> {
-  const { blob, canvas } = await compressScreenshot(file);
-  const { items, strategy } = await requestOcr(blob);
-
+): Omit<RecognizeResult, "strategy"> {
   const zone = detectZone(items, zones) ?? options.fallbackZone;
   if (!zone) throw new ZoneUndetectedError();
 
@@ -251,7 +256,53 @@ export async function recognizeMap(
     gridNodes,
     correctedNodes: correctNodes(gridNodes, bestMap, best.offset),
     lowDensity: occupiedRatio < LOW_DENSITY_THRESHOLD,
-    strategy,
     stats: { labels: labels.length, blanks: blanks.length, occupiedRatio },
   };
+}
+
+export async function recognizeMap(
+  file: File,
+  zones: ZoneData[],
+  options: RecognizeOptions = {},
+): Promise<RecognizeResult> {
+  const { blob, canvas } = await compressScreenshot(file);
+  const { items, strategy, ms, shadow } = await requestOcr(blob);
+
+  const result: RecognizeResult = {
+    ...inferFromItems(items, canvas, zones, options),
+    strategy,
+  };
+
+  // 灰度对照：后端并发跑了一份本地 OCR 时，用**同一张画布**把本地那份也推一遍，
+  // 只上报两边结论的差异。整段包在 try 里 —— 对照实验不允许影响识别本身。
+  if (shadow) {
+    try {
+      let local: Omit<RecognizeResult, "strategy"> | null = null;
+      let failure = "";
+      try {
+        local = inferFromItems(shadow.items, canvas, zones, options);
+      } catch (err) {
+        failure = `ERR:${(err as Error).name}`;
+      }
+      void postShadowReport({
+        zone: { cloud: result.zone, local: local?.zone ?? failure },
+        mapId: { cloud: result.mapId, local: local?.mapId ?? failure },
+        tone: {
+          cloud: result.confidence.tone,
+          local: local?.confidence.tone ?? failure,
+        },
+        cloudInLocalTop2:
+          local?.topCandidates.some((c) => c.mapId === result.mapId) ?? false,
+        localInCloudTop2: local
+          ? result.topCandidates.some((c) => c.mapId === local.mapId)
+          : false,
+        ms: { cloud: ms ?? 0, local: shadow.ms },
+        items: { cloud: items.length, local: shadow.items.length },
+      });
+    } catch {
+      // 灰度对照失败就算了，不能影响用户看到的识别结果
+    }
+  }
+
+  return result;
 }

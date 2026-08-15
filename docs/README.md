@@ -117,6 +117,7 @@ arkrog_frontend（明日方舟集成战略工具站前端）的文档总入口�
 | [.../docs/01-screenshot-recognition.md](../app/modules/Tool/BlackFlowMap/docs/01-screenshot-recognition.md) | 截图识别：一次云 OCR 同时判层数与基底，全部推理在前端 | 已验证 |
 | [.../docs/adr/0001-cloud-ocr-frontend-inference.md](../app/modules/Tool/BlackFlowMap/docs/adr/0001-cloud-ocr-frontend-inference.md) | ADR：云 OCR + 前端推理，后端只做签名转发 | 已验证 |
 | [.../docs/adr/0002-multi-account-multi-action-ocr-chain.md](../app/modules/Tool/BlackFlowMap/docs/adr/0002-multi-account-multi-action-ocr-chain.md) | ADR：OCR 多接口降级链 | 已验证 |
+| [.../docs/adr/0003-self-hosted-local-ocr.md](../app/modules/Tool/BlackFlowMap/docs/adr/0003-self-hosted-local-ocr.md) | ADR：自建本地 OCR，云端退为兜底 | 灰度中 |
 
 ### 存量文档
 

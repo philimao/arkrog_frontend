@@ -98,7 +98,7 @@ function RougeSelector({
               role="button"
               onClick={() => navigate(tournament.id)}
             >
-              <div className="w-full max-w-40">
+              <div className="w-full max-w-32 sm:max-w-40 shrink-0">
                 {tournament.avatar ? (
                   <img
                     src={tournament.avatar}
@@ -108,28 +108,34 @@ function RougeSelector({
                     crossOrigin="anonymous"
                   />
                 ) : (
-                  <div className="bg-black-gray text-light-mid-gray text-2xl flex items-center justify-center aspect-square text-center p-4">
+                  <div className="bg-black-gray text-light-mid-gray text-base sm:text-2xl flex items-center justify-center aspect-square text-center p-2 sm:p-4">
                     {tournament.name}
                   </div>
                 )}
               </div>
-              <div className="flex flex-col pl-4 gap-1">
-                <div className="text-3xl font-bold">{tournament.name}</div>
+              <div className="flex flex-col pl-4 gap-1 min-w-0">
+                <div className="text-xl sm:text-3xl font-bold">
+                  {tournament.name}
+                </div>
                 {
-                  <div className="text-xl text-light-mid-gray">
+                  <div className="text-sm sm:text-xl text-light-mid-gray">
                     {`${new Date(tournament.stages[0].startTime).toLocaleDateString("zh-CN")}
                   -${new Date(tournament.stages[tournament.stages.length - 1].endTime).toLocaleDateString("zh-CN")}`}
                   </div>
                 }
                 {
-                  <div className="h-7 leading-7">
+                  <div className="text-sm sm:text-base min-h-6 sm:min-h-7 leading-6 sm:leading-7">
                     版本：{topics[tournament.rogue as RogueKey].name}
                     {tournament.edition}
                   </div>
                 }
-                {<div className="h-7 leading-7">难度：{tournament.level}</div>}
                 {
-                  <div className="flex items-center h-7">
+                  <div className="text-sm sm:text-base min-h-6 sm:min-h-7 leading-6 sm:leading-7">
+                    难度：{tournament.level}
+                  </div>
+                }
+                {
+                  <div className="text-sm sm:text-base flex items-center min-h-6 sm:min-h-7 flex-wrap">
                     <div>主办：</div>
                     <div className="flex flex-wrap gap-2">
                       {tournament.organizers?.map((organizer, index) => (

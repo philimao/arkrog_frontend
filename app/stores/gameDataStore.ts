@@ -72,6 +72,17 @@ function isValidBundle(data: unknown): data is GameDataBasic {
 }
 
 /**
+ * 校验 /gamedata/bundle-ext 的响应形状。理由同 isValidBundle，而且更要紧：
+ * 版本化改造后这个响应会被浏览器以一年 immutable 缓存住，一份坏副本能一直活到
+ * 数据下次更新（可能是几周），期间刷新都救不回来——不像改造前最多脏 24 小时。
+ */
+function isValidExtBundle(data: unknown): data is GameDataExt {
+  if (!data || typeof data !== "object") return false;
+  const bundle = data as Partial<GameDataExt>;
+  return !!bundle.relics && !!bundle.items && !!bundle.character_table;
+}
+
+/**
  * 单飞：basicLoaded 在响应回来后才置位，此前并发调用（RootLayout preload、
  * 各页面自己的 useEffect）会各打各的请求；绕缓存重试会把这个放大直打源站。
  * force 请求不并入，否则拿不到绕缓存的结果。
@@ -119,7 +130,8 @@ async function bundleUrl(name: keyof DataVersion): Promise<string> {
 type GameDataAction = {
   /** `force` 跳过 basicLoaded 闩锁并绕过 /gamedata/bundle 的 24 小时强缓存 */
   fetchGameDataBasic: (options?: { force?: boolean }) => Promise<void>;
-  fetchGameDataExt: () => Promise<GameDataState>;
+  /** `force` 跳过 extLoaded 闩锁，并绕开版本化 URL 与浏览器强缓存 */
+  fetchGameDataExt: (options?: { force?: boolean }) => Promise<GameDataState>;
   fetchAutochessData: () => Promise<AutochessPayload>;
 };
 
@@ -195,10 +207,19 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
         if (!force) basicInflight = task;
         return task;
       },
-      fetchGameDataExt: async () => {
+      fetchGameDataExt: async (options) => {
+        const force = options?.force ?? false;
         try {
-          if (get().extLoaded) return get();
-          const extData = await _get<GameDataExt>(await bundleUrl("bundleExt"));
+          if (!force && get().extLoaded) return get();
+          // force 是坏缓存自愈路径：走无版本号的老路由 + 绕缓存，
+          // 否则会被自己刚写进浏览器缓存的那份 immutable 副本挡住
+          const extData = await _get<unknown>(
+            force ? "/gamedata/bundle-ext" : await bundleUrl("bundleExt"),
+            force ? noCacheInit : undefined,
+          );
+          if (!isValidExtBundle(extData)) {
+            throw new Error("游戏补充数据响应格式异常");
+          }
           set(
             (state) => ({
               ...state,
@@ -211,8 +232,15 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
           // console.log(get());
           return get();
         } catch (err) {
-          console.error(err);
-          toast.error("加载游戏补充数据失败！");
+          if (force) {
+            console.error(err);
+            toast.error("加载游戏补充数据失败！");
+            return get();
+          }
+          // 自愈：坏缓存副本或瞬时抖动，绕缓存重试一次。与 basic 同构。
+          console.warn("游戏补充数据加载失败，绕缓存重试一次", err);
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          return get().fetchGameDataExt({ force: true });
         }
       },
       fetchAutochessData: async () => {

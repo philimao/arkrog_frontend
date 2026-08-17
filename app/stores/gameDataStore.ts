@@ -78,6 +78,44 @@ function isValidBundle(data: unknown): data is GameDataBasic {
  */
 let basicInflight: Promise<void> | null = null;
 
+/**
+ * 数据版本号，用于走 /gamedata/bundle/v/:version 这条一年 immutable 的路由。
+ *
+ * 原来两个 bundle 都是 24 小时强缓存，等于每人每天重下 594KB
+ * （2026-08-16 CDN 明细：合计 1.637GB/日，占全站流量 19.8%）。后端按 bundle
+ * 内容算了个哈希当版本号，/gamedata/version 是 no-store 的几十字节响应，
+ * 每次启动问一次，版本没变就整条 bundle 走本地缓存、零请求。
+ *
+ * 版本号在**路径**里而不是 query：腾讯云 CDN 默认忽略 query string 做缓存键，
+ * 放 query 会让新旧版本撞进同一份缓存，等于把一年 immutable 喂给错误的 body。
+ *
+ * 拿不到版本号（老后端、接口抖动）就返回 null，调用方退回无版本号的老路由，
+ * 行为与改造前完全一致。整个会话只解析一次。
+ */
+type DataVersion = { bundle: string; bundleExt: string };
+let versionPromise: Promise<DataVersion | null> | null = null;
+
+function resolveDataVersion(): Promise<DataVersion | null> {
+  versionPromise ??= _get<Partial<DataVersion>>("/gamedata/version")
+    .then((v) =>
+      typeof v?.bundle === "string" && typeof v?.bundleExt === "string"
+        ? { bundle: v.bundle, bundleExt: v.bundleExt }
+        : null,
+    )
+    .catch((err) => {
+      console.warn("获取数据版本号失败，退回无版本号路由", err);
+      return null;
+    });
+  return versionPromise;
+}
+
+/** 版本号可用就走 immutable 路由，否则退回老路由 */
+async function bundleUrl(name: keyof DataVersion): Promise<string> {
+  const base = name === "bundle" ? "/gamedata/bundle" : "/gamedata/bundle-ext";
+  const version = await resolveDataVersion();
+  return version ? `${base}/v/${version[name]}` : base;
+}
+
 type GameDataAction = {
   /** `force` 跳过 basicLoaded 闩锁并绕过 /gamedata/bundle 的 24 小时强缓存 */
   fetchGameDataBasic: (options?: { force?: boolean }) => Promise<void>;
@@ -113,8 +151,10 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
 
         const run = async (): Promise<void> => {
           try {
+            // force 是坏缓存自愈路径：显式走无版本号的老路由 + 绕缓存，
+            // 否则会被自己刚写进浏览器缓存的那份 immutable 副本挡住
             const data = await _get<unknown>(
-              "/gamedata/bundle",
+              force ? "/gamedata/bundle" : await bundleUrl("bundle"),
               force ? noCacheInit : undefined,
             );
             if (!isValidBundle(data)) {
@@ -158,7 +198,7 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
       fetchGameDataExt: async () => {
         try {
           if (get().extLoaded) return get();
-          const extData = await _get<GameDataExt>("/gamedata/bundle-ext");
+          const extData = await _get<GameDataExt>(await bundleUrl("bundleExt"));
           set(
             (state) => ({
               ...state,
@@ -178,7 +218,9 @@ export const useGameDataStore = create<GameDataState & GameDataAction>()(
       fetchAutochessData: async () => {
         try {
           if (get().autochessLoaded) return get().autochess;
-          const { data } = await api.get<AutochessPayload>("/gamedata/autochess");
+          const { data } = await api.get<AutochessPayload>(
+            "/gamedata/autochess",
+          );
           set(
             (state) => ({
               ...state,

@@ -22,6 +22,7 @@ import { intToRoman } from "~/utils/tools";
 import { ChevronIcon, EyeClosedIcon, EyeOpenIcon } from "~/components/Icons";
 import type { Route } from "./+types/index";
 import { StyledDivider } from "~/modules/Tournament/components/Shared";
+import { spriteStyle } from "./mapSprite";
 
 // 稳定的空 Set 引用，避免"当前基底还没有任何自动填入记录"这种情况下每次渲染都 new 一个新对象
 const EMPTY_KEY_SET: Set<string> = new Set();
@@ -405,9 +406,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
           style={{ cursor: disabled ? "not-allowed" : "pointer" }}
           aria-disabled={disabled}
         >
-          <img
-            src={`/images/map/${option.id}.webp`}
+          <div
             className="w-12 h-12 aspect-square"
+            style={spriteStyle(option.id)}
           />
           <div className="flex flex-col justify-center">
             <span className="text-sm lg:text-base">{option.name}</span>

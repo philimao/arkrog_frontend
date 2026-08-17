@@ -7,6 +7,7 @@ import {
 } from "./gridUtils";
 import { CloseIcon } from "@mantine/core";
 import { nodeOptions, nodeTypeLimits } from "./mapData";
+import { SpriteImage, spriteStyle } from "./mapSprite";
 
 // 节点名字只在屏幕够宽时显示，小屏幕上地图本来就挤，只留图标；用 SVG text
 // 而不是额外的 HTML 元素，这样能跟着 viewBox 一起缩放、不用另外定位。
@@ -346,12 +347,12 @@ export function NodeMapCanvas({
             markedNodes[nodeKey] === "hide_invisible"));
       const showHighlightImage =
         baseHighlightActive && (!isMarked || isTempReveal);
-      const imageHref =
+      const iconId =
         isMarked && !isTempReveal
-          ? `/images/map/${markedNodes[nodeKey]}.webp`
-          : showHighlightImage
-            ? `/images/map/${highlightOptionId}.webp`
-            : "/images/map/empty.webp";
+          ? markedNodes[nodeKey]
+          : showHighlightImage && highlightOptionId
+            ? highlightOptionId
+            : "empty";
       const isSelectedNode = selectedNodeKey === nodeKey;
 
       if (isStart) {
@@ -364,8 +365,8 @@ export function NodeMapCanvas({
               fill={"#f59e0b"}
             />
             {!readOnly && (
-              <image
-                href="/images/map/cursor_anchor.webp"
+              <SpriteImage
+                id="cursor_anchor"
                 x={x - iconSize / 4}
                 y={y - iconSize / 4}
                 width={iconSize * 0.5}
@@ -390,13 +391,13 @@ export function NodeMapCanvas({
         } else {
           dots.push(
             <g key={`${r},${c}`}>
-              <image
-                href={
+              <SpriteImage
+                id={
                   isBattleEnd
                     ? zone === "zone_5"
-                      ? "/images/map/battle_boss_cadejo.webp"
-                      : "/images/map/battle_mid_boss_shsgzd.webp"
-                    : "/images/map/final.webp"
+                      ? "battle_boss_cadejo"
+                      : "battle_mid_boss_shsgzd"
+                    : "final"
                 }
                 x={x - iconSize / 2}
                 y={y - iconSize / 2}
@@ -428,12 +429,8 @@ export function NodeMapCanvas({
           )?.name;
           dots.push(
             <g key={`${r},${c}`}>
-              <image
-                href={
-                  isKnownBattle
-                    ? "/images/map/battle_normal.webp"
-                    : "/images/map/shop.webp"
-                }
+              <SpriteImage
+                id={isKnownBattle ? "battle_normal" : "shop"}
                 x={x - iconSize / 2}
                 y={y - iconSize / 2}
                 width={iconSize}
@@ -469,8 +466,8 @@ export function NodeMapCanvas({
 
         dots.push(
           <g key={`${r},${c}`}>
-            <image
-              href={imageHref}
+            <SpriteImage
+              id={iconId}
               x={x - iconWidth / 2}
               y={y - iconHeight / 2}
               width={iconWidth}
@@ -613,9 +610,9 @@ export function NodeMapCanvas({
                     }}
                     className="gap-2 flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
                   >
-                    <img
-                      src="/images/map/empty.webp"
+                    <div
                       className="w-4 h-4 aspect-square"
+                      style={spriteStyle("empty")}
                     />
                     <span>林间空地</span>
                   </button>
@@ -655,9 +652,9 @@ export function NodeMapCanvas({
                 className={`flex items-center rounded-md border border-mid-gray bg-transparent text-left ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                 style={{ cursor: disabled ? "not-allowed" : "pointer" }}
               >
-                <img
-                  src={`/images/map/${opt.id}.webp`}
+                <div
                   className="w-8 h-8 aspect-square"
+                  style={spriteStyle(opt.id)}
                 />
                 <div className="flex flex-col">
                   <span>{opt.name}</span>

@@ -19,7 +19,7 @@ import { useRelicFreeStore } from "~/stores/relicFreeStore";
 const StyledBackground = styled.div`
   min-height: 100vh; /* 确保最小高度为视口高度 */
   overflow: hidden;
-  background-image: url("/images/bg/01.png"), url("/images/bg/02.png");
+  background-image: url("/images/bg/01.webp"), url("/images/bg/02.png");
   background-size:
     100% auto,
     100% auto;

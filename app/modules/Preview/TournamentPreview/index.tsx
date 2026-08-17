@@ -43,7 +43,7 @@ const StyledBannerSub = styled.div`
 const StyledContainer = styled.div`
   min-height: 100vh;
   overflow: hidden;
-  background-image: url("/images/bg/01.png"), url("/images/bg/02.png");
+  background-image: url("/images/bg/01.webp"), url("/images/bg/02.png");
   background-size:
     100% auto,
     100% auto;

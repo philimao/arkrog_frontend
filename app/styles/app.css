@@ -102,32 +102,47 @@ body {
 }
 
 @layer base {
+  /* 字体放在 app/styles/fonts/ 而不是 public/fonts/：这样 Vite 会给文件名加内容哈希
+     并输出到 assets-v2/，直接命中 nginx 现有的一年 immutable 长缓存规则。
+     放 public/ 时该规则覆盖不到 /fonts/——2026-08-17 线上实测这四个文件一个
+     Cache-Control 都没有，浏览器退化到启发式缓存，几乎每次访问都重下：
+     CDN 明细里字体 1.27GB/日、7147 次/日，是流量第二大项。 */
   @font-face {
     font-family: "Novecento";
     font-style: normal;
     font-weight: 400;
-    src: url(/fonts/Novecento.woff2) format("woff2");
+    font-display: swap;
+    src: url("./fonts/Novecento.woff2") format("woff2");
   }
 
   @font-face {
     font-family: "NovecentoWide";
     font-style: normal;
     font-weight: 400;
-    src: url(/fonts/NovecentoWide.ttf) format("truetype");
+    font-display: swap;
+    src: url("./fonts/NovecentoWide.woff2") format("woff2");
   }
 
   @font-face {
     font-family: "HanSans";
     font-style: normal;
     font-weight: 600;
-    src: url(/fonts/SourceHanSansCN-Bold.subset.otf) format("opentype");
+    font-display: swap;
+    src: url("./fonts/SourceHanSansCN-Bold.subset.woff2") format("woff2");
   }
 
+  /* HanSerif 全站只有一处用途：RecordCard 里的「N人」
+     （app/components/RecordCard/RecordCard.tsx 的 .font-han-serif）。
+     原来为这一处下发了 1019 字形、320.7K 的完整子集，占 311MB/日。
+     现在只保留 0-9 和「人」共 22 个字形：320.7K → 2.5K。
+     ⚠️ 以后若要用 HanSerif 渲染别的文字，必须先重新子集化，
+     否则缺字会静默回退到 sans-serif。 */
   @font-face {
     font-family: "HanSerif";
     font-style: normal;
     font-weight: 600;
-    src: url(/fonts/SourceHanSerifCN-Bold.subset.otf) format("opentype");
+    font-display: swap;
+    src: url("./fonts/SourceHanSerifCN-Bold.digits.woff2") format("woff2");
   }
 }
 

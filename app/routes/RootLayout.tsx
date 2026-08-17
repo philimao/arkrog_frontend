@@ -56,7 +56,6 @@ export default function RootLayout() {
     };
 
     const run = async () => {
-      console.log("fetchUserInfo")
       await fetchUserInfo();
       const extra = preload[route as keyof typeof preload] || [];
       await Promise.all(extra.map((f) => f()));

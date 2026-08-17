@@ -18,12 +18,12 @@ export default function TournamentsWrapper() {
   const { fetchGameDataBasic } = useGameDataStore();
   // 赛事数据
   const { tournamentsData, initTournamentData } = useTournamentDataStore();
-  const { fetchUserInfo } = useUserInfoStore();
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const run = async () => {
-      await fetchUserInfo();
+      // 用户身份由 RootLayout 在挂载时统一拉取（它会 await 完再渲染子路由），
+      // 这里再调一次只会多打一次 /user/id
       await Promise.all([fetchGameDataBasic(), initTournamentData()]);
       setLoaded(true);
     };
@@ -31,7 +31,7 @@ export default function TournamentsWrapper() {
     return () => {
       setLoaded(false);
     };
-  }, [fetchUserInfo, fetchGameDataBasic, initTournamentData]);
+  }, [fetchGameDataBasic, initTournamentData]);
 
   if (!loaded || !topics || !tournamentsData) {
     return <Loading />;

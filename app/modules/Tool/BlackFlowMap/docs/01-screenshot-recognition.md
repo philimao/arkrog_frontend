@@ -23,7 +23,9 @@ sources:
 
 # 截图识别地图
 
-用户上传一张游戏内地图截图，**一次云 OCR 调用同时判出层数（zone）与基底（mapId）**，命中后自动切过去并把识别到的节点填进去。全部推理在前端完成，后端只做 OCR 签名转发。
+用户上传一张游戏内地图截图，**一次 OCR 调用同时判出层数（zone）与基底（mapId）**，命中后自动切过去并把识别到的节点填进去。全部推理在前端完成，后端只负责把图送去 OCR 并归一化响应。
+
+OCR 由**自建的本地服务**（RapidOCR / PP-OCRv6_small，见 [ADR-0003](adr/0003-self-hosted-local-ocr.md)）承担，云 OCR 整条降级链退为兜底。
 
 功能对所有用户可见，区块自身可收起/展开。
 
@@ -35,7 +37,8 @@ sources:
           ▼
        POST /map-recognition/ocr   application/octet-stream，JPEG 二进制
           ▼
-[后端] 限流 → 按策略链签名转发（见 3.1）→ 归一化响应 → { items: [{t,x,y,w,h}] }
+[后端] 限流 → 本地 OCR（链首）；失败则按策略链签名转发云端（见 3.1）
+              → 归一化响应 → { items: [{t,x,y,w,h}] }
           ▼
 [前端] detectZone()      顶栏层名模糊子串匹配 → zone
        toNodeLabels()    词表匹配 → 节点标签 + 像素中心
@@ -73,7 +76,7 @@ Content-Type: application/octet-stream
 Body: JPEG 二进制，≤ 400KB
 
 200  { code: 0, data: { items: [{ t, x, y, w, h }, ...], strategy: { account, action }, ms } }
-     灰度期另有 data.shadow = { items, ms, action }（见 3.2）
+     strategy.account 为 "local" 即由自建服务承担；开了影子还会有 data.shadow（见 3.2）
 400  非 JPEG（按魔数 FF D8 FF 判） / 超过体积上限
 429  限流；或 exhausted:true 表示本月全部免费额度已用尽
 502  上游 OCR 失败（附 upstreamCode，不透传原始报错文本）
@@ -88,11 +91,17 @@ Body: JPEG 二进制，≤ 400KB
 | 匿名（按 IP）       | 2      | 10   |
 | 已登录（按 userId） | 5      | 100  |
 
-它防的是「一个人刷光全站共享的免费额度」。**没有全局月度硬上限**——账号已关闭后付费，额度耗尽时上游直接拒绝，自设闸门是多余的。
+它当初防的是「一个人刷光全站共享的**云端**免费额度」；本地无额度、只有 CPU，这条理由已弱化，待单独评估。**没有全局月度硬上限**——账号已关闭后付费，额度耗尽时上游直接拒绝，自设闸门是多余的。
 
-### 3.1 降级链
+### 3.1 链首是本地服务，云端是兜底
 
-免费额度按接口分别计算，所以后端把可用接口排成一条降级链（`utils/ocrStrategies.ts`，按实测准确率降序），某条被上游告知额度耗尽就自动降到下一条，全部耗尽才返回 `exhausted`。接口清单与准确率见 [ADR-0002](adr/0002-multi-account-multi-action-ocr-chain.md)。
+`OCR_LOCAL_FIRST=1` 时先打自建的本地 OCR 服务；**任何失败都静默回落**到云端策略链，用户无感。删掉这个环境变量并重启即整体回到纯云端，不必改代码或重新部署。
+
+本地**刻意不作为 `OCR_STRATEGIES` 的一项**：它没有账号、没有按月额度、不该参与 dead 标记；更要紧的是往数组里插一项会让所有下标位移，而 Redis 游标 `rl:ocr:cursor:*` 存的正是下标。
+
+**熔断**（`rl:ocr:local:open`，连续 3 次失败熔断 60 秒）：影子期本地挂了没人受影响，当上链首之后每挂一次都会让一个用户白等，不能让所有人都去踩同一个坑。本地主力的超时（`OCR_LOCAL_TIMEOUT_MS`，默认 5000）**比影子期短** —— 影子超时只丢一条观测数据，主力超时是用户纯白等的时间，之后还要再走一遍云端。
+
+云端那条链本身不变：免费额度按接口分别计算，所以把可用接口排成一条降级链（`utils/ocrStrategies.ts`，按实测准确率降序），某条被上游告知额度耗尽就自动降到下一条。接口清单与准确率见 [ADR-0002](adr/0002-multi-account-multi-action-ocr-chain.md)。**`exhausted` 现在意味着「本地不可用**且**云端全月耗尽」**，比接入本地前罕见得多。
 
 **降级判据是上游的错误码，不是自己的调用计数**——本地计数只覆盖自己发出的请求，跟账号真实用量必然有偏差，拿它当判据会误降级或漏降级。错误码分类见 `classifyOcrError`；判定耗尽用的码取自官方文档但尚未在真实耗尽场景下验证过，故另有正则兜底，未识别的码会打 WARN 日志便于补充。
 
@@ -108,13 +117,13 @@ Redis 状态（都在 `rl:` 前缀下，**已被 `app.ts` 的启动清缓存豁�
 
 多账号可选：配置 `SECRET_ID_2` / `SECRET_KEY_2` 后链长翻倍，未配置时相关策略静默跳过，不影响功能。
 
-### 3.2 灰度：本地 OCR 影子并行
+### 3.2 影子对照（`OCR_SHADOW=1`，默认关闭）
 
-自建的本地 OCR 服务（RapidOCR / PP-OCRv6_small，见 [ADR-0003](adr/0003-self-hosted-local-ocr.md)）正在灰度。配置 `OCR_SHADOW_ENDPOINT` 后，后端每次请求会与云端**并发**打一份本地识别，结果放在 `data.shadow` 里带回；**权威结果仍是云端的**，本地失败或超时一律吞掉。
+切换主次之前用过的对照机制，留着以备将来再换引擎。开启后会与权威路径**并发**打一份本地识别放进 `data.shadow`，前端拿它用**同一张画布**再调一次 `inferFromItems`，把层数/基底/可信度档位的差异 POST 到 `/map-recognition/shadow-report`，聚合进 Redis 哈希 `rl:ocr:shadow:{月份}`。不上传图片，不带用户标识。
 
-差异必须在前端比：两边的分歧不在 OCR 文本层面，而在跑完识别管线之后的结论。所以前端拿 `shadow.items` 用**同一张画布**再调一次 `inferFromItems`，把层数/基底/可信度档位的差异 POST 到 `/map-recognition/shadow-report` 聚合到 Redis 哈希 `rl:ocr:shadow:{月份}`。不上传图片，不带用户标识。
+差异必须在前端比 —— 两边的分歧不在 OCR 文本层面，而在跑完识别管线之后的**结论**。
 
-因为是并发发出，总耗时只在「本地比云端慢」时才被拉长，上界由 `OCR_SHADOW_TIMEOUT_MS` 兜住。
+⚠️ **本地已是链首之后不要开它**：影子打的也是本地服务，开了等于对同一张图打两遍本地。
 
 ## 四、结果呈现
 

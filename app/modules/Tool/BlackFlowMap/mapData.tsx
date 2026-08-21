@@ -103,7 +103,7 @@ export const nodeOptions: nodeOption[] = [
     name: "不期而遇",
     steps: [
       { zone: "zone_1", min: 2, max: 5, maxAllowed: 2 },
-      { zone: "zone_2", min: 2, max: 7, maxAllowed: 2 },
+      { zone: "zone_2", min: 2, max: 7, maxAllowed: 3 },
       { zone: "zone_3", min: 1, max: 15, maxAllowed: 4 },
       { zone: "zone_4", min: 1, max: 14, maxAllowed: 4 },
       { zone: "zone_5", min: 1, max: 14, maxAllowed: 4 },

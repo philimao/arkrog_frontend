@@ -466,6 +466,21 @@ export function NodeMapCanvas({
 
         dots.push(
           <g key={`${r},${c}`}>
+            {isSelectedNode && menuOpen && (
+              // 选中态的光晕单独画一个模糊圆，不要把 filter 挂在包着 sprite
+              // 位图的 SpriteImage 上——那样 Chrome 会把整个地图 svg 提升成
+              // 一个合成层重新栅格化，导致全图所有节点的 sprite 采样跨图集
+              // 漏色
+              <circle
+                cx={x}
+                cy={y}
+                r={iconWidth / 2}
+                fill="none"
+                stroke="rgba(96,165,250,0.8)"
+                strokeWidth={6}
+                filter="url(#node-selected-glow)"
+              />
+            )}
             <SpriteImage
               id={iconId}
               x={x - iconWidth / 2}
@@ -476,9 +491,6 @@ export function NodeMapCanvas({
               style={{
                 cursor: nodeCursor,
                 pointerEvents: "all",
-                ...(isSelectedNode && menuOpen
-                  ? { filter: "drop-shadow(0 0 0.5rem rgba(96,165,250, 0.8))" }
-                  : {}),
               }}
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
@@ -537,12 +549,26 @@ export function NodeMapCanvas({
         className="block h-auto w-full"
         style={{ maxWidth: width, maxHeight: "100%" }}
       >
+        <defs>
+          {/* Safari 对 SVG 元素上的 CSS filter:blur() 简写支持不完整，默认
+              滤镜区域会把模糊结果裁掉，圆圈会显示成实心的——这里显式声明
+              filter 并放大区域，三个浏览器才会用同一套滤镜区域 */}
+          <filter
+            id="node-selected-glow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feGaussianBlur stdDeviation="3" />
+          </filter>
+        </defs>
         {lines}
         {dots}
       </svg>
       {menuOpen && menuPos && menuNode ? (
         <div
-          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[160px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black-gray p-2 text-white"
+          className="pointer-events-auto absolute z-50 flex max-h-[340px] min-w-[164px] max-w-[200px] flex-col gap-2 overflow-y-auto rounded-lg border border-white/10 bg-black-gray p-2 text-white"
           style={{
             left: menuPos.left,
             top: menuPos.top,

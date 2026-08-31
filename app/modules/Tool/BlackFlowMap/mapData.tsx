@@ -59,7 +59,7 @@ export const nodeOptions: nodeOption[] = [
     steps: [
       { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
       { zone: "zone_4", min: 4, max: 14, maxAllowed: 1 },
-      { zone: "zone_5", min: 4, max: 13, maxAllowed: 1 },
+      { zone: "zone_5", min: 4, max: 14, maxAllowed: 1 },
     ],
     type: "battle",
   },

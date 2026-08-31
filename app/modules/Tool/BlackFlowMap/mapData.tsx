@@ -129,7 +129,7 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
       { zone: "zone_3", min: 4, max: 14, maxAllowed: 3 },
       { zone: "zone_4", min: 4, max: 13, maxAllowed: 3 },
-      { zone: "zone_5", min: 1, max: Infinity, maxAllowed: 5 },
+      { zone: "zone_5", min: 1, max: Infinity, maxAllowed: 7 },
     ],
     type: "other",
   },

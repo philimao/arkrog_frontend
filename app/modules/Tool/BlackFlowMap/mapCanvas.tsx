@@ -463,6 +463,8 @@ export function NodeMapCanvas({
           showHighlightImage || isMarked ? iconSize : emptyIconSize;
         const iconHeight =
           showHighlightImage || isMarked ? iconSize : emptyIconSize;
+        const glowRadius =
+          showHighlightImage || isMarked ? iconWidth * 0.35 : iconWidth / 2;
 
         dots.push(
           <g key={`${r},${c}`}>
@@ -474,7 +476,7 @@ export function NodeMapCanvas({
               <circle
                 cx={x}
                 cy={y}
-                r={iconWidth / 2}
+                r={glowRadius}
                 fill="none"
                 stroke="rgba(96,165,250,0.8)"
                 strokeWidth={6}

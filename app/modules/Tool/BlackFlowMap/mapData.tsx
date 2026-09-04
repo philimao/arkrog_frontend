@@ -36,7 +36,7 @@ export const nodeOptions: nodeOption[] = [
       { zone: "zone_1", min: 1, max: 4, maxAllowed: 5 },
       { zone: "zone_2", min: 1, max: 7, maxAllowed: 5 },
       { zone: "zone_3", min: 1, max: 13, maxAllowed: 6 },
-      { zone: "zone_4", min: 1, max: 13, maxAllowed: 5 },
+      { zone: "zone_4", min: 1, max: 14, maxAllowed: 5 },
       { zone: "zone_5", min: 1, max: 14, maxAllowed: 5 },
     ],
     type: "battle",

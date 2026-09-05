@@ -159,7 +159,7 @@ export const nodeOptions: nodeOption[] = [
     name: "狭路相逢",
     steps: [
       { zone: "zone_3", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 13, maxAllowed: 2 },
+      { zone: "zone_4", min: 2, max: 14, maxAllowed: 2 },
       { zone: "zone_5", min: 2, max: 4, maxAllowed: 2 },
     ],
     type: "other",

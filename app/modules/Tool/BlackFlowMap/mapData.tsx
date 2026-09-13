@@ -285,6 +285,23 @@ export function toGridState(m: MapShorthand): GridState {
   return { rows: m.rows, cols: m.cols, connections };
 }
 
+export function isKnownNodeAt(
+  row: number,
+  col: number,
+  knownBattles?: [number, number][],
+  knownShops?: [number, number][],
+) {
+  return (
+    knownBattles?.some(([knownRow, knownCol]) =>
+      knownRow === row && knownCol === col,
+    ) ||
+    knownShops?.some(
+      ([knownRow, knownCol]) => knownRow === row && knownCol === col,
+    ) ||
+    false
+  );
+}
+
 export const initialMaps: MapShorthand[] = [
   {
     id: "1a",

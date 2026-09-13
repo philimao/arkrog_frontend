@@ -6,7 +6,11 @@ import {
   getOptionsForNodeDistance,
 } from "./gridUtils";
 import { CloseIcon } from "@mantine/core";
-import { nodeOptions, nodeTypeLimits } from "./mapData";
+import {
+  isKnownNodeAt,
+  nodeOptions,
+  nodeTypeLimits,
+} from "./mapData";
 import { SpriteImage, spriteStyle } from "./mapSprite";
 
 // 节点名字只在屏幕够宽时显示，小屏幕上地图本来就挤，只留图标；用 SVG text
@@ -133,7 +137,24 @@ export function NodeMapCanvas({
       addCount("shop", "other", knownShops.length);
     }
 
-    for (const optionId of Object.values(markedNodes)) {
+    for (const [key, optionId] of Object.entries(markedNodes)) {
+      const [row, col] = key.split(",").map(Number);
+      if (
+        isKnownNodeAt(
+          row,
+          col,
+          knownBattles?.map(({ row: knownRow, col: knownCol }) => [
+            knownRow,
+            knownCol,
+          ]),
+          knownShops?.map(({ row: knownRow, col: knownCol }) => [
+            knownRow,
+            knownCol,
+          ]),
+        )
+      ) {
+        continue;
+      }
       const option = optionMap.get(optionId);
       if (!option) continue;
       addCount(optionId, option.type);

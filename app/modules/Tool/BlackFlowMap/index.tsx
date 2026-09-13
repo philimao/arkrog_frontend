@@ -16,6 +16,7 @@ import {
   nodeOptions,
   nodeTypeLimits,
   zoneNotes,
+  isKnownNodeAt,
 } from "./mapData";
 import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
@@ -206,6 +207,11 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   };
 
   const handleMarkNodeAt = (row: number, col: number, optionId: string) => {
+    if (
+      isKnownNodeAt(row, col, currentMap?.knownBattles, currentMap?.knownShops)
+    ) {
+      return;
+    }
     const key = `${row},${col}`;
     setMarkedNodes((prev) => {
       const next = { ...prev };
@@ -243,7 +249,11 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
     mode: "merge" | "overwrite" = "merge",
   ) => {
     const detected: Record<string, string> = {};
+    const map = initialMaps.find((candidate) => candidate.id === mapId);
     for (const n of markableNodes) {
+      if (isKnownNodeAt(n.row, n.col, map?.knownBattles, map?.knownShops)) {
+        continue;
+      }
       const option = nodeOptions.find((opt) => opt.name === n.label);
       if (option) detected[`${n.row},${n.col}`] = option.id;
     }
@@ -363,7 +373,13 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
       add("shop", "other", currentMap.knownShops.length);
     }
 
-    for (const id of Object.values(markedNodes)) {
+    for (const [key, id] of Object.entries(markedNodes)) {
+      const [row, col] = key.split(",").map(Number);
+      if (
+        isKnownNodeAt(row, col, currentMap?.knownBattles, currentMap?.knownShops)
+      ) {
+        continue;
+      }
       const option = nodeOptions.find((opt) => opt.id === id);
       if (!option) continue;
       add(id, option.type);

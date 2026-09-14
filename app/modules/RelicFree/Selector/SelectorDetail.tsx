@@ -150,7 +150,7 @@ export default function SelectorDetail({
                   {renderStages.map((stage, i, stageList) => {
                     if (stage.id === "ghost") return <StyledStageCard className="" key={"ghost" + i} />;
                     const stagePreviewData = stagePreview?.[stage.id];
-                    const maxLevel = ["??", "N0", "N18", "N15"].reduce((a, b) =>
+                    const maxLevel = ["??", "N0", "N15", "N18"].reduce((a, b) =>
                       [
                         stagePreviewData?.normalLevel,
                         stagePreviewData?.eliteLevel,

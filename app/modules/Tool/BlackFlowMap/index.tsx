@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Modal, ModalBody, ModalContent, ModalFooter } from "@heroui/react";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  Tooltip,
+} from "@heroui/react";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { useNodeGrid } from "./useNodeGrid";
@@ -20,7 +26,12 @@ import {
 } from "./mapData";
 import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
-import { ChevronIcon, EyeClosedIcon, EyeOpenIcon } from "~/components/Icons";
+import {
+  ChevronIcon,
+  EyeClosedIcon,
+  EyeOpenIcon,
+  InformationIcon,
+} from "~/components/Icons";
 import type { Route } from "./+types/index";
 import { StyledDivider } from "~/modules/Tournament/components/Shared";
 import { spriteStyle } from "./mapSprite";
@@ -151,6 +162,9 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   const [showZoneNotes, setShowZoneNotes] = useState(false);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
   const [showNodeOptions, setShowNodeOptions] = useState(true);
+  const [onlyShowKnownUnknownNodes, setOnlyShowKnownUnknownNodes] =
+    useState(false);
+  const [showPreviewHelp, setShowPreviewHelp] = useState(false);
   // 识图工具区块自身的收起/展开，跟下面"基底"缩略图网格的 showBaseMaps 是两回事
   const [showRecognizerPanel, setShowRecognizerPanel] = useState(true);
   // 本次截图识别的结果（区域 + 候选基底，按分数降序），供上面"区域选择"和下面
@@ -721,7 +735,43 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   />
                   <ChevronIcon direction="up" className="lg:hidden w-4 h-4" />
                 </button>
-                <div className="mb-2 pr-10">预览节点</div>
+                <div className="mb-2 flex items-center justify-between gap-2 pr-8">
+                  <span>预览节点</span>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <label className="flex items-center gap-1 text-sm text-light-gray cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="accent-[var(--ak-blue)]"
+                        checked={onlyShowKnownUnknownNodes}
+                        onChange={(event) =>
+                          setOnlyShowKnownUnknownNodes(event.target.checked)
+                        }
+                      />
+                      仅预览未知节点
+                    </label>
+                    <Tooltip
+                      content={
+                        <div className="max-w-[18rem] whitespace-normal text-left text-xs leading-5">
+                          勾选后，预览节点的生成范围会根据节点类型，仅显示在地图中已标记的“未知的凶戾”或“未知的诡秘”位置。建议先使用识图工具，或手动标记所有未知节点，以获得更完整、准确的预览效果。
+                        </div>
+                      }
+                      isOpen={showPreviewHelp}
+                      onOpenChange={setShowPreviewHelp}
+                    >
+                      <button
+                        type="button"
+                        aria-label="仅预览未知节点说明"
+                        className="flex h-5 w-5 shrink-0 items-center justify-center text-light-gray hover:text-white"
+                        style={{ cursor: "default" }}
+                        onClick={() => setShowPreviewHelp(true)}
+                        onMouseEnter={() => setShowPreviewHelp(true)}
+                        onMouseLeave={() => setShowPreviewHelp(false)}
+                      >
+                        <InformationIcon className="h-4 w-4" />
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
                 <div className="grid w-full gap-2 grid-cols-3 sm:grid-cols-4 lg:grid-cols-2">
                   {renderNodeOptions()}
                 </div>
@@ -817,6 +867,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 highlightRange={highlightRange}
                 highlightOptionId={selectedOptionId}
                 highlightOptionType={highlightOptionType}
+                onlyShowKnownUnknownNodes={onlyShowKnownUnknownNodes}
                 markedNodes={markedNodes}
                 detectedNodes={detectedNodes}
                 hiddenKeys={hiddenKeys}

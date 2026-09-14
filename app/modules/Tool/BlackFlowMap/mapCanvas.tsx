@@ -19,10 +19,12 @@ import { SpriteImage, spriteStyle } from "./mapSprite";
 function NodeLabel({
   x,
   y,
+  opacity,
   children,
 }: {
   x: number;
   y: number;
+  opacity?: number;
   children: React.ReactNode;
 }) {
   return (
@@ -35,6 +37,7 @@ function NodeLabel({
         paintOrder: "stroke",
         stroke: "rgba(0,0,0,0.75)",
         strokeWidth: 3,
+        opacity,
       }}
     >
       {children}
@@ -60,6 +63,7 @@ interface NodeMapCanvasProps {
   highlightOptionId?: string | null;
   markedNodes?: Record<string, string>;
   detectedNodes?: Record<string, string>;
+  onlyShowKnownUnknownNodes?: boolean;
   hiddenKeys?: Set<string>;
   selectedNodeKey?: string | null;
   options?: { id: string; name: string }[];
@@ -86,6 +90,7 @@ export function NodeMapCanvas({
   selectedNodeKey = null,
   highlightOptionId = null,
   highlightOptionType = null,
+  onlyShowKnownUnknownNodes = false,
   markedNodes = {},
   detectedNodes = {},
   hiddenKeys,
@@ -367,7 +372,8 @@ export function NodeMapCanvas({
           (highlightOptionType === "other" &&
             markedNodes[nodeKey] === "hide_invisible"));
       const showHighlightImage =
-        baseHighlightActive && (!isMarked || isTempReveal);
+        baseHighlightActive &&
+        (onlyShowKnownUnknownNodes ? isTempReveal : !isMarked || isTempReveal);
       const iconId =
         isMarked && !isTempReveal
           ? markedNodes[nodeKey]
@@ -548,6 +554,16 @@ export function NodeMapCanvas({
                 }
               }}
             />
+            {showHighlightImage && highlightOptionId && (
+              <>
+                <NodeLabel x={x} y={y + iconHeight / 2 - 22} opacity={0.5}>
+                  （预览）
+                </NodeLabel>
+                <NodeLabel x={x} y={y + iconHeight / 2 - 8} opacity={0.5}>
+                  {optionMap.get(highlightOptionId)?.name}
+                </NodeLabel>
+              </>
+            )}
             {isMarked && !isTempReveal && (
               <NodeLabel x={x} y={y + iconHeight / 2 - 10}>
                 {optionMap.get(markedNodes[nodeKey])?.name}

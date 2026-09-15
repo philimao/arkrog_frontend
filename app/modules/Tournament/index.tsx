@@ -192,7 +192,7 @@ function RougeSelector({
                 {tournamentsByEdition.get(edition)?.length}
               </div>
             </div>
-            <div className="w-full border-b-ak-blue border-b-1 my-4 opacity-50" />
+            <div className="w-full border-b-ak-blue border-b-1 my-4" />
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-4 grow">
               {tournamentsByEdition.get(edition)?.map((tournament) => (
                 <div

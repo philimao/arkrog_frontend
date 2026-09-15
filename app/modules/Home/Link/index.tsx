@@ -60,9 +60,14 @@ export default function LinkBilibili() {
         <br />
         获取信息仅含有个人主页公开信息，不含有敏感信息部分
       </div>
-      <div className="flex">
-        <Input value={value} onValueChange={setValue} radius="none" />
-        <Button radius="none" className="border border-white">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-full p-2 bg-dark-gray focus:outline focus:outline-2 focus:outline-ak-blue text-white"
+        />
+        <Button className="text-md px-4 py-2 rounded-md text-white bg-dark-gray">
           <a
             onClick={handleClick}
             target="_blank"
@@ -73,8 +78,7 @@ export default function LinkBilibili() {
           </a>
         </Button>
         <Button
-          radius="none"
-          className="border border-white"
+          className="text-md px-4 py-2 rounded-md text-white bg-dark-gray"
           onPress={handleSubmit}
         >
           关联账户

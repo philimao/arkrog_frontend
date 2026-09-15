@@ -50,22 +50,6 @@ export const StyledEditButton = styled.button`
   background: var(--black-gray);
 `;
 
-export const StyledTournamentGroupList = styled.div`
-  position: absolute;
-  right: 0;
-  top: 10rem;
-  width: 12rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--light-gray);
-
-  & > div {
-    padding: 0.25rem 1rem;
-    background: var(--black-gray);
-    margin-bottom: 0.5rem;
-  }
-`;
-
 export const StyledStageTitleNum = styled.div`
   font-size: 3rem;
   font-family: "Novecento", sans-serif;

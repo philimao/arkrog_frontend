@@ -11,19 +11,23 @@ import TournamentFinalResult from "./TournamentFinalResult";
 import { SectionContainer } from ".";
 import BilibiliUser from "~/components/BilibiliUser";
 import { openModal } from "~/utils/dom";
+import { useNavigate } from "react-router";
 
 export interface TournamentViewProps {
   tournamentData: TournamentData;
   children?: React.ReactNode;
   showPreviewBanner?: boolean;
+  seasons?: TournamentData[];
 }
 
 export default function TournamentView({
   tournamentData,
   children,
   showPreviewBanner = false,
+  seasons,
 }: TournamentViewProps) {
   const { topics } = useGameDataStore();
+  const navigate = useNavigate();
 
   if (!topics) return <Loading />;
 
@@ -33,48 +37,75 @@ export default function TournamentView({
 
   const renderHeader = () => {
     return (
-      <div className="flex gap-4 mb-8 sm:mb-16">
-        {tournamentData.avatar && (
-          <div className="w-full max-w-40">
-            <img
-              src={tournamentData.avatar}
-              className="rounded-xl aspect-square"
-              alt="赛事图标"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
-            />
-          </div>
-        )}
-        <div className="flex flex-col gap-4 pr-16">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
-            <div className="text-4xl lg:text-6xl font-bold">
-              {tournamentData.name}
+      <div className="mb-8 sm:mb-16">
+        <div className="flex gap-4">
+          {tournamentData.avatar && (
+            <div className="w-full max-w-40">
+              <img
+                src={tournamentData.avatar}
+                className="rounded-xl aspect-square"
+                alt="赛事图标"
+                referrerPolicy="no-referrer"
+                crossOrigin="anonymous"
+              />
             </div>
-            {tournamentData.ongoing && (
-              <div className="flex items-center gap-6">
-                <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
+          )}
+          <div className="flex flex-col gap-4 pr-16">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full">
+              <div className="text-4xl lg:text-6xl font-bold">
+                {tournamentData.name}
+              </div>
+              {tournamentData.ongoing && (
+                <div className="flex items-center gap-6">
+                  <div className="bg-ak-dark-red px-2 rounded-sm">进行中</div>
+                </div>
+              )}
+            </div>
+            <div className="text-ak-blue">
+              {topicData.name +
+                " // " +
+                tournamentData.edition +
+                (tournamentData.level ? " // " + tournamentData.level : "")}
+            </div>
+            {tournamentData.labels && tournamentData.labels.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {tournamentData.labels.map((label, index) => (
+                  <div
+                    key={index}
+                    className="bg-black-gray-70 px-2 rounded-sm whitespace-nowrap"
+                  >
+                    {label}
+                  </div>
+                ))}
               </div>
             )}
           </div>
-          <div className="text-ak-blue">
-            {topicData.name +
-              " // " +
-              tournamentData.edition +
-              (tournamentData.level ? " // " + tournamentData.level : "")}
-          </div>
-          {tournamentData.labels && tournamentData.labels.length > 0 && (
-            <div className="flex gap-2 flex-wrap">
-              {tournamentData.labels.map((label, index) => (
+        </div>
+
+        {seasons &&
+          <>
+            <div className="border-b border-ak-blue my-4 w-full"></div>
+            <div className="flex gap-2 mt-4 flex-wrap">
+              系列赛事：
+              {seasons.map((season: TournamentData) => (
                 <div
-                  key={index}
+                  role="button"
+                  onClick={() => navigate(`/tournament/${season.id}`)}
+                  key={season.id}
                   className="bg-black-gray-70 px-2 rounded-sm whitespace-nowrap"
+                  style={
+                    season.id === tournamentData.id
+                      ? { backgroundColor: "var(--ak-blue)", color: "black" }
+                      : {}
+                  }
                 >
-                  {label}
+                  <div>{season.name}</div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </>
+        }
+        
       </div>
     );
   };

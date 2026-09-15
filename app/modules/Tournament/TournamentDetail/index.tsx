@@ -8,12 +8,8 @@ import {
   StyledBackButton,
   StyledBackButtonContainer,
   StyledEditButton,
-  StyledTournamentGroupList,
 } from "../components/Shared";
 import TournamentView from "./TournamentView";
-import type { TournamentData } from "~/types/tournamentsData";
-import { useUserInfoStore } from "~/stores/userInfoStore";
-import { api } from "~/services/api";
 
 export function SectionContainer({
   title,
@@ -43,7 +39,7 @@ export function SectionContainer({
         </div>
         {navItems}
       </div>
-      <div className="border-b border-ak-blue my-5 w-full"></div>
+      <div className="border-b border-ak-blue my-4 w-full"></div>
       <div className="whitespace-pre-line text-light-gray">{content}</div>
     </div>
   );
@@ -109,7 +105,7 @@ export default function TournamentDetail() {
   }
 
   return (
-    <TournamentView tournamentData={tournamentData}>
+    <TournamentView tournamentData={tournamentData} seasons={seasons}>
       <StyledBackButtonContainer>
         <StyledBackButton
           onClick={() =>
@@ -123,23 +119,7 @@ export default function TournamentDetail() {
             编辑
           </StyledEditButton>
         )}
-        <StyledTournamentGroupList>
-          {seasons &&
-            seasons.map((season: TournamentData) => (
-              <div
-                role="button"
-                onClick={() => navigate(`/tournament/${season.id}`)}
-                key={season.id}
-                style={
-                  season.id === tournamentData.id
-                    ? { backgroundColor: "var(--ak-blue)", color: "black" }
-                    : {}
-                }
-              >
-                <div>{season.name}</div>
-              </div>
-            ))}
-        </StyledTournamentGroupList>
+        
       </StyledBackButtonContainer>
     </TournamentView>
   );

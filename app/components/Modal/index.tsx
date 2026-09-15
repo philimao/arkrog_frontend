@@ -35,7 +35,7 @@ export default function ModalTemplate({
     onClose: myOnClose,
     onOpenChange: myOnOpenChange,
   } = useDisclosure();
-  const isOpen = modalControl?.isOpen || myIsOpen;
+  const isOpen = modalControl?.isOpen ?? myIsOpen;
   const onOpen = modalControl?.onOpen || myOnOpen;
   const onClose = modalControl?.onClose || myOnClose;
   const onOpenChange = modalControl?.onOpenChange || myOnOpenChange;
@@ -52,7 +52,7 @@ export default function ModalTemplate({
         placement="top-center"
         radius="none"
         classNames={{
-          base: "my-20 overflow-y-auto hide-scroll",
+          base: "modal-background my-20 overflow-y-auto hide-scroll",
           backdrop: "backdrop-blur-sm",
           closeButton: "top-6 end-6 bg-black-gray",
         }}

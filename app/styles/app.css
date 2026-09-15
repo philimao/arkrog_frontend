@@ -85,6 +85,16 @@ body {
   min-height: 100vh;
 }
 
+.modal-background {
+  background-color: black;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url("/images/bg/02.png");
+  background-repeat: repeat;
+  background-size: 100% auto;
+  background-position: 25% 0;
+}
+
 @layer components {
   /* 自定义滚动条样式 */
   ::-webkit-scrollbar {

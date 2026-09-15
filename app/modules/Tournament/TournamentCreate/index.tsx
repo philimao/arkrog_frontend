@@ -89,14 +89,17 @@ export default function TournamentCreate() {
             />
           </div>
         </ModalBody>
-        <ModalFooter>
-          <Button color="danger" variant="light" onPress={handleCancel}>
+        <ModalFooter className="gap-4">
+          <Button
+            onPress={handleCancel}
+            className="text-md p-2 rounded-md text-black bg-light-gray"
+          >
             取消
           </Button>
           <Button
-            color="primary"
             onPress={handleConfirm}
             disabled={!tournamentName.trim()}
+            className="text-md rounded-md text-black bg-ak-blue"
           >
             确认
           </Button>

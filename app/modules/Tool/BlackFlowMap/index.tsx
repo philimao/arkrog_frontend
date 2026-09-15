@@ -467,7 +467,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   return (
     <div className="relative">
       {/* 区域选择 */}
-      <div className="mb-8 mt-2 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+      <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {zoneOfRogue.map((zone, index) => (
           <div
             key={zone.id}

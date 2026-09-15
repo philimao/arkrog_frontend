@@ -17,6 +17,26 @@ import githubMarkdown from "./styles/github-markdown.css?url";
 import React from "react";
 import { HeroUIProvider } from "@heroui/react";
 
+const siteSeo = {
+  siteName: "影语集",
+  title: "影语集 - 集成战略攻略分享",
+  description:
+    "影语集为明日方舟集成战略玩家提供优质的攻略参考与学习资源。网站功能包含无藏收录、伤害计算、赛事整理和地图记录，帮助玩家快速规划阵容、学习经验。",
+  keywords:
+    "明日方舟, 集成战略, 影语集, 集成战略攻略, 伤害计算, 无藏收录, 赛事整理, 地图记录",
+  canonical: "https://arkrog.com/",
+  ogImage: "https://arkrog.com/favicon.ico",
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteSeo.siteName,
+  url: siteSeo.canonical,
+  description: siteSeo.description,
+  inLanguage: "zh-CN",
+};
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -37,12 +57,25 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   // const isDev = import.meta.env.MODE === "development";
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="description" content={siteSeo.description} />
+        <meta name="keywords" content={siteSeo.keywords} />
+        <meta name="robots" content="index,follow" />
+        <meta name="author" content={siteSeo.siteName} />
+        <meta property="og:title" content={siteSeo.title} />
+        <meta property="og:description" content={siteSeo.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={siteSeo.siteName} />
+        <meta property="og:url" content={siteSeo.canonical} />
+        <meta property="og:locale" content="zh_CN" />
+        <meta property="og:image" content={siteSeo.ogImage} />
+        <link rel="canonical" href={siteSeo.canonical} />
+        <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
         {/*{isDev && <script src="http://localhost:8097"></script>}*/}
-        <title>影语集 - 集成战略攻略分享</title>
+        <title>{siteSeo.title}</title>
         <Meta />
         <Links />
       </head>

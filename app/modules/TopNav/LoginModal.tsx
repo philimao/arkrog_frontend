@@ -69,7 +69,7 @@ export default function LoginModal({
         placement="top-center"
         radius="none"
         classNames={{
-          base: "my-auto w-[24rem]",
+          base: "modal-background my-auto w-[24rem]",
           backdrop: "backdrop-blur-sm",
           closeButton: "top-6 end-6 bg-black-gray",
         }}

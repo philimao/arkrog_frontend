@@ -29,7 +29,13 @@ import { useRelicFreeStore } from "~/stores/relicFreeStore";
 
 const MyInput = (props: InputProps) => <Input radius="none" labelPlacement="outside" {...props}></Input>;
 const MySelect = (props: SelectProps) => (
-  <Select radius="none" labelPlacement="outside" {...props}>
+  <Select
+    radius="none"
+    labelPlacement="outside"
+    disallowEmptySelection
+    {...props}
+    popoverProps={{ ...props.popoverProps, disableAnimation: true }}
+  >
     {props.children}
   </Select>
 );
@@ -255,14 +261,20 @@ export default function SubmitRecordForm({
                 label="视频链接"
                 placeholder="B站长短链，单独BV号，YouTube链接均可解析"
                 defaultValue={record?.url}
-                required
+                errorMessage={({ validationDetails, validationErrors }) =>
+                  validationDetails.valueMissing
+                    ? "视频链接不可为空"
+                    : validationErrors.join("；")
+                }
+                isRequired
               />
               <MyInput
                 value={team}
                 onValueChange={setTeam}
                 label={"队伍组成" + (team.split(/[+、]/).length ? `（${team.split(/[+、]/).length}人）` : "")}
                 placeholder="使用加号（+）或顿号（、）分隔，例：维什戴尔3+逻各斯3"
-                required
+                errorMessage={memberDataArray.length ? undefined : "队伍组成不可为空"}
+                isRequired
               />
               {uniequipOptions.length > 0 && (
                 <div className="w-full">
@@ -318,13 +330,13 @@ export default function SubmitRecordForm({
                 name="type"
                 label="作战类型"
                 defaultSelectedKeys={[record?.type ?? Object.keys(StageTypes)[0]]}
-                required
+                isRequired
               >
                 {Object.keys(StageTypes).map((typeKey) => (
                   <SelectItem key={typeKey}>{StageTypes[typeKey] + "作战"}</SelectItem>
                 ))}
               </MySelect>
-              <MySelect name="level" label="难度等级" defaultSelectedKeys={[record?.level ?? maxLevel]} required>
+              <MySelect name="level" label="难度等级" defaultSelectedKeys={[record?.level ?? maxLevel]} isRequired>
                 {StageLevels.map((l) => (
                   <SelectItem key={l}>{l}</SelectItem>
                 ))}

@@ -63,11 +63,12 @@ export default function LinkBilibili() {
       <div className="flex gap-2">
         <input
           type="text"
+          placeholder="请在此处粘贴获取的信息"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className="w-full p-2 bg-dark-gray focus:outline focus:outline-2 focus:outline-ak-blue text-white"
         />
-        <Button className="text-md px-4 py-2 rounded-md text-white bg-dark-gray">
+        <Button className="text-sm font-bold p-2 rounded-md text-white bg-dark-gray shrink-0">
           <a
             onClick={handleClick}
             target="_blank"
@@ -78,7 +79,7 @@ export default function LinkBilibili() {
           </a>
         </Button>
         <Button
-          className="text-md px-4 py-2 rounded-md text-white bg-dark-gray"
+          className="text-sm font-bold p-2 rounded-md text-white bg-dark-gray shrink-0"
           onPress={handleSubmit}
         >
           关联账户

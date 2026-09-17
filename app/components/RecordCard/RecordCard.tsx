@@ -1,15 +1,15 @@
 import { StageTypes } from "~/types/constant";
-import type { RecordType, TeamMemberData } from "~/types/recordType";
+import type { RecordType } from "~/types/recordType";
 import { Divider } from "@heroui/react";
 import { _post, findDuplicates } from "~/utils/tools";
-import React, { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import RecordTypeLabel from "~/components/RecordCard/RecordTypeLabel";
 import CharAvatar from "~/components/RecordCard/CharAvatar";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useRecordStore } from "~/stores/recordStore";
 import { openModal } from "~/utils/dom";
-import type { CharId, RogueKey, SkillId, StageData } from "~/types/gameData";
+import type { RogueKey } from "~/types/gameData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import { toast } from "react-toastify";
 import type { FavoriteItem } from "~/types/userInfo";
@@ -160,10 +160,9 @@ export default function RecordCard({
 }) {
   const { userInfo, updateUserInfo } = useUserInfoStore();
   const { setActiveRecord } = useRecordStore();
-  const { stages } = useGameDataStore();
+  const { stages, fetchGameDataBasic } = useGameDataStore();
   const { fetchStagePreview } = useRelicFreeStore();
   const { charImages } = useAppDataStore();
-  const [stageData, setStageData] = useState<StageData | undefined>();
   const [showNote, setShowNote] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -173,6 +172,7 @@ export default function RecordCard({
     level >= 4 || (level >= 3 && !!record?.submitterId && record.submitterId === userInfo?.userId);
 
   const ro = "rogue_" + record?.stageId.split("_")[0].slice(-1);
+  const stageData = !isStagePage && record ? stages?.[ro as RogueKey]?.[record.stageId] : undefined;
 
   async function handleDeleteRecord() {
     if (!record) return;
@@ -216,12 +216,9 @@ export default function RecordCard({
   }
 
   useEffect(() => {
-    if (isStagePage || !stages || !record) return;
-    // ro4_b_4
-    const topicId = "rogue_" + record.stageId.split("_")[0].slice(-1);
-    const stageData = stages[topicId as RogueKey]?.[record.stageId];
-    if (stageData) setStageData(stageData);
-  }, [isStagePage]);
+    if (isStagePage || !record?.stageId) return;
+    void fetchGameDataBasic();
+  }, [isStagePage, record?.stageId, fetchGameDataBasic]);
 
   // 使用单行干员展示
   const isLargeScreen = window.matchMedia("(min-width: 1024px)").matches;
@@ -364,7 +361,7 @@ export default function RecordCard({
                 }}
               />
               <ReportIcon
-                className="hover:text-yellow-300"
+                className="hover:text-ak-blue"
                 role="button"
                 onClick={() => {
                   if (!userInfo?.level) {
@@ -375,10 +372,10 @@ export default function RecordCard({
                 }}
               />
               {canEdit && (
-                <EditIcon className="hover:text-yellow-300" role="button" onClick={() => setIsEditing(true)} />
+                <EditIcon className="hover:text-ak-blue" role="button" onClick={() => setIsEditing(true)} />
               )}
               {userInfo?.level !== undefined && userInfo?.level >= 4 && (
-                <DeleteIcon className="hover:text-yellow-300" role="button" onClick={handleDeleteRecord} />
+                <DeleteIcon className="hover:text-ak-red" role="button" onClick={handleDeleteRecord} />
               )}
             </div>
             <div className="w-[3.5rem] sm:w-[5rem] lg:w-[6rem] xl:w-[7rem] h-full bg-[#0073A4CC] flex justify-center content-center flex-wrap">

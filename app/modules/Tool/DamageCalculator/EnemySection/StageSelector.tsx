@@ -72,7 +72,7 @@ const StyledEnemies = styled.div`
   align-items: start;
   justify-content: center;
   padding: 0.5rem;
-  background: rgba(78, 78, 78, 0.5);
+  background: var(--black-gray-70);
   box-shadow: 4px 4px 6px 0 rgba(0, 0, 0, 0.25);
   user-select: none;
   &::-webkit-scrollbar {

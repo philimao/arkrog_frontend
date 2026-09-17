@@ -31,10 +31,10 @@ const StyledFilterBar = styled.div`
 const StyledFilterButton = styled.button<{ active: boolean }>`
   padding: 0.25rem 0.75rem;
   border-radius: 0.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: ${(p) => (p.active ? "var(--ak-blue)" : "transparent")};
+  background: ${(p) => (p.active ? "var(--ak-blue)" : "var(--dark-gray)")};
   color: ${(p) => (p.active ? "black" : "white")};
   font-size: 0.875rem;
+  font-weight: bold;
   cursor: pointer;
   &:hover {
     border-color: var(--ak-blue);

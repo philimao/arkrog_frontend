@@ -210,7 +210,7 @@ export default function StageDetail({
         </div>
         <div className="">
           <span className="text-xl font-bold">敌方情报</span>
-          <div className="w-full aspect-video bg-mid-gray p-2 mt-2">
+          <div className="w-full aspect-video bg-dark-gray p-2 mt-2">
             <div className="h-full pt-4 overflow-y-auto flex flex-wrap justify-evenly gap-4">
               {[...enemies, ...Array(5).fill(0)].map((enemyName, i) => {
                 return (

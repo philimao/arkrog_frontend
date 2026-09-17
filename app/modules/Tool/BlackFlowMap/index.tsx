@@ -750,6 +750,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                       仅预览未知节点
                     </label>
                     <Tooltip
+                      className="border border-mid-gray"
                       content={
                         <div className="max-w-[18rem] whitespace-normal text-left text-xs leading-5">
                           勾选后，预览节点的生成范围会根据节点类型，仅显示在地图中已标记的“未知的凶戾”或“未知的诡秘”位置。建议先使用识图工具，或手动标记所有未知节点，以获得更完整、准确的预览效果。

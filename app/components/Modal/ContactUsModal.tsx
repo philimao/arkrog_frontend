@@ -38,7 +38,7 @@ export function ContactUsModal({ id }: { id: string }) {
       modalControl={{ isOpen, onOpen, onClose }}
       size="3xl"
     >
-      <ModalHeader className="text-2xl pb-0">这个记录有问题</ModalHeader>
+      <ModalHeader className="text-2xl pb-0">联系我们</ModalHeader>
       <ModalBody>
         <div className="h-10 leading-10">请留下您的反馈，我们将会尽快回复</div>
         <Input
@@ -62,7 +62,7 @@ export function ContactUsModal({ id }: { id: string }) {
         </Button>
         <Button
           radius="none"
-          className="bg-ak-deep-blue text-lg w-24"
+          className="bg-ak-blue text-lg w-24"
           onPress={handleSubmit}
         >
           提交

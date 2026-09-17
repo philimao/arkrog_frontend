@@ -106,7 +106,7 @@ export default function SelectorDetail({
           .map((zone) => (
             <div
               className={
-                "text-center font-bold leading-[3rem] " +
+                "text-center font-bold leading-[2rem] p-1 " +
                 `${zoneFilterId === zone.id ? "bg-ak-blue text-black" : "bg-black-gray text-white"}`
               }
               key={zone.id}

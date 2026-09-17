@@ -240,15 +240,16 @@ export default function SubmitRecordForm({
         backdrop="blur"
         size="3xl"
         classNames={{
-          base: "my-auto",
+          base: "modal-background my-20 overflow-y-auto",
           backdrop: "backdrop-blur-sm",
-          closeButton: "top-6 end-6 bg-black-gray",
+          closeButton: "top-4 end-4 bg-black-gray",
         }}
+        scrollBehavior="inside"
       >
         <ModalContent>
           <ModalHeader>{isEdit ? "编辑记录" : "提交记录"}</ModalHeader>
           <ModalBody>
-            <Form validationBehavior="native" onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+            <Form validationBehavior="native" onSubmit={handleSubmit} className="w-full flex flex-col gap-6 pb-4">
               <MyInput
                 name="url"
                 label="视频链接"
@@ -264,39 +265,51 @@ export default function SubmitRecordForm({
                 required
               />
               {uniequipOptions.length > 0 && (
-                <div className="">
+                <div className="w-full">
                   <div className="mb-2 text-sm">模组选择</div>
-                  <div className="flex flex-wrap gap-6">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-6">
                     {uniequipOptions.map((item) => (
-                      <RadioGroup
-                        key={item.charData?.charId}
-                        size="sm"
-                        className="text-xs whitespace-nowrap"
-                        name={"ignore_" + item.charData?.charId}
-                        defaultValue={item.defaultChecked}
-                        onValueChange={(id) => {
-                          setMemberDataArray((prev) => {
-                            const updated = [...prev];
-                            const index = updated.findIndex(
-                              (memberData) => memberData.charId === item.charData?.charId,
-                            );
-                            if (index > -1) {
-                              updated[index].uniequipId = id;
-                              updated[index].uniequipName = uniequip_basic[id]?.typeIcon.toUpperCase() || "";
-                            }
-                            return updated;
-                          });
-                        }}
-                      >
-                        {item.options.map((option) => {
-                          const { uniEquipId, uniEquipName, typeIcon } = option;
-                          return (
-                            <Radio description={uniEquipName} value={uniEquipId} key={uniEquipId}>
-                              {typeIcon.toUpperCase()}
-                            </Radio>
-                          );
-                        })}
-                      </RadioGroup>
+                      item.options.length > 1 && 
+                        <div key={item.charData?.charId} className="flex flex-col gap-1">
+                          <p className="text-sm">{item.charData?.name}</p>
+                          <RadioGroup
+                            key={item.charData?.charId}
+                            size="sm"
+                            className="text-xs whitespace-nowrap"
+                            name={"ignore_" + item.charData?.charId}
+                            defaultValue={item.defaultChecked}
+                            onValueChange={(id) => {
+                              setMemberDataArray((prev) => {
+                                const updated = [...prev];
+                                const index = updated.findIndex(
+                                  (memberData) => memberData.charId === item.charData?.charId,
+                                );
+                                if (index > -1) {
+                                  updated[index].uniequipId = id;
+                                  updated[index].uniequipName = uniequip_basic[id]?.typeIcon.toUpperCase() || "";
+                                }
+                                return updated;
+                              });
+                            }}
+                          >
+                            {item.options.map((option) => {
+                              const { uniEquipId, uniEquipName, typeIcon } = option;
+                              return (
+                                <Radio
+                                  description={uniEquipName}
+                                  value={uniEquipId}
+                                  key={uniEquipId}
+                                  classNames={{
+                                    wrapper: "group-data-[selected=true]:border-ak-blue",
+                                    control: "bg-ak-blue",
+                                  }}
+                                >
+                                  {typeIcon.toUpperCase()}
+                                </Radio>
+                              );
+                            })}
+                          </RadioGroup>
+                        </div>
                     ))}
                   </div>
                 </div>
@@ -333,7 +346,6 @@ export default function SubmitRecordForm({
               )}
             </Form>
           </ModalBody>
-          <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>
     </>

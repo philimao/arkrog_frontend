@@ -263,6 +263,7 @@ function TournamentGroupInfoAccordionItem({
           placeholder="例：仙术杯"
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onFocusCapture={(event) => event.stopPropagation()}
           className={getInputClassName("name", touchedFields, formData)}
           onBlur={handleBlur}
           disabled={disabled}

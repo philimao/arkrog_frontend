@@ -11,6 +11,8 @@ import {
 } from "./components/Shared";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import BilibiliUser from "~/components/BilibiliUser";
+import ModalTemplate from "~/components/Modal";
+import { Button, ModalBody, ModalFooter, ModalHeader } from "@heroui/react";
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -52,6 +54,19 @@ function RougeSelector({
   const topicsData = Object.values(topics);
   const { userInfo } = useUserInfoStore();
   const editable = userInfo?.level && userInfo.level > 3;
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [tournamentName, setTournamentName] = useState("");
+
+  const handleCreateCancel = () => {
+    setIsCreateModalOpen(false);
+    setTournamentName("");
+  };
+
+  const handleCreateConfirm = () => {
+    const trimmedName = tournamentName.trim();
+    if (!trimmedName) return;
+    navigate(`/tournament/create?tournamentName=${encodeURIComponent(trimmedName)}`);
+  };
 
   const currentTopic: TopicData = useMemo(() => {
     const topicId = searchParams.get("topicId");
@@ -240,7 +255,7 @@ function RougeSelector({
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
       {!!editable && (
         <StyledBackButtonContainer>
-          <StyledBackButton onClick={() => navigate("create")}>
+          <StyledBackButton onClick={() => setIsCreateModalOpen(true)}>
             新建赛事
           </StyledBackButton>
           <StyledBackButton
@@ -251,6 +266,49 @@ function RougeSelector({
           </StyledBackButton>
         </StyledBackButtonContainer>
       )}
+      <ModalTemplate
+        isOpen={isCreateModalOpen}
+        onClose={handleCreateCancel}
+        modalControl={{
+          isOpen: isCreateModalOpen,
+          onClose: handleCreateCancel,
+        }}
+      >
+        <ModalHeader className="text-white">新建赛事</ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <label className="block text-sm font-light mb-1 text-white">
+              赛事名称
+            </label>
+            <input
+              type="text"
+              value={tournamentName}
+              onChange={(event) => setTournamentName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") handleCreateConfirm();
+              }}
+              className="w-full p-2 bg-mid-gray focus:outline focus:outline-2 focus:outline-ak-blue text-white"
+              placeholder="例：仙术杯#5"
+              autoFocus
+            />
+          </div>
+        </ModalBody>
+        <ModalFooter className="gap-4">
+          <Button
+            onPress={handleCreateCancel}
+            className="text-md p-2 rounded-md text-black bg-light-gray"
+          >
+            取消
+          </Button>
+          <Button
+            onPress={handleCreateConfirm}
+            disabled={!tournamentName.trim()}
+            className="text-md rounded-md text-black bg-ak-blue"
+          >
+            确认
+          </Button>
+        </ModalFooter>
+      </ModalTemplate>
       <div className="mb-12 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {topicsData.reverse().map((topic) => (
           <div

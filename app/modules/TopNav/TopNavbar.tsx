@@ -42,7 +42,8 @@ function SearchComp({ ...props }: React.ComponentPropsWithoutRef<"div">) {
         classNames={{
           base: "max-w-full sm:max-w-[30rem]",
           mainWrapper: "h-full",
-          input: "text-small hover:bg-transparent",
+           input:
+             "font-sans font-normal text-small hover:bg-transparent caret-white",
           inputWrapper:
             "h-full font-normal text-default-500 bg-mid-gray data-[hover=true]:bg-mid-gray group-data-[focus=true]:bg-mid-gray rounded-none",
         }}

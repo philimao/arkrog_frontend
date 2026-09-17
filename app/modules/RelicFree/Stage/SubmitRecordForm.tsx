@@ -267,7 +267,7 @@ export default function SubmitRecordForm({
               {uniequipOptions.length > 0 && (
                 <div className="w-full">
                   <div className="mb-2 text-sm">模组选择</div>
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(6rem,1fr))] gap-6">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-6">
                     {uniequipOptions.map((item) => (
                       item.options.length > 1 && 
                         <div key={item.charData?.charId} className="flex flex-col gap-1">

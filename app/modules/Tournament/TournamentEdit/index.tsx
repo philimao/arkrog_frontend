@@ -47,6 +47,7 @@ export default function TournamentEdit() {
     tournamentsData &&
     tournamentsData.find((tournament) => tournament.id === tournamentId);
   const navigate = useNavigate();
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   type EditView = { tournament: TournamentData | null; meta: PendingMeta | null };
   const [editView, setEditView] = useState<EditView | "loading">("loading");
@@ -87,7 +88,7 @@ export default function TournamentEdit() {
   });
 
   const backButton = (
-    <StyledBackButtonContainer>
+    !isPreviewMode && <StyledBackButtonContainer>
       <div className="relative test">
         <StyledBackButton
           onClick={() => navigate(`/tournament/${tournamentId}`)}
@@ -166,7 +167,8 @@ export default function TournamentEdit() {
         </StyledPendingBanner>
       )}
       <StyledDivider />
-      <TournamentForm tournamentData={tournamentData} edit />
+      <TournamentForm tournamentData={tournamentData} edit previewMode={isPreviewMode}
+          onPreviewModeChange={setIsPreviewMode} />
 
       {/* 赛事授权 */}
       {userInfo?.level! > 3 && (

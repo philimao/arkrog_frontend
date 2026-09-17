@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import { Input, Listbox, ListboxItem, Button } from "@heroui/react";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
@@ -230,6 +230,8 @@ function TournamentSelectorItem({
   onDelete,
 }: TournamentSelectorItemProps) {
   const dragControls = useDragControls();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inputAreaRef = useRef<HTMLDivElement>(null);
   const [showListbox, setShowListbox] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -275,9 +277,11 @@ function TournamentSelectorItem({
   ]);
 
   // 处理失焦
-  const handleBlur = () => {
-    // 延迟关闭，让点击事件先触发
-    setTimeout(() => setShowListbox(false), 200);
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const nextFocusedElement = event.relatedTarget;
+    if (!nextFocusedElement || !inputAreaRef.current?.contains(nextFocusedElement)) {
+      setShowListbox(false);
+    }
   };
 
   return (
@@ -296,7 +300,14 @@ function TournamentSelectorItem({
       </div>
 
       {/* 输入框 / 按钮 */}
-      <div className="flex-1 relative">
+      <div
+        ref={inputAreaRef}
+        className="flex-1 relative"
+        onFocusCapture={(event) => {
+          setShowListbox(true);
+          event.stopPropagation();
+        }}
+      >
         {item.tournamentId && selectedTournament ? (
           // 已选中状态：显示 Button
           <Button
@@ -317,9 +328,9 @@ function TournamentSelectorItem({
           // 未选中状态：显示 Input
           <>
             <Input
+              ref={inputRef}
               value={searchValue}
               onValueChange={setSearchValue}
-              onFocus={() => setShowListbox(true)}
               onBlur={handleBlur}
               placeholder="搜索赛事名称..."
               radius="none"
@@ -370,7 +381,7 @@ function TournamentSelectorItem({
         type="button"
         className={
           "p-1 text-gray hover:text-ak-red transition-colors " +
-          (canDelete ? "" : "opacity-0")
+          (canDelete ? "" : "opacity-0 pointer-events-none")
         }
         onClick={onDelete}
         disabled={!canDelete}

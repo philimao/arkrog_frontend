@@ -95,7 +95,17 @@ body {
   background-position: 25% 0;
 }
 
+[data-slot="input-wrapper"] {
+  box-shadow: none;
+}
+
 @layer components {
+  [data-slot="input"]:focus,
+  [data-slot="input"]:focus-visible {
+    outline-style: none !important;
+    outline-width: 0 !important;
+  }
+
   /* 自定义滚动条样式 */
   ::-webkit-scrollbar {
     width: 8px; /* 滚动条宽度 */

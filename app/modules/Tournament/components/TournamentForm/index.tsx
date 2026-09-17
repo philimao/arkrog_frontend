@@ -54,9 +54,13 @@ export const selectClassName = {
 export default function TournamentForm({
   edit = false,
   tournamentData,
+  previewMode,
+  onPreviewModeChange,
 }: {
   edit?: boolean;
   tournamentData?: TournamentData;
+  previewMode?: boolean;
+  onPreviewModeChange?: (isPreviewMode: boolean) => void;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -68,7 +72,12 @@ export default function TournamentForm({
     : edit
       ? "提交修改（待审核）"
       : "新建（待审核）";
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [internalPreviewMode, setInternalPreviewMode] = useState(false);
+  const isPreviewMode = previewMode ?? internalPreviewMode;
+  const updatePreviewMode = (nextValue: boolean) => {
+    if (previewMode === undefined) setInternalPreviewMode(nextValue);
+    onPreviewModeChange?.(nextValue);
+  };
   const [formData, setFormData] = useState<TournamentData>(
     {} as TournamentData,
   );
@@ -143,13 +152,13 @@ export default function TournamentForm({
         name: tournamentName,
         groupId: "",
         avatar: "",
-        rogue: "rogue_4",
+        rogue: "rogue_6",
         edition: "初始版本",
         type: "individual",
         memberAlias: "",
         keyMemberAlias: "",
         startTime: Date.now(),
-        level: "N18",
+        level: "N15",
         labels: [],
         rule: "",
         organizers: [],
@@ -375,13 +384,13 @@ export default function TournamentForm({
   };
 
   const handlePreview = () => {
-    setIsPreviewMode(true);
+    updatePreviewMode(true);
     // Scroll to the top of the page when switching to preview mode
     window.scrollTo({ top: 0 });
   };
 
   const handleBackToEdit = () => {
-    setIsPreviewMode(false);
+    updatePreviewMode(false);
     window.scrollTo({ top: 0 });
   };
 

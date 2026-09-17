@@ -140,8 +140,9 @@ export default function TournamentGenerateModal({
       isDismissable={false}
       scrollBehavior="inside"
       classNames={{
-        base: "max-h-[100vh] !my-0",
+        base: "modal-background max-h-[90vh] !my-0",
         body: "px-0",
+        closeButton: "top-4 end-4 bg-black-gray",
       }}
     >
       <ModalContent>
@@ -192,6 +193,7 @@ export default function TournamentGenerateModal({
               onChange={(e) => setStageInfo(e.target.value)}
               maxLength={400}
               disabled={isProcessing}
+              errorMessage={stageInfo ? undefined : "赛程信息与赛事类型不可为空"}
               required
             />
             <Textarea
@@ -213,6 +215,7 @@ export default function TournamentGenerateModal({
               onChange={(e) => setGameInfo(e.target.value)}
               maxLength={3000}
               disabled={isProcessing}
+              errorMessage={gameInfo ? undefined : "比赛信息不可为空"}
               required
             />
             <Textarea
@@ -258,7 +261,7 @@ export default function TournamentGenerateModal({
             )}
           </div>
         </ModalBody>
-        <ModalFooter>
+        <ModalFooter className="gap-4">
           <Button onPress={onClose} disabled={isProcessing}>
             取消
           </Button>

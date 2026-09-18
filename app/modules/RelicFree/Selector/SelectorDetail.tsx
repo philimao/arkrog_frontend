@@ -99,7 +99,7 @@ export default function SelectorDetail({
           <span role="button">按干员</span>
         </Tooltip>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(6rem,1fr))]">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(104px,1fr))]">
         {/* 新增全部筛选器，不参与下方每层的关卡渲染 */}
         {[{ id: "all", name: "全部", filter: () => [true] }, ...navOfZone]
           .filter((zone) => Object.values(stageOfRogue).filter((stage) => zone.filter(stage, [])).length > 0)
@@ -123,7 +123,7 @@ export default function SelectorDetail({
           ))}
       </div>
       <div className="mb-4">
-        <div className="w-1/3 sm:w-1/4 lg:w-1/6 px-4 py-4 text-xs text-wrap">
+        <div className="py-4 text-xs text-wrap">
           注：前3层不做无藏收录，特定干员开局攻略见
           <Link to="/blog" className="text-ak-blue">
             攻略博客
@@ -142,7 +142,7 @@ export default function SelectorDetail({
             const renderedStageIds: string[] = [];
             const renderStages = Object.values(stageOfRogue).filter((stage) => zone.filter(stage, renderedStageIds));
             return (
-              <div className="block md:flex mb-16" key={zone.id}>
+              <div className="block md:flex mb-8" key={zone.id}>
                 <div className="w-full md:w-1/4 lg:w-1/5 xl:w-1/6 pe-2 sm:pe-3 lg:pe-6 xl:pe-8 mb-8 md:mb-0 h-10 md:h-20">
                   <StyledZoneName>{zone.name}</StyledZoneName>
                 </div>

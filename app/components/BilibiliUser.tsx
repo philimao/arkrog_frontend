@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react";
+
 interface BilibiliUserProps {
   mid: string;
   name: string;
@@ -14,7 +16,8 @@ export default function BilibiliUser({
   size,
 }: BilibiliUserProps) {
   const displayName = room_id ? `${name}的直播间` : name;
-  const handleClick = () => {
+  const handleClick = (event: MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
     if (room_id) {
       window.open(`https://live.bilibili.com/${room_id}`, "_blank");
     } else {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { TournamentData } from "~/types/tournamentsData";
 import { useGameDataStore } from "~/stores/gameDataStore";
 import Loading from "~/components/Loading";
@@ -18,6 +18,26 @@ export interface TournamentViewProps {
   children?: React.ReactNode;
   showPreviewBanner?: boolean;
   seasons?: TournamentData[];
+}
+
+function SchedulePlayerAvatar({ face, name }: { face: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+
+  return (
+    <div className="w-16 h-16 shrink-0 aspect-square bg-mid-gray flex items-center justify-center overflow-hidden">
+      {face && !failed ? (
+        <img
+          src={face}
+          alt={name}
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <p className="text-5xl text-white">{name.trim()[0]}</p>
+      )}
+    </div>
+  );
 }
 
 export default function TournamentView({
@@ -120,18 +140,11 @@ export default function TournamentView({
           <div
             className={`flex items-center ${column ? "flex-col w-20 gap-1" : "gap-3"}`}
           >
-            <div className="w-16 h-16 aspect-square bg-mid-gray flex items-center justify-center">
-              {player.face ? (
-                <img
-                  src={player.face}
-                  alt="avatar"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <p className="text-5xl text-white">{player.name[0]}</p>
-              )}
-            </div>
+            <SchedulePlayerAvatar
+              key={JSON.stringify([player.mid, player.name, player.face])}
+              face={player.face}
+              name={player.name}
+            />
             <div
               className={`text-white ${column ? "text-sm text-center" : ""}`}
             >

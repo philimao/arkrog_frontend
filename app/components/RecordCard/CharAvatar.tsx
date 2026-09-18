@@ -9,6 +9,13 @@ const StyledBustImg = styled.img<{ $isBust: boolean }>`
   height: auto;
   left: 0;
   top: ${({ $isBust }) => ($isBust ? "0" : "-18%")};
+
+  @media (max-width: 640px) {
+    height: 100%;
+    top: 0;
+    object-fit: cover;
+    object-position: center top;
+  }
 `;
 
 const StyledMinorImg = styled.img`
@@ -32,11 +39,14 @@ const StyledUniequipImgWrapper = styled.div`
   right: 0;
   overflow: hidden;
   background: var(--black-gray);
-  display: flex;
-  justify-content: center;
 `;
 
 const StyledUniequipImg = styled.img`
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
   height: 100%;
   max-width: unset;
 `;

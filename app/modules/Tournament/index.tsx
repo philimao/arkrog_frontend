@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { styled } from "styled-components";
 import { useNavigate, useSearchParams } from "react-router";
 import Loading from "~/components/Loading";
 import { useGameDataStore } from "~/stores/gameDataStore";
@@ -19,6 +20,29 @@ import {
   discardTournamentDraft,
   readTournamentDraft,
 } from "./components/tournamentDraft";
+
+const StyledOngoingTournaments = styled.div<{ $rogue?: string }>`
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0.75);
+    background-blend-mode: multiply;
+    background-image: ${({ $rogue }) =>
+      $rogue
+        ? `url(${import.meta.env.VITE_API_BASE_URL}/images/topic_banner/${$rogue}.jpg)`
+        : "none"};
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+`;
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -92,25 +116,30 @@ function RougeSelector({
     .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime);
   // 展示所有当前比赛，不分主题
   const ongoingTournaments = tournamentsData
-    .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime)
-    .filter((tournament) => tournament.ongoing);
+    .filter((tournament) => tournament.ongoing)
+    .sort((a, b) => b.stages[0]?.startTime - a.stages[0]?.startTime);
   // 轮播实现
   const [activeIndex, setActiveIndex] = useState(0);
+  const visibleIndex = ongoingTournaments.length
+    ? activeIndex % ongoingTournaments.length
+    : 0;
+  const activeTournament = ongoingTournaments[visibleIndex];
 
   useEffect(() => {
-    if (!ongoingTournaments) return;
+    if (ongoingTournaments.length < 2) return;
     const interval = setInterval(() => {
-      setActiveIndex(
-        (prevIndex) => (prevIndex + 1) % ongoingTournaments.length,
-      );
-    }, 5000); // 每5秒切换一次比赛
+      setActiveIndex((prevIndex) => (prevIndex + 1) % ongoingTournaments.length);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [ongoingTournaments]);
+  }, [ongoingTournaments.length]);
 
   const renderOngoingTournaments = () => {
     return (
-      <div className="bg-black-gray w-full mb-12 grid grid-cols-1 md:grid-cols-3 p-4">
+      <StyledOngoingTournaments
+        $rogue={activeTournament?.rogue}
+        className="bg-black-gray w-full mb-6 md:mb-12 grid grid-cols-1 md:grid-cols-3 p-4"
+      >
         <div className="text-4xl font-bold flex items-center justify-center col-span-3 md:col-span-1">
           进行中：
         </div>
@@ -118,7 +147,7 @@ function RougeSelector({
           {ongoingTournaments.map((tournament, index) => (
             <div
               key={index}
-              className={`p-4 ${index === activeIndex ? "flex" : "hidden"}`}
+              className={`py-4 ${index === visibleIndex ? "flex" : "hidden"}`}
               role="button"
               onClick={() => navigate(tournament.id)}
             >
@@ -149,8 +178,7 @@ function RougeSelector({
                 }
                 {
                   <div className="text-sm sm:text-base min-h-6 sm:min-h-7 leading-6 sm:leading-7">
-                    版本：{topics[tournament.rogue as RogueKey].name}
-                    {tournament.edition}
+                    版本：{topics[tournament.rogue as RogueKey].name} {tournament.edition}
                   </div>
                 }
                 {
@@ -159,7 +187,7 @@ function RougeSelector({
                   </div>
                 }
                 {
-                  <div className="text-sm sm:text-base flex items-center min-h-6 sm:min-h-7 flex-wrap">
+                  <div className="text-sm sm:text-base flex items-center min-h-6 sm:min-h-7 flex-wrap gap-y-1">
                     <div>主办：</div>
                     <div className="flex flex-wrap gap-2">
                       {tournament.organizers?.map((organizer, index) => (
@@ -178,7 +206,7 @@ function RougeSelector({
             </div>
           ))}
         </div>
-      </div>
+      </StyledOngoingTournaments>
     );
   };
 
@@ -261,7 +289,7 @@ function RougeSelector({
 
   return (
     <div className="relative">
-      {!!ongoingTournaments?.length && renderOngoingTournaments()}
+      {!!ongoingTournaments.length && renderOngoingTournaments()}
       {!!editable && (
         <StyledBackButtonContainer>
           <StyledBackButton

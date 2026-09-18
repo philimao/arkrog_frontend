@@ -56,27 +56,29 @@ const LeftMask = styled.div`
   z-index: -1;
 `;
 
-const StyledTopicNavContainer = styled.div`
-  position: absolute;
+const StyledTopicNavContainer = styled.div<{ $mobile: boolean }>`
+  position: ${({ $mobile }) => ($mobile ? "relative" : "absolute")};
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 100%;
-  width: 100vw;
+  left: ${({ $mobile }) => ($mobile ? "0" : "50%")};
+  transform: ${({ $mobile }) => ($mobile ? "none" : "translateX(-50%)")};
+  height: ${({ $mobile }) => ($mobile ? "auto" : "100%")};
+  width: ${({ $mobile }) => ($mobile ? "100%" : "100vw")};
   z-index: 10;
 `;
 
-const StyledTopicNavInner = styled.div`
+const StyledTopicNavInner = styled.div<{ $mobile: boolean }>`
   width: 100%;
   height: 100%;
-  display: flex;
+  display: ${({ $mobile }) => ($mobile ? "block" : "flex")};
   justify-content: end;
   align-items: center;
 `;
 
-const StyledTopicNav = styled.div`
+const StyledTopicNav = styled.div<{ $mobile: boolean }>`
   display: grid;
-  gap: 0.5rem;
+  grid-template-columns: ${({ $mobile }) =>
+    $mobile ? "repeat(auto-fit, minmax(10rem, 1fr))" : "none"};
+  gap: ${({ $mobile }) => ($mobile ? "0" : "0.5rem")};
 `;
 
 export default function SelectorBanner({
@@ -88,17 +90,26 @@ export default function SelectorBanner({
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  function Nav({ ...props }: React.ComponentPropsWithoutRef<"div">) {
+  function Nav({ mobile = false }: { mobile?: boolean }) {
     return (
-      <StyledTopicNavContainer {...props}>
-        <StyledTopicNavInner>
-          <StyledTopicNav>
+      <StyledTopicNavContainer
+        className={mobile ? "mb-4 md:hidden" : "hidden md:flex"}
+        $mobile={mobile}
+      >
+        <StyledTopicNavInner $mobile={mobile}>
+          <StyledTopicNav $mobile={mobile}>
             {Object.values(topics).map((topic) => (
               <div
                 key={topic.id}
                 className={
-                  "ps-8 pe-16 py-1 text-sm font-han-sans font-bold " +
-                  `${currentTopic.id === topic.id ? "bg-ak-blue text-black" : "bg-black text-white"} `
+                  (mobile
+                    ? "text-center font-bold leading-[2rem] p-1 "
+                    : "ps-8 pe-16 py-1 text-sm font-han-sans font-bold ") +
+                  (currentTopic.id === topic.id
+                    ? "bg-ak-blue text-black"
+                    : mobile
+                      ? "bg-black-gray text-white"
+                      : "bg-black text-white")
                 }
                 role="button"
                 onClick={() => {
@@ -121,8 +132,9 @@ export default function SelectorBanner({
 
   return (
     <>
+      <Nav mobile />
       <StyledBannerContainer>
-        <Nav className="hidden md:flex" />
+        <Nav />
         <div
           className="h-64 w-full bg-dark-gray"
           style={{ aspectRatio: 729 / 155 }}
@@ -146,9 +158,6 @@ export default function SelectorBanner({
           </div>
         </StyledBannerForeground>
       </StyledBannerContainer>
-      <div className="relative h-40 mb-4 md:h-0 md:mb-0">
-        <Nav className="flex md:hidden" />
-      </div>
     </>
   );
 }

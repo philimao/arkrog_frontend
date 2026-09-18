@@ -5,7 +5,7 @@ import type {
   TournamentStage,
 } from "~/types/tournamentsData";
 import { styled } from "styled-components";
-import { ArrowLeftIcon, ArrowRightIcon } from "~/components/Icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "~/components/Icons";
 import { generateDateArray } from "~/utils/date";
 
 // Styled components
@@ -87,7 +87,7 @@ const DateNavigation = ({
       ref={containerRef}
       onMouseDown={onMouseDown}
       onClickCapture={onClickCapture}
-      className="bg-black-gray flex hide-scroll overflow-scroll mb-4 mt-8 sm:mt-4 gap-[1px] select-none"
+      className="bg-black-gray flex hide-scroll overflow-scroll mb-2 gap-[1px] select-none"
     >
       {dates.map((date, index) => (
         <StyledNav
@@ -108,7 +108,7 @@ const DateNavigation = ({
             Day{index + 1}
           </div>
           <div
-            className={`${activeIndex === index ? "text-black" : "text-light-mid-gray"}`}
+            className={`text-sm ${activeIndex === index ? "text-black" : "text-light-mid-gray"}`}
           >{`${date.getMonth() + 1}月${date.getDate()}日`}</div>
         </StyledNav>
       ))}
@@ -125,48 +125,41 @@ const StageNavigation = ({
   setCurrentStageIndex: (index: number) => void;
   stages: TournamentStage[];
 }) => (
-  <>
-    {currentStageIndex > 0 && (
-      <div
-        className="flex items-center justify-end gap-2 text-ak-blue absolute top-4 -left-[88px] w-20 border-none"
-        role="button"
-        onClick={() => setCurrentStageIndex(currentStageIndex - 1)}
-      >
-        {stages[currentStageIndex - 1].name}
-        <ArrowLeftIcon />
-      </div>
-    )}
-    {currentStageIndex < stages.length - 1 && (
-      <div
-        className="flex items-center justify-start gap-2 text-ak-blue absolute top-4 left-full ml-2 w-20 border-none"
-        role="button"
-        onClick={() => setCurrentStageIndex(currentStageIndex + 1)}
-      >
-        <ArrowRightIcon />
-        {stages[currentStageIndex + 1].name}
-      </div>
-    )}
-  </>
-);
-
-const TableHeader = ({
-  stageName,
-  group,
-}: {
-  stageName: string;
-  group?: string;
-}) => (
-  <thead>
-    <tr>
-      <td
-        className="text-center bg-black-gray text-light-gray py-4"
-        colSpan={7}
-      >
-        {stageName}
-        {group}
-      </td>
-    </tr>
-  </thead>
+  <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 bg-black-gray text-light-gray p-2 mb-2">
+    <div>
+      {currentStageIndex > 0 && (
+        <button
+          type="button"
+          className="flex items-center justify-center gap-2 w-10 min-h-10 md:w-full md:justify-start md:px-2 text-ak-blue"
+          aria-label={`上一阶段：${stages[currentStageIndex - 1].name}`}
+          title={stages[currentStageIndex - 1].name}
+          onClick={() => setCurrentStageIndex(currentStageIndex - 1)}
+        >
+          <ChevronLeftIcon />
+          <span className="hidden md:block text-sm min-w-0 break-words text-left">
+            {stages[currentStageIndex - 1].name}
+          </span>
+        </button>
+      )}
+    </div>
+    <div className="text-center break-words">{stages[currentStageIndex].name}</div>
+    <div>
+      {currentStageIndex < stages.length - 1 && (
+        <button
+          type="button"
+          className="flex items-center justify-center gap-2 w-10 min-h-10 md:w-full md:justify-end md:px-2 text-ak-blue"
+          aria-label={`下一阶段：${stages[currentStageIndex + 1].name}`}
+          title={stages[currentStageIndex + 1].name}
+          onClick={() => setCurrentStageIndex(currentStageIndex + 1)}
+        >
+          <span className="hidden md:block text-sm min-w-0 break-words text-right">
+            {stages[currentStageIndex + 1].name}
+          </span>
+          <ChevronRightIcon />
+        </button>
+      )}
+    </div>
+  </div>
 );
 
 const EmptySchedule = ({ isTeam }: { isTeam: boolean }) =>
@@ -513,7 +506,6 @@ export default function TournamentProgress({
   // Schedule table component
   const ScheduleTable = () => (
     <table className="w-full bg-black-gray-70 align-top divide-y divide-mid-gray">
-      <TableHeader stageName={currentStage.name} />
       {isTeam ? (
         <TeamScheduleTable
           schedule={schedule}
@@ -535,6 +527,11 @@ export default function TournamentProgress({
   return (
     <>
       <div>
+        <StageNavigation
+          currentStageIndex={currentStageIndex}
+          setCurrentStageIndex={setCurrentStageIndex}
+          stages={tournamentData.stages}
+        />
         <DateNavigation
           dates={dates}
           activeIndex={activeIndex}
@@ -542,11 +539,6 @@ export default function TournamentProgress({
         />
       </div>
       <div className="relative w-full flex flex-col divide-y divide-mid-gray">
-        <StageNavigation
-          currentStageIndex={currentStageIndex}
-          setCurrentStageIndex={setCurrentStageIndex}
-          stages={tournamentData.stages}
-        />
         <ScheduleTable />
       </div>
     </>

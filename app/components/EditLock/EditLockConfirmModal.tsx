@@ -12,7 +12,6 @@ interface EditLockConfirmModalProps {
 export default function EditLockConfirmModal({
   isOpen,
   message,
-  resourceType = "资源",
   onConfirmContinue,
   onCancelEdit,
 }: EditLockConfirmModalProps) {
@@ -54,33 +53,23 @@ export default function EditLockConfirmModal({
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-3">
-              <p className={isDisabled ? "text-red-600" : "text-gray-700"}>{message}</p>
-              {isDisabled && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-600">
-                    该{resourceType}已被其他用户锁定，您的编辑权限已失效。请稍后再试。
-                  </p>
-                </div>
-              )}
+              <p className={isDisabled ? "text-ak-red" : "text-light-gray"}>{message}</p>
             </div>
           </ModalBody>
-          <ModalFooter className="flex gap-2">
+          <ModalFooter className="flex gap-4">
             <Button
-              color="danger"
-              variant="light"
               onPress={handleCancelEdit}
               disabled={isProcessing}
-              className="flex-1"
+              className="bg-ak-dark-red"
             >
               {isDisabled ? "退出编辑" : "离开编辑"}
             </Button>
             {!isDisabled && (
               <Button
-                color="primary"
                 onPress={handleConfirmContinue}
                 disabled={isProcessing}
                 isLoading={isProcessing}
-                className="flex-1"
+                className="bg-ak-blue text-black"
               >
                 继续编辑
               </Button>

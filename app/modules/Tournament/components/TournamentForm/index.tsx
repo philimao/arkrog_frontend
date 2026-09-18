@@ -1,3 +1,4 @@
+import { validateTournament } from "./validateTournament";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import type {
@@ -5,8 +6,16 @@ import type {
   TournamentPlayer,
   TournamentStage,
 } from "~/types/tournamentsData";
-import { useNavigate, useSearchParams } from "react-router";
-import { Accordion, AccordionItem, useDisclosure } from "@heroui/react";
+import { useBlocker, useNavigate, useSearchParams } from "react-router";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@heroui/react";
 import { useUserInfoStore } from "~/stores/userInfoStore";
 import { useTournamentDataStore } from "~/stores/tournamentsDataStore";
 import TournamentInfoAccordionItem from "./TournamentInfoAccordionItem";
@@ -19,6 +28,17 @@ import TournamentProgressAccordionItem, {
 import TournamentPreview from "../../TournamentDetail/TournamentPreview";
 import { URLValidation } from "~/utils/record";
 import TournamentGenerateModal from "../TournamentGenerateModal";
+import { tournamentServices } from "~/services/tournamentServices";
+import ModalTemplate from "~/components/Modal";
+import {
+  discardTournamentDraft,
+  hasTournamentChanges,
+  readTournamentDraft,
+  tournamentDraftKey,
+  readTournamentDraftBase,
+  tournamentSnapshot,
+  writeTournamentDraft,
+} from "../tournamentDraft";
 
 export const getInputClassName = (
   fieldName: string,
@@ -53,11 +73,17 @@ export const selectClassName = {
 
 export default function TournamentForm({
   edit = false,
+  restoreDraft = false,
+  canRestorePublished = false,
+  onRestorePublished,
   tournamentData,
   previewMode,
   onPreviewModeChange,
 }: {
   edit?: boolean;
+  restoreDraft?: boolean;
+  canRestorePublished?: boolean;
+  onRestorePublished?: () => void;
   tournamentData?: TournamentData;
   previewMode?: boolean;
   onPreviewModeChange?: (isPreviewMode: boolean) => void;
@@ -67,6 +93,8 @@ export default function TournamentForm({
   const { userInfo } = useUserInfoStore();
   const { saveTournament } = useTournamentDataStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRestoringPublished, setIsRestoringPublished] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
   const submitButtonLabel = isSubmitting
     ? "提交中..."
     : edit
@@ -96,56 +124,79 @@ export default function TournamentForm({
     new Set(["赛事信息"]),
   );
   const formDataRef = useRef<TournamentData>(formData);
-  const saveToStorageRef = useRef<boolean>(true);
-  const editStartTimeRef = useRef<number>(Date.now()); // 记录进入编辑的时间
+  const baselineRef = useRef("");
+  const serverBaseRef = useRef<string | null>(null);
+  const allowLeaveRef = useRef(false);
+  const editStartTimeRef = useRef<number>(Date.now());
   const accordionRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [submitFromPreview, setSubmitFromPreview] = useState(false);
+  const isBusy = isSubmitting || isRestoringPublished || submitFromPreview;
   const [mounted, setMounted] = useState(false);
+  formDataRef.current = formData;
+  // 拦截函数保持稳定；导航发生时读取最新数据，避免失焦更新后使用旧闭包。
+  const hasUnsavedChanges = useCallback(
+    () => hasTournamentChanges(formDataRef.current, baselineRef.current),
+    [],
+  );
+  const shouldBlockLeave = useCallback(
+    () => !allowLeaveRef.current && hasUnsavedChanges(),
+    [hasUnsavedChanges],
+  );
+  const blocker = useBlocker(shouldBlockLeave);
+
+  const saveDraft = useCallback(
+    (automatic = false) => {
+      try {
+        const data = formDataRef.current;
+        writeTournamentDraft(data, serverBaseRef.current, tournamentData?.id);
+        baselineRef.current = JSON.stringify(data);
+        toast.success(automatic ? "草稿已自动保存" : "草稿已保存");
+        return true;
+      } catch {
+        toast.error("草稿保存失败，请检查浏览器存储空间或权限");
+        return false;
+      }
+    },
+    [tournamentData?.id],
+  );
 
   useEffect(() => {
-    const saveFormData = () => {
-      if (saveToStorageRef.current) {
-        formDataRef.current.lastEditTime = Date.now();
-        localStorage.setItem(
-          `tournamentForm-${tournamentData?.id}`,
-          JSON.stringify(formDataRef.current),
-        );
+    if (!mounted) return;
+    const timer = window.setInterval(
+      () => {
+        if (JSON.stringify(formDataRef.current) !== baselineRef.current)
+          saveDraft(true);
+      },
+      3 * 60 * 1000,
+    );
+    return () => window.clearInterval(timer);
+  }, [mounted, saveDraft]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (shouldBlockLeave()) {
+        event.preventDefault();
+        event.returnValue = "";
       }
     };
-
-    window.addEventListener("beforeunload", saveFormData);
-    window.addEventListener("popstate", saveFormData);
-
-    return () => {
-      window.removeEventListener("beforeunload", saveFormData);
-      window.removeEventListener("popstate", saveFormData);
-    };
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [shouldBlockLeave]);
 
   useEffect(() => {
-    formDataRef.current = formData;
-  }, [formData]);
-
-  useEffect(() => {
-    let newFormData;
-    const storedData = localStorage.getItem(
-      `tournamentForm-${tournamentData?.id}`,
-    );
-
-    if (
-      storedData &&
-      (newFormData = JSON.parse(storedData)) &&
-      newFormData.lastEditTime &&
-      newFormData.lastEditTime > (tournamentData?.lastEditTime || 0)
-    ) {
-      // 仅当存储的数据比当前数据新时，才使用存储的数据
+    let newFormData: TournamentData;
+    const storedData = restoreDraft
+      ? readTournamentDraft(tournamentData?.id)
+      : null;
+    if (storedData) {
+      newFormData = storedData;
     } else if (tournamentData) {
       newFormData = structuredClone(tournamentData);
     } else {
       // Default data for new tournament
       const tournamentNameParam = searchParams.get("tournamentName");
-      const tournamentName = tournamentNameParam
-        ? decodeURIComponent(tournamentNameParam)
-        : "";
+      const tournamentName = tournamentNameParam || "";
 
       newFormData = {
         id: "",
@@ -172,6 +223,11 @@ export default function TournamentForm({
       };
     }
 
+    serverBaseRef.current = tournamentData
+      ? storedData ? readTournamentDraftBase(tournamentData.id) : tournamentSnapshot(tournamentData)
+      : null;
+    baselineRef.current = JSON.stringify(newFormData);
+    formDataRef.current = newFormData;
     setFormData(newFormData);
     setEditingPlayer(newFormData.players?.[0]);
     setEditingStage(newFormData.stages?.[0]);
@@ -207,29 +263,64 @@ export default function TournamentForm({
     setExpandedKeys(new Set(allKeys));
   }, []);
 
+  const checkTournamentData = () => {
+    try {
+      const error = validateTournament(formDataRef.current);
+      if (!error) return true;
+      setExpandedKeys(new Set([error.section]));
+      if (error.playerIndex !== undefined && error.section === "参赛选手")
+        setEditingPlayer(formDataRef.current.players[error.playerIndex]);
+      if (error.stageIndex !== undefined)
+        setEditingStage(formDataRef.current.stages[error.stageIndex]);
+      toast.warning(error.message);
+      return false;
+    } catch {
+      toast.error("赛事数据不完整或格式异常，无法校验，尚未提交。当前内容已保留，请检查数据或重新加载赛事版本。");
+      return false;
+    }
+  };
+
+  // Wait for the editing form and expanded sections to mount before validating.
+  useEffect(() => {
+    if (!submitFromPreview || isPreviewMode) return;
+    const timer = window.setTimeout(() => {
+      setSubmitFromPreview(false);
+      const form = formRef.current;
+      if (!form) return;
+      if (!checkTournamentData()) return;
+      if (!form.checkValidity()) {
+        toast.warning("表单有未填写或格式不正确的内容，请检查提示项");
+        form.reportValidity();
+        return;
+      }
+      form.requestSubmit();
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [submitFromPreview, isPreviewMode]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const form = formRef.current;
+    if (!form) return;
+    setIsSubmitting(true);
 
     // Expand all accordion items to ensure all form fields are rendered for validation
     expandAllAccordionItems();
 
     // Use setTimeout to ensure the DOM is updated before validation
     setTimeout(async () => {
-      // Check form validity after accordion items are expanded
-      if (e.target instanceof HTMLFormElement && !e.target.checkValidity()) {
-        e.target.reportValidity();
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      if (!userInfo || !userInfo.username) {
-        toast.error("请先登录");
-        setIsSubmitting(false);
-        return;
-      }
-
       try {
+        // Check all persisted entries before checking currently mounted inputs.
+        if (!checkTournamentData()) return;
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+        if (!userInfo || !userInfo.username) {
+          toast.error("请先登录");
+          return;
+        }
+
         // 验证并处理休赛期数据
         for (let stage of formData.stages) {
           if (stage.offseason && stage.offseason.length > 0) {
@@ -325,6 +416,22 @@ export default function TournamentForm({
         //   });
         // });
 
+        // Fail closed if the current server version cannot be verified.
+        if (tournamentData) {
+          try {
+            const latest = await tournamentServices.getEditView(tournamentData.id);
+            if (!latest.data.success || !latest.data.tournament)
+              throw new Error("Missing edit view");
+            if (!serverBaseRef.current || tournamentSnapshot(latest.data.tournament) !== serverBaseRef.current) {
+              toast.error("赛事已被更新，已阻止提交。请保存草稿后重新打开编辑页，使用最新版本并对照草稿修改。");
+              return;
+            }
+          } catch {
+            toast.error("无法确认赛事最新版本，暂未提交。请稍后重试，当前编辑内容已保留。");
+            return;
+          }
+        }
+
         const response = await saveTournament(
           formData,
           userInfo.username,
@@ -332,9 +439,17 @@ export default function TournamentForm({
         );
 
         if (response) {
+          allowLeaveRef.current = true;
+          try {
+            localStorage.removeItem(tournamentDraftKey(tournamentData?.id));
+          } catch {
+            toast.warning("提交成功，但本地草稿清理失败");
+          }
           returnToPrevPage();
         }
         // 错误提示已在 store 中处理
+      } catch {
+        toast.error("提交过程中发生异常，请检查赛事数据后重试。当前编辑内容已保留。");
       } finally {
         setIsSubmitting(false);
       }
@@ -342,8 +457,6 @@ export default function TournamentForm({
   };
 
   const returnToPrevPage = () => {
-    saveToStorageRef.current = false;
-    localStorage.removeItem(`tournamentForm-${tournamentData?.id}`);
     if (tournamentData) {
       navigate(`/tournament/${tournamentData.id}`);
     } else {
@@ -383,9 +496,49 @@ export default function TournamentForm({
     }
   };
 
+  const restorePublishedVersion = async () => {
+    if (!canRestorePublished || !tournamentData || isBusy) return;
+    setRestoreConfirmOpen(false);
+    setIsRestoringPublished(true);
+    try {
+      const [list, latest] = await Promise.all([
+        tournamentServices.getTournamentList(true),
+        tournamentServices.getEditView(tournamentData.id),
+      ]);
+      const published = list.data.find(item => item.id === tournamentData.id);
+      if (!published) {
+        toast.warning("该赛事没有可恢复的已通过版本");
+        return;
+      }
+      if (!latest.data.success || latest.data.pendingMeta?.status !== "rejected" ||
+          tournamentSnapshot(latest.data.tournament) !== serverBaseRef.current) {
+        toast.warning("赛事版本已变化，请重新打开编辑页后重试");
+        return;
+      }
+      const restored = structuredClone(published);
+      formDataRef.current = restored;
+      setFormData(restored);
+      setEditingPlayer(restored.players[0]);
+      setEditingStage(restored.stages[0]);
+      setTouchedFields(new Set());
+      // Retain the effective server baseline for conflict checks and draft saves.
+      onRestorePublished?.();
+      toast.success("已切换为已通过版本，尚未提交");
+    } catch {
+      toast.error("获取已通过版本失败，当前内容未替换");
+    } finally {
+      setIsRestoringPublished(false);
+    }
+  };
+
+  const requestRestorePublished = () => {
+    if (!canRestorePublished || isBusy) return;
+    if (hasUnsavedChanges() || restoreDraft) setRestoreConfirmOpen(true);
+    else void restorePublishedVersion();
+  };
+
   const handlePreview = () => {
     updatePreviewMode(true);
-    // Scroll to the top of the page when switching to preview mode
     window.scrollTo({ top: 0 });
   };
 
@@ -409,14 +562,69 @@ export default function TournamentForm({
     [onClose],
   );
 
+  const leaveConfirmModal = (
+    <ModalTemplate
+      modalControl={{
+        isOpen: blocker.state === "blocked",
+        onClose: () => blocker.reset?.(),
+      }}
+    >
+      <ModalHeader>未保存的改动</ModalHeader>
+      <ModalBody>您有未保存的改动，是否确认离开？</ModalBody>
+      <ModalFooter className="gap-4">
+        <Button
+          className="text-md rounded-md text-black bg-light-gray"
+          onPress={() => blocker.reset?.()}
+        >
+          返回编辑
+        </Button>
+        <Button
+          color="primary"
+          onPress={() => {
+            if (saveDraft()) blocker.proceed?.();
+          }}
+          className="text-md rounded-md text-black bg-ak-blue"
+        >
+          保存草稿并离开
+        </Button>
+        <Button
+          className="text-md rounded-md text-white bg-ak-dark-red"
+          onPress={() => {
+            if (discardTournamentDraft(tournamentData?.id)) blocker.proceed?.();
+          }}
+        >
+          离开
+        </Button>
+      </ModalFooter>
+    </ModalTemplate>
+  );
+
   // 未挂载时，不渲染表单
   if (!mounted) {
     return null;
   }
 
+  const submissionNotice = isBusy && (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 bg-black-gray px-6 py-4 text-white shadow-lg">
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-ak-blue" aria-hidden="true" />
+        {isRestoringPublished ? "正在获取已发布版本，请稍候…" : "正在检查并提交，请稍候…"}
+      </div>
+    </div>
+  );
+
   if (isPreviewMode) {
     return (
       <div className="relative">
+        {submissionNotice}
+        {leaveConfirmModal}
+        <button
+          type="button"
+          className="hidden"
+          id="tournament-save-draft-trigger"
+          disabled={isBusy}
+          onClick={() => saveDraft()}
+        />
         <TournamentPreview formData={formData} />
         <div className="flex justify-end space-x-4 mb-6">
           <button
@@ -428,9 +636,14 @@ export default function TournamentForm({
           </button>
           <button
             type="button"
-            onClick={handleSubmit}
+            onClick={() => {
+              expandAllAccordionItems();
+              setSubmitFromPreview(true);
+              updatePreviewMode(false);
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
             className="px-4 py-2 rounded-md text-black bg-ak-blue"
-            disabled={isSubmitting}
+            disabled={isBusy}
           >
             {submitButtonLabel}
           </button>
@@ -441,10 +654,24 @@ export default function TournamentForm({
 
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
       onKeyDown={handleFormKeyDown}
       onClick={handleAccordionClick}
     >
+      {submissionNotice}
+      <ModalTemplate modalControl={{ isOpen: restoreConfirmOpen, onClose: () => setRestoreConfirmOpen(false) }}>
+        <ModalHeader>使用已通过的版本</ModalHeader>
+        <ModalBody>使用已通过的版本会替换当前表格内容。本地已保存的草稿仍会保留，是否继续？</ModalBody>
+        <ModalFooter className="gap-4">
+          <Button className="rounded-md bg-light-gray text-black" onPress={() => setRestoreConfirmOpen(false)}>取消</Button>
+          <Button className="rounded-md bg-ak-blue text-black" onPress={() => void restorePublishedVersion()}>确认恢复</Button>
+        </ModalFooter>
+      </ModalTemplate>
+      {canRestorePublished && (
+        <button type="button" className="hidden" id="tournament-restore-published-trigger"
+          disabled={isBusy} onClick={requestRestorePublished} />
+      )}
       <Accordion
         ref={accordionRef}
         className="px-0"
@@ -523,36 +750,46 @@ export default function TournamentForm({
         </AccordionItem>
       </Accordion>
 
-      <div className="flex justify-end space-x-4 mt-6">
+      <div className="flex justify-end flex-wrap gap-4 mt-6">
         <button
           type="button"
           onClick={returnToPrevPage}
-          className="px-4 py-2 rounded-md text-black bg-light-gray"
-          disabled={isSubmitting}
+          className="me-auto px-4 py-2 rounded-md text-black bg-light-gray"
+          disabled={isBusy}
         >
           取消
         </button>
         <button
           type="button"
+          id="tournament-save-draft-trigger"
+          onClick={() => saveDraft()}
+          className="px-4 py-2 rounded-md text-black bg-light-gray"
+          disabled={isBusy}
+        >
+          保存草稿
+        </button>
+        <button
+          type="button"
           onClick={handlePreview}
           className="px-4 py-2 rounded-md text-black bg-light-gray"
-          disabled={isSubmitting}
+          disabled={isBusy}
         >
           预览
         </button>
         <button
           type="submit"
           className="px-4 py-2 rounded-md text-black bg-ak-blue"
-          disabled={isSubmitting}
+          disabled={isBusy}
         >
           {isSubmitting
-              ? "提交中..."
-              : edit
-                ? "提交修改（待审核）"
-                : "新建（待审核）"}
+            ? "提交中..."
+            : edit
+              ? "提交修改（待审核）"
+              : "新建（待审核）"}
         </button>
       </div>
 
+      {leaveConfirmModal}
       {/* 智能生成弹窗 */}
       <TournamentGenerateModal
         name={formData.name}

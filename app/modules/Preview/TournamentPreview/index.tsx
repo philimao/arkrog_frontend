@@ -28,8 +28,8 @@ const StyledBanner = styled.div<{ status: "pending" | "rejected" }>`
   font-size: 0.95rem;
   text-align: center;
   letter-spacing: 0.02em;
-  background: ${(p) => (p.status === "pending" ? "#facc15" : "#ef4444")};
-  color: ${(p) => (p.status === "pending" ? "#1a1a1a" : "white")};
+  background: ${(p) => (p.status === "pending" ? "var(--warning-yellow)" : "var(--ak-dark-red)")};
+  color: ${(p) => (p.status === "pending" ? "black" : "white")};
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 `;
 

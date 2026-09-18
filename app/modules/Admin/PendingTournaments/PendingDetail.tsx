@@ -250,13 +250,13 @@ export default function PendingDetail() {
 
       <StyledActions>
         <Button
-          color="primary"
+          className="bg-ak-blue text-black"
           variant="flat"
           onPress={() => window.open(previewUrl, "_blank")}
         >
           📋 打开审核预览页
         </Button>
-        <Button variant="flat" onPress={copyPreviewUrl}>
+        <Button className="bg-mid-gray" variant="flat" onPress={copyPreviewUrl}>
           复制链接
         </Button>
       </StyledActions>
@@ -294,17 +294,16 @@ export default function PendingDetail() {
           minRows={2}
           className="mb-3"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button
-            color="success"
+            className="bg-green-700 text-white"
             onPress={handleApprove}
             isDisabled={!isPending || submitting}
           >
             ✓ 通过
           </Button>
           <Button
-            color="danger"
-            variant="flat"
+            className="bg-ak-dark-red text-white"
             onPress={handleReject}
             isDisabled={!isPending || submitting}
           >

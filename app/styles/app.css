@@ -21,6 +21,8 @@
   --color-ak-pink: var(--ak-pink);
   --color-semi-black: var(--semi-black);
   --color-black-gray-70: var(--black-gray-70);
+  --color-warning-yellow: var(--warning-yellow);
+  --color-success-green: var(--success-green);
 
   --font-sans:
     "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",

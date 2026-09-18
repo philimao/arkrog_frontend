@@ -64,6 +64,7 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
     onLockFailed,
     onUnlocked,
   } = options;
+  const resourceTypeText = resourceType === "tournament" ? "赛事" : resourceType;
 
   // 使用useRef存储回调函数，避免依赖变化
   const callbacksRef = useRef({
@@ -198,7 +199,7 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
     }
 
     countdownTimerRef.current = setTimeout(() => {
-      setConfirmMessage(`您已长时间在编辑${resourceType}，是否仍在编辑中？`);
+      setConfirmMessage(`您已长时间在编辑${resourceTypeText}，是否仍在编辑中？`);
       openModal();
     }, lockDuration);
   }, [lockDuration, resourceType, openModal]);
@@ -223,7 +224,9 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
     } else {
       // 刷新失败，可能被其他人锁定
       await checkLockStatus();
-      setConfirmMessage(`该${resourceType}已被${result.lockedBy}锁定，您的编辑权限已失效。`);
+      setConfirmMessage(
+        `该${resourceTypeText}已被${result.lockedBy === "未知" ? "其他用户" : result.lockedBy}锁定，您的编辑权限已失效。请稍后再试。`
+      );
     }
   }, [refreshLock, startCountdown, closeModal, checkLockStatus, resourceType]);
 
@@ -292,7 +295,7 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
             clearTimeout(countdownTimerRef.current);
           }
           countdownTimerRef.current = setTimeout(() => {
-            setConfirmMessage(`您已长时间在编辑${resourceType}，是否仍在编辑中？`);
+            setConfirmMessage(`您已长时间在编辑${resourceTypeText}，是否仍在编辑中？`);
             openModal();
           }, lockDuration);
         } else {
@@ -337,7 +340,7 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
 
   // 页面离开时解锁资源
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    const handlePageHide = () => {
       if (resourceId && username) {
         // 清除倒计时
         if (countdownTimerRef.current) {
@@ -359,10 +362,10 @@ export function useEditLock(options: UseEditLockOptions): UseEditLockReturn {
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("pagehide", handlePageHide);
 
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, [resourceType, resourceId, username]);
 

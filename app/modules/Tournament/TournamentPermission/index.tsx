@@ -287,7 +287,7 @@ export default function TournamentPermission({
                   <button
                     type="button"
                     onClick={() => handleRemoveUser(user.userId)}
-                    className="px-3 py-1 text-sm bg-ak-red hover:bg-ak-dark-red transition-colors flex-shrink-0"
+                    className="px-3 py-1 text-sm bg-ak-dark-red hover:bg-ak-dark-red transition-colors flex-shrink-0"
                   >
                     删除
                   </button>

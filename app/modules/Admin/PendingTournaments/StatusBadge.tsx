@@ -2,9 +2,9 @@ import { styled } from "styled-components";
 import type { PendingStatus } from "~/services/adminServices";
 
 const COLOR: Record<PendingStatus, { bg: string; fg: string }> = {
-  pending: { bg: "rgba(250, 204, 21, 0.2)", fg: "#facc15" },
-  approved: { bg: "rgba(34, 197, 94, 0.2)", fg: "#86efac" },
-  rejected: { bg: "rgba(239, 68, 68, 0.2)", fg: "#fca5a5" },
+  pending: { bg: "var(--warning-yellow)", fg: "black" },
+  approved: { bg: "var(--success-green)", fg: "white" },
+  rejected: { bg: "var(--ak-dark-red)", fg: "white" },
 };
 
 export const PENDING_STATUS_LABEL: Record<PendingStatus, string> = {

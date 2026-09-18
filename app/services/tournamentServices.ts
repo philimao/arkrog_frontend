@@ -83,7 +83,7 @@ export const tournamentServices = {
 
   // 编辑视图：返回 effective 数据 + pendingMeta
   getEditView: (tournamentId: string) =>
-    api.get<EditViewResponse>(`/tournament/edit-view/${tournamentId}`),
+    api.get<EditViewResponse>(`/tournament/edit-view/${tournamentId}`, noCacheConfig),
 
   // 保存赛事
   saveTournament: (params: SaveTournamentParams) =>

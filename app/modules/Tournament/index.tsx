@@ -14,6 +14,12 @@ import BilibiliUser from "~/components/BilibiliUser";
 import ModalTemplate from "~/components/Modal";
 import { Button, ModalBody, ModalFooter, ModalHeader } from "@heroui/react";
 
+import DraftConfirmModal from "./components/DraftConfirmModal";
+import {
+  discardTournamentDraft,
+  readTournamentDraft,
+} from "./components/tournamentDraft";
+
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
   // 游戏数据
@@ -55,6 +61,7 @@ function RougeSelector({
   const { userInfo } = useUserInfoStore();
   const editable = userInfo?.level && userInfo.level > 3;
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [tournamentName, setTournamentName] = useState("");
 
   const handleCreateCancel = () => {
@@ -65,7 +72,9 @@ function RougeSelector({
   const handleCreateConfirm = () => {
     const trimmedName = tournamentName.trim();
     if (!trimmedName) return;
-    navigate(`/tournament/create?tournamentName=${encodeURIComponent(trimmedName)}`);
+    navigate(
+      `/tournament/create?tournamentName=${encodeURIComponent(trimmedName)}`,
+    );
   };
 
   const currentTopic: TopicData = useMemo(() => {
@@ -255,7 +264,12 @@ function RougeSelector({
       {!!ongoingTournaments?.length && renderOngoingTournaments()}
       {!!editable && (
         <StyledBackButtonContainer>
-          <StyledBackButton onClick={() => setIsCreateModalOpen(true)}>
+          <StyledBackButton
+            onClick={() => {
+              if (readTournamentDraft()) setIsDraftModalOpen(true);
+              else setIsCreateModalOpen(true);
+            }}
+          >
             新建赛事
           </StyledBackButton>
           <StyledBackButton
@@ -266,6 +280,16 @@ function RougeSelector({
           </StyledBackButton>
         </StyledBackButtonContainer>
       )}
+      <DraftConfirmModal
+        isOpen={isDraftModalOpen}
+        onClose={() => setIsDraftModalOpen(false)}
+        onConfirm={() => navigate("/tournament/create?restoreDraft=1")}
+        onDecline={() => {
+          if (!discardTournamentDraft()) return;
+          setIsDraftModalOpen(false);
+          setIsCreateModalOpen(true);
+        }}
+      />
       <ModalTemplate
         isOpen={isCreateModalOpen}
         onClose={handleCreateCancel}
@@ -296,7 +320,7 @@ function RougeSelector({
         <ModalFooter className="gap-4">
           <Button
             onPress={handleCreateCancel}
-            className="text-md p-2 rounded-md text-black bg-light-gray"
+            className="text-md rounded-md text-black bg-light-gray"
           >
             取消
           </Button>

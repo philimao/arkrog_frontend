@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
   useHref,
+  useLocation,
   useNavigate,
 } from "react-router";
 
@@ -37,6 +38,25 @@ const websiteSchema = {
   inLanguage: "zh-CN",
 };
 
+const sectionTitles: [string, string][] = [
+  ["/relic-free", "无藏收录"],
+  ["/blog", "攻略博客"],
+  ["/tournament", "赛事整理"],
+  ["/tool/autochess", "卫戍协议"],
+  ["/tool/blackflowmap", "地图记录"],
+  ["/tool", "伤害计算"],
+  ["/home/message", "消息中心"],
+  ["/home/favorite", "我的收藏"],
+  ["/home/link-bilibili", "账户链接"],
+  ["/home", "个人中心"],
+  ["/admin/tournament-audit", "赛事审计"],
+  ["/admin/record-audit", "无藏审计"],
+  ["/admin/pending-tournaments", "待审核赛事"],
+  ["/admin", "管理后台"],
+  ["/sponsor", "赞助我们"],
+  ["/preview/tournament", "赛事预览"],
+];
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -55,6 +75,11 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const sectionTitle = sectionTitles.find(
+    ([path]) => pathname === path || pathname.startsWith(`${path}/`),
+  )?.[1];
+  const title = sectionTitle ? `${sectionTitle}｜ ${siteSeo.title}` : siteSeo.title;
   // const isDev = import.meta.env.MODE === "development";
   return (
     <html lang="zh-CN">
@@ -65,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="keywords" content={siteSeo.keywords} />
         <meta name="robots" content="index,follow" />
         <meta name="author" content={siteSeo.siteName} />
-        <meta property="og:title" content={siteSeo.title} />
+        <meta property="og:title" content={title} />
         <meta property="og:description" content={siteSeo.description} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content={siteSeo.siteName} />
@@ -75,7 +100,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="canonical" href={siteSeo.canonical} />
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
         {/*{isDev && <script src="http://localhost:8097"></script>}*/}
-        <title>{siteSeo.title}</title>
+        <title>{title}</title>
         <Meta />
         <Links />
       </head>

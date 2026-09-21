@@ -13,12 +13,12 @@ const tools = [
   { name: "趣味百科", to: "#", img: "/images/icons/趣味百科.png" },
   {
     name: "短脖兔杯",
-    to: "https://www.bilibili.com/opus/974653453867417601",
+    to: "https://www.bilibili.com/opus/1250406288629694484",
     img: "/images/icons/短脖兔杯.png",
   },
   {
     name: "五藏杯",
-    to: "https://www.bilibili.com/opus/1014496937776250885",
+    to: "https://www.bilibili.com/opus/1156575083018321937",
     img: "/images/icons/五藏杯.png",
   },
   {

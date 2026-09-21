@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { styled } from "styled-components";
 import { useNavigate, useSearchParams } from "react-router";
 import Loading from "~/components/Loading";
@@ -43,6 +43,99 @@ const StyledOngoingTournaments = styled.div<{ $rogue?: string }>`
     background-repeat: no-repeat;
   }
 `;
+
+function OngoingOrganizers({
+  organizers,
+}: {
+  organizers: TournamentData["organizers"];
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [visibleCount, setVisibleCount] = useState(1);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const measure = measureRef.current;
+    const more = moreRef.current;
+    if (!container || !measure || !more || !organizers?.length) return;
+
+    const update = () => {
+      const widths = Array.from(
+        measure.children,
+        (child) => child.getBoundingClientRect().width,
+      );
+      const gap = 8;
+      const available = container.clientWidth;
+      const moreWidth = more.getBoundingClientRect().width;
+      let used = 0;
+      let count = 0;
+
+      for (const width of widths) {
+        const next = used + (count ? gap : 0) + width;
+        const hasMore = count + 1 < widths.length;
+        if (count > 0 && next + (hasMore ? gap + moreWidth : 0) > available) {
+          break;
+        }
+        used = next;
+        count++;
+      }
+      setVisibleCount(count);
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(container);
+    observer.observe(measure);
+    return () => observer.disconnect();
+  }, [organizers]);
+
+  if (!organizers?.length) return null;
+
+  return (
+    <div ref={containerRef} className="relative min-w-0 flex-1">
+      <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+        {organizers.slice(0, visibleCount).map((organizer) => (
+          <div key={organizer.mid} className="min-w-0 shrink-0 first:shrink">
+            <BilibiliUser
+              mid={organizer.mid}
+              name={organizer.name}
+              face={organizer.avatar}
+              size={6}
+            />
+          </div>
+        ))}
+        {visibleCount < organizers.length && (
+          <span className="shrink-0">等</span>
+        )}
+      </div>
+      <div
+        ref={measureRef}
+        aria-hidden="true"
+        inert
+        className="pointer-events-none invisible absolute left-0 top-0 flex w-max gap-2 whitespace-nowrap"
+      >
+        {organizers.map((organizer) => (
+          <div key={organizer.mid}>
+            <BilibiliUser
+              mid={organizer.mid}
+              name={organizer.name}
+              face={organizer.avatar}
+              size={6}
+            />
+          </div>
+        ))}
+      </div>
+      <span
+        ref={moreRef}
+        aria-hidden="true"
+        className="invisible absolute left-0 top-0 whitespace-nowrap"
+      >
+        等
+      </span>
+    </div>
+  );
+}
 
 export default function TournamentsWrapper() {
   const { topics } = useGameDataStore();
@@ -128,7 +221,9 @@ function RougeSelector({
   useEffect(() => {
     if (ongoingTournaments.length < 2) return;
     const interval = setInterval(() => {
-      setActiveIndex((prevIndex) => (prevIndex + 1) % ongoingTournaments.length);
+      setActiveIndex(
+        (prevIndex) => (prevIndex + 1) % ongoingTournaments.length,
+      );
     }, 5000);
 
     return () => clearInterval(interval);
@@ -166,7 +261,7 @@ function RougeSelector({
                   </div>
                 )}
               </div>
-              <div className="flex flex-col pl-4 gap-1 min-w-0">
+              <div className="flex flex-1 flex-col pl-4 gap-1 min-w-0">
                 <div className="text-xl sm:text-3xl font-bold">
                   {tournament.name}
                 </div>
@@ -178,7 +273,8 @@ function RougeSelector({
                 }
                 {
                   <div className="text-sm sm:text-base min-h-6 sm:min-h-7 leading-6 sm:leading-7">
-                    版本：{topics[tournament.rogue as RogueKey].name} {tournament.edition}
+                    版本：{topics[tournament.rogue as RogueKey].name}{" "}
+                    {tournament.edition}
                   </div>
                 }
                 {
@@ -187,19 +283,9 @@ function RougeSelector({
                   </div>
                 }
                 {
-                  <div className="text-sm sm:text-base flex items-center min-h-6 sm:min-h-7 flex-wrap gap-y-1">
-                    <div>主办：</div>
-                    <div className="flex flex-wrap gap-2">
-                      {tournament.organizers?.map((organizer, index) => (
-                        <BilibiliUser
-                          key={organizer.mid}
-                          mid={organizer.mid}
-                          name={organizer.name}
-                          face={organizer.avatar}
-                          size={6}
-                        />
-                      ))}
-                    </div>
+                  <div className="text-sm sm:text-base flex min-w-0 items-center min-h-6 sm:min-h-7 whitespace-nowrap">
+                    <div className="shrink-0">主办：</div>
+                    <OngoingOrganizers organizers={tournament.organizers} />
                   </div>
                 }
               </div>

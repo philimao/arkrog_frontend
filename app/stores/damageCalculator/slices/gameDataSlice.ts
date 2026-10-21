@@ -70,15 +70,18 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setTopicSpecItems",
     ),
-  setRogueInput: (rogueInput: RogueInput) =>
+  setRogueInput: (rogueInput: RogueInput) => {
+    ++stageRequest;
     set(
       (state) => {
         state.rogueInput = rogueInput;
       },
       undefined,
       "setRogueInput",
-    ),
+    );
+  },
   setRogueKey: async (rogueTopic: RogueTopic) => {
+    const request = ++stageRequest;
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     rogueInput.topic = rogueTopic;
@@ -119,7 +122,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       levels: state.levels,
       relics: topicDefaults.relics,
       stageId,
-    }); // immer可以获得最新的state
+    });
+    if (request !== stageRequest) return;
     set(
       (state) => {
         state.rogueInput.topic = rogueTopic;
@@ -186,6 +190,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     );
   },
   setRogueZone: async (zone) => {
+    const request = ++stageRequest;
     const state = get();
     const rogueInput = JSON.parse(JSON.stringify(state.rogueInput));
     const rogueKey = rogueInput.topic as RogueKey;
@@ -210,6 +215,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
+    if (request !== stageRequest) return;
     set(
       (state) => {
         state.rogueInput[rogueKey].zone = zone;
@@ -242,7 +248,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     const request = ++stageRequest;
     const state = get();
     const rogueKey = state.rogueInput.topic as RogueKey;
-    const selectedEnemyId = state.enemyData?.id;
+    const bossRelic = rogueKey === "rogue_6" ? getRogue6BossRelic(stageId) : undefined;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput: state.rogueInput,
       stages: state.stages,
@@ -251,13 +257,17 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       stageId,
     });
 
-    // 异步读取期间若用户再次操作，不提交旧的关卡或藏品状态。
+    // 只让更新的导航或结局藏品选择取消请求；普通藏品变化不应丢掉关卡切换。
+    const current = get();
     if (request !== stageRequest || get().rogueInput.topic !== rogueKey
       || get().stageId !== state.stageId
-      || get().rogueInput[rogueKey].relics !== state.rogueInput[rogueKey].relics) return;
+      || (bossRelic && current.rogueInput[rogueKey].relics.includes(bossRelic)
+        !== state.rogueInput[rogueKey].relics.includes(bossRelic))) return;
 
     // 根据关卡更新难度层数
-    const newLayer = getDefaultLayerForStage(stageId, state.rogueInput);
+    const newLayer = getDefaultLayerForStage(stageId, current.rogueInput);
+    const selectedEnemyId = current.enemyData?.id;
+    const addedRelics = relics.filter(id => !state.rogueInput[rogueKey].relics.includes(id));
 
     set(
       (state) => {
@@ -267,7 +277,7 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.levels = levels;
         state.rogueInput[rogueKey].relics = rogueKey === "rogue_6"
           ? syncRogue6BossRelics(stageId, state.rogueInput[rogueKey].relics)
-          : relics;
+          : [...new Set([...state.rogueInput[rogueKey].relics, ...addedRelics])];
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
         state.rogueInput[rogueKey].layer = newLayer;

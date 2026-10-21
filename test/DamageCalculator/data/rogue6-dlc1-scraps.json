@@ -1,0 +1,242 @@
+{
+  "source": "Kengxxiao/ArknightsGameData",
+  "revision": "bee3f83c5d60590b5e1cd42b8d09d00ce32ab10d",
+  "items": [
+    {
+      "id": "rogue_6_scrap_G_01",
+      "name": "种子",
+      "usage": "可在秘境行商中培育并获得奖励"
+    },
+    {
+      "id": "rogue_6_scrap_G_02",
+      "name": "血蕈",
+      "usage": "每次作战后估价+2"
+    },
+    {
+      "id": "rogue_6_scrap_G_03",
+      "name": "雾滚草",
+      "usage": "每次揭示节点信息时估价+1"
+    },
+    {
+      "id": "rogue_6_scrap_G_04",
+      "name": "回声玉米",
+      "usage": "每次招募干员时估价+3"
+    },
+    {
+      "id": "rogue_6_scrap_G_05",
+      "name": "浪花",
+      "usage": "每次移动后，估价会随机变化"
+    },
+    {
+      "id": "rogue_6_scrap_G_06",
+      "name": "霜晶树",
+      "usage": "每次完美作战后估价+4，非完美作战后自身损坏"
+    },
+    {
+      "id": "rogue_6_scrap_G_07",
+      "name": "多生苔藓",
+      "usage": "获得时立刻获得3个<枯苔藓球>，获得零件时估价+1"
+    },
+    {
+      "id": "rogue_6_scrap_G_08",
+      "name": "枯苔藓球",
+      "usage": "估价较低的自然物"
+    },
+    {
+      "id": "rogue_6_scrap_G_09",
+      "name": "板藤",
+      "usage": "每次获得零件时估价+4"
+    },
+    {
+      "id": "rogue_6_scrap_G_10",
+      "name": "恋家果",
+      "usage": "每次移动后估价-2"
+    },
+    {
+      "id": "rogue_6_scrap_G_11",
+      "name": "光彩松露",
+      "usage": "估价较高的自然物"
+    },
+    {
+      "id": "rogue_6_scrap_G_12",
+      "name": "笼控器",
+      "usage": "在不期而遇中存在特殊作用"
+    },
+    {
+      "id": "rogue_6_scrap_G_13",
+      "name": "薄葬草",
+      "usage": "估价较低，在失与得中能交换更加稀有的自然物"
+    },
+    {
+      "id": "rogue_6_scrap_G_14",
+      "name": "生逝",
+      "usage": "初始估价较低，每次移动后，消耗1源石锭，获得3估价"
+    },
+    {
+      "id": "rogue_6_scrap_G_15",
+      "name": "血橙",
+      "usage": "进入非战斗节点时估价+2"
+    },
+    {
+      "id": "rogue_6_scrap_G_16",
+      "name": "旅行绒",
+      "usage": "每次移动时，根据移动距离提升估价"
+    },
+    {
+      "id": "rogue_6_scrap_G_17",
+      "name": "恋心草",
+      "usage": "每次战斗结束后估价+6，敌人进入目标点后扣除的目标生命+1"
+    },
+    {
+      "id": "rogue_6_scrap_G_18",
+      "name": "无缘果",
+      "usage": "进入诡意行商或秘境行商时估价+10，在诡意行商中卖出时刷新商品（消耗刷新次数，耗尽时无法刷新）"
+    },
+    {
+      "id": "rogue_6_scrap_G_19",
+      "name": "种荚",
+      "usage": "进入下一区域时，获得1个种子"
+    },
+    {
+      "id": "rogue_6_scrap_M_01",
+      "name": "报废轮子",
+      "usage": "装载后能够移动至<color=#20b4a1>直线2格内</color>任意节点（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_02",
+      "name": "报废假肢",
+      "usage": "装载后能够移动至<color=#20b4a1>相邻8格内</color>任意节点（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_03",
+      "name": "标准引擎",
+      "usage": "装载后能够移动至<color=#20b4a1>相邻8格内</color>任意节点（可移动3次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_04",
+      "name": "重弹簧",
+      "usage": "装载后能够移动至<color=#20b4a1>周围12格内</color>任意节点，无需行动力，无法被携带至下一区域（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_05",
+      "name": "气垫底座",
+      "usage": "装载后能够移动至<color=#20b4a1>周围12格内</color>任意节点（可移动2次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_06",
+      "name": "试作外骨骼",
+      "usage": "装载后能够移动至<color=#20b4a1>直线3格内</color>任意节点（可移动2次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_07",
+      "name": "小八界",
+      "usage": "装载并使用后会被随机传送至任意<color=#20b4a1>非作战节点</color>，无需行动力，无法被携带至下一区域（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_08",
+      "name": "一次性喷气背包",
+      "usage": "装载后能够移动至<color=#20b4a1>任意节点</color>，无需行动力（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_09",
+      "name": "老妈妈的融雪",
+      "usage": "装载后能够移动至任意<color=#20b4a1>非作战节点</color>，且移动后希望+2（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_10",
+      "name": "坎诺特的触须",
+      "usage": "装载后能够移动至任意<color=#20b4a1>行商节点</color>，且每次移动后源石锭+4（可移动2次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_11",
+      "name": "结构性原理",
+      "usage": "装载后能够移动至<color=#20b4a1>任意节点</color>（可移动3次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_12",
+      "name": "“简易遥控器”",
+      "usage": "装载后能够移动至<color=#20b4a1>相邻8格内</color>任意节点，无需行动力，且移动后行动力+3（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_13",
+      "name": "紧急逃生座椅",
+      "usage": "装载后能够移动至任意<color=#20b4a1>险路尽头</color>，<color=#20b4a1>险路小径</color>或<color=#20b4a1>险路恶敌</color>节点（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_14",
+      "name": "力反馈方向盘",
+      "usage": "装载后能够移动至<color=#20b4a1>同行或同列的</color>任意节点（可移动2次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_15",
+      "name": "鸣笛",
+      "usage": "装载后能够移动至<color=#20b4a1>周围12格内</color>的任意作战节点（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_M_16",
+      "name": "坎诺特特快",
+      "usage": "装载后能够移动至任意<color=#20b4a1>不期而遇节点</color>，并将其转换为<color=#20b4a1>诡意行商</color>（可移动1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_01",
+      "name": "白模鸟",
+      "usage": "装载加工品移动至<color=#20b4a1>作战节点</color>时，本次战斗我方单位攻击速度+50，战斗后获得1个随机收藏品（可激活1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_02",
+      "name": "白模狗",
+      "usage": "装载加工品移动至<color=#20b4a1>非作战节点</color>时，获得1个随机收藏品（可激活1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_03",
+      "name": "白模鱼",
+      "usage": "装载加工品移动至<color=#20b4a1>任意节点</color>时，获得3点护盾（可激活1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_04",
+      "name": "涂装黎博利",
+      "usage": "装载加工品移动至<color=#20b4a1>作战节点</color>时，本次战斗我方单位攻击速度+35"
+    },
+    {
+      "id": "rogue_6_scrap_P_05",
+      "name": "涂装佩洛",
+      "usage": "装载加工品移动至<color=#20b4a1>得偿所愿节点</color>时，获得1个随机收藏品"
+    },
+    {
+      "id": "rogue_6_scrap_P_06",
+      "name": "涂装阿戈尔",
+      "usage": "装载加工品移动至<color=#20b4a1>失与得节点</color>时，获得2个随机收藏品"
+    },
+    {
+      "id": "rogue_6_scrap_P_07",
+      "name": "洛伦茨之眼",
+      "usage": "装载加工品移动至<color=#20b4a1>羽瞰点</color>时，揭露全图视野（可激活1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_08",
+      "name": "白模坎诺特",
+      "usage": "卖出任意一件价值不低于50源石锭的自然物时，获得2个珍贵的随机收藏品（可激活1次）"
+    },
+    {
+      "id": "rogue_6_scrap_P_09",
+      "name": "涂装坎诺特",
+      "usage": "装载加工品移动至<color=#20b4a1>安全的角落</color>时，获得1个随机加工品"
+    }
+  ],
+  "added": [
+    "rogue_6_scrap_G_13",
+    "rogue_6_scrap_G_14",
+    "rogue_6_scrap_G_15",
+    "rogue_6_scrap_G_16",
+    "rogue_6_scrap_G_17",
+    "rogue_6_scrap_G_18",
+    "rogue_6_scrap_G_19",
+    "rogue_6_scrap_M_13",
+    "rogue_6_scrap_M_14",
+    "rogue_6_scrap_M_15",
+    "rogue_6_scrap_M_16",
+    "rogue_6_scrap_P_07",
+    "rogue_6_scrap_P_08",
+    "rogue_6_scrap_P_09"
+  ]
+}

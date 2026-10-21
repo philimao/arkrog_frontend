@@ -287,7 +287,8 @@ export const VARIATION_CONFIG: Record<string, Rogue6SpecConfig> = {
 
 /**
  * 零件（modules.rogue_6.scrap.passiveScrapData）。
- * 全部零件分自然物 / 加工品 / 概念体三类，此处只收录进入伤害计算的两个概念体。
+ * 全部零件分自然物 / 加工品 / 概念体三类，只有两个概念体提供战斗属性加成。
+ * DLC1 新增零件均为地图/经济效果，展示但禁选，避免无效果项看似参与伤害计算。
  */
 export const SCRAP_CONFIG: Record<string, Rogue6SpecConfig> = {
   rogue_6_scrap_P_01: {
@@ -359,6 +360,7 @@ export function getRogue6Scraps(items: Record<string, ItemData> = {}): ITopicSpe
       name: item.name,
       descs: [item.usage.replace(/<[^>]*>/g, "")],
       values: [[]],
+      disabled: true,
     };
   }
   return Object.values(configs).map((sc) => toSpecItem(sc, 0, "零件"));

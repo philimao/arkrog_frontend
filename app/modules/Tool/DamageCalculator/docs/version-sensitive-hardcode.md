@@ -43,3 +43,21 @@ sources:
 ## 本清单与自动化校验的关系
 
 本清单是未来自动化校验脚本的需求来源：计划中的"数据更新 → 自动验证"流程（见 [10-relic-buff-verification.md](10-relic-buff-verification.md) 与 [../../../../../docs/data-pipeline.md](../../../../../docs/data-pipeline.md)）应逐步把表中各项纳入机器对账——例如用解包数据 diff 检测 `WRATH_CONFIG` / `EnemySpecConfigs` / charImpl 技能数组是否过期、用 topics 对象长度变化报警 `slice(3, 5)` 错位。在脚本落地前，每次上游数据更新后人工巡检的范围就是上表全部行。
+
+## 黑流树海 DLC1（2026-10-21）
+
+核对数据源：`Kengxxiao/ArknightsGameData` 的 `bee3f83c5d60590b5e1cd42b8d09d00ce32ab10d`，`roguelike_topic_table.json` 中的 `details.rogue_6.items` 与 `modules.rogue_6.scrap`。回归快照见 `test/DamageCalculator/data/rogue6-dlc1-scraps.json`。
+
+零件共 44 个，只有白模鸟（`P_01`，攻速 +50）与涂装黎博利（`P_04`，攻速 +35）进入伤害计算；通用黑板写入 `relic_rune_add.attack_speed`，两者叠加为 +85。其余零件仅展示、禁选，不把空黑板解释成已实现战斗效果。
+
+DLC1 新增 14 个零件均不提供直接伤害属性：
+
+| 分类 | 新增零件 | 效果范围 |
+| --- | --- | --- |
+| 自然物 `G_13`–`G_19` | 薄葬草、生逝、血橙、旅行绒、恋心草、无缘果、种荚 | 估价、交易、奖励；恋心草还改变漏怪扣生命，不改变敌人属性 |
+| 加工品 `M_13`–`M_16` | 紧急逃生座椅、力反馈方向盘、鸣笛、坎诺特特快 | 地图移动、节点转换 |
+| 概念体 `P_07`–`P_09` | 洛伦茨之眼、白模坎诺特、涂装坎诺特 | 视野、收藏品与加工品奖励 |
+
+难度选择新增 N16（每层敌人攻血 +25%）；`zone_7` 的熄日区域默认按第六层计算。普通/紧急关卡有 `_dlc1` 时优先使用新版本；结局 Boss 普通/加强版本与 `final_7`、`final_10` 藏品联动。
+
+关卡、区域、主题切换与输入恢复共享请求序号，过期响应不得覆盖后续导航。关卡加载期间修改普通藏品时，保留修改并提交仍有效的关卡；取消结局藏品时，丢弃对应的过期加强 Boss 请求。`test/DamageCalculator/navigation-race.test.ts` 覆盖这些交错顺序。

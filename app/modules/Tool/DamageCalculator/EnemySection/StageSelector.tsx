@@ -1,3 +1,4 @@
+import { getRogue6BossVariant, getRogue6BossRelic } from "~/stores/damageCalculator/calcUtils/rogue6Ending";
 import EnemyAvatar from "~/components/Character/Enemy/EnemyAvatar";
 import ToolSelect from "~/modules/Tool/components/ToolSelect";
 import ToolButton from "~/modules/Tool/components/ToolButton";
@@ -117,9 +118,17 @@ const ignoreEnemyIds = [
   "enemy_1324_wdsdw", //萨卡兹悖谬裂变学徒（虚像）
 ];
 
+function stageLabel(stage?: StageData) {
+  if (!stage) return "未选择";
+  const name = stage.stageName || stage.name;
+  if (getRogue6BossVariant(stage.id, false) !== stage.id) return `${name} · 加强`;
+  return name;
+}
+
 export default function StageSelector() {
   const {
     renderStages,
+    stages,
     setRogueStageId,
     levelData,
     enemyData,
@@ -147,6 +156,11 @@ export default function StageSelector() {
 
   // 用于渲染区域选择器
   const zoneList = getNavOfZone(rogueInput.topic, zones);
+
+  const enhancedBoss = getRogue6BossVariant(stageId, false) !== stageId;
+  const bossVariant = getRogue6BossVariant(stageId, !enhancedBoss);
+  const canSwitchBoss = rogueInput.topic === "rogue_6" && bossVariant !== stageId
+    && !!stages.rogue_6[bossVariant];
 
   // 快速切换紧急/普通
   const switchDifficultyTarget = renderStages.find(
@@ -187,7 +201,7 @@ export default function StageSelector() {
             >
               <path d="m6 9 6 6 6-6"></path>
             </svg>
-            {stageData?.stageName || stageData?.name || "未选择"}
+            {stageLabel(stageData)}
           </ToolButton>
         </div>
         <StageQuickSelector
@@ -239,6 +253,12 @@ export default function StageSelector() {
           <div>
             <StyledEnemiesLabel>
               <span>点击选择敌人</span>
+              {canSwitchBoss && (
+                <button type="button" className="cursor-pointer text-ak-red"
+                  onClick={() => setRogueStageId(bossVariant)}>
+                  {enhancedBoss ? "切换至普通模式" : "切换至加强模式"}
+                </button>
+              )}
               {switchDifficultyTarget && (
                 <span
                   className={
@@ -355,7 +375,7 @@ function StageQuickSelector({
   renderStages: StageData[];
   stageId: string;
 }) {
-  const { setRogueStageId } = useDamageCalculatorStore();
+  const { setRogueStageId, rogueInput, stages } = useDamageCalculatorStore();
 
   return (
     <StyledStageQuickSelector
@@ -366,14 +386,17 @@ function StageQuickSelector({
         return (
           <StyledStageItem
             key={stage.id}
-            $active={stage.id === stageId}
+            $active={stage.id === stageId || (rogueInput.topic === "rogue_6" && stage.id === getRogue6BossVariant(stageId, false))}
             onClick={() => {
-              setRogueStageId(stage.id);
+              const target = rogueInput.topic === "rogue_6"
+                ? getRogue6BossVariant(stage.id, rogueInput.rogue_6.relics.includes(getRogue6BossRelic(stage.id) ?? ""))
+                : stage.id;
+              setRogueStageId(stages[rogueInput.topic][target] ? target : stage.id);
               setVisible(false);
               document.removeEventListener("click", handlerRef.current);
             }}
           >
-            {stage.stageName}
+            {stageLabel(stage)}
             <StyledMainEnemies $visible={stage.mainEnemy}>
               <EnemyAvatar name={stage.mainEnemy} className="w-8 h-8" />
             </StyledMainEnemies>

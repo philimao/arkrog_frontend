@@ -129,6 +129,7 @@ export const displayAttrKeys: Record<
   def: {
     min: 0,
   },
+  moveSpeed: { min: 0 },
   magicResistance: {
     min: 0,
   },

@@ -1,4 +1,5 @@
 import { memo, useEffect } from "react";
+import { useGameDataStore } from "~/stores/gameDataStore";
 import { useDamageCalculatorStore } from "~/stores/damageCalculatorStore";
 import { useShallow } from "zustand/react/shallow";
 import { StyledTitle } from "~/modules/Tool/components/Shared";
@@ -44,6 +45,7 @@ export default memo(function Rogue6Selector() {
   );
 
   const difficulty = rogueInput.rogue_6.difficulty;
+  const items = useGameDataStore((state) => state.items?.rogue_6);
 
   // 难度变化会改变实托邦等级，需重新物化；乌托邦无分级但同存一份列表
   useEffect(() => {
@@ -52,8 +54,8 @@ export default memo(function Rogue6Selector() {
 
   // 零件不随难度变化，仅需物化一次
   useEffect(() => {
-    setRogue6ScrapSpecItems(() => getRogue6Scraps());
-  }, [setRogue6ScrapSpecItems]);
+    setRogue6ScrapSpecItems(() => getRogue6Scraps(items));
+  }, [items, setRogue6ScrapSpecItems]);
 
   const level = getUtopiaLevel(difficulty);
   const levelStr = level < 0 ? "" : UTOPIA_LEVELS[level];

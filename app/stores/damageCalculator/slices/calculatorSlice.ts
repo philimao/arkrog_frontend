@@ -49,7 +49,8 @@ export const createCalculaotrSlice: SliceCreator<SlicedCalculatorState & SlicedC
         );
       });
       Object.values(relicWrappers).forEach((relicWrapper) => {
-        if (!validRelicList.includes(relicWrapper.name)) {
+        const isRogue6Dlc1 = /^rogue_6_relic_(?:cargo_(?:1[5-9]|2[0-2])|final_(?:[7-9]|10))$/.test(relicWrapper.id);
+        if (!isRogue6Dlc1 && !validRelicList.includes(relicWrapper.name)) {
           relicWrapper.disabled = true;
         }
       });

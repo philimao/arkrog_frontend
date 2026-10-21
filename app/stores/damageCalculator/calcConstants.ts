@@ -118,8 +118,8 @@ export const initialCalcGameDataState: SlicedCalcGameDataState = {
     [RogueTopic.ROGUE_6]: {
       zone: "zone_1",
       layer: "layer_1",
-      // 与 ro4(18/1.3)、ro5(15/1.2) 一致，默认取该主题的难度上限与科技树满级
-      difficulty: 15,
+      // 黑流树海 DLC1 默认难度与科技树加成
+      difficulty: 16,
       tech: "1.2",
       relics: [] as string[],
       stage: "",

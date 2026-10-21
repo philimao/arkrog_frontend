@@ -320,6 +320,12 @@ export class ExpressionUtil {
   }
 
   /** 敌人最终生命值 */
+  static enemy_final_move_speed({ enemyBase, context }: { enemyBase: EnemyInput; context: BuffContext }) {
+    return new ExpressionGroupNode("*", "移动速度")
+      .addChild(new NumericLiteralNode(enemyBase.attributes.moveSpeed, "基础移速"))
+      .addChild(context.in_game_buff_final_mul.enemy_move_speed.clone());
+  }
+
   static enemy_final_max_hp(input: { enemyBase: EnemyInput; context: BuffContext }) {
     return common_enemy_expression(input, "max_hp");
   }

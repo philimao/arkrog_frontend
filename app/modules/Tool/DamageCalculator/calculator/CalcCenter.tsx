@@ -163,6 +163,7 @@ export default function CalcCenter() {
       expression = {};
     } else {
       expression = {
+        moveSpeed: ExpressionUtil.enemy_final_move_speed({ enemyBase, context: globalAnalysisResult }),
         maxHp: ExpressionUtil.enemy_final_max_hp({ enemyBase, context: globalAnalysisResult }),
         atk: ExpressionUtil.enemy_final_atk({ enemyBase, context: globalAnalysisResult }),
         def: ExpressionUtil.enemy_final_def({ enemyBase, context: globalAnalysisResult }),

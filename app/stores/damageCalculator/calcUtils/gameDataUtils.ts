@@ -1,3 +1,4 @@
+import { getRogue6BossVariant } from "./rogue6Ending";
 import { getNavOfZone } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 import type { LevelData, RogueKey, StageOfRogue, EnemyData, StageData, ZoneOfRogue } from "~/types/gameData";
 import { _get } from "~/utils/tools";
@@ -50,7 +51,7 @@ export function getStageList(
   const filteredStages = allStages.filter((stage) => !invalidStages.includes(stage.id));
 
   // 合并重复关卡
-  const mergedStages = mergeDuplicateStages(filteredStages);
+  const mergedStages = mergeDuplicateStages(rogueInput.topic === "rogue_6" ? collapseRogue6Stages(filteredStages) : filteredStages);
 
   return (
     mergedStages
@@ -143,6 +144,17 @@ export function getStageList(
         return 0;
       })
   );
+}
+
+/** 普通/紧急关卡优先使用 DLC1；结局 Boss 只展示基础入口，由按钮切换版本。 */
+export function collapseRogue6Stages(stages: StageData[]) {
+  const byId = new Map(stages.map(stage => [stage.id, stage]));
+  return stages.filter(stage => {
+    const baseId = getRogue6BossVariant(stage.id, false);
+    const isEndingBoss = getRogue6BossVariant(baseId, true) !== baseId;
+    if (isEndingBoss) return stage.id === baseId || !byId.has(baseId);
+    return stage.id.endsWith("_dlc1") || !byId.has(`${stage.id}_dlc1`);
+  });
 }
 
 /** 合并重复关卡 */

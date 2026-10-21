@@ -25,7 +25,7 @@ export default function TopicSelector() {
         .fill(0)
         .map((_, i) => ({ label: "N" + i, value: i }));
     else
-      array = Array(16)
+      array = Array(rogueKey === "rogue_6" ? 17 : 16)
         .fill(0)
         .map((_, i) => ({ label: "N" + i, value: i }));
     return array;

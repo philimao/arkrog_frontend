@@ -101,9 +101,7 @@ const numberOfZone67Boss = {
   ro3: 2,
   ro4: 3,
   ro5: 2,
-  // 黑流树海：六七层实际只有 b_6（六层），无第七层Boss。
-  // 与后端 shared.js 同值双份，且同样是刻意填 2——isBoss 的 `zoneIndex - bossNum === zone3+zone5-6`
-  // 判据要求该值把 b_6 落在 zoneIndex 5（第6层）；理由详见无藏模块 version-sensitive-hardcode。
+  // 黑流树海：b_6 症结之核、b_7 熄日（DLC1）。
   ro6: 2,
 };
 
@@ -154,6 +152,7 @@ const suffixBossNames: Record<string, Record<number, string>> = {
   },
   rogue_6: {
     6: "症结之核",
+    7: "熄日",
   },
 };
 
@@ -168,7 +167,8 @@ export function getNavOfZone(rogueKey: RogueKey, zones: Record<string, ZoneOfRog
       // 6+层Boss名
       const suffixBossName = suffixBossNames[rogueKey]?.[i + 1];
       const suffixName = suffixBossName ? " · " + suffixBossName : "";
-      const prefixRoman = intToRoman(i + 1) + " ";
+      const displayLayer = rogueKey === "rogue_6" && zoneData.id === "zone_7" ? 6 : i + 1;
+      const prefixRoman = intToRoman(displayLayer) + " ";
       return {
         id: zoneData.id,
         name: prefixRoman + zoneData.name + suffixName,
@@ -217,6 +217,12 @@ export function getNavOfZone(rogueKey: RogueKey, zones: Record<string, ZoneOfRog
         },
       ],
       rogue_6: [
+        {
+          id: "zone_special",
+          name: "灰坑",
+          filter: (stage: StageData) => stage.id.startsWith("ro6_s_"),
+          getLayer: (rogueInput: RogueInput) => rogueInput[rogueInput.topic].layer,
+        },
         {
           id: "zone_portal",
           name: "未萌生的摇篮",

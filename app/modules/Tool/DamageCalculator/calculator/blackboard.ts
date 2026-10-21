@@ -843,6 +843,12 @@ export const commonEnemyRelicBlackboard = {
       context.in_game_buff_final_mul.enemy_max_hp.addChild(new NumericLiteralNode(maxHpValue, relic.name));
       is_invalid = false;
     }
+    const moveSpeed = getByKey(buff.blackboard, "move_speed");
+    if (moveSpeed) {
+      const value = moveSpeed.value > 0 ? moveSpeed.value : 1 + moveSpeed.value;
+      context.in_game_buff_final_mul.enemy_move_speed.addChild(new NumericLiteralNode(value, relic.name));
+      is_invalid = false;
+    }
     // 雕刀不确定是什么乘区
     /** 敌人防御力改变 */
     const def = getByKey(buff.blackboard, "def");

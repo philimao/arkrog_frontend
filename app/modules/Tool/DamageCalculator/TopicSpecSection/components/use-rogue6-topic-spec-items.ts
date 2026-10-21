@@ -1,5 +1,5 @@
 import type { ITopicSpecItem } from "../TopicSpecSelector";
-import type { RelicBuff } from "~/types/gameData";
+import type { ItemData, RelicBuff } from "~/types/gameData";
 import { getPath, imageHost } from "~/utils/tools";
 
 /**
@@ -350,6 +350,16 @@ export function getRogue6Variations(): ITopicSpecItem[] {
 }
 
 /** 获取零件（无分级） */
-export function getRogue6Scraps(): ITopicSpecItem[] {
-  return Object.values(SCRAP_CONFIG).map((sc) => toSpecItem(sc, 0, "零件"));
+export function getRogue6Scraps(items: Record<string, ItemData> = {}): ITopicSpecItem[] {
+  const configs = { ...SCRAP_CONFIG };
+  for (const item of Object.values(items)) {
+    if (!/^rogue_6_scrap_[MGP]_\d+$/.test(item.id) || configs[item.id]) continue;
+    configs[item.id] = {
+      id: item.id,
+      name: item.name,
+      descs: [item.usage.replace(/<[^>]*>/g, "")],
+      values: [[]],
+    };
+  }
+  return Object.values(configs).map((sc) => toSpecItem(sc, 0, "零件"));
 }

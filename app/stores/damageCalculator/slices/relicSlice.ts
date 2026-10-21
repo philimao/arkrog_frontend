@@ -1,3 +1,4 @@
+import { getRogue6BossVariant, getRogue6BossRelic } from "../calcUtils/rogue6Ending";
 import type { SlicedCalcRelicActions, SlicedCalcRelicState } from "../calcTypes";
 import { initialRelicState } from "../calcConstants";
 import type { SliceCreator } from "../calcTypes";
@@ -14,7 +15,7 @@ import {
   yuanchengxieyi_layer_sync,
 } from "~/modules/Tool/DamageCalculator/utils";
 
-export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRelicActions> = (set) => ({
+export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRelicActions> = (set, get) => ({
   ...initialRelicState,
   updateRelic: (id, key, value) =>
     set(
@@ -77,54 +78,29 @@ export const createRelicSlice: SliceCreator<SlicedCalcRelicState & SlicedCalcRel
     );
     return layerNumber.toString();
   },
-  setSelectedIds: (ids) =>
-    set(
-      (state) => {
-        const rogueKey = state.rogueInput.topic;
-        state.rogueInput[rogueKey].relics = ids;
-      },
-      undefined,
-      "setSelectedIds",
-    ),
-  selectRelic: (id) =>
-    set(
-      (state) => {
-        const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.rogueInput[rogueKey].relics;
-        if (!selectedIds.includes(id)) {
-          selectedIds.push(id);
-        }
-      },
-      undefined,
-      "selectRelic",
-    ),
-  unselectRelic: (id) =>
-    set(
-      (state) => {
-        const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.rogueInput[rogueKey].relics;
-        if (selectedIds.includes(id)) {
-          const i = selectedIds.indexOf(id);
-          selectedIds.splice(i, 1);
-        }
-      },
-      undefined,
-      "unselectRelic",
-    ),
+  setSelectedIds: async (ids) => {
+    set((state) => {
+      state.rogueInput[state.rogueInput.topic].relics = [...ids];
+    }, undefined, "setSelectedIds");
+    const state = get();
+    if (state.rogueInput.topic === "rogue_6") {
+      const target = getRogue6BossVariant(state.stageId, ids.includes(getRogue6BossRelic(state.stageId) ?? ""));
+      if (target !== state.stageId && state.stages.rogue_6[target]) {
+        await state.setRogueStageId(target);
+      }
+    }
+  },
+  selectRelic: (id) => {
+    const state = get();
+    return state.setSelectedIds([...new Set([...state.rogueInput[state.rogueInput.topic].relics, id])]);
+  },
+  unselectRelic: (id) => {
+    const state = get();
+    return state.setSelectedIds(state.rogueInput[state.rogueInput.topic].relics.filter(selected => selected !== id));
+  },
   toggleRelicSelection: (id) => {
-    set(
-      (state) => {
-        const rogueKey = state.rogueInput.topic;
-        const selectedIds = state.rogueInput[rogueKey].relics;
-        if (selectedIds.includes(id)) {
-          const i = selectedIds.indexOf(id);
-          selectedIds.splice(i, 1);
-        } else {
-          selectedIds.push(id);
-        }
-      },
-      undefined,
-      "toggleRelicSelection",
-    );
+    const state = get();
+    const selected = state.rogueInput[state.rogueInput.topic].relics;
+    return state.setSelectedIds(selected.includes(id) ? selected.filter(key => key !== id) : [...selected, id]);
   },
 });

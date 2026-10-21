@@ -144,6 +144,7 @@ export class CalculatorHelper {
     enemyAttr.atk = Math.round(enemyAttr.atk * atk_stage_mul * atk_rune_mul * atk_final_mul);
     enemyAttr.def = Math.round(enemyAttr.def * def_stage_mul * def_rune_mul * def_final_mul);
     enemyAttr.maxHp = Math.round(enemyAttr.maxHp * maxHp_stage_mul * maxHp_rune_mul * maxHp_final_mul);
+    enemyAttr.moveSpeed *= context.in_game_buff_final_mul.enemy_move_speed.calculate();
     enemyAttr.damageResistance = Math.round(damage_resistance * 1000) / 1000;
     return enemyInput;
   }
@@ -613,12 +614,12 @@ export class CalculatorHelper {
       const { difficulty, layer } = rogueInput.rogue_6;
       /**
        * 肉鸽难度加成（每层敌人属性提升百分比，下标 = 保密等级 N 值）
-       * 取自游戏内难度面板「敌人难度」列（N0~N4 为 ——，N5 起 +1/+2/+3/+5/+6/+7/+8/+10/+12/+16/+20）。
+       * 取自游戏内难度面板「敌人难度」列（N0~N4 为 ——，N5 起 +1/+2/+3/+5/+6/+7/+8/+10/+12/+16/+20，DLC1 N16 为 +25）。
        * 该数组不存在于解包表（difficulties 只有 ruleDesc 文案），与 ro4/ro5 一样靠面板手抄。
        */
-      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 12, 16, 20];
+      const enemyAttrMultipliers = [0, 0, 0, 0, 0, 1, 2, 3, 5, 6, 7, 8, 10, 12, 16, 20, 25];
       const enemyAttrMultiplier = enemyAttrMultipliers[difficulty];
-      /** 层数选择器到实际层数的映射（ro6 共 6 层，无第七层，参照 ro4） */
+      /** 层数选择器到实际层数的映射（结局区域 zone_7 默认按第六层；手动选择第七层时按七层计算） */
       const layerToZoneMap: Record<string, number> = {
         layer_1: 1,
         layer_2: 2,
@@ -626,6 +627,7 @@ export class CalculatorHelper {
         layer_4: 4,
         layer_5: 5,
         layer_6: 6,
+        layer_7: 7,
       };
       const zoneValue = layerToZoneMap[layer] || 1;
 

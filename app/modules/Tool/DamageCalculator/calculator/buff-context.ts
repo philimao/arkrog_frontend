@@ -104,6 +104,7 @@ export interface IBuffContext {
     enemy_def: ExpressionGroupNode;
     /** 敌人最大生命值减少来源 */
     enemy_max_hp: ExpressionGroupNode;
+    enemy_move_speed: ExpressionGroupNode;
     /** 敌人法术抗性来源 */
     enemy_magic_resistance: ExpressionGroupNode;
     /** 敌人元素损伤抗性 */
@@ -189,6 +190,7 @@ export class BuffContext implements IBuffContext {
     enemy_atk: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_def: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_max_hp: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
+    enemy_move_speed: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_magic_resistance: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_ep_resistance: new ExpressionGroupNode("*", "局内最终乘算").addChild(new NumericLiteralNode(1, "基数")),
     enemy_ep_damage_resistance: new ExpressionGroupNode("*", "局内最终乘算").addChild(
@@ -283,6 +285,7 @@ export class BuffContext implements IBuffContext {
       enemy_atk: this.in_game_buff_final_mul.enemy_atk.clone(),
       enemy_def: this.in_game_buff_final_mul.enemy_def.clone(),
       enemy_max_hp: this.in_game_buff_final_mul.enemy_max_hp.clone(),
+      enemy_move_speed: this.in_game_buff_final_mul.enemy_move_speed.clone(),
       enemy_magic_resistance: this.in_game_buff_final_mul.enemy_magic_resistance.clone(),
       enemy_ep_resistance: this.in_game_buff_final_mul.enemy_ep_resistance.clone(),
       enemy_ep_damage_resistance: this.in_game_buff_final_mul.enemy_ep_damage_resistance.clone(),

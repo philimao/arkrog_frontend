@@ -1,3 +1,4 @@
+import { getRogue6BossVariant, syncRogue6BossRelics, getRogue6BossRelic } from "../calcUtils/rogue6Ending";
 import type { RogueInput, SlicedCalcGameDataState } from "../calcTypes";
 import type { SliceCreator, SlicedCalcGameDataActions } from "../calcTypes";
 import { initialCalcGameDataState } from "../calcConstants";
@@ -9,7 +10,9 @@ import {
   getDefaultLayerForZone,
 } from "~/modules/Tool/DamageCalculator/EnemySection/enemyUtils";
 
-export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => ({
+export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedCalcGameDataActions> = (set, get) => {
+  let stageRequest = 0;
+  return ({
   ...initialCalcGameDataState,
   setRogue4DisasterSpecItems: (callback) =>
     set(
@@ -190,7 +193,11 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     rogueInput[rogueKey].zone = zone;
 
     const renderStages = getStageList(state.zones, state.stages, rogueInput);
-    const stageId = renderStages[0].id;
+    const firstStage = renderStages[0].id;
+    const variant = rogueKey === "rogue_6"
+      ? getRogue6BossVariant(firstStage, rogueInput.rogue_6.relics.includes(getRogue6BossRelic(firstStage) ?? ""))
+      : firstStage;
+    const stageId = state.stages[rogueKey][variant] ? variant : firstStage;
 
     // 根据区域更新难度层数
     const newLayer = getDefaultLayerForZone(stageId, rogueInput, state.zones);
@@ -232,8 +239,10 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
     );
   },
   setRogueStageId: async (stageId) => {
+    const request = ++stageRequest;
     const state = get();
     const rogueKey = state.rogueInput.topic as RogueKey;
+    const selectedEnemyId = state.enemyData?.id;
     const { stageData, levelData, levels, relics, enemyData, enemyBase } = await handleUpdateStageId({
       rogueInput: state.rogueInput,
       stages: state.stages,
@@ -241,6 +250,11 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       relics: state.rogueInput[rogueKey].relics,
       stageId,
     });
+
+    // 异步读取期间若用户再次操作，不提交旧的关卡或藏品状态。
+    if (request !== stageRequest || get().rogueInput.topic !== rogueKey
+      || get().stageId !== state.stageId
+      || get().rogueInput[rogueKey].relics !== state.rogueInput[rogueKey].relics) return;
 
     // 根据关卡更新难度层数
     const newLayer = getDefaultLayerForStage(stageId, state.rogueInput);
@@ -251,7 +265,9 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
         state.stageData = stageData;
         state.levelData = levelData as never;
         state.levels = levels;
-        state.rogueInput[rogueKey].relics = relics;
+        state.rogueInput[rogueKey].relics = rogueKey === "rogue_6"
+          ? syncRogue6BossRelics(stageId, state.rogueInput[rogueKey].relics)
+          : relics;
         state.enemyData = enemyData as never;
         state.enemyBase = enemyBase;
         state.rogueInput[rogueKey].layer = newLayer;
@@ -259,6 +275,8 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       undefined,
       "setRogueStageId",
     );
+    const selectedEnemy = levelData?.enemies.find(enemy => enemy.id === selectedEnemyId);
+    if (selectedEnemy) get().setEnemyData(selectedEnemy);
   },
   setRogueTech: (tech) =>
     set(
@@ -354,3 +372,4 @@ export const createGameDataSlice: SliceCreator<SlicedCalcGameDataState & SlicedC
       "setRogue6Scraps",
     ),
 });
+};

@@ -21,9 +21,13 @@ import {
   initialMaps,
   nodeOptions,
   nodeTypeLimits,
+  zoneEncounterEvents,
   zoneNotes,
   isKnownNodeAt,
+  getNodeStepRanges,
+  parseStepRange,
 } from "./mapData";
+import type { StepRange } from "./mapData";
 import type { ZoneData, ZoneOfRogue } from "~/types/gameData";
 import { intToRoman } from "~/utils/tools";
 import {
@@ -35,6 +39,7 @@ import {
 import type { Route } from "./+types/index";
 import { StyledDivider } from "~/modules/Tournament/components/Shared";
 import { spriteStyle } from "./mapSprite";
+import UpdateAnnouncementModal from "./UpdateAnnouncementModal";
 
 // 稳定的空 Set 引用，避免"当前基底还没有任何自动填入记录"这种情况下每次渲染都 new 一个新对象
 const EMPTY_KEY_SET: Set<string> = new Set();
@@ -159,9 +164,12 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
   const currentMap = initialMaps.find((m) => m.id === selectedMapId);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showZoneNotes, setShowZoneNotes] = useState(false);
+  const [activeMapInfo, setActiveMapInfo] = useState<
+    "notes" | "encounters" | null
+  >(null);
   const [showBaseMaps, setShowBaseMaps] = useState(true);
   const [showNodeOptions, setShowNodeOptions] = useState(true);
+  const [isMemory, setIsMemory] = useState(false);
   const [onlyShowKnownUnknownNodes, setOnlyShowKnownUnknownNodes] =
     useState(false);
   const [showPreviewHelp, setShowPreviewHelp] = useState(false);
@@ -189,20 +197,17 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
   >({});
   const visibleOptions = nodeOptions.filter(
     (option) =>
-      option.steps.filter((s) => s.zone === currentZoneId && s.max && s.min)
-        .length > 0,
+      option.steps.filter(
+        (step) => step.zone === currentZoneId && step.ranges.length > 0,
+      ).length > 0,
   );
 
   // 完全由 selectedOptionId + currentZoneId 决定，不用单独存一份状态跟着同步
-  const highlightRange = useMemo(() => {
+  const highlightRanges = useMemo((): StepRange[] | null => {
     if (!selectedOptionId) return null;
-    const step = nodeOptions
-      .find((o) => o.id === selectedOptionId)
-      ?.steps.find((s) => s.zone === currentZoneId);
-    return step && step.min && step.max
-      ? { min: step.min, max: step.max }
-      : null;
-  }, [selectedOptionId, currentZoneId]);
+    const ranges = getNodeStepRanges(selectedOptionId, currentZoneId, isMemory);
+    return ranges?.length ? ranges.map(parseStepRange) : null;
+  }, [selectedOptionId, currentZoneId, isMemory]);
 
   // 切区域/切基底/截图识别切过去之后，之前的"选中节点做什么"相关 UI 状态都该
   // 清空——四处调用点原先各自重复这三行，抽成一个函数
@@ -390,7 +395,12 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
     for (const [key, id] of Object.entries(markedNodes)) {
       const [row, col] = key.split(",").map(Number);
       if (
-        isKnownNodeAt(row, col, currentMap?.knownBattles, currentMap?.knownShops)
+        isKnownNodeAt(
+          row,
+          col,
+          currentMap?.knownBattles,
+          currentMap?.knownShops,
+        )
       ) {
         continue;
       }
@@ -466,6 +476,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
   return (
     <div className="relative">
+      <UpdateAnnouncementModal />
       {/* 区域选择 */}
       <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
         {zoneOfRogue.map((zone, index) => (
@@ -482,7 +493,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               setSelectedMapId(nextMap?.id || "");
               resetSelection();
               load(toGridState(nextMap || initialMaps[0]));
-              setShowZoneNotes(false);
+              setActiveMapInfo(null);
               setShowBaseMaps(true);
             }}
           >
@@ -530,6 +541,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               ref={recognizerRef}
               zones={zoneOfRogue}
               currentZoneId={currentZoneId}
+              onRecognitionSucceeded={() => setOnlyShowKnownUnknownNodes(true)}
               onCandidatesChange={setRecognitionCandidates}
               onNodesDetected={applyOrDeferDetectedNodes}
               suppressFloatingPreview={!!pendingMerge}
@@ -538,7 +550,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                 if (!matched) return;
                 // 层数也是识别出来的，可能跟用户当前选中的层不同，一并切过去
                 setCurrentZoneId(zone);
-                setShowZoneNotes(false);
+                setActiveMapInfo(null);
                 setSelectedMapId(mapId);
                 // 无论是刚上传完新截图，还是点了候选结果按钮，都要让用户看到
                 // 切去的是哪个基底——手机端"基底"区块可能是收起的，这里强制展开
@@ -567,9 +579,20 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
         {/* 基底选择 */}
         <div className="mb-16" ref={baseMapsSectionRef}>
           <div className="flex justify-between items-end">
-            <h3 className="font-bold text-2xl">
-              基底<span className="text-lg">（暂不支持追忆）</span>
-            </h3>
+            <div className="flex items-end gap-3">
+              <h3 className="font-bold text-2xl">基底</h3>
+              {currentZoneId === "zone_4" && (
+                <label className="flex items-center gap-1 text-md cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="accent-[var(--ak-blue)]"
+                    checked={isMemory}
+                    onChange={(event) => setIsMemory(event.target.checked)}
+                  />
+                  追忆
+                </label>
+              )}
+            </div>
 
             {/* 收起/展开只在手机端有意义 —— 大屏幕空间够，基底网格常驻展开 */}
             <button
@@ -698,7 +721,20 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
 
         {/* 大地图 */}
         <div className="flex justify-between items-end">
-          <h3 className="font-bold text-2xl">地图</h3>
+          <div className="flex items-end gap-3">
+            <h3 className="font-bold text-2xl">地图</h3>
+            {currentZoneId === "zone_4" && (
+              <label className="flex items-center gap-1 text-md cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="accent-[var(--ak-blue)]"
+                  checked={isMemory}
+                  onChange={(event) => setIsMemory(event.target.checked)}
+                />
+                追忆
+              </label>
+            )}
+          </div>
           <button
             type="button"
             disabled={!hasAnyMark}
@@ -716,7 +752,17 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
         <div
           className="grow p-2 lg:p-4"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, .4)), url('/images/map/rogue_6_map_${currentZoneId}.webp')`,
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, .5)), url('/images/map/rogue_6_map_${currentZoneId}.webp')`,
+            backgroundPosition: isLgScreen
+              ? "left top"
+              : showNodeOptions
+                ? "20% top"
+                : "30% top",
+            backgroundSize: isLgScreen
+              ? "auto"
+              : showNodeOptions
+                ? "200%"
+                : "250%",
           }}
         >
           <div className="flex flex-col lg:flex-row gap-6">
@@ -784,7 +830,7 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
               {!showNodeOptions && (
                 <button
                   type="button"
-                  className="absolute z-10 top-1 right-2 lg:right-auto lg:left-1 w-8 h-8 shrink-0 rounded-md bg-black-gray-70 border border-mid-gray flex items-center justify-center"
+                  className="absolute z-10 top-1 right-1 lg:right-auto lg:left-1 w-8 h-8 shrink-0 rounded-md bg-black-gray-70 border border-mid-gray flex items-center justify-center"
                   onClick={() => setShowNodeOptions(true)}
                   aria-label="展开预览节点"
                 >
@@ -795,29 +841,77 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                   <ChevronIcon direction="down" className="lg:hidden w-4 h-4" />
                 </button>
               )}
-              <div className="relative">
+              <div className="relative flex w-full justify-center">
                 {/* 当前区域笔记 */}
-                <button
-                  type="button"
-                  className="flex items-center gap-1"
-                  onClick={() => setShowZoneNotes((prev) => !prev)}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="flex items-center gap-1"
+                    onClick={() =>
+                      setActiveMapInfo((current) =>
+                        current === "notes" ? null : "notes",
+                      )
+                    }
+                  >
+                    <img
+                      className="h-12 w-auto"
+                      src={`/images/map/${currentZoneId}.png`}
+                    />
+                    <ChevronIcon
+                      direction={activeMapInfo === "notes" ? "up" : "down"}
+                      className="w-3 h-3 text-white"
+                    />
+                  </button>
+                  {activeMapInfo === "notes" && (
+                    <ul className="absolute list-disc rounded-md bg-black-gray top-full left-1/2 -translate-x-1/2 z-10 mt-2 w-max max-w-[90vw] space-y-1 pl-6 pr-2 py-2 leading-6 border border-mid-gray text-sm text-white shadow-lg">
+                      {zoneNotes[currentZoneId]?.split("\n").map((line, i) => (
+                        <li key={i}>{line}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div
+                  className="absolute right-0 top-0"
+                  style={{
+                    right: !isLgScreen && !showNodeOptions ? "3rem" : 0,
+                  }}
                 >
-                  <img
-                    className="h-12 w-auto"
-                    src={`/images/map/${currentZoneId}.png`}
-                  />
-                  <ChevronIcon
-                    direction={showZoneNotes ? "up" : "down"}
-                    className="w-3 h-3 text-white"
-                  />
-                </button>
-                {showZoneNotes && (
-                  <ul className="absolute list-disc rounded-md bg-black-gray top-full left-1/2 -translate-x-1/2 z-10 mt-2 w-max max-w-[90vw] space-y-1 pl-6 pr-2 py-2 leading-6 border border-mid-gray text-sm text-white shadow-lg">
-                    {zoneNotes[currentZoneId]?.split("\n").map((line, i) => (
-                      <li key={i}>{line}</li>
-                    ))}
-                  </ul>
-                )}
+                  <button
+                    type="button"
+                    aria-label="不期而遇事件"
+                    aria-expanded={activeMapInfo === "encounters"}
+                    className="flex items-center"
+                    onClick={() =>
+                      setActiveMapInfo((current) =>
+                        current === "encounters" ? null : "encounters",
+                      )
+                    }
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-12 w-12 shrink-0"
+                      style={spriteStyle("incident")}
+                    />
+                    <ChevronIcon
+                      direction={activeMapInfo === "encounters" ? "up" : "down"}
+                      className="h-3 w-3"
+                    />
+                  </button>
+                  {activeMapInfo === "encounters" && (
+                    <div className="absolute list-disc rounded-md bg-black-gray top-full right-0 z-10 w-max max-w-[90vw] space-y-1 p-2 pl-3 leading-6 border border-mid-gray text-sm text-white shadow-lg">
+                      <p>本层不期而遇可能出现以下事件：</p>
+                      <ul className="grid list-disc grid-cols-2 gap-x-6 gap-y-1 pl-4">
+                        {zoneEncounterEvents
+                          .filter((event) =>
+                            event.zones.includes(currentZoneId),
+                          )
+                          .map((event) => (
+                            <li key={event.name}>{event.name}</li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 实际大地图 */}
@@ -865,7 +959,8 @@ function BlackFlowMap({ zones }: { zones: ZoneOfRogue }) {
                     : null
                 }
                 zone={currentZoneId}
-                highlightRange={highlightRange}
+                isMemory={isMemory}
+                highlightRanges={highlightRanges}
                 highlightOptionId={selectedOptionId}
                 highlightOptionType={highlightOptionType}
                 onlyShowKnownUnknownNodes={onlyShowKnownUnknownNodes}

@@ -14,11 +14,65 @@ export const zoneNotes: Record<string, string> = {
     "该层通常情况下生成24个有效节点，上下浮动较多（不包含险路恶敌和起始点）\n由于必须进入险路恶敌，该层不会刷新险路小径\n该层开始，与起点相邻的节点可能出现诡异行商（绿）\n该层各类节点生成合法位置多，缺少某种节点的概率较低\n该层中若持有三结局藏品，命运所指会占用一部分有效节点的生成\n该层疑似存在某些节点填充机制，多见紧急作战和得偿所愿反复出现\n该层有保底机制，如果有效节点不够用，非作战节点会替换成得偿所愿，作战节点会替换为紧急作战",
 };
 
+export interface StepRange {
+  min: number;
+  max: number;
+}
+
+export type StepRangeSpec = number | `${number}+` | `${number}-${number}`;
+
 interface nodeStepsPerZone {
   zone: string;
-  min?: number;
-  max?: number;
+  ranges: StepRangeSpec[];
+  memoryRanges?: StepRangeSpec[];
   maxAllowed?: number;
+}
+
+export function isDistanceInStepRanges(
+  distance: number,
+  ranges: (StepRange | StepRangeSpec)[],
+): boolean {
+  return ranges.some((range) => {
+    const parsedRange =
+      typeof range === "object" ? range : parseStepRange(range);
+    return distance >= parsedRange.min && distance <= parsedRange.max;
+  });
+}
+
+export function getNodeStepRanges(
+  optionId: string,
+  zone: string,
+  isMemory: boolean,
+): StepRangeSpec[] | undefined {
+  const step = nodeOptions
+    .find((option) => option.id === optionId)
+    ?.steps.find((entry) => entry.zone === zone);
+  return isMemory ? (step?.memoryRanges ?? step?.ranges) : step?.ranges;
+}
+
+export function parseStepRange(range: StepRangeSpec): StepRange {
+  if (typeof range === "number") {
+    if (!Number.isSafeInteger(range) || range < 0) {
+      throw new Error(`Invalid step range: ${range}`);
+    }
+    return { min: range, max: range };
+  }
+
+  const match = /^(\d+)(?:-(\d+)|(\+))$/.exec(range);
+  if (!match) {
+    throw new Error(`Invalid step range: ${range}`);
+  }
+
+  const min = Number(match[1]);
+  const max = match[3] ? Infinity : Number(match[2]);
+  if (
+    !Number.isSafeInteger(min) ||
+    (max !== Infinity && !Number.isSafeInteger(max)) ||
+    min > max
+  ) {
+    throw new Error(`Invalid step range: ${range}`);
+  }
+  return { min, max };
 }
 
 interface nodeOption {
@@ -33,11 +87,11 @@ export const nodeOptions: nodeOption[] = [
     id: "battle_normal",
     name: "作战",
     steps: [
-      { zone: "zone_1", min: 1, max: 4, maxAllowed: 5 },
-      { zone: "zone_2", min: 1, max: 7, maxAllowed: 5 },
-      { zone: "zone_3", min: 1, max: 13, maxAllowed: 6 },
-      { zone: "zone_4", min: 1, max: 14, maxAllowed: 5 },
-      { zone: "zone_5", min: 1, max: 14, maxAllowed: 5 },
+      { zone: "zone_1", ranges: [1, 3, 4], maxAllowed: 5 },
+      { zone: "zone_2", ranges: [1, "3-7"], maxAllowed: 5 },
+      { zone: "zone_3", ranges: [1, 2, "4+"], maxAllowed: 6 },
+      { zone: "zone_4", ranges: [1, 2, "4+"], maxAllowed: 5 },
+      { zone: "zone_5", ranges: [1, 2, "4+"], maxAllowed: 5 },
     ],
     type: "battle",
   },
@@ -45,11 +99,11 @@ export const nodeOptions: nodeOption[] = [
     id: "battle_elite",
     name: "紧急作战",
     steps: [
-      { zone: "zone_1", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_2", min: 3, max: 7, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 15, maxAllowed: 3 },
-      { zone: "zone_4", min: 3, max: 13, maxAllowed: 3 },
-      { zone: "zone_5", min: 3, max: Infinity, maxAllowed: 5 },
+      { zone: "zone_1", ranges: ["3-4"], maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["3-7"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["3+"], maxAllowed: 3 },
+      { zone: "zone_4", ranges: ["3+"], maxAllowed: 3 },
+      { zone: "zone_5", ranges: ["3+"], maxAllowed: 5 },
     ],
     type: "battle",
   },
@@ -57,9 +111,9 @@ export const nodeOptions: nodeOption[] = [
     id: "battle_savage",
     name: "“居民”据点",
     steps: [
-      { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
-      { zone: "zone_4", min: 4, max: 14, maxAllowed: 1 },
-      { zone: "zone_5", min: 4, max: 14, maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["4-7"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["4+"], maxAllowed: 1 },
+      { zone: "zone_5", ranges: ["4+"], maxAllowed: 1 },
     ],
     type: "battle",
   },
@@ -67,11 +121,11 @@ export const nodeOptions: nodeOption[] = [
     id: "shop",
     name: "诡意行商",
     steps: [
-      { zone: "zone_1", min: 2, max: 4, maxAllowed: 2 },
-      { zone: "zone_2", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 13, maxAllowed: 3 },
-      { zone: "zone_5", min: 1, max: 14, maxAllowed: 3 },
+      { zone: "zone_1", ranges: ["2-4"], maxAllowed: 2 },
+      { zone: "zone_2", ranges: ["3-6"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["3-6"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2+"], maxAllowed: 3 },
+      { zone: "zone_5", ranges: ["2+"], maxAllowed: 3 },
     ],
     type: "other",
   },
@@ -79,11 +133,11 @@ export const nodeOptions: nodeOption[] = [
     id: "scrap_shop",
     name: "秘境行商",
     steps: [
-      { zone: "zone_1", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_2", min: 2, max: 6, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 6, maxAllowed: 2 },
-      { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
+      { zone: "zone_1", ranges: ["3-4"], maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["2-6"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["3-6"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2-6"], maxAllowed: 2 },
+      { zone: "zone_5", ranges: ["2-4", "6+"], maxAllowed: 2 },
     ],
     type: "other",
   },
@@ -91,10 +145,10 @@ export const nodeOptions: nodeOption[] = [
     id: "employ",
     name: "应急助力",
     steps: [
-      { zone: "zone_2", min: 2, max: 5, maxAllowed: 1 },
-      { zone: "zone_3", min: 4, max: 14, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 3, maxAllowed: 1 },
-      { zone: "zone_5", min: 3, max: 5, maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["2-5"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["4+"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2-3"], maxAllowed: 1 },
+      { zone: "zone_5", ranges: ["3-5"], maxAllowed: 1 },
     ],
     type: "other",
   },
@@ -102,11 +156,11 @@ export const nodeOptions: nodeOption[] = [
     id: "incident",
     name: "不期而遇",
     steps: [
-      { zone: "zone_1", min: 2, max: 5, maxAllowed: 2 },
-      { zone: "zone_2", min: 2, max: 7, maxAllowed: 3 },
-      { zone: "zone_3", min: 1, max: 15, maxAllowed: 4 },
-      { zone: "zone_4", min: 1, max: 14, maxAllowed: 4 },
-      { zone: "zone_5", min: 1, max: 14, maxAllowed: 4 },
+      { zone: "zone_1", ranges: ["2-4"], maxAllowed: 2 },
+      { zone: "zone_2", ranges: ["2-7"], maxAllowed: 3 },
+      { zone: "zone_3", ranges: [1, "3+"], maxAllowed: 4 },
+      { zone: "zone_4", ranges: [1, 2, "4+"], maxAllowed: 4 },
+      { zone: "zone_5", ranges: ["1+"], maxAllowed: 4 },
     ],
     type: "other",
   },
@@ -114,10 +168,10 @@ export const nodeOptions: nodeOption[] = [
     id: "rest",
     name: "安全的角落",
     steps: [
-      { zone: "zone_2", min: 3, max: 5, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 6, maxAllowed: 2 },
-      { zone: "zone_4", min: 2, max: 14, maxAllowed: 2 },
-      { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
+      { zone: "zone_2", ranges: ["3-5"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["3-6"], maxAllowed: 2 },
+      { zone: "zone_4", ranges: ["2+"], maxAllowed: 2 },
+      { zone: "zone_5", ranges: ["2+"], maxAllowed: 2 },
     ],
     type: "other",
   },
@@ -125,11 +179,11 @@ export const nodeOptions: nodeOption[] = [
     id: "wish",
     name: "得偿所愿",
     steps: [
-      { zone: "zone_1", min: 2, max: 5, maxAllowed: 1 },
-      { zone: "zone_2", min: 4, max: 7, maxAllowed: 1 },
-      { zone: "zone_3", min: 4, max: 14, maxAllowed: 3 },
-      { zone: "zone_4", min: 4, max: 13, maxAllowed: 3 },
-      { zone: "zone_5", min: 1, max: Infinity, maxAllowed: 7 },
+      { zone: "zone_1", ranges: ["2-4"], maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["4-7"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["4+"], maxAllowed: 3 },
+      { zone: "zone_4", ranges: ["4+"], maxAllowed: 3 },
+      { zone: "zone_5", ranges: ["1+"], maxAllowed: 7 },
     ],
     type: "other",
   },
@@ -137,10 +191,10 @@ export const nodeOptions: nodeOption[] = [
     id: "sacrifice",
     name: "失与得",
     steps: [
-      { zone: "zone_2", min: 3, max: 5, maxAllowed: 1 },
-      { zone: "zone_3", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_5", min: 2, max: 14, maxAllowed: 2 },
+      { zone: "zone_2", ranges: ["3-5"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["3-6"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2-4"], maxAllowed: 1 },
+      { zone: "zone_5", ranges: ["2+"], maxAllowed: 2 },
     ],
     type: "other",
   },
@@ -148,9 +202,9 @@ export const nodeOptions: nodeOption[] = [
     id: "expedition",
     name: "先行一步",
     steps: [
-      { zone: "zone_2", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_3", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 4, maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["2-4"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["2-4"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2-4"], maxAllowed: 1 },
     ],
     type: "other",
   },
@@ -158,9 +212,9 @@ export const nodeOptions: nodeOption[] = [
     id: "duel",
     name: "狭路相逢",
     steps: [
-      { zone: "zone_3", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_4", min: 2, max: 14, maxAllowed: 2 },
-      { zone: "zone_5", min: 2, max: 4, maxAllowed: 2 },
+      { zone: "zone_3", ranges: ["2-4"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["2-3", "5+"], maxAllowed: 2 },
+      { zone: "zone_5", ranges: ["2-4"], maxAllowed: 2 },
     ],
     type: "other",
   },
@@ -168,9 +222,9 @@ export const nodeOptions: nodeOption[] = [
     id: "evacuate",
     name: "险路小径",
     steps: [
-      { zone: "zone_1", min: 2, max: 4, maxAllowed: 1 },
-      { zone: "zone_2", min: 5, max: 7, maxAllowed: 1 },
-      { zone: "zone_4", min: 5, max: 14, maxAllowed: 1 },
+      { zone: "zone_1", ranges: [4], maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["4-7"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["5+"], maxAllowed: 1 },
     ],
     type: "other",
   },
@@ -178,9 +232,14 @@ export const nodeOptions: nodeOption[] = [
     id: "portal",
     name: "误入奇境",
     steps: [
-      { zone: "zone_3", min: 5, max: 8, maxAllowed: 1 },
-      { zone: "zone_4", min: 5, max: 9, maxAllowed: 1 },
-      { zone: "zone_5", min: 3, max: 8, maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["5-8"], maxAllowed: 1 },
+      {
+        zone: "zone_4",
+        ranges: ["5-9"],
+        memoryRanges: ["5-12"],
+        maxAllowed: 1,
+      },
+      { zone: "zone_5", ranges: ["3-8"], maxAllowed: 1 },
     ],
     type: "other",
   },
@@ -188,9 +247,9 @@ export const nodeOptions: nodeOption[] = [
     id: "door",
     name: "曲折密道",
     steps: [
-      { zone: "zone_3", min: 1, max: 15, maxAllowed: 2 },
-      { zone: "zone_4", min: 1, max: 14, maxAllowed: 2 },
-      { zone: "zone_5", min: 1, max: 14, maxAllowed: 2 },
+      { zone: "zone_3", ranges: ["1+"], maxAllowed: 2 },
+      { zone: "zone_4", ranges: ["1+"], maxAllowed: 2 },
+      { zone: "zone_5", ranges: ["1+"], maxAllowed: 2 },
     ],
     type: "other",
   },
@@ -198,17 +257,17 @@ export const nodeOptions: nodeOption[] = [
     id: "light",
     name: "羽瞰点",
     steps: [
-      { zone: "zone_2", min: 3, max: 6, maxAllowed: 1 },
-      { zone: "zone_3", min: 4, max: 7, maxAllowed: 1 },
-      { zone: "zone_4", min: 3, max: 8, maxAllowed: 2 },
-      { zone: "zone_5", min: 5, max: 8, maxAllowed: 1 },
+      { zone: "zone_2", ranges: ["3-6"], maxAllowed: 1 },
+      { zone: "zone_3", ranges: ["4-7"], maxAllowed: 1 },
+      { zone: "zone_4", ranges: ["3-8"], maxAllowed: 2 },
+      { zone: "zone_5", ranges: ["5-8"], maxAllowed: 1 },
     ],
     type: "other",
   },
   {
     id: "story",
     name: "命运所指",
-    steps: [{ zone: "zone_5", maxAllowed: 3 }],
+    steps: [{ zone: "zone_5", ranges: ["3+"], maxAllowed: 3 }],
     type: "other",
   },
   {
@@ -292,8 +351,8 @@ export function isKnownNodeAt(
   knownShops?: [number, number][],
 ) {
   return (
-    knownBattles?.some(([knownRow, knownCol]) =>
-      knownRow === row && knownCol === col,
+    knownBattles?.some(
+      ([knownRow, knownCol]) => knownRow === row && knownCol === col,
     ) ||
     knownShops?.some(
       ([knownRow, knownCol]) => knownRow === row && knownCol === col,
@@ -2247,4 +2306,34 @@ export const initialMaps: MapShorthand[] = [
     ],
     notes: "该基底下多次出现大量得偿所愿",
   },
+];
+
+export const zoneEncounterEvents = [
+  { name: "思乡心切", zones: ["zone_1", "zone_2"] },
+  { name: "划算买卖", zones: ["zone_2", "zone_3"] },
+  { name: "鸭托邦", zones: ["zone_3", "zone_4"] },
+  { name: "传奇团伙", zones: ["zone_4", "zone_5", "zone_6"] },
+  { name: "湖中仙女", zones: ["zone_3", "zone_4", "zone_5"] },
+  { name: "洞中宝", zones: ["zone_3", "zone_4"] },
+  { name: "桑尼的邀请", zones: ["zone_1", "zone_2"] },
+  { name: "色味不同源", zones: ["zone_1", "zone_2"] },
+  { name: "货从口出", zones: ["zone_3", "zone_4", "zone_5", "zone_6"] },
+  { name: "沉重的契约", zones: ["zone_2", "zone_3", "zone_4", "zone_5"] },
+  {
+    name: "敲动杠杆",
+    zones: ["zone_1", "zone_2", "zone_3", "zone_4", "zone_5", "zone_6"],
+  },
+  { name: "血衣之下", zones: ["zone_2", "zone_3", "zone_4", "zone_5"] },
+  { name: "擒与缚", zones: ["zone_3", "zone_4", "zone_5", "zone_6"] },
+  { name: "沉寂之屋", zones: ["zone_1", "zone_2", "zone_3"] },
+  { name: "黑诞", zones: ["zone_3", "zone_4", "zone_5"] },
+  { name: "呼吸的红苔", zones: ["zone_2", "zone_3", "zone_4"] },
+  {
+    name: "被歌颂的影子",
+    zones: ["zone_2", "zone_3", "zone_4", "zone_5", "zone_6"],
+  },
+  { name: "愈创之心", zones: ["zone_4"] },
+  { name: "临时中介所", zones: ["zone_2", "zone_3", "zone_4", "zone_5"] },
+  { name: "和平守卫者", zones: ["zone_3", "zone_4", "zone_5"] },
+  { name: "独活", zones: ["zone_2", "zone_3", "zone_4"] },
 ];

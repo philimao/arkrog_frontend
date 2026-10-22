@@ -3,14 +3,17 @@ import type { GridState, Coord } from "./types";
 import {
   getConnectedNeighbors,
   nodeId,
+  getNodeDistanceMap,
   getOptionsForNodeDistance,
 } from "./gridUtils";
 import { CloseIcon } from "@mantine/core";
 import {
+  isDistanceInStepRanges,
   isKnownNodeAt,
   nodeOptions,
   nodeTypeLimits,
 } from "./mapData";
+import type { StepRange } from "./mapData";
 import { SpriteImage, spriteStyle } from "./mapSprite";
 
 // 节点名字只在屏幕够宽时显示，小屏幕上地图本来就挤，只留图标；用 SVG text
@@ -59,7 +62,8 @@ interface NodeMapCanvasProps {
   /** optional fighting end coordinate to highlight */
   battleEnd?: Coord | null;
   zone: string;
-  highlightRange?: { min: number; max: number } | null;
+  isMemory?: boolean;
+  highlightRanges?: StepRange[] | null;
   highlightOptionId?: string | null;
   markedNodes?: Record<string, string>;
   detectedNodes?: Record<string, string>;
@@ -86,7 +90,8 @@ export function NodeMapCanvas({
   ends = null,
   battleEnd = null,
   zone = "",
-  highlightRange = null,
+  isMemory = false,
+  highlightRanges = null,
   selectedNodeKey = null,
   highlightOptionId = null,
   highlightOptionType = null,
@@ -117,9 +122,11 @@ export function NodeMapCanvas({
       start,
       node: menuNode,
       zone,
+      isMemory,
+      ends,
       options,
     });
-  }, [menuNode, options, start, state, zone]);
+  }, [menuNode, options, start, state, zone, isMemory, ends]);
 
   const optionMap = useMemo(
     () => new Map(nodeOptions.map((option) => [option.id, option])),
@@ -210,39 +217,18 @@ export function NodeMapCanvas({
   );
 
   const highlightedNodeIds = useMemo(() => {
-    if (!start || !highlightRange) return new Set<string>();
+    if (!start || !highlightRanges) return new Set<string>();
 
-    const distances = new Map<string, number>();
-    const queue: Coord[] = [start];
-    const startKey = nodeId(start.row, start.col);
-    distances.set(startKey, 0);
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      const currentKey = nodeId(current.row, current.col);
-      const currentDistance = distances.get(currentKey)!;
-
-      for (const neighbor of getConnectedNeighbors(
-        state,
-        current.row,
-        current.col,
-      )) {
-        const neighborKey = nodeId(neighbor.row, neighbor.col);
-        if (distances.has(neighborKey)) continue;
-        distances.set(neighborKey, currentDistance + 1);
-        queue.push(neighbor);
-      }
-    }
+    const distances = getNodeDistanceMap(state, start, ends);
 
     return new Set(
       [...distances.entries()]
-        .filter(
-          ([, distance]) =>
-            distance >= highlightRange.min && distance <= highlightRange.max,
+        .filter(([, distance]) =>
+          isDistanceInStepRanges(distance, highlightRanges),
         )
         .map(([id]) => id),
     );
-  }, [highlightRange, start, state]);
+  }, [ends, highlightRanges, start, state]);
 
   const width = state.cols * cellSize;
   const height = state.rows * cellSize;

@@ -77,6 +77,7 @@ interface ScreenshotRecognizerProps {
   zones: ZoneData[];
   /** 层数识别失败时的兜底：用户当前手选的层 */
   currentZoneId: string;
+  onRecognitionSucceeded: () => void;
   onMatched: (zone: string, mapId: string, nodes: MarkableNode[]) => void;
   /**
    * 用户选了"没有正确地图，取消"：之前自动填过的节点都要清掉。onNodesDetected
@@ -128,6 +129,7 @@ export const ScreenshotRecognizer = forwardRef<
   {
     zones,
     currentZoneId,
+    onRecognitionSucceeded,
     onMatched,
     onCancel,
     onCandidatesChange,
@@ -217,6 +219,7 @@ export const ScreenshotRecognizer = forwardRef<
           fallbackZone: currentZoneId,
         });
         setResult(data);
+        onRecognitionSucceeded();
 
         // 只有真的"有歧义"（跟候选区、基底网格角标同一套判断）才预填非第一名的
         // 候选，用户不管是从下面的候选列表点，还是直接去"基底"缩略图网格里手动
@@ -253,7 +256,7 @@ export const ScreenshotRecognizer = forwardRef<
         setIsLoading(false);
       }
     },
-    [zones, currentZoneId, onMatched, onNodesDetected],
+    [zones, currentZoneId, onRecognitionSucceeded, onMatched, onNodesDetected],
   );
 
   const pickCandidate = useCallback(
@@ -384,7 +387,7 @@ export const ScreenshotRecognizer = forwardRef<
               >
                 （示例）
               </span>
-              ，图片的尺寸、清晰度与遮挡情况会极大地影响识别结果。推荐在进入区域时截图以增加识图准确性。
+              ，图片的尺寸、清晰度与遮挡情况会极大地影响识别结果。推荐在进入区域时截图以增加识图准确性。识别截图后将自动勾选仅预览未知节点选项。
             </p>
           )}
 
@@ -443,7 +446,10 @@ export const ScreenshotRecognizer = forwardRef<
                     个可能结果，请人工对照选择。
                   </>
                 ) : (
-                  "已自动切换并填入节点，可直接跟截图对照。"
+                  <>
+                    已自动切换并填入节点，可直接跟截图对照。<br />
+                    已勾选仅预览未知节点选项。
+                  </>
                 )}
               </p>
             </div>

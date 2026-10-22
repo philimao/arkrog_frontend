@@ -1,5 +1,5 @@
 import type { GridState, Coord, Direction } from "./types";
-import { nodeOptions } from "./mapData";
+import { getNodeStepRanges, isDistanceInStepRanges } from "./mapData";
 
 export function nodeId(row: number, col: number): string {
   return `${row},${col}`;
@@ -76,10 +76,15 @@ export interface OptionFilterCandidate {
   name: string;
 }
 
-export function getNodeDistanceMap(state: GridState, start: Coord | null) {
+export function getNodeDistanceMap(
+  state: GridState,
+  start: Coord | null,
+  ends: Coord[] | null = null,
+) {
   if (!start) return new Map<string, number>();
 
   const distances = new Map<string, number>();
+  const endKeys = new Set(ends?.map((end) => nodeId(end.row, end.col)));
   const queue: Coord[] = [start];
   distances.set(nodeId(start.row, start.col), 0);
 
@@ -94,9 +99,14 @@ export function getNodeDistanceMap(state: GridState, start: Coord | null) {
       current.col,
     )) {
       const neighborKey = nodeId(neighbor.row, neighbor.col);
-      if (distances.has(neighborKey)) continue;
-      distances.set(neighborKey, currentDistance + 1);
-      queue.push(neighbor);
+      const nextDistance = currentDistance + Number(!endKeys.has(neighborKey));
+      if (nextDistance >= (distances.get(neighborKey) ?? Infinity)) continue;
+      distances.set(neighborKey, nextDistance);
+      if (endKeys.has(neighborKey)) {
+        queue.unshift(neighbor);
+      } else {
+        queue.push(neighbor);
+      }
     }
   }
 
@@ -108,31 +118,28 @@ export function getOptionsForNodeDistance({
   start,
   node,
   zone,
+  isMemory,
+  ends,
   options,
 }: {
   state: GridState;
   start: Coord | null;
   node: Coord | null;
   zone: string;
+  isMemory: boolean;
+  ends: Coord[] | null;
   options: OptionFilterCandidate[];
 }) {
   if (!start || !node) return options;
 
   const nodeKey = nodeId(node.row, node.col);
-  const distance = getNodeDistanceMap(state, start).get(nodeKey);
+  const distance = getNodeDistanceMap(state, start, ends).get(nodeKey);
   if (distance === undefined) return [];
 
   return options.filter((option) => {
     if (["未知的凶戾", "未知的诡秘", "命运所指"].includes(option.name))
       return true;
-    const optionMeta = nodeOptions.find((entry) => entry.id === option.id);
-    const step = optionMeta?.steps.find((entry) => entry.zone === zone);
-    return (
-      step !== undefined &&
-      step.min !== undefined &&
-      step.max !== undefined &&
-      distance >= step.min &&
-      distance <= step.max
-    );
+    const ranges = getNodeStepRanges(option.id, zone, isMemory);
+    return ranges !== undefined && isDistanceInStepRanges(distance, ranges);
   });
 }

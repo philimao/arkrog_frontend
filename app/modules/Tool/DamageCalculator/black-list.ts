@@ -30,5 +30,8 @@ export const DamageCalculatorSettings: {
     银灰: {
       disabled_skills: ["skchr_svrash_1", "skchr_svrash_2"],
     },
+    赤刃明霄陈: {
+      disabled_skills: ["skchr_chen3_1", "skchr_chen3_2"],
+    },
   },
 };

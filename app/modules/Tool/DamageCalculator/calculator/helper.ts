@@ -228,7 +228,10 @@ export class CalculatorHelper {
       // TODO 暂时由计算脚本固定写死这部分加成，后续需要在面板上展示（可切换）
     }
     /** 应用天赋 */
-    getCharImpl(charData.name).applyTalent({ charInput: charInput as unknown as CharInput }, result);
+    getCharImpl(charData.name).applyTalent(
+      { charInput: charInput as unknown as CharInput, charData },
+      result,
+    );
 
     /** 应用干员特殊配置 */
     const { charSpec } = charInput;

@@ -15,8 +15,8 @@ import type { CharInput, CharSpecConfig } from "~/stores/damageCalculator/calcTy
 
 /** 干员计算器实现 */
 export type CalculatorImpl = (input: CalculatorInput) => CalculatorOutput;
-/** 天赋应用输入 */
-export type ApplyTalentInput = { charInput: CharInput };
+/** 天赋应用输入。charData 供脚本读取角色表天赋黑板。 */
+export type ApplyTalentInput = { charInput: CharInput; charData?: CharData };
 /** 天赋应用函数 */
 export type ApplyTalentFC = (input: ApplyTalentInput, context: BuffContext) => void;
 /** 技能应用输入 */

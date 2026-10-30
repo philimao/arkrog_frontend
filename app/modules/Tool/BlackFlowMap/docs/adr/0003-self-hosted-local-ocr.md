@@ -1,6 +1,6 @@
 ---
 status: 已接受
-last-verified: 2026-08-18
+last-verified: 2026-10-30
 sources:
   - arkrog_backend/utils/localOcr.ts
   - arkrog_backend/routers/mapRecognition.ts
@@ -66,3 +66,20 @@ sources:
 **付出**：多一个需要运维的常驻服务与一台跨区机器的依赖；识别耗时从 0.6~1.6s 变成约 1.6s（本地推理比云端慢，但省掉了排队与降级探路）。
 
 **未决**：浏览器直连形态的鉴权（当前是后端服务端调用，用静态令牌，不能塞进 JS）；限流额度当初是为了防止刷光**共享的云端免费额度**，本地无额度只有 CPU，这条理由已弱化，待单独评估。
+
+## 2026-10-30：迁到 ArkRog 同机
+
+arkrog 扩容至 4GB 后，部署独立 `arkrog-ocr.service`，dev/prod 共用
+`http://127.0.0.1:8977/ocr`，消除正常识别时的跨机图片传输。
+复用 arkrec 的 RapidOCR 3.9.2、ONNXRuntime 1.28.0 和三个模型文件；
+检测和识别是 PP-OCRv6 small，方向分类仍为 PP-OCRv4 mobile。
+单进程、推理串行、2 线程，内存软阈值 750MiB、硬上限 900MiB。
+超时、云端兜底和后端熔断保持原有行为，影子对照关闭。
+
+同一批 20 张部署样图在两台机器返回的全部 631 个文字框（文字与坐标）完全一致。
+arkrog 推理中位数 1648ms、最大 1808ms；arkrec 同批中位数 1754ms、最大 3698ms。
+这次是迁移一致性验证，没有重新跑前述 82 张端到端准确率评测。
+dev/prod 均通过实际后端 OCR 接口，并确认本机服务成功计数增加。
+arkrec 旧服务保留供回滚；切回时需同时恢复旧地址和旧令牌。
+
+服务源码、锁定依赖、systemd 和运维说明见后端仓库 `deploy/ocr/`。

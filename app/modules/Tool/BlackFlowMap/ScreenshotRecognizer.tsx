@@ -379,7 +379,7 @@ export const ScreenshotRecognizer = forwardRef<
         <div className="flex flex-col gap-2">
           {!previewUrl && (
             <p className="text-md">
-              请使用<span className="text-ak-red">地图界面完整截图</span>
+              请使用<span className="text-ak-red">地图界面完整截图（不包含空岛）</span>
               进行识别
               <span
                 className="text-ak-blue underline cursor-pointer"

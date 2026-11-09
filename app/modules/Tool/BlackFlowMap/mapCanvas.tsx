@@ -193,9 +193,33 @@ export function NodeMapCanvas({
       const optionCount = optionCounts.get(opt.id) || 0;
       return perOptionLimit !== undefined && optionCount >= perOptionLimit;
     };
-    return visibleMenuOptions
+    const sortedOptions = visibleMenuOptions
       .filter((opt) => opt.id !== currentDisplayedOptionId)
       .sort((a, b) => Number(isDisabled(a)) - Number(isDisabled(b)));
+    const currentDisplayedOption = currentDisplayedOptionId
+      ? optionMap.get(currentDisplayedOptionId)
+      : undefined;
+
+    if (
+      currentDisplayedOption?.id !== "hide_invisible" &&
+      currentDisplayedOption?.id !== "hide_battle"
+    ) {
+      return { first: sortedOptions, second: [], hasDivider: false };
+    }
+
+    const isPriorityOption = (opt: { id: string }) => {
+      const option = optionMap.get(opt.id);
+      return currentDisplayedOption.id === "hide_invisible"
+        ? option?.type === "other" && opt.id !== "door"
+        : option?.type === "battle";
+    };
+    const first = sortedOptions.filter(isPriorityOption);
+    const second = sortedOptions.filter((opt) => !isPriorityOption(opt));
+    return {
+      first,
+      second,
+      hasDivider: first.length > 0 && second.length > 0,
+    };
   }, [
     visibleMenuOptions,
     optionMap,
@@ -205,6 +229,13 @@ export function NodeMapCanvas({
     markedNodes,
     hiddenKeys,
   ]);
+  const currentMenuMark = menuNode
+    ? markedNodes[nodeId(menuNode.row, menuNode.col)]
+    : undefined;
+  const showBlank = Boolean(currentMenuMark) && currentMenuMark !== "empty";
+  const showBlankAfterDivider =
+    sortedMenuOptions.hasDivider &&
+    (currentMenuMark === "hide_invisible" || currentMenuMark === "hide_battle");
 
   const currentTypeLimit = useCallback(
     (type: string) => {
@@ -561,6 +592,66 @@ export function NodeMapCanvas({
     }
   }
 
+  const renderBlankOption = () => (
+    <button
+      type="button"
+      onClick={() => {
+        setMenuOpen?.(false);
+        if (menuNode) onMarkNode?.(menuNode.row, menuNode.col, "empty");
+      }}
+      className="gap-2 flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
+    >
+      <div className="w-4 h-4 aspect-square" style={spriteStyle("empty")} />
+      <span>林间空地</span>
+    </button>
+  );
+  const renderMenuOptions = (menuOptions: typeof sortedMenuOptions.first) =>
+    menuOptions.map((opt) => {
+      const activeMenuNode = menuNode;
+      const option = optionMap.get(opt.id);
+      const perOptionLimit = option
+        ? option.steps.find((step) => step.zone === zone)?.maxAllowed
+        : undefined;
+      const optionCount = optionCounts.get(opt.id) || 0;
+      const isOptionLimitReached =
+        perOptionLimit !== undefined && optionCount >= perOptionLimit;
+      // const typeLimit = option ? currentTypeLimit(option.type) : Infinity;
+      // const typeCount = option ? typeCounts.get(option.type) || 0 : 0;
+      // const isTypeLimitReached = typeCount >= typeLimit;
+      const disabled = isOptionLimitReached; // || isTypeLimitReached;
+      const disabledNote = isOptionLimitReached
+        ? `已达标记上限`
+        : // : isTypeLimitReached
+          //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
+          "";
+
+      return (
+        <button
+          key={opt.id}
+          onClick={() => {
+            if (disabled) return;
+            setMenuOpen?.(false);
+            if (activeMenuNode) {
+              onMarkNode?.(activeMenuNode.row, activeMenuNode.col, opt.id);
+            }
+          }}
+          disabled={disabled}
+          className={`flex items-center rounded-md border border-mid-gray bg-transparent text-left ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+          style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        >
+          <div className="w-8 h-8 aspect-square" style={spriteStyle(opt.id)} />
+          <div className="flex flex-col">
+            <span>{opt.name}</span>
+            {disabledNote ? (
+              <span className="text-xs text-white/60 pr-1 pb-0.5">
+                {disabledNote}
+              </span>
+            ) : null}
+          </div>
+        </button>
+      );
+    });
+
   return (
     <div
       ref={containerRef}
@@ -606,7 +697,6 @@ export function NodeMapCanvas({
           <span>可能出现以下节点</span>
           {(() => {
             const currentKey = nodeId(menuNode.row, menuNode.col);
-            const currentMark = markedNodes[currentKey];
             const detectedMark = detectedNodes[currentKey];
             // 撤销要恢复的这个选项，需要先查看是不是已经顶到这层的上限了
             const detectedMarkOption = detectedMark
@@ -625,19 +715,18 @@ export function NodeMapCanvas({
             // "移除标记"——它现在撤销的是用户的手改，不是把格子清空
             const canRevert =
               detectedMark !== undefined &&
-              currentMark !== undefined &&
-              currentMark !== detectedMark &&
+              currentMenuMark !== undefined &&
+              currentMenuMark !== detectedMark &&
               !detectedMarkAtLimit;
             // "林间空地"代替了旧版"移除标记"清空节点那一半的作用：只要这格有
             // 标记（自动或手动）就能选，选了它本身也算一次手动标记
-            const showBlank = Boolean(currentMark) && currentMark !== "empty";
             return (
               <>
                 {canRevert && (
                   <button
                     type="button"
                     onClick={() => {
-                      setMenuOpen && setMenuOpen(false);
+                      setMenuOpen?.(false);
                       if (typeof onRevertNode === "function") {
                         onRevertNode(menuNode.row, menuNode.col);
                       }
@@ -650,74 +739,16 @@ export function NodeMapCanvas({
                     <span>移除标记</span>
                   </button>
                 )}
-                {showBlank && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen && setMenuOpen(false);
-                      if (typeof onMarkNode === "function") {
-                        onMarkNode(menuNode.row, menuNode.col, "empty");
-                      }
-                    }}
-                    className="gap-2 flex cursor-pointer items-center rounded-md border border-mid-gray bg-transparent px-2 py-1 text-left text-white"
-                  >
-                    <div
-                      className="w-4 h-4 aspect-square"
-                      style={spriteStyle("empty")}
-                    />
-                    <span>林间空地</span>
-                  </button>
-                )}
+                {showBlank && !showBlankAfterDivider && renderBlankOption()}
               </>
             );
           })()}
-          {sortedMenuOptions.map((opt) => {
-            const option = optionMap.get(opt.id);
-            const perOptionLimit = option
-              ? option.steps.find((step) => step.zone === zone)?.maxAllowed
-              : undefined;
-            const optionCount = optionCounts.get(opt.id) || 0;
-            const isOptionLimitReached =
-              perOptionLimit !== undefined && optionCount >= perOptionLimit;
-            // const typeLimit = option ? currentTypeLimit(option.type) : Infinity;
-            // const typeCount = option ? typeCounts.get(option.type) || 0 : 0;
-            // const isTypeLimitReached = typeCount >= typeLimit;
-            const disabled = isOptionLimitReached; // || isTypeLimitReached;
-            const disabledNote = isOptionLimitReached
-              ? `已达标记上限`
-              : // : isTypeLimitReached
-                //   ? `已达${option?.type === "battle" ? "凶戾类节点" : "诡秘类节点"}标记上限`
-                "";
-
-            return (
-              <button
-                key={opt.id}
-                onClick={() => {
-                  if (disabled) return;
-                  setMenuOpen && setMenuOpen(false);
-                  if (typeof onMarkNode === "function") {
-                    onMarkNode(menuNode.row, menuNode.col, opt.id);
-                  }
-                }}
-                disabled={disabled}
-                className={`flex items-center rounded-md border border-mid-gray bg-transparent text-left ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                style={{ cursor: disabled ? "not-allowed" : "pointer" }}
-              >
-                <div
-                  className="w-8 h-8 aspect-square"
-                  style={spriteStyle(opt.id)}
-                />
-                <div className="flex flex-col">
-                  <span>{opt.name}</span>
-                  {disabledNote ? (
-                    <span className="text-xs text-white/60 pr-1 pb-0.5">
-                      {disabledNote}
-                    </span>
-                  ) : null}
-                </div>
-              </button>
-            );
-          })}
+          {renderMenuOptions(sortedMenuOptions.first)}
+          {sortedMenuOptions.hasDivider && (
+            <hr className="w-full border-white/20" />
+          )}
+          {showBlank && showBlankAfterDivider && renderBlankOption()}
+          {renderMenuOptions(sortedMenuOptions.second)}
         </div>
       ) : null}
     </div>
